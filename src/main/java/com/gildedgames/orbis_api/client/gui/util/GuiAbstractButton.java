@@ -1,7 +1,7 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
 import com.gildedgames.orbis_api.client.rect.Rect;
-import com.gildedgames.orbis_api.common.util.InputHelper;
+import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Lists;
 
 import java.io.IOException;

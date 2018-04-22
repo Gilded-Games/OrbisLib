@@ -5,7 +5,7 @@ import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectHolder;
 import com.gildedgames.orbis_api.client.rect.RectModifier;
 import com.gildedgames.orbis_api.common.containers.ContainerGeneric;
-import com.gildedgames.orbis_api.common.util.InputHelper;
+import com.gildedgames.orbis_api.util.InputHelper;
 import com.gildedgames.orbis_api.util.ObjectFilter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
