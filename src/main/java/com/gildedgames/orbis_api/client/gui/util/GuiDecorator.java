@@ -1,7 +1,7 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
-import com.gildedgames.orbis_api.util.Decorator;
 import com.gildedgames.orbis_api.client.rect.ModDim2D;
+import com.gildedgames.orbis_api.util.Decorator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.inventory.ClickType;
@@ -87,7 +87,7 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
+	public void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
 	{
 		this.element.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 	}
