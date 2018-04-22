@@ -1,4 +1,4 @@
-package com.gildedgames.orbis_api.common.util;
+package com.gildedgames.orbis_api.util;
 
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
