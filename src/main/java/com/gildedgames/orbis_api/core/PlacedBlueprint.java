@@ -8,7 +8,9 @@ import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.data.schedules.ScheduleRegion;
+import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RegionHelp;
+import com.gildedgames.orbis_api.util.RotationHelp;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
@@ -17,6 +19,7 @@ import com.google.common.collect.Maps;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -166,6 +169,8 @@ public class PlacedBlueprint implements NBT
 		this.chunks = new BlockDataChunk[chunksOccupied.length];
 
 		final BlockPos min = this.data.getPos();
+		BlockPos max = new BlockPos(min.getX() + blocks.getWidth() - 1, min.getY() + blocks.getHeight() - 1,
+				min.getZ() + blocks.getLength() - 1);
 
 		final Region region = new Region(new BlockPos(0, 0, 0), new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1));
 
@@ -185,37 +190,82 @@ public class PlacedBlueprint implements NBT
 			zDif = 16 - Math.abs(zDif);
 		}
 
-		for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
+		final int rotAmount = Math.abs(RotationHelp.getRotationAmount(this.data.getRotation(), Rotation.NONE));
+
+		if (rotAmount != 0)
 		{
-			final int chunkX = ((min.getX() + iterPos.getX()) >> 4) - startChunkX;
-			final int chunkZ = ((min.getZ() + iterPos.getZ()) >> 4) - startChunkZ;
-
-			int index = 0;
-
-			for (int i = 0; i < chunksOccupied.length; i++)
+			for (final OrbisTuple<BlockPos.MutableBlockPos, BlockPos.MutableBlockPos> tuple : RotationHelp
+					.getAllInBoxRotated(min, max, this.data.getRotation(), null))
 			{
-				final ChunkPos p = chunksOccupied[i];
+				final BlockPos.MutableBlockPos beforeRot = tuple.getFirst();
+				BlockPos.MutableBlockPos rotated = tuple.getSecond();
 
-				if (p.x - startChunkX == chunkX && p.z - startChunkZ == chunkZ)
+				final int chunkX = ((min.getX() + rotated.getX()) >> 4) - startChunkX;
+				final int chunkZ = ((min.getZ() + rotated.getZ()) >> 4) - startChunkZ;
+
+				int index = 0;
+
+				for (int i = 0; i < chunksOccupied.length; i++)
 				{
-					if (this.chunks[i] == null)
-					{
-						this.chunks[i] = new BlockDataChunk(p, new BlockDataContainer(16, blocks.getHeight(), 16));
-					}
+					final ChunkPos p = chunksOccupied[i];
 
-					index = i;
-					break;
+					if (p.x - startChunkX == chunkX && p.z - startChunkZ == chunkZ)
+					{
+						if (this.chunks[i] == null)
+						{
+							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainer(16, blocks.getHeight(), 16));
+						}
+
+						index = i;
+						break;
+					}
+				}
+
+				final BlockDataChunk chunk = this.chunks[index];
+
+				final BlockData block = blocks.get(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
+
+				if (chunk != null && block != null)
+				{
+					chunk.getContainer()
+							.set(block, (rotated.getX() + xDif) % 16, rotated.getY(), (rotated.getZ() + zDif) % 16);
 				}
 			}
-
-			final BlockDataChunk chunk = this.chunks[index];
-
-			final BlockData block = blocks.get(iterPos.getX(), iterPos.getY(), iterPos.getZ());
-
-			if (chunk != null && block != null)
+		}
+		else
+		{
+			for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
 			{
-				chunk.getContainer()
-						.set(block, (iterPos.getX() + xDif) % 16, iterPos.getY(), (iterPos.getZ() + zDif) % 16);
+				final int chunkX = ((min.getX() + iterPos.getX()) >> 4) - startChunkX;
+				final int chunkZ = ((min.getZ() + iterPos.getZ()) >> 4) - startChunkZ;
+
+				int index = 0;
+
+				for (int i = 0; i < chunksOccupied.length; i++)
+				{
+					final ChunkPos p = chunksOccupied[i];
+
+					if (p.x - startChunkX == chunkX && p.z - startChunkZ == chunkZ)
+					{
+						if (this.chunks[i] == null)
+						{
+							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainer(16, blocks.getHeight(), 16));
+						}
+
+						index = i;
+						break;
+					}
+				}
+
+				final BlockDataChunk chunk = this.chunks[index];
+
+				final BlockData block = blocks.get(iterPos.getX(), iterPos.getY(), iterPos.getZ());
+
+				if (chunk != null && block != null)
+				{
+					chunk.getContainer()
+							.set(block, (iterPos.getX() + xDif) % 16, iterPos.getY(), (iterPos.getZ() + zDif) % 16);
+				}
 			}
 		}
 	}

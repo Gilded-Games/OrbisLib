@@ -240,6 +240,11 @@ public class DataPrimer
 
 	public void create(final BlockData blockData, final BlockPos pos, final ICreationData creationData)
 	{
+		if (blockData == null)
+		{
+			return;
+		}
+
 		if (blockData.isAir() && !creationData.placeAir())
 		{
 			return;

@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api;
 
+import com.gildedgames.orbis_api.client.PartialTicks;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
 import com.gildedgames.orbis_api.world.WorldObjectManagerEvents;
 import com.gildedgames.orbis_api.world.instances.IInstanceRegistry;
@@ -61,6 +62,7 @@ public class OrbisAPI
 
 			MinecraftForge.EVENT_BUS.register(InstanceEvents.class);
 			MinecraftForge.EVENT_BUS.register(WorldObjectManagerEvents.class);
+			MinecraftForge.EVENT_BUS.register(PartialTicks.class);
 		}
 
 		return OrbisAPI.services;

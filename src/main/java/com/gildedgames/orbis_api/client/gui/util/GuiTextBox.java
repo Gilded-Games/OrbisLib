@@ -44,7 +44,7 @@ public class GuiTextBox extends GuiFrame
 				continue;
 			}
 
-			final String[] strings = t.component().getFormattedText().split("/n");
+			final String[] strings = t.component().getFormattedText().split(System.lineSeparator());
 
 			final List<String> stringList = new ArrayList<>(strings.length);
 			Collections.addAll(stringList, strings);

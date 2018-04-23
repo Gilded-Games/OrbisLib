@@ -204,14 +204,16 @@ public class OrbisProject implements IProject
 			data.getMetadata().setIdentifier(this.cache.createNextIdentifier());
 		}
 
+		IDataIdentifier before = data.getMetadata().getIdentifier();
+
+		/* Loads data from file then sets it to the cache **/
+		this.cache.setData(data, location);
+
 		/*
 		 * This will determine if a new identifier will be created
 		 * when the data is null.
 		 */
-		final boolean shouldSaveAfter = data.getMetadata().getIdentifier() == null;
-
-		/* Loads data from file then sets it to the cache **/
-		this.cache.setData(data, location);
+		boolean shouldSaveAfter = !data.getMetadata().getIdentifier().equals(before);
 
 		/*
 		 * Save the data to disk to ensure it doesn't keep creating
