@@ -9,15 +9,14 @@ import java.lang.reflect.Method;
 
 public class ReflectionOrbis
 {
-	//TODO: obfuscated names
 	public static final Method POPULATE;
 
 	public static final Method GENERATE_HEIGHT_MAP;
 
 	static
 	{
-		POPULATE = ReflectionOrbis.getMethod(Chunk.class, new Class<?>[] { IChunkGenerator.class }, "populate", "func_180432_n");
-		GENERATE_HEIGHT_MAP = ReflectionOrbis.getMethod(Chunk.class, new Class<?>[] {}, "generateHeightMap", "func_180432_n");
+		POPULATE = ReflectionOrbis.getMethod(Chunk.class, new Class<?>[] { IChunkGenerator.class }, "populate", "func_185931_b");
+		GENERATE_HEIGHT_MAP = ReflectionOrbis.getMethod(Chunk.class, new Class<?>[] {}, "generateHeightMap", "func_185978_a");
 	}
 
 	public static Field getField(final Class clazz, final String... names)
