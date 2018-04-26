@@ -29,7 +29,7 @@ import java.util.Random;
 
 public class ChunkDecorator extends Chunk
 {
-	private Chunk c;
+	protected Chunk c;
 
 	public ChunkDecorator(Chunk chunk)
 	{
