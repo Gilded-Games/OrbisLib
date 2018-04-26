@@ -25,8 +25,23 @@ public class PrepChunkManager implements IPrepChunkManager
 	private World world;
 
 	//TODO: Need to save these, since they often get modified by prep registry sources
-	private LoadingCache<Long, Chunk> chunkCache =
-			CacheBuilder.newBuilder()
+	private LoadingCache<Long, Chunk> chunkCache;
+
+	public PrepChunkManager()
+	{
+
+	}
+
+	public PrepChunkManager(World world)
+	{
+		this.world = world;
+	}
+
+	private synchronized LoadingCache<Long, Chunk> getChunkCache()
+	{
+		if (this.chunkCache == null)
+		{
+			this.chunkCache = CacheBuilder.newBuilder()
 					.maximumSize(40)
 					.expireAfterWrite(10, TimeUnit.MINUTES)
 					.build(new CacheLoader<Long, Chunk>()
@@ -43,15 +58,9 @@ public class PrepChunkManager implements IPrepChunkManager
 							   }
 						   }
 					);
+		}
 
-	public PrepChunkManager()
-	{
-
-	}
-
-	public PrepChunkManager(World world)
-	{
-		this.world = world;
+		return this.chunkCache;
 	}
 
 	@Override
@@ -68,7 +77,7 @@ public class PrepChunkManager implements IPrepChunkManager
 
 		try
 		{
-			return this.chunkCache.get(hash);
+			return this.getChunkCache().get(hash);
 		}
 		catch (ExecutionException e)
 		{
