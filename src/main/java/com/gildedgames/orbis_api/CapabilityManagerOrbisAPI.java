@@ -1,11 +1,18 @@
 package com.gildedgames.orbis_api;
 
+import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
+import com.gildedgames.orbis_api.preparation.IPrepManagerPool;
+import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManager;
+import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManagerStorageProvider;
+import com.gildedgames.orbis_api.preparation.impl.capability.PrepManagerPool;
+import com.gildedgames.orbis_api.preparation.impl.capability.PrepManagerPoolStorageProvider;
 import com.gildedgames.orbis_api.world.instances.IPlayerInstances;
 import com.gildedgames.orbis_api.world.instances.PlayerInstances;
 import com.gildedgames.orbis_api.world.instances.PlayerInstancesProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -19,6 +26,17 @@ public class CapabilityManagerOrbisAPI
 	public static void init()
 	{
 		CapabilityManager.INSTANCE.register(IPlayerInstances.class, new PlayerInstances.Storage(), PlayerInstances::new);
+		CapabilityManager.INSTANCE.register(IPrepManagerPool.class, new PrepManagerPool.Storage(), PrepManagerPool::new);
+		CapabilityManager.INSTANCE.register(IPrepChunkManager.class, new PrepChunkManager.Storage(), PrepChunkManager::new);
+	}
+
+	@SubscribeEvent
+	public static void onWorldAttachCapability(final AttachCapabilitiesEvent<World> event)
+	{
+		final World world = event.getObject();
+
+		event.addCapability(OrbisAPI.getResource("PrepChunkManager"), new PrepChunkManagerStorageProvider(world));
+		event.addCapability(OrbisAPI.getResource("PrepManagerPool"), new PrepManagerPoolStorageProvider(world));
 	}
 
 	@SubscribeEvent

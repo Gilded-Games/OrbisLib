@@ -5,6 +5,7 @@ import com.gildedgames.orbis_api.core.registry.IOrbisDefinitionRegistry;
 import com.gildedgames.orbis_api.data.management.IProject;
 import com.gildedgames.orbis_api.data.management.IProjectManager;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
+import com.gildedgames.orbis_api.preparation.IPrepRegistry;
 import com.gildedgames.orbis_api.world.instances.IInstanceRegistry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
@@ -14,6 +15,8 @@ import javax.annotation.Nullable;
 
 public interface IOrbisServices
 {
+
+	IPrepRegistry sectors();
 
 	INetworkMultipleParts network();
 

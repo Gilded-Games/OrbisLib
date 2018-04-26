@@ -27,6 +27,8 @@ import com.gildedgames.orbis_api.network.PacketWorldSeed;
 import com.gildedgames.orbis_api.network.instances.PacketRegisterDimension;
 import com.gildedgames.orbis_api.network.instances.PacketRegisterInstance;
 import com.gildedgames.orbis_api.network.instances.PacketUnregisterDimension;
+import com.gildedgames.orbis_api.preparation.IPrepRegistry;
+import com.gildedgames.orbis_api.preparation.impl.PrepRegistry;
 import com.gildedgames.orbis_api.util.io.IClassSerializer;
 import com.gildedgames.orbis_api.util.io.Instantiator;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
@@ -82,6 +84,8 @@ public class OrbisServices implements IOrbisServices
 	private Object mod;
 
 	private String archiveBaseName;
+
+	private IPrepRegistry sectors = new PrepRegistry();
 
 	public OrbisServices()
 	{
@@ -289,6 +293,12 @@ public class OrbisServices implements IOrbisServices
 		project.loadAndCacheData();
 
 		this.loadedProjects.put(id, project);
+	}
+
+	@Override
+	public IPrepRegistry sectors()
+	{
+		return this.sectors;
 	}
 
 	@Override
