@@ -1,13 +1,18 @@
-package com.gildedgames.orbis_api.preparation.impl;
+package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.*;
-import com.gildedgames.orbis_api.util.PointSerializer;
+import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessFlatFile;
 import com.google.common.collect.Sets;
 import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.Capability;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.util.Set;
 
@@ -23,7 +28,9 @@ public class PrepManager implements IPrepManager
 
 	private IPrepSectorAccess access;
 
-	private PrepManager()
+	private IPrepChunkManager chunkManager;
+
+	public PrepManager()
 	{
 		this.world = null;
 		this.folder = null;
@@ -49,30 +56,38 @@ public class PrepManager implements IPrepManager
 		}
 
 		this.access = new PrepSectorAccessFlatFile(this.world, this.registry, this);
+
+		this.chunkManager = new PrepChunkManager(this.world, this.registry);
+	}
+
+	@Override
+	public IPrepRegistryEntry getRegistryEntry()
+	{
+		return this.registry;
+	}
+
+	@Override
+	public IPrepChunkManager getChunkManager()
+	{
+		return this.chunkManager;
 	}
 
 	@Override
 	public boolean isSectorPreparing(int sectorX, int sectorY)
 	{
-		long hash = PointSerializer.toLong(sectorX, sectorY);
-
-		return this.sectorsPreparing.contains(hash);
+		return this.sectorsPreparing.contains(ChunkPos.asLong(sectorX, sectorY));
 	}
 
 	@Override
 	public void markSectorPreparing(int sectorX, int sectorY)
 	{
-		long hash = PointSerializer.toLong(sectorX, sectorY);
-
-		this.sectorsPreparing.add(hash);
+		this.sectorsPreparing.add(ChunkPos.asLong(sectorX, sectorY));
 	}
 
 	@Override
 	public void unmarkSectorPreparing(int sectorX, int sectorY)
 	{
-		long hash = PointSerializer.toLong(sectorX, sectorY);
-
-		this.sectorsPreparing.remove(hash);
+		this.sectorsPreparing.remove(ChunkPos.asLong(sectorX, sectorY));
 	}
 
 	@Override
@@ -84,45 +99,51 @@ public class PrepManager implements IPrepManager
 	@Override
 	public void writeSectorDataToDisk(IPrepSectorData sectorData)
 	{
-		final File file = this.getSectorFile(sectorData.getSectorX(), sectorData.getSectorY());
+		synchronized (this)
+		{
+			final File file = this.getSectorFile(sectorData.getSectorX(), sectorData.getSectorY());
 
-		try (FileOutputStream out = new FileOutputStream(file))
-		{
-			this.writeSectorDataToStream(sectorData, out);
-		}
-		catch (final IOException e)
-		{
-			OrbisAPI.LOGGER.error("Failed to save sector to disk", e);
+			try (FileOutputStream out = new FileOutputStream(file))
+			{
+				this.writeSectorDataToStream(sectorData, out);
+			}
+			catch (final IOException e)
+			{
+				OrbisAPI.LOGGER.error("Failed to save sector to disk", e);
+			}
 		}
 	}
 
 	@Override
 	public IPrepSectorData readSectorDataFromDisk(int sectorX, int sectorY)
 	{
-		final File file = this.getSectorFile(sectorX, sectorY);
-
-		if (!file.exists())
+		synchronized (this)
 		{
-			return null;
-		}
+			final File file = this.getSectorFile(sectorX, sectorY);
 
-		try (FileInputStream stream = new FileInputStream(file))
-		{
-			final IPrepSectorData sector = this.readSectorDataFromStream(stream);
-
-			if (sector.getSectorX() != sectorX || sector.getSectorY() != sectorY)
+			if (!file.exists())
 			{
-				throw new IOException("Sector has wrong coordinates on disk");
+				return null;
 			}
 
-			return sector;
-		}
-		catch (final IOException e)
-		{
-			OrbisAPI.LOGGER.error("Failed to read sector from disk", e);
-		}
+			try (FileInputStream stream = new FileInputStream(file))
+			{
+				final IPrepSectorData sector = this.readSectorDataFromStream(stream);
 
-		return null;
+				if (sector.getSectorX() != sectorX || sector.getSectorY() != sectorY)
+				{
+					throw new IOException("Sector has wrong coordinates on disk");
+				}
+
+				return sector;
+			}
+			catch (final IOException e)
+			{
+				OrbisAPI.LOGGER.error("Failed to read sector from disk", e);
+			}
+
+			return null;
+		}
 	}
 
 	@Override
@@ -172,5 +193,21 @@ public class PrepManager implements IPrepManager
 	private File getSectorFile(final int sectorX, final int sectorZ)
 	{
 		return new File(this.folder, "sector." + sectorX + "." + sectorZ + ".nbt");
+	}
+
+	public static class Storage implements Capability.IStorage<IPrepManager>
+	{
+		@Nullable
+		@Override
+		public NBTBase writeNBT(final Capability<IPrepManager> capability, final IPrepManager instance, final EnumFacing side)
+		{
+			return null;
+		}
+
+		@Override
+		public void readNBT(final Capability<IPrepManager> capability, final IPrepManager instance, final EnumFacing side, final NBTBase nbt)
+		{
+
+		}
 	}
 }

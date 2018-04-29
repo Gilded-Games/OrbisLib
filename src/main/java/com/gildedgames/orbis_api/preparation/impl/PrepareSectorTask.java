@@ -7,7 +7,9 @@ import com.gildedgames.orbis_api.preparation.IPrepSectorData;
 import com.gildedgames.orbis_api.world.WorldObjectManager;
 import net.minecraft.world.World;
 
-public class PrepareSectorTask implements Runnable
+import java.util.function.Supplier;
+
+public class PrepareSectorTask implements Supplier<Void>
 {
 	private IPrepRegistryEntry registry;
 
@@ -32,21 +34,17 @@ public class PrepareSectorTask implements Runnable
 	}
 
 	@Override
-	public void run()
+	public Void get()
 	{
 		IPrepSectorData sectorData = this.createSectorData();
 
-		this.manager.markSectorPreparing(this.sectorX, this.sectorY);
-
-		this.registry.preSectorDataSave(this.world, sectorData, this.chunkManager);
-
-		this.manager.writeSectorDataToDisk(sectorData);
-
-		this.registry.postSectorDataSave(this.world, sectorData, this.chunkManager);
+		this.registry.postSectorDataCreate(this.world, sectorData, this.chunkManager);
 
 		this.manager.writeSectorDataToDisk(sectorData);
 
 		this.manager.unmarkSectorPreparing(this.sectorX, this.sectorY);
+
+		return null;
 	}
 
 	private IPrepSectorData createSectorData()

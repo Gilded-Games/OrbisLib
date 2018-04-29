@@ -1,61 +1,53 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.OrbisAPICapabilities;
-import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
-import com.gildedgames.orbis_api.preparation.IPrepManagerPool;
+import com.gildedgames.orbis_api.preparation.IPrepManager;
+import com.gildedgames.orbis_api.preparation.IPrepSector;
 import net.minecraft.world.World;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class PrepHelper
 {
 	/**
-	 * Helper method which returns the {@link IPrepManagerPool} for a world, or throws
+	 * Helper method which returns the {@link IPrepManager) for a world, or throws
 	 * an {@link RuntimeException} if it does not exist.
 	 *
 	 * @param world The world
-	 * @return The {@link IPrepManagerPool} belonging to the world
+	 * @return The {@link IPrepManager} belonging to the world
 	 */
-	@Nonnull
-	public static IPrepManagerPool getPool(World world)
+	@Nullable
+	public static IPrepManager getManager(World world)
 	{
-		IPrepManagerPool access = null;
+		IPrepManager access = null;
 
-		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER_POOL, null))
+		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER, null))
 		{
-			access = world.getCapability(OrbisAPICapabilities.PREP_MANAGER_POOL, null);
-		}
-
-		if (access == null)
-		{
-			throw new RuntimeException("World does not have IPrepManagerPool capability");
+			access = world.getCapability(OrbisAPICapabilities.PREP_MANAGER, null);
 		}
 
 		return access;
 	}
 
-	/**
-	 * Helper method which returns the {@link IPrepManagerPool} for a world, or throws
-	 * an {@link RuntimeException} if it does not exist.
-	 *
-	 * @param world The world
-	 * @return The {@link IPrepManagerPool} belonging to the world
-	 */
-	@Nonnull
-	public static IPrepChunkManager getChunks(World world)
+	public static IPrepSector getSector(World world, int chunkX, int chunkY)
 	{
-		IPrepChunkManager access = null;
+		IPrepManager manager = PrepHelper.getManager(world);
 
-		if (world.hasCapability(OrbisAPICapabilities.PREP_CHUNK_MANAGER, null))
-		{
-			access = world.getCapability(OrbisAPICapabilities.PREP_CHUNK_MANAGER, null);
-		}
+		return manager.access().provideSector(chunkX, chunkY);
+	}
 
-		if (access == null)
-		{
-			throw new RuntimeException("World does not have IPrepManagerPool capability");
-		}
+	public static boolean isSectorLoaded(World world, int chunkX, int chunkY)
+	{
+		IPrepManager manager = PrepHelper.getManager(world);
 
-		return access;
+		return isSectorLoaded(manager, chunkX, chunkY);
+	}
+
+	public static boolean isSectorLoaded(IPrepManager manager, int chunkX, int chunkY)
+	{
+		Optional<IPrepSector> sector = manager.access().getLoadedSector(chunkX, chunkY);
+
+		return sector.isPresent();
 	}
 }

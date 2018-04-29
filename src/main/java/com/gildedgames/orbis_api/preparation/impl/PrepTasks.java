@@ -1,20 +1,22 @@
 package com.gildedgames.orbis_api.preparation.impl;
 
-import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.OrbisAPICapabilities;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
 import com.gildedgames.orbis_api.preparation.IPrepManager;
-import com.gildedgames.orbis_api.preparation.IPrepManagerPool;
 import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepHelper;
+import com.google.common.collect.Lists;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,34 +31,117 @@ public class PrepTasks
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(5);
 
+	private static List<CompletableFuture<Void>> tasks = Lists.newArrayList();
+
 	public PrepTasks()
 	{
 
 	}
 
-	public static void prepSector(World world, int sectorX, int sectorY, IPrepRegistryEntry entry)
+	public static void prepSector(World world, int sectorX, int sectorY)
 	{
-		IPrepManagerPool pool = PrepHelper.getPool(world);
-		IPrepChunkManager chunkManager = PrepHelper.getChunks(world);
+		IPrepManager manager = PrepHelper.getManager(world);
 
-		IPrepManager manager = pool.get(entry.getUniqueId());
-
-		if (!manager.isSectorPreparing(sectorX, sectorY) && !manager.isSectorWrittenToDisk(sectorX, sectorY))
+		if (manager != null)
 		{
-			CompletableFuture.runAsync(new PrepareSectorTask(entry, manager, chunkManager, world, sectorX, sectorY), executor);
+			prepSector(manager, world, sectorX, sectorY);
 		}
 	}
+
+	public static void prepSector(IPrepManager manager, World world, int sectorX, int sectorY)
+	{
+		boolean preparing = manager.isSectorPreparing(sectorX, sectorY);
+		boolean writtenToDisk = manager.isSectorWrittenToDisk(sectorX, sectorY);
+
+		if (!preparing && !writtenToDisk)
+		{
+			IPrepChunkManager chunkManager = manager.getChunkManager();
+
+			manager.markSectorPreparing(sectorX, sectorY);
+			CompletableFuture<Void> task = CompletableFuture
+					.supplyAsync(new PrepareSectorTask(manager.getRegistryEntry(), manager, chunkManager, world, sectorX, sectorY), executor);
+
+			tasks.add(task);
+		}
+		else if (writtenToDisk)
+		{
+			manager.access()
+					.provideSector(sectorX * manager.getRegistryEntry().getSectorChunkArea(), sectorY * manager.getRegistryEntry().getSectorChunkArea());
+		}
+	}
+
+	@SubscribeEvent
+	public static void onTick(TickEvent.ServerTickEvent event)
+	{
+		List<CompletableFuture<Void>> toRemove = Lists.newArrayList();
+
+		for (CompletableFuture<Void> task : tasks)
+		{
+			if (task.isDone())
+			{
+				toRemove.add(task);
+
+				try
+				{
+					task.get();
+				}
+				catch (InterruptedException | ExecutionException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+
+		tasks.removeAll(toRemove);
+	}
+
+	/*@SubscribeEvent
+	public static void onWorldLoaded(final WorldEvent.Load event)
+	{
+		final World world = event.getWorld();
+
+		boolean shouldAttach = false;
+
+		for (IPrepRegistryEntry entry : OrbisAPI.sectors().getEntries())
+		{
+			if (entry.shouldAttachTo(world))
+			{
+				shouldAttach = true;
+				break;
+			}
+		}
+
+		if (shouldAttach)
+		{
+			if (world instanceof WorldServer)
+			{
+				WorldServer worldServer = (WorldServer) world;
+
+				IChunkProvider provider = new ChunkProviderPrepServer(worldServer, worldServer.getChunkProvider());
+
+				ObfuscationReflectionHelper.setPrivateValue(World.class, world, provider, "field_73020_y", "chunkProvider");
+			}
+			else if (world instanceof WorldClient)
+			{
+				WorldClient worldClient = (WorldClient) world;
+
+				IChunkProvider provider = new ChunkProviderPrepClient(worldClient, worldClient.getChunkProvider());
+
+				ObfuscationReflectionHelper.setPrivateValue(World.class, world, provider, "field_73020_y", "chunkProvider");
+			}
+		}
+	}*/
 
 	@SubscribeEvent
 	public static void onChunkLoaded(final ChunkEvent.Load event)
 	{
 		final World world = event.getWorld();
 
-		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER_POOL, null))
+		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER, null))
 		{
-			IPrepManagerPool pool = PrepHelper.getPool(world);
+			IPrepManager manager = PrepHelper.getManager(world);
 
-			for (IPrepManager manager : pool.getManagers())
+			if (manager != null)
 			{
 				manager.access().onChunkLoaded(event.getChunk().x, event.getChunk().z);
 			}
@@ -68,11 +153,11 @@ public class PrepTasks
 	{
 		final World world = event.getWorld();
 
-		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER_POOL, null))
+		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER, null))
 		{
-			IPrepManagerPool pool = PrepHelper.getPool(world);
+			IPrepManager manager = PrepHelper.getManager(world);
 
-			for (IPrepManager manager : pool.getManagers())
+			if (manager != null)
 			{
 				manager.access().onChunkUnloaded(event.getChunk().x, event.getChunk().z);
 			}
@@ -84,11 +169,11 @@ public class PrepTasks
 	{
 		final World world = event.getWorld();
 
-		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER_POOL, null))
+		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER, null))
 		{
-			IPrepManagerPool pool = PrepHelper.getPool(world);
+			IPrepManager manager = PrepHelper.getManager(world);
 
-			for (IPrepManager manager : pool.getManagers())
+			if (manager != null)
 			{
 				manager.access().flush();
 			}
@@ -103,8 +188,14 @@ public class PrepTasks
 			EntityPlayer player = (EntityPlayer) event.getEntity();
 			World world = player.getEntityWorld();
 
-			IPrepManagerPool pool = PrepHelper.getPool(world);
-			IPrepChunkManager chunkManager = PrepHelper.getChunks(world);
+			IPrepManager manager = PrepHelper.getManager(world);
+
+			if (manager == null)
+			{
+				return;
+			}
+
+			IPrepRegistryEntry entry = manager.getRegistryEntry();
 
 			int chunkX = ((int) player.posX) >> 4;
 			int chunkY = ((int) player.posZ) >> 4;
@@ -115,39 +206,23 @@ public class PrepTasks
 			int maxChunkX = chunkX + CHUNK_RADIUS_SEARCHING;
 			int maxChunkY = chunkY + CHUNK_RADIUS_SEARCHING;
 
-			for (IPrepRegistryEntry entry : OrbisAPI.sectors().getEntries())
+			int centerSectorX = Math.floorDiv(chunkX, entry.getSectorChunkArea());
+			int centerSectorY = Math.floorDiv(chunkY, entry.getSectorChunkArea());
+
+			// Prepare this first to give priority to sectors the player is in
+			prepSector(manager, world, centerSectorX, centerSectorY);
+
+			int minSectorX = Math.floorDiv(minChunkX, entry.getSectorChunkArea());
+			int minSectorY = Math.floorDiv(minChunkY, entry.getSectorChunkArea());
+
+			int maxSectorX = Math.floorDiv(maxChunkX, entry.getSectorChunkArea());
+			int maxSectorY = Math.floorDiv(maxChunkY, entry.getSectorChunkArea());
+
+			for (int x = minSectorX; x < maxSectorX; x++)
 			{
-				if (!entry.shouldAttachTo(world))
+				for (int y = minSectorY; y < maxSectorY; y++)
 				{
-					continue;
-				}
-
-				IPrepManager manager = pool.get(entry.getUniqueId());
-
-				int centerSectorX = chunkX / entry.getSectorChunkArea();
-				int centerSectorY = chunkY / entry.getSectorChunkArea();
-
-				// Prepare this first to give priority to sectors the player is in
-				if (!manager.isSectorPreparing(centerSectorX, centerSectorY) && !manager.isSectorWrittenToDisk(centerSectorX, centerSectorY))
-				{
-					executor.submit(new PrepareSectorTask(entry, manager, chunkManager, world, centerSectorX, centerSectorY));
-				}
-
-				int minSectorX = minChunkX / entry.getSectorChunkArea();
-				int minSectorY = minChunkY / entry.getSectorChunkArea();
-
-				int maxSectorX = maxChunkX / entry.getSectorChunkArea();
-				int maxSectorY = maxChunkY / entry.getSectorChunkArea();
-
-				for (int x = minSectorX; x < maxSectorX; x++)
-				{
-					for (int y = minSectorY; y < maxSectorY; y++)
-					{
-						if (!manager.isSectorPreparing(x, y) && !manager.isSectorWrittenToDisk(x, y))
-						{
-							CompletableFuture.runAsync(new PrepareSectorTask(entry, manager, chunkManager, world, x, y), executor);
-						}
-					}
+					prepSector(manager, world, x, y);
 				}
 			}
 		}

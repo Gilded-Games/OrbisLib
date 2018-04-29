@@ -1,11 +1,9 @@
 package com.gildedgames.orbis_api;
 
-import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
-import com.gildedgames.orbis_api.preparation.IPrepManagerPool;
-import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManager;
-import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManagerStorageProvider;
-import com.gildedgames.orbis_api.preparation.impl.capability.PrepManagerPool;
-import com.gildedgames.orbis_api.preparation.impl.capability.PrepManagerPoolStorageProvider;
+import com.gildedgames.orbis_api.preparation.IPrepManager;
+import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
+import com.gildedgames.orbis_api.preparation.impl.capability.PrepManager;
+import com.gildedgames.orbis_api.preparation.impl.capability.PrepManagerStorageProvider;
 import com.gildedgames.orbis_api.world.instances.IPlayerInstances;
 import com.gildedgames.orbis_api.world.instances.PlayerInstances;
 import com.gildedgames.orbis_api.world.instances.PlayerInstancesProvider;
@@ -26,8 +24,7 @@ public class CapabilityManagerOrbisAPI
 	public static void init()
 	{
 		CapabilityManager.INSTANCE.register(IPlayerInstances.class, new PlayerInstances.Storage(), PlayerInstances::new);
-		CapabilityManager.INSTANCE.register(IPrepManagerPool.class, new PrepManagerPool.Storage(), PrepManagerPool::new);
-		CapabilityManager.INSTANCE.register(IPrepChunkManager.class, new PrepChunkManager.Storage(), PrepChunkManager::new);
+		CapabilityManager.INSTANCE.register(IPrepManager.class, new PrepManager.Storage(), PrepManager::new);
 	}
 
 	@SubscribeEvent
@@ -35,8 +32,15 @@ public class CapabilityManagerOrbisAPI
 	{
 		final World world = event.getObject();
 
-		event.addCapability(OrbisAPI.getResource("PrepChunkManager"), new PrepChunkManagerStorageProvider(world));
-		event.addCapability(OrbisAPI.getResource("PrepManagerPool"), new PrepManagerPoolStorageProvider(world));
+		for (IPrepRegistryEntry entry : OrbisAPI.sectors().getEntries())
+		{
+			if (entry.shouldAttachTo(world))
+			{
+				event.addCapability(OrbisAPI.getResource("PrepManagerPool"), new PrepManagerStorageProvider(world, entry));
+
+				break;
+			}
+		}
 	}
 
 	@SubscribeEvent

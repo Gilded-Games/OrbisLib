@@ -2,7 +2,7 @@ package com.gildedgames.orbis_api.preparation;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkPrimer;
 
 import javax.annotation.Nullable;
 
@@ -14,9 +14,9 @@ public interface IPrepChunkManager
 	World getWorld();
 
 	@Nullable
-	Chunk getChunk(final int chunkX, final int chunkY);
+	ChunkPrimer getChunk(IPrepSectorData sectorData, final int chunkX, final int chunkY);
 
-	IBlockState getPreparedState(final int x, final int y, final int z);
+	IBlockState getPreparedState(IPrepSectorData sectorData, final int x, final int y, final int z);
 
 	/**
 	 * Sets a state globally in the sector. If the position
@@ -28,5 +28,5 @@ public interface IPrepChunkManager
 	 * @param state The state being set in this sector.
 	 * @return Whether or not the block was successfully set.
 	 */
-	boolean setPreparedState(int x, int y, int z, IBlockState state);
+	boolean setPreparedState(IPrepSectorData sectorData, int x, int y, int z, IBlockState state);
 }

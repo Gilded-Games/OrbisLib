@@ -2,6 +2,7 @@ package com.gildedgames.orbis_api.preparation.impl;
 
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.util.ChunkMap;
+import com.gildedgames.orbis_api.world.WorldObjectManager;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -59,9 +60,15 @@ public class PrepSectorAccessFlatFile implements IPrepSectorAccess
 		IPrepSectorData sectorData = this.prepManager.readSectorDataFromDisk(sectorX, sectorZ);
 
 		// Return null since the sector hasn't been generated in the prep thread yet
-		if (sectorData == null)
+		if (sectorData == null && !this.world.isRemote)
 		{
-			return null;
+			long worldSeed = WorldObjectManager.getWorldSeed(this.world.provider.getDimension());
+
+			final long seed = worldSeed ^ ((long) sectorX * 341873128712L + (long) sectorZ * 132897987541L);
+
+			sectorData = this.registry.createData(this.world, seed, sectorX, sectorZ);
+
+			this.registry.postSectorDataCreate(this.world, sectorData, this.prepManager.getChunkManager());
 		}
 
 		IPrepSector sector = new PrepSector(sectorData);

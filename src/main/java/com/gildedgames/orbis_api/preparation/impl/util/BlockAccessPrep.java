@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.preparation.impl.util;
 
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
+import com.gildedgames.orbis_api.preparation.IPrepSectorData;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepHelper;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
 import net.minecraft.block.state.IBlockState;
@@ -12,7 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkPrimer;
 
 import javax.annotation.Nullable;
 
@@ -22,11 +23,14 @@ public class BlockAccessPrep implements IBlockAccessExtended
 
 	private IPrepChunkManager chunkManager;
 
-	public BlockAccessPrep(World world)
+	private IPrepSectorData sectorData;
+
+	public BlockAccessPrep(World world, IPrepSectorData sectorData)
 	{
 		this.world = world;
 
-		this.chunkManager = PrepHelper.getChunks(world);
+		this.sectorData = sectorData;
+		this.chunkManager = PrepHelper.getManager(world).getChunkManager();
 	}
 
 	@Nullable
@@ -63,30 +67,59 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	@Override
 	public int getTopY(int x, int z)
 	{
-		Chunk chunk = this.chunkManager.getChunk(x >> 4, z >> 4);
+		ChunkPrimer chunk = this.getChunk(x, z);
 
-		if (chunk == null)
+		int xDif = x % 16;
+		int zDif = z % 16;
+
+		if (xDif < 0)
 		{
-			throw new RuntimeException("Chunk is null at position: x(" + x + "), y(" + z + ")");
+			xDif = 16 - Math.abs(xDif);
 		}
 
-		return chunk.getHeightValue(x & 15, z & 15);
+		if (zDif < 0)
+		{
+			zDif = 16 - Math.abs(zDif);
+		}
+
+		for (int y = this.world.getActualHeight() - 1; y > 0; y--)
+		{
+			IBlockState state = chunk.getBlockState(xDif, y, zDif);
+
+			if (state != Blocks.AIR.getDefaultState())
+			{
+				return y;
+			}
+		}
+
+		return 0;
 	}
 
 	@Override
 	public void setBlockToAir(BlockPos pos)
 	{
-		Chunk chunk = this.getChunk(pos);
-
-		chunk.setBlockState(pos, Blocks.AIR.getDefaultState());
+		this.setBlockState(pos, Blocks.AIR.getDefaultState());
 	}
 
 	@Override
 	public boolean setBlockState(BlockPos pos, IBlockState state)
 	{
-		Chunk chunk = this.getChunk(pos);
+		ChunkPrimer chunk = this.getChunk(pos.getX(), pos.getZ());
 
-		chunk.setBlockState(pos, state);
+		int xDif = pos.getX() % 16;
+		int zDif = pos.getZ() % 16;
+
+		if (xDif < 0)
+		{
+			xDif = 16 - Math.abs(xDif);
+		}
+
+		if (zDif < 0)
+		{
+			zDif = 16 - Math.abs(zDif);
+		}
+
+		chunk.setBlockState(xDif, pos.getY(), zDif, state);
 
 		return true;
 	}
@@ -131,9 +164,22 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	@Override
 	public IBlockState getBlockState(BlockPos pos)
 	{
-		Chunk chunk = this.getChunk(pos);
+		ChunkPrimer chunk = this.getChunk(pos.getX(), pos.getZ());
 
-		return chunk.getBlockState(pos);
+		int xDif = pos.getX() % 16;
+		int zDif = pos.getZ() % 16;
+
+		if (xDif < 0)
+		{
+			xDif = 16 - Math.abs(xDif);
+		}
+
+		if (zDif < 0)
+		{
+			zDif = 16 - Math.abs(zDif);
+		}
+
+		return chunk.getBlockState(xDif, pos.getY(), zDif);
 	}
 
 	@Override
@@ -170,9 +216,9 @@ public class BlockAccessPrep implements IBlockAccessExtended
 			return _default;
 		}
 
-		Chunk chunk = this.getChunk(pos);
+		ChunkPrimer chunk = this.getChunk(pos.getX(), pos.getZ());
 
-		if (chunk == null || chunk.isEmpty())
+		if (chunk == null)
 		{
 			return _default;
 		}
@@ -180,13 +226,13 @@ public class BlockAccessPrep implements IBlockAccessExtended
 		return this.getBlockState(pos).isSideSolid(this, pos, side);
 	}
 
-	private Chunk getChunk(BlockPos pos)
+	private ChunkPrimer getChunk(int x, int z)
 	{
-		Chunk chunk = this.chunkManager.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+		ChunkPrimer chunk = this.chunkManager.getChunk(this.sectorData, x >> 4, z >> 4);
 
 		if (chunk == null)
 		{
-			throw new RuntimeException("Chunk is null at position: x(" + pos.getX() + "), y(" + pos.getZ() + ")");
+			throw new RuntimeException("Chunk is null at position: x(" + x + "), y(" + z + ")");
 		}
 
 		return chunk;

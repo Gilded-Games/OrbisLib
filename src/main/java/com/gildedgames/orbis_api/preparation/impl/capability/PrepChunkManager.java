@@ -2,7 +2,8 @@ package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
-import com.gildedgames.orbis_api.preparation.impl.util.ChunkPrep;
+import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
+import com.gildedgames.orbis_api.preparation.IPrepSectorData;
 import com.gildedgames.orbis_api.util.PointSerializer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -10,9 +11,9 @@ import com.google.common.cache.LoadingCache;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
@@ -24,42 +25,49 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	private World world;
 
+	private IPrepRegistryEntry registryEntry;
+
+	private ThreadLocal<IPrepSectorData> currentSectorData = new ThreadLocal<>();
+
 	//TODO: Need to save these, since they often get modified by prep registry sources
-	private LoadingCache<Long, Chunk> chunkCache;
+	private LoadingCache<Long, ChunkPrimer> chunkCache = CacheBuilder.newBuilder()
+			.maximumSize(40)
+			.expireAfterWrite(10, TimeUnit.MINUTES)
+			.build(new CacheLoader<Long, ChunkPrimer>()
+				   {
+					   @Override
+					   public ChunkPrimer load(Long key)
+					   {
+						   int x = PointSerializer.x(key);
+						   int y = PointSerializer.y(key);
+
+						   Biome[] biomes = new Biome[256];
+
+						   biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, x * 16, y * 16, 16, 16);
+
+						   ChunkPrimer primer = new ChunkPrimer();
+
+						   PrepChunkManager.this.registryEntry
+								   .threadSafeGenerateChunk(PrepChunkManager.this.world, PrepChunkManager.this.currentSectorData.get(), biomes, primer, x, y);
+
+						   return primer;
+					   }
+				   }
+			);
 
 	public PrepChunkManager()
 	{
 
 	}
 
-	public PrepChunkManager(World world)
+	public PrepChunkManager(World world, IPrepRegistryEntry registryEntry)
 	{
 		this.world = world;
+		this.registryEntry = registryEntry;
 	}
 
-	private synchronized LoadingCache<Long, Chunk> getChunkCache()
+	private LoadingCache<Long, ChunkPrimer> getChunkCache()
 	{
-		if (this.chunkCache == null)
-		{
-			this.chunkCache = CacheBuilder.newBuilder()
-					.maximumSize(40)
-					.expireAfterWrite(10, TimeUnit.MINUTES)
-					.build(new CacheLoader<Long, Chunk>()
-						   {
-							   @Override
-							   public Chunk load(Long key)
-							   {
-								   int x = PointSerializer.x(key);
-								   int y = PointSerializer.y(key);
-
-								   Chunk chunk = PrepChunkManager.this.world.provider.createChunkGenerator().generateChunk(x, y);
-
-								   return new ChunkPrep(chunk);
-							   }
-						   }
-					);
-		}
-
 		return this.chunkCache;
 	}
 
@@ -71,8 +79,10 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	@Nullable
 	@Override
-	public Chunk getChunk(int chunkX, int chunkY)
+	public ChunkPrimer getChunk(IPrepSectorData sectorData, int chunkX, int chunkY)
 	{
+		this.currentSectorData.set(sectorData);
+
 		long hash = PointSerializer.toLong(chunkX, chunkY);
 
 		try
@@ -88,12 +98,14 @@ public class PrepChunkManager implements IPrepChunkManager
 	}
 
 	@Override
-	public IBlockState getPreparedState(int x, int y, int z)
+	public IBlockState getPreparedState(IPrepSectorData sectorData, int x, int y, int z)
 	{
+		this.currentSectorData.set(sectorData);
+
 		int chunkX = x >> 4;
 		int chunkY = z >> 4;
 
-		Chunk chunk = this.getChunk(chunkX, chunkY);
+		ChunkPrimer chunk = this.getChunk(sectorData, chunkX, chunkY);
 
 		int xDif = x % 16;
 		int zDif = z % 16;
@@ -112,12 +124,14 @@ public class PrepChunkManager implements IPrepChunkManager
 	}
 
 	@Override
-	public boolean setPreparedState(int x, int y, int z, IBlockState state)
+	public boolean setPreparedState(IPrepSectorData sectorData, int x, int y, int z, IBlockState state)
 	{
+		this.currentSectorData.set(sectorData);
+
 		int chunkX = x >> 4;
 		int chunkY = z >> 4;
 
-		Chunk chunk = this.getChunk(chunkX, chunkY);
+		ChunkPrimer chunk = this.getChunk(sectorData, chunkX, chunkY);
 
 		if (chunk == null)
 		{
@@ -137,7 +151,7 @@ public class PrepChunkManager implements IPrepChunkManager
 			zDif = 16 - Math.abs(zDif);
 		}
 
-		chunk.setBlockState(new BlockPos(xDif, y, zDif), state);
+		chunk.setBlockState(xDif, y, zDif, state);
 
 		return true;
 	}
