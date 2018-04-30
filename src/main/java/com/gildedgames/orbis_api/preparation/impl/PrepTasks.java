@@ -195,6 +195,11 @@ public class PrepTasks
 				return;
 			}
 
+			if (!PrepHelper.isSectorLoaded(manager, 0, 0))
+			{
+				return;
+			}
+
 			IPrepRegistryEntry entry = manager.getRegistryEntry();
 
 			int chunkX = ((int) player.posX) >> 4;
