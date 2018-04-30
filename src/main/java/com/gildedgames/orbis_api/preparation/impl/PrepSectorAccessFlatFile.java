@@ -60,7 +60,7 @@ public class PrepSectorAccessFlatFile implements IPrepSectorAccess
 		IPrepSectorData sectorData = this.prepManager.readSectorDataFromDisk(sectorX, sectorZ);
 
 		// Return null since the sector hasn't been generated in the prep thread yet
-		if (sectorData == null && !this.world.isRemote)
+		if (sectorData == null)
 		{
 			long worldSeed = WorldObjectManager.getWorldSeed(this.world.provider.getDimension());
 
@@ -68,7 +68,10 @@ public class PrepSectorAccessFlatFile implements IPrepSectorAccess
 
 			sectorData = this.registry.createData(this.world, seed, sectorX, sectorZ);
 
-			this.registry.postSectorDataCreate(this.world, sectorData, this.prepManager.getChunkManager());
+			if (!this.world.isRemote)
+			{
+				this.registry.postSectorDataCreate(this.world, sectorData, this.prepManager.getChunkManager());
+			}
 		}
 
 		IPrepSector sector = new PrepSector(sectorData);
