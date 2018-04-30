@@ -26,7 +26,7 @@ public class CreationData implements ICreationData<CreationData>
 
 	private Rotation rotation = Rotation.NONE;
 
-	private boolean placeAir = true, schedules = false, placesVoid = false;
+	private boolean placeAir = true, schedules = false, placesVoid = false, spawnEntities = true;
 
 	private int dimId;
 
@@ -130,6 +130,14 @@ public class CreationData implements ICreationData<CreationData>
 	}
 
 	@Override
+	public CreationData spawnEntities(boolean spawnEntities)
+	{
+		this.spawnEntities = spawnEntities;
+
+		return this;
+	}
+
+	@Override
 	public BlockPos getPos()
 	{
 		return this.pos;
@@ -183,10 +191,16 @@ public class CreationData implements ICreationData<CreationData>
 	}
 
 	@Override
+	public boolean spawnsEntities()
+	{
+		return this.spawnEntities;
+	}
+
+	@Override
 	public ICreationData clone()
 	{
 		CreationData data = new CreationData(this.world).pos(new BlockPos(this.pos)).rotation(this.rotation).creator(this.creator).placesAir(this.placeAir)
-				.schedules(this.schedules).placesVoid(this.placesVoid);
+				.schedules(this.schedules).placesVoid(this.placesVoid).spawnEntities(this.spawnEntities);
 
 		data.seed = this.seed;
 		data.rand = this.rand;
@@ -208,6 +222,7 @@ public class CreationData implements ICreationData<CreationData>
 		tag.setBoolean("placeAir", this.placeAir);
 		tag.setBoolean("placesVoid", this.placesVoid);
 		tag.setBoolean("schedules", this.schedules);
+		tag.setBoolean("spawnEntities", this.spawnEntities);
 		tag.setLong("seed", this.seed);
 
 		if (this.world != null)
@@ -224,6 +239,7 @@ public class CreationData implements ICreationData<CreationData>
 		this.placeAir = tag.getBoolean("placeAir");
 		this.placesVoid = tag.getBoolean("placesVoid");
 		this.schedules = tag.getBoolean("schedules");
+		this.spawnEntities = tag.getBoolean("spawnEntities");
 		this.seed = tag.getLong("seed");
 
 		if (tag.hasKey("dimId"))

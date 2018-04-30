@@ -29,6 +29,8 @@ public interface ICreationData<SELF extends ICreationData> extends NBT
 
 	SELF schedules(boolean schedules);
 
+	SELF spawnEntities(boolean spawnEntities);
+
 	/**
 	 * Should return the centered position if
 	 * this creation data returns true on isCentered()
@@ -52,6 +54,8 @@ public interface ICreationData<SELF extends ICreationData> extends NBT
 	boolean schedules();
 
 	boolean placesVoid();
+
+	boolean spawnsEntities();
 
 	ICreationData clone();
 

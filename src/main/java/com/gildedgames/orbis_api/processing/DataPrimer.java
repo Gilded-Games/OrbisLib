@@ -309,7 +309,10 @@ public class DataPrimer
 			layer.getScheduleRecord().getSchedules(ISchedule.class).forEach(s -> s.onGenerateLayer(this, data));
 		}
 
-		BlueprintData.spawnEntities(this, bData, data.getPos());
+		if (data.spawnsEntities())
+		{
+			BlueprintData.spawnEntities(this, bData, data.getPos());
+		}
 	}
 
 	public void create(PlacedBlueprint blueprint, ICreationData data)
