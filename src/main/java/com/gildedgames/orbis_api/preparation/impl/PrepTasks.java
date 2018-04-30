@@ -50,6 +50,11 @@ public class PrepTasks
 
 	public static void prepSector(IPrepManager manager, World world, int sectorX, int sectorY)
 	{
+		if (world.isRemote)
+		{
+			return;
+		}
+
 		boolean preparing = manager.isSectorPreparing(sectorX, sectorY);
 		boolean writtenToDisk = manager.isSectorWrittenToDisk(sectorX, sectorY);
 
