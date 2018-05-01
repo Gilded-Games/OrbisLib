@@ -30,15 +30,6 @@ version = "${config.mod_version}"
 group = "com.gildedgames.orbis_api"
 archivesBaseName = "OrbisAPI"
 
-ext.ciVersion = System.getenv("BUILD_NUMBER")
-ext.gitVersion = repo.head().abbreviatedId
-
-if (ciVersion != null) {
-	version = "${config.mod_version}.build-${ciVersion}"
-} else {
-	version = "${config.mod_version}.git-${gitVersion}"
-}
-
 jar {
 	from sourceSets.main.output
 }
