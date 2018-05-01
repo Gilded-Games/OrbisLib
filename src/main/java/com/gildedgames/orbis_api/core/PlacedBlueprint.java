@@ -8,6 +8,7 @@ import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.data.schedules.ScheduleRegion;
+import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RegionHelp;
 import com.gildedgames.orbis_api.util.RotationHelp;
@@ -267,6 +268,21 @@ public class PlacedBlueprint implements NBT
 							.set(block, (iterPos.getX() + xDif) % 16, iterPos.getY(), (iterPos.getZ() + zDif) % 16);
 				}
 			}
+		}
+	}
+
+	public void spawnEntitiesInChunk(DataPrimer primer, ChunkPos chunkPos)
+	{
+		if (this.getPlacedEntities().containsKey(chunkPos))
+		{
+			List<PlacedEntity> placed = this.getPlacedEntities().get(chunkPos);
+
+			for (final PlacedEntity e : placed)
+			{
+				e.spawn(primer);
+			}
+
+			this.getPlacedEntities().remove(chunkPos);
 		}
 	}
 
