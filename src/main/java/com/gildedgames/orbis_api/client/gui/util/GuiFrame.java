@@ -187,7 +187,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	}
 
 	@Override
-	public void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
+	protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
 	{
 		for (final IGuiFrame frame : this.children)
 		{

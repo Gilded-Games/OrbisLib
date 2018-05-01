@@ -87,7 +87,7 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 	}
 
 	@Override
-	public void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
+	protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
 	{
 		this.element.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 	}
