@@ -4,6 +4,7 @@ import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.util.math.BlockPos;
@@ -15,6 +16,7 @@ import java.lang.reflect.Array;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -408,6 +410,79 @@ public class NBTFunnel
 		}
 
 		return (List<T>) readObjects;
+	}
+
+	public void setSet(final String key, final Set<? extends NBT> nbtList)
+	{
+		final NBTTagList writtenObjects = new NBTTagList();
+
+		for (final NBT nbt : nbtList)
+		{
+			writtenObjects.appendTag(NBTHelper.write(nbt));
+		}
+
+		this.tag.setTag(key, writtenObjects);
+	}
+
+	public <T extends NBT> Set<T> getSet(final World world, final String key)
+	{
+		final Set<T> readObjects = Sets.newHashSet();
+		final NBTTagList nbtList = this.tag.getTagList(key, 10);
+
+		for (int i = 0; i < nbtList.tagCount(); i++)
+		{
+			final NBTTagCompound data = nbtList.getCompoundTagAt(i);
+
+			readObjects.add(NBTHelper.read(world, data));
+		}
+
+		return readObjects;
+	}
+
+	public <T extends NBT> Set<T> getSet(final String key)
+	{
+		final Set<T> readObjects = Sets.newHashSet();
+		final NBTTagList nbtList = this.tag.getTagList(key, 10);
+
+		for (int i = 0; i < nbtList.tagCount(); i++)
+		{
+			final NBTTagCompound data = nbtList.getCompoundTagAt(i);
+
+			readObjects.add(NBTHelper.read(data));
+		}
+
+		return readObjects;
+	}
+
+	public void setStackList(final String key, final List<ItemStack> stackList)
+	{
+		final NBTTagList writtenObjects = new NBTTagList();
+
+		for (final ItemStack stack : stackList)
+		{
+			NBTTagCompound tag = new NBTTagCompound();
+
+			stack.writeToNBT(tag);
+
+			writtenObjects.appendTag(tag);
+		}
+
+		this.tag.setTag(key, writtenObjects);
+	}
+
+	public List<ItemStack> getStackList(final String key)
+	{
+		final List<ItemStack> readObjects = Lists.newArrayList();
+		final NBTTagList nbtList = this.tag.getTagList(key, 10);
+
+		for (int i = 0; i < nbtList.tagCount(); i++)
+		{
+			final NBTTagCompound data = nbtList.getCompoundTagAt(i);
+
+			readObjects.add(new ItemStack(data));
+		}
+
+		return readObjects;
 	}
 
 	public void setList(final String key, final List<? extends NBT> nbtList)
