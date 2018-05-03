@@ -28,7 +28,7 @@ allprojects {
 
 version = "${config.mod_version}"
 group = "com.gildedgames.orbis_api"
-archivesBaseName = "OrbisAPI"
+archivesBaseName = "orbis_api"
 
 jar {
 	from sourceSets.main.output
