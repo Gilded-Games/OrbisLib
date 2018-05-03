@@ -27,7 +27,7 @@ allprojects {
 }
 
 version = "${config.mod_version}"
-group = "com.gildedgames.orbis_api"
+group = "com.gildedgames"
 archivesBaseName = "orbis_api"
 
 jar {
