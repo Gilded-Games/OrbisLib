@@ -1,8 +1,9 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
-import com.gildedgames.orbis_api.util.mc.IText;
 import com.gildedgames.orbis_api.client.rect.Rect;
+import com.gildedgames.orbis_api.util.mc.IText;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 
 public class GuiText extends GuiFrame
 {
@@ -24,7 +25,9 @@ public class GuiText extends GuiFrame
 		}
 		else
 		{
-			this.dim().mod().scale(this.text.scale()).width(Minecraft.getMinecraft().fontRenderer.getStringWidth(this.text.component().getFormattedText()))
+			FontRenderer r = Minecraft.getMinecraft().fontRenderer;
+
+			this.dim().mod().scale(this.text.scale()).width(r.getStringWidth(this.text.component().getFormattedText())).height(r.FONT_HEIGHT)
 					.flush();
 		}
 	}

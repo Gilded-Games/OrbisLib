@@ -14,6 +14,8 @@ public class GuiAbstractButton extends GuiFrame
 
 	private final List<Runnable> onClickEvents = Lists.newArrayList();
 
+	private boolean selected;
+
 	public GuiAbstractButton(final Rect dim, final GuiTexture texture)
 	{
 		this(dim, texture, texture.clone(), texture.clone());
@@ -21,7 +23,7 @@ public class GuiAbstractButton extends GuiFrame
 
 	public GuiAbstractButton(final Rect dim, final GuiTexture defaultState, final GuiTexture hoveredState, final GuiTexture clickedState)
 	{
-		this(dim, defaultState, hoveredState, clickedState, null);
+		this(dim, defaultState, hoveredState, clickedState, hoveredState);
 	}
 
 	public GuiAbstractButton(final Rect dim, final GuiTexture defaultState, final GuiTexture hoveredState, final GuiTexture clickedState,
@@ -34,6 +36,11 @@ public class GuiAbstractButton extends GuiFrame
 		this.clickedState = clickedState;
 
 		this.disabledState = disabledState;
+	}
+
+	public void setSelected(boolean selected)
+	{
+		this.selected = selected;
 	}
 
 	public void addClickEvent(final Runnable event)
@@ -111,7 +118,7 @@ public class GuiAbstractButton extends GuiFrame
 			}
 		}
 
-		if (InputHelper.isHovered(this.dim()))
+		if (InputHelper.isHovered(this.dim()) || this.selected)
 		{
 			this.defaultState.setVisible(false);
 			this.hoveredState.setVisible(true);

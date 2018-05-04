@@ -36,6 +36,8 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 
 	private Function<IListNavigator<NODE>, Integer> newNodeIndex;
 
+	private boolean allowModifications = true;
+
 	public GuiListViewer(final Rect dim, Function<IListNavigator<NODE>, Integer> newNodeIndex, final IListNavigator<NODE> navigator,
 			final NodeFactory<NODE, NODE_GUI> guiFactory, final Function<Integer, NODE> nodeFactory, int nodeHeight)
 	{
@@ -48,6 +50,13 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 		this.guiFactory = guiFactory;
 		this.nodeFactory = nodeFactory;
 		this.nodeHeight = nodeHeight;
+	}
+
+	public GuiListViewer<NODE, NODE_GUI> allowModifications(boolean flag)
+	{
+		this.allowModifications = flag;
+
+		return this;
 	}
 
 	public void listen(IListViewerListener listener)
@@ -88,7 +97,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 	{
 		final List<NODE_GUI> guis = Lists.newArrayList();
 
-		final int nodeWidth = width - 20;
+		final int nodeWidth = width - (this.allowModifications ? 20 : 0);
 		final int nodeHeight = this.nodeHeight;
 
 		final int possibleNumberOfRows = height / nodeHeight;
@@ -128,17 +137,20 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 			this.visibleNodes.add(node);
 		}
 
-		if (this.currentScroll == this.maxScroll)
+		if (this.allowModifications)
 		{
-			this.addButton = GuiFactoryGeneric.createAddButton();
+			if (this.currentScroll == this.maxScroll)
+			{
+				this.addButton = GuiFactoryGeneric.createAddButton();
 
-			final Pos2D pos = Pos2D.flush(nodeWidth, ((backNodeIndex - frontNodeIndex) * nodeHeight));
+				final Pos2D pos = Pos2D.flush(nodeWidth, ((backNodeIndex - frontNodeIndex) * nodeHeight));
 
-			this.addButton.dim().mod().x(nodeWidth).pos(pos).scale(1.0F).flush();
-		}
-		else
-		{
-			this.addButton = null;
+				this.addButton.dim().mod().x(nodeWidth).pos(pos).scale(1.0F).flush();
+			}
+			else
+			{
+				this.addButton = null;
+			}
 		}
 
 		return guis;
@@ -149,7 +161,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 	{
 		if (this.isEnabled() && mouseButton == 0)
 		{
-			if (this.addButton != null && InputHelper.isHovered(this.addButton) && this.addButton.isEnabled())
+			if (InputHelper.isHovered(this.addButton) && this.addButton.isEnabled())
 			{
 				int index = this.newNodeIndex.apply(this.getNavigator());
 
@@ -157,9 +169,9 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 				return;
 			}
 
-			for (int i = 0; i < this.visibleDeletes.size(); i++)
+			for (int i = 0; i < this.visibleGuiNodes.size(); i++)
 			{
-				final GuiAbstractButton button = this.visibleDeletes.get(i);
+				final GuiAbstractButton button = this.allowModifications ? this.visibleDeletes.get(i) : null;
 				final GuiFrame nodeGui = this.visibleGuiNodes.get(i);
 
 				final NODE node = this.visibleNodes.get(i);
@@ -202,14 +214,17 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 		this.visibleGuiNodes.addAll(guiNodes);
 		this.visibleGuiNodes.forEach(this::addChildren);
 
-		this.visibleGuiNodes.forEach(g -> {
-			final GuiAbstractButton deleteButton = GuiFactoryGeneric.createDeleteButton();
+		if (this.allowModifications)
+		{
+			this.visibleGuiNodes.forEach(g -> {
+				final GuiAbstractButton deleteButton = GuiFactoryGeneric.createDeleteButton();
 
-			deleteButton.dim().mod().pos(Pos2D.flush(g.dim().originalState().x(), g.dim().originalState().y())).addX(g.dim().width()).flush();
+				deleteButton.dim().mod().pos(Pos2D.flush(g.dim().originalState().x(), g.dim().originalState().y())).addX(g.dim().width()).flush();
 
-			this.visibleDeletes.add(deleteButton);
-			this.addChildren(deleteButton);
-		});
+				this.visibleDeletes.add(deleteButton);
+				this.addChildren(deleteButton);
+			});
+		}
 
 		if (this.addButton != null)
 		{
