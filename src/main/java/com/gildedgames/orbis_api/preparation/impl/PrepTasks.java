@@ -4,7 +4,7 @@ import com.gildedgames.orbis_api.OrbisAPICapabilities;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
 import com.gildedgames.orbis_api.preparation.IPrepManager;
 import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
-import com.gildedgames.orbis_api.preparation.impl.capability.PrepHelper;
+import com.gildedgames.orbis_api.preparation.impl.util.PrepHelper;
 import com.google.common.collect.Lists;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;

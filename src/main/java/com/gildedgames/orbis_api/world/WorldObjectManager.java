@@ -62,6 +62,12 @@ public class WorldObjectManager extends WorldSavedData
 
 	public static long getWorldSeed(int dimension)
 	{
+		//TODO: This shouldn't ever be the case, but is in SpongeForge for some reason. Why?
+		if (!worldSeeds.containsKey(dimension))
+		{
+			return 0;
+		}
+
 		return worldSeeds.get(dimension);
 	}
 

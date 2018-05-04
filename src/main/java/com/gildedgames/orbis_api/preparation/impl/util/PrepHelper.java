@@ -1,4 +1,4 @@
-package com.gildedgames.orbis_api.preparation.impl.capability;
+package com.gildedgames.orbis_api.preparation.impl.util;
 
 import com.gildedgames.orbis_api.OrbisAPICapabilities;
 import com.gildedgames.orbis_api.preparation.IPrepManager;

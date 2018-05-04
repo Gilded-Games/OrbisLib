@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.preparation.impl;
 
+import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.util.ChunkMap;
 import com.gildedgames.orbis_api.world.WorldObjectManager;
@@ -62,7 +63,20 @@ public class PrepSectorAccessFlatFile implements IPrepSectorAccess
 		// Return null since the sector hasn't been generated in the prep thread yet
 		if (sectorData == null)
 		{
-			long worldSeed = WorldObjectManager.getWorldSeed(this.world.provider.getDimension());
+			long worldSeed = 0;
+
+			if (this.world == null)
+			{
+				OrbisAPI.LOGGER.info("World was null in prep sector access.");
+			}
+			else if (this.world.provider == null)
+			{
+				OrbisAPI.LOGGER.info("Provider was null in prep sector access.");
+			}
+			else
+			{
+				worldSeed = WorldObjectManager.getWorldSeed(this.world.provider.getDimension());
+			}
 
 			final long seed = worldSeed ^ ((long) sectorX * 341873128712L + (long) sectorZ * 132897987541L);
 
