@@ -46,7 +46,7 @@ public class GuiText extends GuiFrame
 			int color = GuiFrameUtils.changeAlpha(16777215,
 					(int) (this.getAlpha() * 255));
 
-			this.drawString(this.fontRenderer, this.text.component().getFormattedText(), (int) this.dim().x(), (int) this.dim().y(), color);
+			this.drawString(this.fontRenderer, this.text.component().getUnformattedText(), (int) this.dim().x(), (int) this.dim().y(), color);
 		}
 	}
 }
