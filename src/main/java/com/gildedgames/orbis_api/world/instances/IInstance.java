@@ -19,8 +19,6 @@ public interface IInstance extends NBT
 
 	int getDimensionId();
 
-	void setDimensionId(int dimensionId);
-
 	/**
 	 * Decides whether or not a dimension will be deleted after all players have left.
 	 *

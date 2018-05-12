@@ -2,7 +2,6 @@ package com.gildedgames.orbis_api.world.instances;
 
 import com.gildedgames.orbis_api.util.mc.BlockPosDimension;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -10,7 +9,6 @@ import net.minecraftforge.common.capabilities.Capability;
 
 public class PlayerInstances implements IPlayerInstances
 {
-	private final EntityPlayer player;
 
 	private IInstance activeInstance;
 
@@ -18,13 +16,8 @@ public class PlayerInstances implements IPlayerInstances
 
 	public PlayerInstances()
 	{
-		this.player = null;
 	}
 
-	public PlayerInstances(final EntityPlayer player)
-	{
-		this.player = player;
-	}
 
 	@Override
 	public IInstance getInstance()
@@ -36,11 +29,6 @@ public class PlayerInstances implements IPlayerInstances
 	public void setInstance(final IInstance instance)
 	{
 		this.activeInstance = instance;
-
-		if (!this.player.world.isRemote)
-		{
-			//UtilModule.NETWORK.sendTo(new PacketRegisterInstance(this.activeInstance), (EntityPlayerMP) this.player);
-		}
 	}
 
 	@Override

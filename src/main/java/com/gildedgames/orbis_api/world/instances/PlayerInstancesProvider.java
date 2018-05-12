@@ -24,7 +24,7 @@ public class PlayerInstancesProvider implements ICapabilitySerializable<NBTBase>
 	{
 		if (this.capability == null)
 		{
-			this.capability = new PlayerInstances(this.player);
+			this.capability = new PlayerInstances();
 		}
 
 		return this.capability;

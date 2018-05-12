@@ -183,6 +183,6 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 			hook.setInstance(null);
 
 			player.connection.setPlayerLocation(pos.getX(), pos.getY(), pos.getZ(), 0, 0);
-			}
+		}
 	}
 }

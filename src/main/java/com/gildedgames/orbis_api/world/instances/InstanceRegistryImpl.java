@@ -2,8 +2,11 @@ package com.gildedgames.orbis_api.world.instances;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.OrbisAPICapabilities;
+import com.gildedgames.orbis_api.network.instances.PacketRegisterDimension;
+import com.gildedgames.orbis_api.network.instances.PacketUnregisterDimension;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.DimensionType;
@@ -28,12 +31,20 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 	private List<IInstanceHandler> registeredHandlers = new ArrayList<>();
 
-	private HashSet<IInstance> loadedInstances = new HashSet<>();
+	private HashSet<IInstance> instances = new HashSet<>();
+
+	private HashSet<IInstance> deleteQueue = new HashSet<>();
 
 	@Override
 	public List<IInstanceHandler> getInstanceHandlers()
 	{
 		return Collections.unmodifiableList(this.registeredHandlers);
+	}
+
+	@Override
+	public Collection<IInstance> getInstances()
+	{
+		return Collections.unmodifiableCollection(this.instances);
 	}
 
 	@Override
@@ -80,7 +91,12 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 		OrbisAPI.LOGGER.info("DimensionType " + type.getName() + " registered (ID: " + id + ") to instance registry");
 
-		this.loadedInstances.add(instance);
+		if (OrbisAPI.isServer())
+		{
+			OrbisAPI.network().sendPacketToAllPlayers(new PacketRegisterDimension(instance.getDimensionType(), instance.getDimensionId()));
+		}
+
+		this.instances.add(instance);
 	}
 
 	@Override
@@ -95,7 +111,12 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 		DimensionManager.unloadWorld(id);
 
-		OrbisAPI.LOGGER.info("Dimension ID " + id + " queued to unload");
+		if (instance.isTemporary())
+		{
+			this.deleteQueue.add(instance);
+
+			OrbisAPI.LOGGER.info("Dimension ID " + id + " queued to unload");
+		}
 	}
 
 	@SubscribeEvent
@@ -106,31 +127,26 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 			return;
 		}
 
-		Collection<IInstance> unloaded = this.loadedInstances.stream()
+		Collection<IInstance> unloaded = this.deleteQueue.stream()
 				.filter((instance) -> DimensionManager.getWorld(instance.getDimensionId()) == null)
 				.collect(Collectors.toList());
 
 		for (IInstance instance : unloaded)
 		{
-			OrbisAPI.LOGGER.info("Dimension ID " + instance.getDimensionId() + " was unloaded, running post-unload tasks");
+			if (instance.getPlayers().isEmpty())
+			{
+				this.deleteDimension(instance);
+			}
 
-			if (instance.getPlayers().isEmpty() && instance.isTemporary())
-			{
-				this.deleteDimension(instance.getDimensionId());
-			}
-			else
-			{
-				DimensionManager.unregisterDimension(instance.getDimensionId());
-			}
+			this.deleteQueue.remove(instance);
 		}
-
-		this.loadedInstances.removeAll(unloaded);
 	}
 
-	@Override
-	public void deleteDimension(int id)
+	private void deleteDimension(IInstance instance)
 	{
-		OrbisAPI.LOGGER.info("Dimension ID " + id + " queued for deletion");
+		int id = instance.getDimensionId();
+
+		OrbisAPI.LOGGER.info("Dimension with ID " + id + " queued for deletion");
 
 		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 		server.addScheduledTask(() -> {
@@ -143,7 +159,7 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 				return;
 			}
 
-			OrbisAPI.LOGGER.info("Dimension ID " + id + " is being deleted");
+			OrbisAPI.LOGGER.info("Dimension with ID " + id + " is being deleted");
 
 			try
 			{
@@ -156,11 +172,25 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 				return;
 			}
 
-			OrbisAPI.LOGGER.info("Deleted dimension with ID " + id + ", unregistering and freeing...");
+			OrbisAPI.LOGGER.info("Deleted dimension with ID " + id + ", unregistering...");
 
-			DimensionManager.unregisterDimension(id);
-
+			this.unregisterInstance(instance);
 		});
+	}
+
+	private void unregisterInstance(IInstance instance)
+	{
+		int id = instance.getDimensionId();
+
+		DimensionManager.unregisterDimension(id);
+
+		if (OrbisAPI.isServer())
+		{
+			OrbisAPI.network().sendPacketToAllPlayers(new PacketUnregisterDimension(instance.getDimensionId()));
+		}
+
+		this.instances.remove(instance);
+		this.deleteQueue.remove(instance);
 	}
 
 	@Override
@@ -188,9 +218,14 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 	{
 		this.registeredHandlers.forEach(IInstanceHandler::unloadAllInstances);
 
-		for (IInstance instance : this.loadedInstances)
+		for (IInstance instance : this.instances)
 		{
 			DimensionManager.unregisterDimension(instance.getDimensionId());
+
+			if (OrbisAPI.isServer())
+			{
+				OrbisAPI.network().sendPacketToAllPlayers(new PacketUnregisterDimension(instance.getDimensionId()));
+			}
 		}
 	}
 
@@ -221,6 +256,16 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 	}
 
 	@SubscribeEvent
+	public void onClientJoinedServer(final PlayerEvent.PlayerLoggedInEvent event)
+	{
+		for (IInstance instance : this.instances)
+		{
+			OrbisAPI.network().sendPacketToPlayer(new PacketRegisterDimension(instance.getDimensionType(), instance.getDimensionId()),
+					(EntityPlayerMP) event.player);
+		}
+	}
+
+	@SubscribeEvent
 	public void onClientDisconnect(final FMLNetworkEvent.ClientDisconnectionFromServerEvent event)
 	{
 		this.cleanup();
@@ -236,5 +281,4 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 			hook.getInstance().onLeave(event.player);
 		}
 	}
-
 }
