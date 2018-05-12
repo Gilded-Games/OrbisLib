@@ -236,7 +236,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 				{
 					IBlockState block = from.getBlockState(x, y, z);
 
-					into.set(block, x + xOffset, y + yOffset, z + zOffset);
+					into.setBlockState(block, x + xOffset, y + yOffset, z + zOffset);
 				}
 			}
 		}

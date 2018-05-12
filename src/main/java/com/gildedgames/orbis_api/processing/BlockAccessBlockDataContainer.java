@@ -69,13 +69,13 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public void setBlockToAir(final BlockPos pos)
 	{
-		this.container.set(Blocks.AIR.getDefaultState(), pos);
+		this.container.setBlockState(Blocks.AIR.getDefaultState(), pos);
 	}
 
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state)
 	{
-		this.container.set(state, pos);
+		this.container.setBlockState(state, pos);
 
 		return true;
 	}
@@ -83,7 +83,7 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state, final int flags)
 	{
-		this.container.set(state, pos);
+		this.container.setBlockState(state, pos);
 
 		return true;
 	}

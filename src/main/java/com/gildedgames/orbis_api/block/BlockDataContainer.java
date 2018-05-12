@@ -7,6 +7,7 @@ import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
+import com.gildedgames.orbis_api.data.region.IShape;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
@@ -19,6 +20,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -74,24 +76,24 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	{
 		this(region.getWidth(), region.getHeight(), region.getLength());
 	}
-//
-//	public static BlockDataContainer fromShape(final World world, final IShape shape)
-//	{
-//		final IRegion bounding = shape.getBoundingBox();
-//		final int minx = bounding.getMin().getX();
-//		final int miny = bounding.getMin().getY();
-//		final int minz = bounding.getMin().getZ();
-//		final BlockDataContainer container = new BlockDataContainerDefaultVoid(bounding.getWidth(), bounding.getHeight(), bounding.getLength());
-//		for (final BlockPos pos : shape.getShapeData())
-//		{
-//			final BlockData block = new BlockData();
-//			block.getDataFrom(pos, world);
-//
-//			final BlockPos tr = pos.add(-minx, -miny, -minz);
-//			container.set(block, tr);
-//		}
-//		return container;
-//	}
+
+	public static BlockDataContainer fromShape(final World world, final IShape shape)
+	{
+		final IRegion bounding = shape.getBoundingBox();
+		final int minx = bounding.getMin().getX();
+		final int miny = bounding.getMin().getY();
+		final int minz = bounding.getMin().getZ();
+		final BlockDataContainer container = new BlockDataContainerDefaultVoid(bounding.getWidth(), bounding.getHeight(), bounding.getLength());
+		for (final BlockPos pos : shape.getShapeData())
+		{
+			final IBlockState state = world.getBlockState(pos);
+
+			final BlockPos tr = pos.add(-minx, -miny, -minz);
+			container.setBlockState(state, tr);
+			container.setTileEntity(world.getTileEntity(pos), pos);
+		}
+		return container;
+	}
 
 	public int getVolume()
 	{
@@ -160,7 +162,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return Block.getBlockById(id).getStateFromMeta(this.blocksMeta[index]);
 	}
 
-	public void set(final IBlockState state, final int x, final int y, final int z)
+	public void setBlockState(final IBlockState state, final int x, final int y, final int z)
 	{
 		final int index = this.getIndex(x, y, z);
 
@@ -168,9 +170,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.blocksMeta[index] = (byte) state.getBlock().getMetaFromState(state);
 	}
 
-	public void set(final IBlockState state, final BlockPos pos)
+	public void setBlockState(final IBlockState state, final BlockPos pos)
 	{
-		this.set(state, pos.getX(), pos.getY(), pos.getZ());
+		this.setBlockState(state, pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	@Override

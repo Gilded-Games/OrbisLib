@@ -19,7 +19,7 @@ public class BlueprintHelper
 		{
 			final BlockPos translated = pos.add(-min.getX(), -min.getY(), -min.getZ());
 
-			container.set(world.getBlockState(pos), translated);
+			container.setBlockState(world.getBlockState(pos), translated);
 
 			TileEntity entity = world.getTileEntity(pos);
 
