@@ -42,7 +42,7 @@ public class Instantiator<T> implements Function<World, T>
 					}
 					catch (NoSuchMethodException e)
 					{
-						throw new NullPointerException("Couldn't find public constructor(World)" + clazz.getName());
+						throw new NullPointerException("Couldn't find public constructor(World)" + this.clazz.getName());
 					}
 				}
 
@@ -59,7 +59,7 @@ public class Instantiator<T> implements Function<World, T>
 					}
 					catch (NoSuchMethodException e)
 					{
-						throw new NullPointerException("Couldn't find public constructor() for " + clazz.getName());
+						throw new NullPointerException("Couldn't find public constructor() for " + this.clazz.getName());
 					}
 				}
 

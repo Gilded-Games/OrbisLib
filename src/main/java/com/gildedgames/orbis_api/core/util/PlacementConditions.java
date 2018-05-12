@@ -102,10 +102,7 @@ public class PlacementConditions
 						return true;
 					}
 
-					if (!world.isAirBlock(pos))
-					{
-						return false;
-					}
+					return world.isAirBlock(pos);
 				}
 
 				return true;
@@ -140,10 +137,7 @@ public class PlacementConditions
 
 					final IBlockState state = world.getBlockState(down);
 
-					if (state.getBlock() != inside)
-					{
-						return false;
-					}
+					return state.getBlock() == inside;
 				}
 
 				return true;
@@ -178,10 +172,7 @@ public class PlacementConditions
 
 					final IBlockState state = world.getBlockState(down);
 
-					if (!BlockUtil.isSolid(state, world, down))
-					{
-						return false;
-					}
+					return BlockUtil.isSolid(state, world, down);
 				}
 
 				return true;
@@ -216,10 +207,7 @@ public class PlacementConditions
 
 					final IBlockState state = world.getBlockState(down);
 
-					if (s == state)
-					{
-						return false;
-					}
+					return s != state;
 				}
 
 				return true;

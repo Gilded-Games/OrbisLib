@@ -300,7 +300,7 @@ public class OrbisProject implements IProject
 			{
 				resources = URI.create(rawPath.replace(modPackage, "/"));
 
-				fileSystem = FileSystems.newFileSystem(resources, Collections.<String, Object>emptyMap());
+				fileSystem = FileSystems.newFileSystem(resources, Collections.emptyMap());
 				myPath = fileSystem.getPath("/");
 
 				usesJar = true;

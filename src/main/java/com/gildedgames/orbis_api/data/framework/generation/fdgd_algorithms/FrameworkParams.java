@@ -98,7 +98,7 @@ public class FrameworkParams
 
 	public int pathwaysBoundingBox()
 	{
-		return pathwaysBoundingBox;
+		return this.pathwaysBoundingBox;
 	}
 
 	@Override

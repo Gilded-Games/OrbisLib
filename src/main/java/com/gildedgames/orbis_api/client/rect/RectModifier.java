@@ -50,7 +50,7 @@ public class RectModifier
 
 	public enum ModifierType
 	{
-		X, Y, POS, WIDTH, HEIGHT, AREA, SCALE, ROTATION, CENTERING, ALL;
+		X, Y, POS, WIDTH, HEIGHT, AREA, SCALE, ROTATION, CENTERING, ALL
 	}
 
 }

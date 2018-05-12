@@ -110,10 +110,7 @@ public class PyramidShape extends AbstractShape
 			final int xDif = Math.abs(x - this.start.getX());
 			final int zDif = Math.abs(z - this.start.getZ());
 
-			if (xDif <= width && zDif <= width && y >= this.start.getY())
-			{
-				return true;
-			}
+			return xDif <= width && zDif <= width && y >= this.start.getY();
 		}
 		else if (!this.isUniform())
 		{
@@ -125,12 +122,9 @@ public class PyramidShape extends AbstractShape
 			final int xDif = Math.abs(x - this.start.getX());
 			final int zDif = Math.abs(z - this.start.getZ());
 
-			if (xDif >= this.getBoundingBox().getWidth() - width && zDif >= this.getBoundingBox().getLength() - length && xDif <= width - 1
+			return xDif >= this.getBoundingBox().getWidth() - width && zDif >= this.getBoundingBox().getLength() - length && xDif <= width - 1
 					&& zDif <= length - 1
-					&& y >= lowestY)
-			{
-				return true;
-			}
+					&& y >= lowestY;
 		}
 		else
 		{
@@ -141,14 +135,10 @@ public class PyramidShape extends AbstractShape
 			final int xDif = Math.abs(x - this.start.getX());
 			final int zDif = Math.abs(z - this.start.getZ());
 
-			if (xDif >= minSize - size && zDif >= minSize - size && xDif <= size - 1 && zDif <= size - 1
-					&& y >= this.start.getY())
-			{
-				return true;
-			}
+			return xDif >= minSize - size && zDif >= minSize - size && xDif <= size - 1 && zDif <= size - 1
+					&& y >= this.start.getY();
 		}
 
-		return false;
 	}
 
 	@Override

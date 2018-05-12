@@ -218,12 +218,12 @@ public final class FileSystemCacheBuilder<K, V>
 	{
 		if (this.persistenceDirectory == null)
 		{
-			return new FileSystemPersistingCache<K1, V1>(this.underlyingCacheBuilder, FileSystemCacheBuilder.<K1, V1>castRemovalListener(this.removalListener));
+			return new FileSystemPersistingCache<K1, V1>(this.underlyingCacheBuilder, FileSystemCacheBuilder.castRemovalListener(this.removalListener));
 		}
 		else
 		{
 			return new FileSystemPersistingCache<K1, V1>(this.underlyingCacheBuilder, this.persistenceDirectory,
-					FileSystemCacheBuilder.<K1, V1>castRemovalListener(
+					FileSystemCacheBuilder.castRemovalListener(
 							this.removalListener));
 		}
 	}
@@ -235,13 +235,13 @@ public final class FileSystemCacheBuilder<K, V>
 	{
 		if (this.persistenceDirectory == null)
 		{
-			return new FileSystemLoadingPersistingCache<K1, V1>(this.underlyingCacheBuilder, loader, FileSystemCacheBuilder.<K1, V1>castRemovalListener(
+			return new FileSystemLoadingPersistingCache<K1, V1>(this.underlyingCacheBuilder, loader, FileSystemCacheBuilder.castRemovalListener(
 					this.removalListener));
 		}
 		else
 		{
 			return new FileSystemLoadingPersistingCache<K1, V1>(this.underlyingCacheBuilder, loader, this.persistenceDirectory,
-					FileSystemCacheBuilder.<K1, V1>castRemovalListener(
+					FileSystemCacheBuilder.castRemovalListener(
 							this.removalListener));
 		}
 	}

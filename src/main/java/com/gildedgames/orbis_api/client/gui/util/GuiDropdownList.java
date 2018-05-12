@@ -7,7 +7,6 @@ import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +43,7 @@ public class GuiDropdownList extends GuiFrame
 			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).area(60, 10).flush(), element.text())
 			{
 				@Override
-				protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
+				protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton)
 				{
 					super.mouseReleased(mouseX, mouseY, mouseButton);
 

@@ -238,7 +238,7 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V>
 	private class PersistedStateCacheLoader extends CacheLoader<K, V>
 	{
 		@Override
-		public V load(K key) throws Exception
+		public V load(K key)
 		{
 			V value = null;
 			try

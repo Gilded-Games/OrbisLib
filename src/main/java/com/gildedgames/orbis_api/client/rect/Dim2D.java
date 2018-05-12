@@ -257,14 +257,9 @@ public class Dim2D implements Rect
 			return false;
 		}
 
-		if (dim.x() != this.x() || dim.y() != this.y() || dim.scale() != this.scale() || dim.isCenteredX() != this.centeredX
-				|| dim.isCenteredY() != this.centeredY || dim.width() != this.width() || dim.height() != this.height()
-				|| dim.degrees() != this.degrees() || dim.originX() != this.originX() || dim.originY() != this.originY())
-		{
-			return false;
-		}
-
-		return true;
+		return !(dim.x() != this.x()) && !(dim.y() != this.y()) && !(dim.scale() != this.scale()) && dim.isCenteredX() == this.centeredX
+				&& dim.isCenteredY() == this.centeredY && !(dim.width() != this.width()) && !(dim.height() != this.height())
+				&& !(dim.degrees() != this.degrees()) && !(dim.originX() != this.originX()) && !(dim.originY() != this.originY());
 	}
 
 	@Override

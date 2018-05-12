@@ -100,7 +100,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		{
 			for (int i = 0; i < InventoryPlayer.getHotbarSize(); ++i)
 			{
-				ItemStack itemstack = ((ItemStack) hotbarsnapshot.get(i)).copy();
+				ItemStack itemstack = hotbarsnapshot.get(i).copy();
 				entityplayersp.inventory.setInventorySlotContents(i, itemstack);
 				p_192044_0_.playerController.sendSlotPacket(itemstack, 36 + i);
 			}
@@ -116,7 +116,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 
 			String s = GameSettings.getKeyDisplayString(p_192044_0_.gameSettings.keyBindsHotbar[p_192044_1_].getKeyCode());
 			String s1 = GameSettings.getKeyDisplayString(p_192044_0_.gameSettings.keyBindLoadToolbar.getKeyCode());
-			p_192044_0_.ingameGUI.setOverlayMessage(new TextComponentTranslation("inventory.hotbarSaved", new Object[] { s1, s }), false);
+			p_192044_0_.ingameGUI.setOverlayMessage(new TextComponentTranslation("inventory.hotbarSaved", s1, s), false);
 			creativesettings.write();
 		}
 	}
@@ -600,7 +600,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 							itemstack.getOrCreateSubCompound("CustomCreativeLock");
 							String s = GameSettings.getKeyDisplayString(this.mc.gameSettings.keyBindsHotbar[j].getKeyCode());
 							String s1 = GameSettings.getKeyDisplayString(this.mc.gameSettings.keyBindSaveToolbar.getKeyCode());
-							itemstack.setStackDisplayName((new TextComponentTranslation("inventory.hotbarInfo", new Object[] { s1, s })).getUnformattedText());
+							itemstack.setStackDisplayName((new TextComponentTranslation("inventory.hotbarInfo", s1, s)).getUnformattedText());
 							guicontainercreative$containercreative.itemList.add(itemstack);
 						}
 						else
@@ -629,7 +629,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 				this.originalSlots = guicontainercreative$containercreative.inventorySlots;
 			}
 
-			guicontainercreative$containercreative.inventorySlots = Lists.<Slot>newArrayList();
+			guicontainercreative$containercreative.inventorySlots = Lists.newArrayList();
 
 			for (int l = 0; l < container.inventorySlots.size(); ++l)
 			{
@@ -856,11 +856,11 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			{
 				if (i == 0)
 				{
-					list.set(i, stack.getRarity().rarityColor + (String) list.get(i));
+					list.set(i, stack.getRarity().rarityColor + list.get(i));
 				}
 				else
 				{
-					list.set(i, TextFormatting.GRAY + (String) list.get(i));
+					list.set(i, TextFormatting.GRAY + list.get(i));
 				}
 			}
 
@@ -1121,7 +1121,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		private final GuiContainerCreativePublic gui;
 
 		/** the list of items in this container */
-		public NonNullList<ItemStack> itemList = NonNullList.<ItemStack>create();
+		public NonNullList<ItemStack> itemList = NonNullList.create();
 
 		public ContainerCreativePublic(EntityPlayer player, final GuiContainerCreativePublic gui)
 		{
