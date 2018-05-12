@@ -7,15 +7,29 @@ import java.util.UUID;
 
 public interface IInstanceRegistry
 {
-
 	List<IInstanceHandler> getInstanceHandlers();
 
-	void registerInstanceHandler(IInstanceHandler handler);
-
-	<T extends IInstance> IInstanceHandler<T> createAndRegisterInstanceHandler(IInstanceFactory<T> factory);
+	<T extends IInstance> IInstanceHandler<T> createInstanceHandler(IInstanceFactory<T> factory);
 
 	IPlayerInstances getPlayer(EntityPlayer player);
 
 	IPlayerInstances getPlayer(UUID uuid);
 
+	void loadInstance(IInstance instance);
+
+	void unloadInstance(IInstance instance);
+
+	/**
+	 * Deletes a dimension from disk, unregistering the dimension afterwards.
+	 */
+	void deleteDimension(int id);
+
+	void saveAllInstancesToDisk();
+
+	void loadAllInstancesFromDisk();
+
+	/**
+	 * Unregisters all dimensions.
+	 */
+	void cleanup();
 }

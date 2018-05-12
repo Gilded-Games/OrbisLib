@@ -9,8 +9,8 @@ public interface IPlayerInstances
 
 	void setInstance(IInstance instance);
 
-	BlockPosDimension outside();
+	BlockPosDimension getOutside();
 
-	void setOutside(BlockPosDimension pos);
+	void setReturnPosition(BlockPosDimension pos);
 
 }

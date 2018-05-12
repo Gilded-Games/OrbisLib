@@ -1,8 +1,6 @@
 package com.gildedgames.orbis_api.world.instances;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.network.instances.PacketRegisterDimension;
-import com.gildedgames.orbis_api.network.instances.PacketUnregisterDimension;
 import com.gildedgames.orbis_api.util.TeleporterGeneric;
 import com.gildedgames.orbis_api.util.mc.BlockPosDimension;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
@@ -18,11 +16,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
@@ -38,94 +34,43 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	}
 
 	@Override
-	public T getInstance(final int id)
-	{
-		return this.instances.get(id);
-	}
-
-	@Override
 	public T createNew()
 	{
-		final int dimensionId = this.getFreeDimID();
+		final T instance = this.factory.createInstance(DimensionManager.getNextFreeDimId(), this);
 
-		DimensionManager.registerDimension(dimensionId, this.factory.dimensionType());
-
-		if (OrbisAPI.isServer())
-		{
-			OrbisAPI.network().sendPacketToAllPlayers(new PacketRegisterDimension(this.factory.dimensionType(), dimensionId));
-		}
-
-		final T instance = this.factory.createInstance(dimensionId, this);
-		this.instances.put(dimensionId, instance);
+		this.registerInstance(instance);
 
 		return instance;
 	}
 
 	@Override
-	public void sendUnregisterInstancesPacket(final EntityPlayerMP player)
+	public void unloadAllInstances()
 	{
-		if (!OrbisAPI.isServer())
+		for (IInstance instance : this.instances.values())
 		{
-			return;
-		}
-
-		for (final Map.Entry<Integer, T> entry : this.instances.entrySet())
-		{
-			final int dimId = entry.getKey();
-
-			OrbisAPI.network().sendPacketToPlayer(new PacketUnregisterDimension(dimId), player);
-		}
-	}
-
-	@Override
-	public void unregisterInstances()
-	{
-		for (final Map.Entry<Integer, T> entry : this.instances.entrySet())
-		{
-			final int dimId = entry.getKey();
-
-			DimensionManager.unregisterDimension(dimId);
+			OrbisAPI.instances().unloadInstance(instance);
 		}
 
 		this.instances.clear();
 	}
 
 	@Override
-	public void registerInstance(T instance, int id)
+	public void registerInstance(T instance)
 	{
-		if (DimensionManager.isDimensionRegistered(id))
+		OrbisAPI.instances().loadInstance(instance);
+
+		this.instances.put(instance.getDimensionId(), instance);
+	}
+
+	@Override
+	public void unregisterInstance(T instance)
+	{
+		if (instance.isTemporary() && instance.getPlayers().isEmpty())
 		{
-			final int oldId = id;
+			OrbisAPI.instances().unloadInstance(instance);
 
-			final File oldDimFolder = new File(OrbisAPI.getWorldDirectory(), "//DIM" + oldId);
-
-			id = this.getFreeDimID();
-
-			final File newDimFolder = new File(OrbisAPI.getWorldDirectory(), "//DIM" + id);
-
-			if (oldDimFolder.isDirectory())
-			{
-				final File[] content = oldDimFolder.listFiles();
-
-				for (int i = 0; i < content.length; i++)
-				{
-					try
-					{
-						FileUtils.moveToDirectory(content[i], newDimFolder, true);
-					}
-					catch (final IOException e)
-					{
-						e.printStackTrace();
-					}
-				}
-			}
-
-			instance.setDimensionId(id);
+			this.instances.remove(instance.getDimensionId());
 		}
-
-		DimensionManager.registerDimension(id, this.factory.dimensionType());
-
-		this.instances.put(id, instance);
 	}
 
 	@Override
@@ -165,60 +110,35 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 			final T instance = this.factory.createInstance(id, this);
 			instance.read(tag);
 
-			this.registerInstance(instance, id);
+			this.registerInstance(instance);
 		}
 	}
 
 	@Override
-	public T getInstanceForDimension(final int id)
+	public T getInstanceForDimension(final int dimensionId)
 	{
-		return this.instances.get(id);
+		return this.instances.get(dimensionId);
 	}
 
 	@Override
-	public int getDimensionForInstance(final IInstance instance)
+	public Collection<T> getLoadedInstances()
 	{
-		return this.instances.inverse().get(instance);
+		return Collections.unmodifiableCollection(this.instances.values());
 	}
 
 	@Override
-	public World getWorldForInstance(final IInstance instance)
+	public World teleportPlayerToInstance(final T instance, final EntityPlayerMP player)
 	{
-		final int dim = this.getDimensionForInstance(instance);
-
-		final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-
-		return server.getWorld(dim);
-	}
-
-	@Override
-	public int getInstancesSize()
-	{
-		return this.instances.size();
-	}
-
-	@Override
-	public Collection<T> getInstances()
-	{
-		return this.instances.values();
-	}
-
-	@Override
-	public BiMap<Integer, T> getInstancesMap()
-	{
-		return this.instances;
-	}
-
-	@Override
-	public World teleportPlayerToDimension(final T instance, final EntityPlayerMP player)
-	{
-		OrbisAPI.network().sendPacketToPlayer(new PacketRegisterDimension(instance.getDimensionType(), instance.getDimensionId()), player);
-
 		if (this.instances.containsValue(instance))
 		{
 			final IPlayerInstances hook = OrbisAPI.instances().getPlayer(player);
 
-			hook.setOutside(new BlockPosDimension((int) player.posX, (int) player.posY, (int) player.posZ, player.dimension));
+			if (hook.getInstance() != null)
+			{
+				hook.getInstance().onLeave(player);
+			}
+
+			hook.setReturnPosition(new BlockPosDimension((int) player.posX, (int) player.posY, (int) player.posZ, player.dimension));
 
 			final int dimId = instance.getDimensionId();
 
@@ -235,6 +155,8 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 
 			hook.setInstance(instance);
 
+			instance.onJoin(player);
+
 			return world;
 		}
 
@@ -242,39 +164,25 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	}
 
 	@Override
-	public void teleportPlayerOutsideInstance(final EntityPlayerMP player)
+	public void returnPlayerFromInstance(final EntityPlayerMP player)
 	{
 		final IPlayerInstances hook = OrbisAPI.instances().getPlayer(player);
 
-		if (hook.getInstance() != null && hook.outside() != null)
+		if (hook.getInstance() != null && hook.getOutside() != null)
 		{
+			int id = hook.getInstance().getDimensionId();
+
 			final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 
-			final BlockPosDimension pos = hook.outside();
+			final BlockPosDimension pos = hook.getOutside();
 			final Teleporter teleporter = new TeleporterGeneric(server.getWorld(player.dimension));
 			final PlayerList playerList = server.getPlayerList();
 			playerList.transferPlayerToDimension(player, pos.getDim(), teleporter);
 			player.timeUntilPortal = player.getPortalCooldown();
-			hook.setOutside(null);
+			hook.setReturnPosition(null);
 			hook.setInstance(null);
 
 			player.connection.setPlayerLocation(pos.getX(), pos.getY(), pos.getZ(), 0, 0);
-		}
-	}
-
-	public int getFreeDimID()
-	{
-		int next = -1;
-
-		while (true)
-		{
-			next--;
-
-			if (!DimensionManager.isDimensionRegistered(next))
-			{
-				return next;
 			}
-		}
 	}
-
 }

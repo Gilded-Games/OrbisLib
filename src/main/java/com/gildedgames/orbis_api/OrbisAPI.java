@@ -6,7 +6,6 @@ import com.gildedgames.orbis_api.preparation.IPrepRegistry;
 import com.gildedgames.orbis_api.preparation.impl.PrepTasks;
 import com.gildedgames.orbis_api.world.WorldObjectManagerEvents;
 import com.gildedgames.orbis_api.world.instances.IInstanceRegistry;
-import com.gildedgames.orbis_api.world.instances.InstanceEvents;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -62,7 +61,8 @@ public class OrbisAPI
 		{
 			OrbisAPI.services = new OrbisServices();
 
-			MinecraftForge.EVENT_BUS.register(InstanceEvents.class);
+			MinecraftForge.EVENT_BUS.register(OrbisAPI.services().instances());
+
 			MinecraftForge.EVENT_BUS.register(WorldObjectManagerEvents.class);
 			MinecraftForge.EVENT_BUS.register(PartialTicks.class);
 
@@ -111,7 +111,7 @@ public class OrbisAPI
 	@Mod.EventHandler
 	public void onServerStopping(final FMLServerStoppingEvent event)
 	{
-		InstanceEvents.saveAllInstancesToDisk();
+		OrbisAPI.instances().saveAllInstancesToDisk();
 
 		loadedInstances = false;
 	}
@@ -119,7 +119,7 @@ public class OrbisAPI
 	@Mod.EventHandler
 	public void onServerStopped(final FMLServerStoppedEvent event)
 	{
-		InstanceEvents.unregisterAllInstances();
+		OrbisAPI.instances().cleanup();
 	}
 
 	@Mod.EventHandler
@@ -127,7 +127,7 @@ public class OrbisAPI
 	{
 		if (!loadedInstances)
 		{
-			InstanceEvents.loadAllInstancesFromDisk();
+			instances().loadAllInstancesFromDisk();
 
 			loadedInstances = true;
 		}

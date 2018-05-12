@@ -35,11 +35,6 @@ public class PlayerInstances implements IPlayerInstances
 	@Override
 	public void setInstance(final IInstance instance)
 	{
-		if (this.getInstance() != null)
-		{
-			this.getInstance().onLeave(this.player);
-		}
-
 		this.activeInstance = instance;
 
 		if (!this.player.world.isRemote)
@@ -49,13 +44,13 @@ public class PlayerInstances implements IPlayerInstances
 	}
 
 	@Override
-	public BlockPosDimension outside()
+	public BlockPosDimension getOutside()
 	{
 		return this.outside;
 	}
 
 	@Override
-	public void setOutside(final BlockPosDimension pos)
+	public void setReturnPosition(final BlockPosDimension pos)
 	{
 		this.outside = pos;
 	}
@@ -68,7 +63,7 @@ public class PlayerInstances implements IPlayerInstances
 		{
 			final NBTTagCompound compound = new NBTTagCompound();
 
-			compound.setTag("outside", NBTHelper.write(instance.outside()));
+			compound.setTag("outside", NBTHelper.write(instance.getOutside()));
 			compound.setTag("activeInstances", NBTHelper.write(instance.getInstance()));
 
 			return compound;
@@ -79,7 +74,7 @@ public class PlayerInstances implements IPlayerInstances
 		{
 			final NBTTagCompound compound = (NBTTagCompound) nbt;
 
-			instance.setOutside(NBTHelper.read(compound.getCompoundTag("outside")));
+			instance.setReturnPosition(NBTHelper.read(compound.getCompoundTag("outside")));
 			instance.setInstance(NBTHelper.read(compound.getCompoundTag("activeInstances")));
 		}
 	}

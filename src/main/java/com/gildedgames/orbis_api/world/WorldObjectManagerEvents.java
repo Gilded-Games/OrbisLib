@@ -29,11 +29,12 @@ public class WorldObjectManagerEvents
 	@SubscribeEvent
 	public static void onWorldLoad(WorldEvent.Load event)
 	{
-		final World world = event.getWorld();
+		World world = event.getWorld();
 
 		if (!world.isRemote)
 		{
 			WorldObjectManager.setWorldSeed(world.provider.getDimension(), world.getSeed());
+
 			OrbisAPI.network().sendPacketToAllPlayers(new PacketWorldSeed(world.provider.getDimension(), world.getSeed()));
 		}
 	}
