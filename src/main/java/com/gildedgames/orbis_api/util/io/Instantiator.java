@@ -11,6 +11,10 @@ public class Instantiator<T> implements Function<World, T>
 
 	private final Class<T> clazz;
 
+	private Constructor<T> emptyConstructor;
+	private Constructor<T> worldConstructor;
+
+
 	/**
 	 * Requires the passed class to have a default constructor with World parameter (can be private). Will throw a NPE if it has no default constructor.
 	 * @param clazz
@@ -29,27 +33,44 @@ public class Instantiator<T> implements Function<World, T>
 
 			if (world == null)
 			{
-				constructor = this.clazz.getDeclaredConstructor();
+				if (this.emptyConstructor == null)
+				{
+					try
+					{
+						this.emptyConstructor = this.clazz.getDeclaredConstructor();
+						this.emptyConstructor.setAccessible(true);
+					}
+					catch (NoSuchMethodException e)
+					{
+						throw new NullPointerException("Couldn't find public constructor(World)" + clazz.getName());
+					}
+				}
+
+				constructor = this.emptyConstructor;
 			}
 			else
 			{
-				constructor = this.clazz.getDeclaredConstructor(World.class);
+				if (this.worldConstructor == null)
+				{
+					try
+					{
+						this.worldConstructor = this.clazz.getDeclaredConstructor(World.class);
+						this.worldConstructor.setAccessible(true);
+					}
+					catch (NoSuchMethodException e)
+					{
+						throw new NullPointerException("Couldn't find public constructor() for " + clazz.getName());
+					}
+				}
+
+				constructor = this.worldConstructor;
 			}
 
-			constructor.setAccessible(true);
-
-			final T instance = world != null ? constructor.newInstance(world) : constructor.newInstance();
-
-			constructor.setAccessible(false);
-
-			return instance;
+			return world != null ? constructor.newInstance(world) : constructor.newInstance();
 		}
-		catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+		catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 		{
-			e.printStackTrace();
-
-			throw new NullPointerException("Something went wrong trying to create an instances of " + this.clazz.getName()
-					+ ". Most likely you forgot to create a World constructor/default constructor for it.");
+			throw new RuntimeException(e);
 		}
 	}
 

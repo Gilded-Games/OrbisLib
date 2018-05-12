@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.core.world_objects;
 
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.AbstractRegion;
@@ -10,6 +9,7 @@ import com.gildedgames.orbis_api.data.region.IRotateable;
 import com.gildedgames.orbis_api.util.RegionHelp;
 import com.gildedgames.orbis_api.util.RotationHelp;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -60,10 +60,10 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 		return this.rotation;
 	}
 
-	public BlockData getBlock(final BlockPos pos)
+	public IBlockState getBlock(final BlockPos pos)
 	{
 		final BlockPos transformed = this.transformForBlueprint(pos);
-		return this.getBlockDataContainer().get(transformed);
+		return this.getBlockDataContainer().getBlockState(transformed);
 	}
 
 	public BlockPos transformForBlueprint(final BlockPos pos)

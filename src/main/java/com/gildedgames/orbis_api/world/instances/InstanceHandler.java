@@ -136,6 +136,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 			if (hook.getInstance() != null)
 			{
 				hook.getInstance().onLeave(player);
+				hook.setInstance(null);
 			}
 
 			hook.setReturnPosition(new BlockPosDimension((int) player.posX, (int) player.posY, (int) player.posZ, player.dimension));

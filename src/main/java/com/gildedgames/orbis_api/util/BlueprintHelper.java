@@ -1,8 +1,8 @@
 package com.gildedgames.orbis_api.util;
 
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.data.region.IShape;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -17,11 +17,16 @@ public class BlueprintHelper
 
 		for (final BlockPos pos : shape.createShapeData())
 		{
-			final BlockData blockData = new BlockData().getDataFrom(pos, world);
-
 			final BlockPos translated = pos.add(-min.getX(), -min.getY(), -min.getZ());
 
-			container.set(blockData, translated);
+			container.set(world.getBlockState(pos), translated);
+
+			TileEntity entity = world.getTileEntity(pos);
+
+			if (entity != null)
+			{
+				container.setTileEntity(entity, translated);
+			}
 		}
 
 		return container;

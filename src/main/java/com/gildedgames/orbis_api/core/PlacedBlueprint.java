@@ -1,7 +1,6 @@
 package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
@@ -81,10 +80,6 @@ public class PlacedBlueprint implements NBT
 		this.world = world;
 
 		this.read(tag);
-
-		this.bakeChunks();
-		this.placeEntities();
-		this.bakeScheduleRegions();
 	}
 
 	public List<ScheduleRegion> getScheduleRegions()
@@ -224,12 +219,10 @@ public class PlacedBlueprint implements NBT
 
 				final BlockDataChunk chunk = this.chunks[index];
 
-				final BlockData block = blocks.get(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
-
-				if (chunk != null && block != null)
+				if (chunk != null)
 				{
-					chunk.getContainer()
-							.set(block, (rotated.getX() + xDif) % 16, rotated.getY(), (rotated.getZ() + zDif) % 16);
+					chunk.getContainer().copyBlockFrom(blocks, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ(),
+									(rotated.getX() + xDif) % 16, rotated.getY(), (rotated.getZ() + zDif) % 16);
 				}
 			}
 		}
@@ -260,12 +253,10 @@ public class PlacedBlueprint implements NBT
 
 				final BlockDataChunk chunk = this.chunks[index];
 
-				final BlockData block = blocks.get(iterPos.getX(), iterPos.getY(), iterPos.getZ());
-
-				if (chunk != null && block != null)
+				if (chunk != null)
 				{
 					chunk.getContainer()
-							.set(block, (iterPos.getX() + xDif) % 16, iterPos.getY(), (iterPos.getZ() + zDif) % 16);
+							.copyBlockFrom(blocks, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16, iterPos.getY(), (iterPos.getZ() + zDif) % 16);
 				}
 			}
 		}

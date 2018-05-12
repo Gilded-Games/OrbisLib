@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.data.IDataHolder;
 import com.gildedgames.orbis_api.data.management.IData;
@@ -10,6 +9,7 @@ import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.world.IWorldObject;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -234,7 +234,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 			{
 				for (int z = 0; z < from.getLength(); z++)
 				{
-					BlockData block = from.get(x, y, z);
+					IBlockState block = from.getBlockState(x, y, z);
 
 					into.set(block, x + xOffset, y + yOffset, z + zOffset);
 				}

@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.processing;
 
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.block.BlockInstance;
@@ -16,8 +15,11 @@ import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.data.shapes.IterablePosShape;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RotationHelp;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -99,8 +101,8 @@ public class DataPrimer
 				final BlockPos beforeRot = tuple.getFirst();
 				final BlockPos rotated = tuple.getSecond();
 
-				final BlockData block = blocks
-						.get(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
+				final IBlockState block = blocks
+						.getBlockState(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
 
 				for (final PlacementCondition condition : def.getConditions())
 				{
@@ -115,25 +117,23 @@ public class DataPrimer
 		}
 		else
 		{
-			int index = 0;
+			BlockPos.MutableBlockPos xyz = new BlockPos.MutableBlockPos();
 
-			for (final BlockData block : blocks)
+			for (int index = 0; index < blocks.getVolume(); index++)
 			{
 				final int x = def.getData().getBlockDataContainer().getX(index) + pos.getX();
 				final int y = def.getData().getBlockDataContainer().getY(index) + pos.getY();
 				final int z = def.getData().getBlockDataContainer().getZ(index) + pos.getZ();
 
-				BlockPos xyz = new BlockPos(x, y, z);
+				xyz.setPos(x, y, z);
 
 				for (final PlacementCondition condition : def.getConditions())
 				{
-					if (!this.access.canAccess(xyz) || !condition.canPlace(def.getData(), this.access, pos, block, xyz))
+					if (!this.access.canAccess(xyz) || !condition.canPlace(def.getData(), this.access, pos, blocks.getBlockState(index), xyz))
 					{
 						return false;
 					}
 				}
-
-				index++;
 			}
 
 			for (final PlacementCondition condition : def.getConditions())
@@ -186,8 +186,8 @@ public class DataPrimer
 				final BlockPos beforeRot = tuple.getFirst();
 				final BlockPos rotated = tuple.getSecond();
 
-				final BlockData block = blocks
-						.get(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
+				final IBlockState block = blocks
+						.getBlockState(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
 
 				for (final PlacementCondition condition : def.getConditions())
 				{
@@ -200,9 +200,7 @@ public class DataPrimer
 		}
 		else
 		{
-			int index = 0;
-
-			for (final BlockData block : blocks)
+			for (int index = 0; index < blocks.getVolume(); index++)
 			{
 				final int x = def.getData().getBlockDataContainer().getX(index) + pos.getX();
 				final int y = def.getData().getBlockDataContainer().getY(index) + pos.getY();
@@ -212,13 +210,12 @@ public class DataPrimer
 
 				for (final PlacementCondition condition : def.getConditions())
 				{
-					if (!this.access.canAccess(xyz) || !condition.canPlace(def.getData(), this.access, pos, block, xyz))
+					if (!this.access.canAccess(xyz) || !condition.canPlace(def.getData(), this.access, pos, blocks.getBlockState(index), xyz))
 					{
 						return false;
 					}
 				}
 
-				index++;
 			}
 
 			for (final PlacementCondition condition : def.getConditions())
@@ -235,17 +232,17 @@ public class DataPrimer
 
 	public void create(final BlockInstance instance, final ICreationData data)
 	{
-		this.create(instance.getBlockData(), instance.getPos(), data);
+		this.create(instance.getBlockState(), instance.getEntity(), instance.getPos(), data);
 	}
 
-	public void create(final BlockData blockData, final BlockPos pos, final ICreationData creationData)
+	public void create(final IBlockState blockData, final NBTTagCompound entityData, final BlockPos pos, final ICreationData creationData)
 	{
 		if (blockData == null)
 		{
 			return;
 		}
 
-		if (blockData.isAir() && !creationData.placeAir())
+		if (blockData.getMaterial() == Material.AIR && !creationData.placeAir())
 		{
 			return;
 		}
@@ -255,17 +252,15 @@ public class DataPrimer
 			return;
 		}
 
-		if (!blockData.isVoid() || creationData.placesVoid())
+		if (blockData.getBlock() != Blocks.STRUCTURE_VOID || creationData.placesVoid())
 		{
-			final IBlockState rotated = blockData.getRotatedBlockState(creationData.getRotation());
+			final IBlockState rotated = blockData.withRotation(creationData.getRotation());
 
 			this.access.setBlockState(pos, rotated, 2);
 
-			if (blockData.getTileEntity() != null && this.access.getWorld() != null)
+			if (entityData != null && this.access.getWorld() != null)
 			{
-				blockData.getTileEntity().setWorld(this.access.getWorld());
-
-				TileEntity te = TileEntity.create(this.access.getWorld(), blockData.getTileEntity().serializeNBT());
+				TileEntity te = TileEntity.create(this.access.getWorld(), entityData);
 
 				this.access.setTileEntity(pos, te);
 			}
@@ -346,11 +341,10 @@ public class DataPrimer
 
 				if (insideRegion == null || insideRegion.contains(rotated))
 				{
-					final BlockData toCreate;
+					final IBlockState toCreate = container.getBlockState(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
+					final NBTTagCompound entity = container.getTileEntity(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
 
-					toCreate = container.get(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
-
-					this.create(toCreate, rotated, data);
+					this.create(toCreate, entity, rotated, data);
 				}
 			}
 		}
@@ -364,24 +358,15 @@ public class DataPrimer
 				if (insideRegion == null || insideRegion.contains(iterPos.getX() + min.getX(), iterPos.getY() + min.getY(),
 						iterPos.getZ() + min.getZ()))
 				{
-					final BlockData block = container.get(iterPos.getX(), iterPos.getY(), iterPos.getZ());
+					final IBlockState block = container.getBlockState(iterPos.getX(), iterPos.getY(), iterPos.getZ());
+					final NBTTagCompound entity = container.getTileEntity(iterPos.getX(), iterPos.getY(), iterPos.getZ());
 
 					if (block != null)
 					{
-						this.create(block, iterPos.toImmutable().add(min.getX(), min.getY(), min.getZ()), data);
+						this.create(block, entity, iterPos.toImmutable().add(min.getX(), min.getY(), min.getZ()), data);
 					}
 				}
 			}
-		}
-	}
-
-	public void fill(final BlockData blockData, IRegion region, ICreationData data)
-	{
-		for (final OrbisTuple<BlockPos.MutableBlockPos, BlockPos.MutableBlockPos> tuple : RotationHelp.getAllInRegionRotated(region, data.getRotation()))
-		{
-			final BlockPos rotated = tuple.getSecond();
-
-			this.create(blockData, rotated, data);
 		}
 	}
 

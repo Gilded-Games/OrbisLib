@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.core.util;
 
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.core.PlacementCondition;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
@@ -23,11 +22,11 @@ public class PlacementConditions
 		return new PlacementCondition()
 		{
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final BlockData block,
+			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
-				if (pos.getY() == placedAt.getY() + floorHeight && block.getBlockState().getBlock() != Blocks.AIR
-						&& block.getBlockState().getBlock() != Blocks.STRUCTURE_VOID)
+				if (pos.getY() == placedAt.getY() + floorHeight && block.getBlock() != Blocks.AIR
+						&& block.getBlock() != Blocks.STRUCTURE_VOID)
 				{
 					final BlockPos down = pos.down();
 
@@ -78,10 +77,10 @@ public class PlacementConditions
 			List<Material> materials = Lists.newArrayList(acceptedMaterials);
 
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final BlockData block,
+			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
-				if (block.getBlockState().getBlock() != Blocks.STRUCTURE_VOID)
+				if (block.getBlock() != Blocks.STRUCTURE_VOID)
 				{
 					if (!world.canAccess(pos))
 					{
@@ -90,14 +89,14 @@ public class PlacementConditions
 
 					final IBlockState state = world.getBlockState(pos);
 
-					if ((BlockUtil.isSolid(block.getBlockState()) || block.getBlockState().getMaterial() == Material.PORTAL
-							|| block.getBlockState() == Blocks.AIR.getDefaultState()) && (BlueprintUtil.isReplaceable(world, pos)
+					if ((BlockUtil.isSolid(block) || block.getMaterial() == Material.PORTAL
+							|| block == Blocks.AIR.getDefaultState()) && (BlueprintUtil.isReplaceable(world, pos)
 							|| this.materials.contains(state.getMaterial())))
 					{
 						return true;
 					}
 
-					if ((isCriticalWithCheck ? block.getBlockState() == state : block.getBlockState().getBlock() == state.getBlock())
+					if ((isCriticalWithCheck ? block == state : block.getBlock() == state.getBlock())
 							|| this.materials.contains(state.getMaterial()))
 					{
 						return true;
@@ -126,11 +125,11 @@ public class PlacementConditions
 		return new PlacementCondition()
 		{
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final BlockData block,
+			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
-				if (pos.getY() == placedAt.getY() + 1 && block.getBlockState().getBlock() != Blocks.AIR
-						&& block.getBlockState().getBlock() != Blocks.STRUCTURE_VOID)
+				if (pos.getY() == placedAt.getY() + 1 && block.getBlock() != Blocks.AIR
+						&& block.getBlock() != Blocks.STRUCTURE_VOID)
 				{
 					final BlockPos down = pos.down();
 
@@ -164,11 +163,11 @@ public class PlacementConditions
 		return new PlacementCondition()
 		{
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final BlockData block,
+			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
-				if (pos.getY() == placedAt.getY() && block.getBlockState().getBlock() != Blocks.AIR
-						&& block.getBlockState().getBlock() != Blocks.STRUCTURE_VOID)
+				if (pos.getY() == placedAt.getY() && block.getBlock() != Blocks.AIR
+						&& block.getBlock() != Blocks.STRUCTURE_VOID)
 				{
 					final BlockPos down = pos.down();
 
@@ -202,11 +201,11 @@ public class PlacementConditions
 		return new PlacementCondition()
 		{
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final BlockData block,
+			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
-				if (pos.getY() == placedAt.getY() + floorHeight && block.getBlockState().getBlock() != Blocks.AIR
-						&& block.getBlockState().getBlock() != Blocks.STRUCTURE_VOID)
+				if (pos.getY() == placedAt.getY() + floorHeight && block.getBlock() != Blocks.AIR
+						&& block.getBlock() != Blocks.STRUCTURE_VOID)
 				{
 					final BlockPos down = pos.down();
 
@@ -240,7 +239,7 @@ public class PlacementConditions
 		return new PlacementCondition()
 		{
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final BlockData block,
+			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
 				return true;
@@ -262,15 +261,15 @@ public class PlacementConditions
 					return false;
 				}
 
-				int index = 0;
-
-				for (final BlockData info : blocks)
+				for (int index = 0; index < blocks.getVolume(); index++)
 				{
 					final int x = blocks.getX(index) + placedAt.getX();
 					final int y = blocks.getY(index) + placedAt.getY();
 					final int z = blocks.getZ(index) + placedAt.getZ();
 
-					if (y == placedAt.getY() && info.getBlockState().getBlock() != Blocks.AIR && info.getBlockState().getBlock() != Blocks.STRUCTURE_VOID)
+					final IBlockState info = blocks.getBlockState(index);
+
+					if (y == placedAt.getY() && info.getBlock() != Blocks.AIR && info.getBlock() != Blocks.STRUCTURE_VOID)
 					{
 						final BlockPos down = new BlockPos(x, y - 1, z);
 
@@ -286,8 +285,6 @@ public class PlacementConditions
 							return false;
 						}
 					}
-
-					index++;
 				}
 
 				return true;

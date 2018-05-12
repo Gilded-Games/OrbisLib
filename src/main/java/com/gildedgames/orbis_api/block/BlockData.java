@@ -7,22 +7,20 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.annotation.Nullable;
 
+@Deprecated
 public class BlockData implements NBT
 {
 	private Block block;
 
 	private IBlockState blockState;
 
-	private TileEntity tileEntity;
+	private NBTTagCompound tileEntity;
 
 	public BlockData()
 	{
@@ -41,7 +39,7 @@ public class BlockData implements NBT
 		this.blockState = blockState;
 	}
 
-	public BlockData(final IBlockState blockState, final TileEntity tileEntity)
+	public BlockData(final IBlockState blockState, final NBTTagCompound tileEntity)
 	{
 		this(blockState);
 		this.tileEntity = tileEntity;
@@ -52,14 +50,6 @@ public class BlockData implements NBT
 		this.block = block.block;
 		this.blockState = block.blockState;
 		this.tileEntity = block.tileEntity;
-	}
-
-	public BlockData getDataFrom(final BlockPos pos, final World world)
-	{
-		this.blockState = world.getBlockState(pos);
-		this.tileEntity = world.getTileEntity(pos);
-
-		return this;
 	}
 
 	@Nullable
@@ -78,7 +68,7 @@ public class BlockData implements NBT
 		return this.blockState;
 	}
 
-	public TileEntity getTileEntity()
+	public NBTTagCompound getTileEntity()
 	{
 		return this.tileEntity;
 	}
@@ -99,11 +89,7 @@ public class BlockData implements NBT
 
 		if (hasTileEntity)
 		{
-			final NBTTagCompound newTag = new NBTTagCompound();
-
-			this.tileEntity.writeToNBT(newTag);
-
-			tag.setTag("tileEntity", newTag);
+			tag.setTag("tileEntity", this.tileEntity);
 		}
 	}
 
@@ -125,8 +111,7 @@ public class BlockData implements NBT
 
 		if (hasTileEntity)
 		{
-			// TODO: Feed it world reference
-			this.tileEntity = TileEntity.create(null, tag.getCompoundTag("tileEntity"));
+			this.tileEntity = tag.getCompoundTag("tileEntity");
 		}
 	}
 

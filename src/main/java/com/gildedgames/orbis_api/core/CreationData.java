@@ -1,7 +1,7 @@
 package com.gildedgames.orbis_api.core;
 
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
@@ -209,7 +209,7 @@ public class CreationData implements ICreationData<CreationData>
 	}
 
 	@Override
-	public boolean shouldCreate(final BlockData data, final BlockPos pos)
+	public boolean shouldCreate(final IBlockState data, final BlockPos pos)
 	{
 		return true;
 	}

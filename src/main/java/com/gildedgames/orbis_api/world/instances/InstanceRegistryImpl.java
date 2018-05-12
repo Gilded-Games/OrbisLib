@@ -227,6 +227,9 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 				OrbisAPI.network().sendPacketToAllPlayers(new PacketUnregisterDimension(instance.getDimensionId()));
 			}
 		}
+
+		this.instances.clear();
+		this.deleteQueue.clear();
 	}
 
 	@Override
@@ -279,6 +282,7 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 		if (hook.getInstance() != null)
 		{
 			hook.getInstance().onLeave(event.player);
+			hook.setInstance(null);
 		}
 	}
 }

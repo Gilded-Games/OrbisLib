@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.processing;
 
-import com.gildedgames.orbis_api.block.BlockData;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -70,13 +69,13 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public void setBlockToAir(final BlockPos pos)
 	{
-		this.container.set(new BlockData(Blocks.AIR.getDefaultState()), pos);
+		this.container.set(Blocks.AIR.getDefaultState(), pos);
 	}
 
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state)
 	{
-		this.container.set(new BlockData(state), pos);
+		this.container.set(state, pos);
 
 		return true;
 	}
@@ -84,7 +83,7 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state, final int flags)
 	{
-		this.container.set(new BlockData(state), pos);
+		this.container.set(state, pos);
 
 		return true;
 	}
@@ -123,7 +122,7 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public IBlockState getBlockState(final BlockPos pos)
 	{
-		return this.container.get(pos).getBlockState();
+		return this.container.getBlockState(pos);
 	}
 
 	@Override

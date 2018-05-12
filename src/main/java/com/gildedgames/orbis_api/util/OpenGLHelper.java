@@ -1,4 +1,4 @@
-package com.gildedgames.orbis_api.common.util;
+package com.gildedgames.orbis_api.util;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
