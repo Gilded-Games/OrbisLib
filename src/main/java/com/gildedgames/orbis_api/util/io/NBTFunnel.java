@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,6 +23,28 @@ import java.util.function.Supplier;
 
 public class NBTFunnel
 {
+	public static Function<Boolean, NBTTagCompound> BOOLEAN_SETTER = o ->
+	{
+		NBTTagCompound f = new NBTTagCompound();
+
+		f.setBoolean("bsss", o);
+
+		return f;
+	};
+
+	public static Function<NBTTagCompound, Boolean> BOOLEAN_GETTER = n -> n.getBoolean("b");
+
+	public static Function<ResourceLocation, NBTTagCompound> LOC_SETTER = o ->
+	{
+		NBTTagCompound f = new NBTTagCompound();
+
+		f.setString("loc", o.toString());
+
+		return f;
+	};
+
+	public static Function<NBTTagCompound, ResourceLocation> LOC_GETTER = n -> new ResourceLocation(n.getString("loc"));
+
 	public static Function<BlockPos, NBTTagCompound> POS_SETTER = o ->
 	{
 		NBTFunnel f = new NBTFunnel(new NBTTagCompound());
