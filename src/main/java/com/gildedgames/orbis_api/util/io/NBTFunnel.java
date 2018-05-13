@@ -27,7 +27,7 @@ public class NBTFunnel
 	{
 		NBTTagCompound f = new NBTTagCompound();
 
-		f.setBoolean("bsss", o);
+		f.setBoolean("b", o);
 
 		return f;
 	};
