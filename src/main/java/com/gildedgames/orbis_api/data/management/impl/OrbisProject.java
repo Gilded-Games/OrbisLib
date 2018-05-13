@@ -219,7 +219,7 @@ public class OrbisProject implements IProject
 		 * Save the data to disk to ensure it doesn't keep creating
 		 * new identifiers each time the project is loaded.
 		 */
-		if (this.locationFile != null && (shouldSaveAfter || fromOtherProject) && !OrbisAPI.isClient())
+		if (this.locationFile != null && (shouldSaveAfter || fromOtherProject))
 		{
 			this.writeData(data, file);
 		}
