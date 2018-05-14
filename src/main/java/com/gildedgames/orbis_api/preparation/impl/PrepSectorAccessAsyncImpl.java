@@ -68,7 +68,7 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	@Override
 	public ListenableFuture<IPrepSector> provideSector(final int chunkX, final int chunkZ)
 	{
-		if (world.isRemote)
+		if (this.world.isRemote)
 		{
 			return Futures.immediateFuture(null);
 		}
@@ -173,7 +173,7 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	@Override
 	public void onChunkLoaded(final int chunkX, final int chunkZ)
 	{
-		if (world.isRemote)
+		if (this.world.isRemote)
 		{
 			return;
 		}
@@ -290,7 +290,6 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 		}
 	}
 
-
 	/**
 	 * Reads an {@link IPrepSector} from an {@link InputStream}.
 	 *
@@ -336,7 +335,6 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 		CompressedStreamTools.writeCompressed(tag, out);
 	}
 
-
 	public static class Storage implements Capability.IStorage<IPrepSectorAccessAsync>
 	{
 		@Nullable
@@ -347,7 +345,8 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 		}
 
 		@Override
-		public void readNBT(final Capability<IPrepSectorAccessAsync> capability, final IPrepSectorAccessAsync instance, final EnumFacing side, final NBTBase nbt)
+		public void readNBT(final Capability<IPrepSectorAccessAsync> capability, final IPrepSectorAccessAsync instance, final EnumFacing side,
+				final NBTBase nbt)
 		{
 
 		}

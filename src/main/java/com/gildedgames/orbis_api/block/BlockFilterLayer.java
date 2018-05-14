@@ -32,7 +32,7 @@ import java.util.Random;
 public class BlockFilterLayer implements NBT
 {
 
-	private static final List<IBlockState> AIR_BLOCKS = Lists.newArrayList(Blocks.AIR.getDefaultState());
+	private static final List<BlockData> AIR_BLOCKS = Lists.newArrayList(new BlockData(Blocks.AIR.getDefaultState()));
 
 	protected List<BlockDataWithConditions> requiredBlocks = Lists.newArrayList();
 
@@ -131,7 +131,7 @@ public class BlockFilterLayer implements NBT
 		return replacementBlock.getBlockState();
 	}
 
-	public void apply(Iterable<BlockPos.MutableBlockPos> positions, BlockDataContainer container, ICreationData creationData, IFilterOptions options)
+	public void apply(Iterable<BlockPos.MutableBlockPos> positions, BlockDataContainer container, ICreationData<?> creationData, IFilterOptions options)
 	{
 		World world = creationData.getWorld();
 
@@ -189,7 +189,7 @@ public class BlockFilterLayer implements NBT
 	/**
 	 * Applies this layer to a shape
 	 */
-	public void apply(IRegion relocateTo, final BlockFilter parentFilter, IShape shape, final ICreationData creationData, IFilterOptions options)
+	public void apply(IRegion relocateTo, final BlockFilter parentFilter, IShape shape, final ICreationData<?> creationData, IFilterOptions options)
 	{
 		World world = creationData.getWorld();
 
@@ -255,7 +255,7 @@ public class BlockFilterLayer implements NBT
 	}
 
 	private void applyInner(DataPrimer primer, BlockPos p, BlockDataWithConditions replacementBlock, IShape intersect, IScheduleLayerHolder holder,
-			final BlockFilter parentFilter, IShape boundingBox, final ICreationData creationData, IFilterOptions options)
+			final BlockFilter parentFilter, IShape boundingBox, final ICreationData<?> creationData, IFilterOptions options)
 	{
 		World world = creationData.getWorld();
 

@@ -46,7 +46,8 @@ public class WorldDataManagerContainerProvider implements ICapabilityProvider
 		}
 		else
 		{
-			File dir = new File(world.getSaveHandler().getWorldDirectory(), (world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
+			File dir = new File(world.getSaveHandler().getWorldDirectory(),
+					(world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
 
 			return new WorldDataManagerLmdb(dir);
 		}

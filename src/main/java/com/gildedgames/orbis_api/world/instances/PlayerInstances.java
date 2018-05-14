@@ -18,7 +18,6 @@ public class PlayerInstances implements IPlayerInstances
 	{
 	}
 
-
 	@Override
 	public IInstance getInstance()
 	{

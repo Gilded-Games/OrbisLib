@@ -55,7 +55,7 @@ public class DataPrimer
 		this.access.spawnEntity(entity);
 	}
 
-	public void createChunk(final ChunkPos chunk, final World world, final BlueprintData def, final ICreationData data)
+	public void createChunk(final ChunkPos chunk, final World world, final BlueprintData def, final ICreationData<?> data)
 	{
 		if (def.getBlockDataContainer().getWidth() >= 1 && def.getBlockDataContainer().getHeight() >= 1 && def.getBlockDataContainer().getLength() >= 1)
 		{
@@ -73,7 +73,7 @@ public class DataPrimer
 		}
 	}
 
-	public boolean canGenerate(final BlueprintDefinition def, final ICreationData data)
+	public boolean canGenerate(final BlueprintDefinition def, final ICreationData<?> data)
 	{
 		final BlockPos pos = data.getPos();
 
@@ -148,17 +148,17 @@ public class DataPrimer
 		return true;
 	}
 
-	public boolean canGenerate(final World world, final BlueprintDefinition def, final ICreationData data)
+	public boolean canGenerate(final World world, final BlueprintDefinition def, final ICreationData<?> data)
 	{
 		return this.canGenerate(world, def, data, true);
 	}
 
-	public boolean canGenerateWithoutAreaCheck(final World world, final BlueprintDefinition def, final ICreationData data)
+	public boolean canGenerateWithoutAreaCheck(final World world, final BlueprintDefinition def, final ICreationData<?> data)
 	{
 		return this.canGenerate(world, def, data, false);
 	}
 
-	private boolean canGenerate(final World world, final BlueprintDefinition def, final ICreationData data, final boolean checkAreaLoaded)
+	private boolean canGenerate(final World world, final BlueprintDefinition def, final ICreationData<?> data, final boolean checkAreaLoaded)
 	{
 		final BlockPos pos = data.getPos();
 
@@ -230,12 +230,12 @@ public class DataPrimer
 		return true;
 	}
 
-	public void create(final BlockInstance instance, final ICreationData data)
+	public void create(final BlockInstance instance, final ICreationData<?> data)
 	{
 		this.create(instance.getBlockState(), instance.getEntity(), instance.getPos(), data);
 	}
 
-	public void create(final IBlockState blockData, final NBTTagCompound entityData, final BlockPos pos, final ICreationData creationData)
+	public void create(final IBlockState blockData, final NBTTagCompound entityData, final BlockPos pos, final ICreationData<?> creationData)
 	{
 		if (blockData == null)
 		{
@@ -271,7 +271,7 @@ public class DataPrimer
 		MinecraftForge.EVENT_BUS.post(changeBlockEvent);*/
 	}
 
-	public void create(BlueprintDataPalette palette, ICreationData data)
+	public void create(BlueprintDataPalette palette, ICreationData<?> data)
 	{
 		final BlueprintData b = palette.fetchRandom(data.getWorld(), data.getRandom());
 
@@ -282,12 +282,12 @@ public class DataPrimer
 		this.create(region, b, data.clone().pos(region.getMin()));
 	}
 
-	public void create(final BlockDataContainer container, final ICreationData data)
+	public void create(final BlockDataContainer container, final ICreationData<?> data)
 	{
 		this.create(null, container, data, null);
 	}
 
-	public void create(IRegion relocateTo, BlueprintData bData, ICreationData data)
+	public void create(IRegion relocateTo, BlueprintData bData, ICreationData<?> data)
 	{
 		this.create(relocateTo, bData.getBlockDataContainer(), data, null);
 
@@ -310,7 +310,7 @@ public class DataPrimer
 		}
 	}
 
-	public void create(PlacedBlueprint blueprint, ICreationData data)
+	public void create(PlacedBlueprint blueprint, ICreationData<?> data)
 	{
 		for (BlockDataChunk chunk : blueprint.getDataChunks())
 		{
@@ -323,7 +323,7 @@ public class DataPrimer
 		}
 	}
 
-	public void create(IRegion relocateTo, final BlockDataContainer container, final ICreationData data, final IRegion insideRegion)
+	public void create(IRegion relocateTo, final BlockDataContainer container, final ICreationData<?> data, final IRegion insideRegion)
 	{
 		final BlockPos min = data.getPos();
 		BlockPos max = new BlockPos(min.getX() + container.getWidth() - 1, min.getY() + container.getHeight() - 1,
@@ -341,8 +341,10 @@ public class DataPrimer
 
 				if (insideRegion == null || insideRegion.contains(rotated))
 				{
-					final IBlockState toCreate = container.getBlockState(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
-					final NBTTagCompound entity = container.getTileEntity(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
+					final IBlockState toCreate = container
+							.getBlockState(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
+					final NBTTagCompound entity = container
+							.getTileEntity(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
 
 					this.create(toCreate, entity, rotated, data);
 				}

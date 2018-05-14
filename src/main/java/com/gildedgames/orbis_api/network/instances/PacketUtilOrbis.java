@@ -14,9 +14,7 @@ public class PacketUtilOrbis
 		if (!world.isCallingFromMinecraftThread())
 		{
 			world.addScheduledTask(() ->
-			{
-				handler.onMessage(message, ctx);
-			});
+					handler.onMessage(message, ctx));
 		}
 	}
 }

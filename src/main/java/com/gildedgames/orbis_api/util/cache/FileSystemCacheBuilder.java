@@ -36,7 +36,7 @@ public final class FileSystemCacheBuilder<K, V>
 	 */
 	public static FileSystemCacheBuilder<Object, Object> from(CacheBuilderSpec spec)
 	{
-		return new FileSystemCacheBuilder<Object, Object>(CacheBuilder.from(spec));
+		return new FileSystemCacheBuilder<>(CacheBuilder.from(spec));
 	}
 
 	/**
@@ -44,7 +44,7 @@ public final class FileSystemCacheBuilder<K, V>
 	 */
 	public static FileSystemCacheBuilder<Object, Object> from(String spec)
 	{
-		return new FileSystemCacheBuilder<Object, Object>(CacheBuilder.from(spec));
+		return new FileSystemCacheBuilder<>(CacheBuilder.from(spec));
 	}
 
 	/**
@@ -52,7 +52,7 @@ public final class FileSystemCacheBuilder<K, V>
 	 */
 	public static FileSystemCacheBuilder<Object, Object> newBuilder()
 	{
-		return new FileSystemCacheBuilder<Object, Object>();
+		return new FileSystemCacheBuilder<>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -218,11 +218,11 @@ public final class FileSystemCacheBuilder<K, V>
 	{
 		if (this.persistenceDirectory == null)
 		{
-			return new FileSystemPersistingCache<K1, V1>(this.underlyingCacheBuilder, FileSystemCacheBuilder.castRemovalListener(this.removalListener));
+			return new FileSystemPersistingCache<>(this.underlyingCacheBuilder, FileSystemCacheBuilder.castRemovalListener(this.removalListener));
 		}
 		else
 		{
-			return new FileSystemPersistingCache<K1, V1>(this.underlyingCacheBuilder, this.persistenceDirectory,
+			return new FileSystemPersistingCache<>(this.underlyingCacheBuilder, this.persistenceDirectory,
 					FileSystemCacheBuilder.castRemovalListener(
 							this.removalListener));
 		}
@@ -235,12 +235,12 @@ public final class FileSystemCacheBuilder<K, V>
 	{
 		if (this.persistenceDirectory == null)
 		{
-			return new FileSystemLoadingPersistingCache<K1, V1>(this.underlyingCacheBuilder, loader, FileSystemCacheBuilder.castRemovalListener(
+			return new FileSystemLoadingPersistingCache<>(this.underlyingCacheBuilder, loader, FileSystemCacheBuilder.castRemovalListener(
 					this.removalListener));
 		}
 		else
 		{
-			return new FileSystemLoadingPersistingCache<K1, V1>(this.underlyingCacheBuilder, loader, this.persistenceDirectory,
+			return new FileSystemLoadingPersistingCache<>(this.underlyingCacheBuilder, loader, this.persistenceDirectory,
 					FileSystemCacheBuilder.castRemovalListener(
 							this.removalListener));
 		}

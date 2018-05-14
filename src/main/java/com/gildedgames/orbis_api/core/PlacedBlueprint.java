@@ -44,7 +44,7 @@ public class PlacedBlueprint implements NBT
 
 	private String registryId;
 
-	private ICreationData data;
+	private ICreationData<?> data;
 
 	private boolean hasGeneratedAChunk;
 
@@ -60,7 +60,7 @@ public class PlacedBlueprint implements NBT
 		this.world = world;
 	}
 
-	public PlacedBlueprint(final World world, final BlueprintDefinition def, final ICreationData data)
+	public PlacedBlueprint(final World world, final BlueprintDefinition def, final ICreationData<?> data)
 	{
 		this.world = world;
 		this.def = def;
@@ -222,7 +222,7 @@ public class PlacedBlueprint implements NBT
 				if (chunk != null)
 				{
 					chunk.getContainer().copyBlockFrom(blocks, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ(),
-									(rotated.getX() + xDif) % 16, rotated.getY(), (rotated.getZ() + zDif) % 16);
+							(rotated.getX() + xDif) % 16, rotated.getY(), (rotated.getZ() + zDif) % 16);
 				}
 			}
 		}
@@ -256,7 +256,8 @@ public class PlacedBlueprint implements NBT
 				if (chunk != null)
 				{
 					chunk.getContainer()
-							.copyBlockFrom(blocks, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16, iterPos.getY(), (iterPos.getZ() + zDif) % 16);
+							.copyBlockFrom(blocks, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16, iterPos.getY(),
+									(iterPos.getZ() + zDif) % 16);
 				}
 			}
 		}
@@ -287,7 +288,7 @@ public class PlacedBlueprint implements NBT
 		return this.def;
 	}
 
-	public ICreationData getCreationData()
+	public ICreationData<?> getCreationData()
 	{
 		return this.data;
 	}

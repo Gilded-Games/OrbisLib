@@ -12,8 +12,8 @@ public class Instantiator<T> implements Function<World, T>
 	private final Class<T> clazz;
 
 	private Constructor<T> emptyConstructor;
-	private Constructor<T> worldConstructor;
 
+	private Constructor<T> worldConstructor;
 
 	/**
 	 * Requires the passed class to have a default constructor with World parameter (can be private). Will throw a NPE if it has no default constructor.

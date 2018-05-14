@@ -355,9 +355,8 @@ public class FrameworkAlgorithm
 					FDGDEdge eNew = new FDGDEdge(n1, n2, e1.pathway());
 					this.fdgdGraph.addEdge(n1, n2, eNew);
 				}
-				for (int q = 0; q < edgesOutL.size(); q++)
+				for (FDGDEdge e : edgesOutL)
 				{
-					FDGDEdge e = edgesOutL.get(q);
 					this.fdgdGraph.removeEdge(e);
 					edges.remove(e);
 				}

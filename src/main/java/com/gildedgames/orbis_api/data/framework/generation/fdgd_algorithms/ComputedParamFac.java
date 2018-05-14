@@ -158,7 +158,7 @@ public class ComputedParamFac
 	private float nodeDistance(Graph<FDGDNode, FDGDEdge> graph, FrameworkType type)
 	{
 		float max = 0;
-		final List<PathwayData> checkedPathways = new ArrayList<PathwayData>();
+		final List<PathwayData> checkedPathways = new ArrayList<>();
 		for (final FDGDEdge edge : graph.edgeSet())
 		{
 			final PathwayData data = edge.pathway();

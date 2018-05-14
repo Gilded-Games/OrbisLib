@@ -72,7 +72,7 @@ public class BlockFilter implements NBT
 		}
 	}
 
-	public void apply(IRegion relocateTo, IShape boundingBox, final ICreationData creationData,
+	public void apply(IRegion relocateTo, IShape boundingBox, final ICreationData<?> creationData,
 			IFilterOptions options)
 	{
 		for (final BlockFilterLayer layer : this.filters)

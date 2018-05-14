@@ -13,10 +13,8 @@ public class InventoryHelper
 	{
 		final List<ItemStack> stacks = Lists.newArrayList();
 
-		for (int i = 0; i < slots.length; i++)
+		for (final Slot slot : slots)
 		{
-			final Slot slot = slots[i];
-
 			if (slot.getStack() != null && !slot.getStack().isEmpty())
 			{
 				stacks.add(slot.getStack());

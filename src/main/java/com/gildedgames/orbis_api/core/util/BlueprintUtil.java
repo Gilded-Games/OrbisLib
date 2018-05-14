@@ -16,7 +16,7 @@ import net.minecraft.util.math.ChunkPos;
 public class BlueprintUtil
 {
 
-	public static IRegion getRegionFromDefinition(final BlueprintData data, final ICreationData creationData)
+	public static IRegion getRegionFromDefinition(final BlueprintData data, final ICreationData<?> creationData)
 	{
 		final IRegion region =
 				creationData.getRotation() == Rotation.NONE ? new Region(data) : RotationHelp.rotate(new Region(data), creationData.getRotation());
@@ -26,7 +26,7 @@ public class BlueprintUtil
 		return (IRegion) region.translate(pos);
 	}
 
-	public static ChunkPos[] getChunksInsideTemplate(final BlueprintData data, final ICreationData loc)
+	public static ChunkPos[] getChunksInsideTemplate(final BlueprintData data, final ICreationData<?> loc)
 	{
 		final IRegion bb = BlueprintUtil.getRegionFromDefinition(data, loc);
 

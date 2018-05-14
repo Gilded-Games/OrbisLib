@@ -67,7 +67,7 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
 	}
 
 	@Override
-	protected V findPersisted(K key) throws IOException
+	protected V findPersisted(K key)
 	{
 		if (!this.isPersist(key))
 		{
@@ -81,8 +81,7 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
 			return null;
 		}
 
-		FileInputStream fileInputStream = new FileInputStream(persistenceFile);
-		try
+		try (FileInputStream fileInputStream = new FileInputStream(persistenceFile))
 		{
 			FileLock fileLock = fileInputStream.getChannel().lock(0, Long.MAX_VALUE, true);
 			try
@@ -99,10 +98,6 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
-		finally
-		{
-			fileInputStream.close();
-		}
 	}
 
 	@Override
@@ -114,8 +109,7 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
 		}
 		File persistenceFile = this.pathToFileFor(key);
 		persistenceFile.getParentFile().mkdirs();
-		FileOutputStream fileOutputStream = new FileOutputStream(persistenceFile);
-		try
+		try (FileOutputStream fileOutputStream = new FileOutputStream(persistenceFile))
 		{
 			FileLock fileLock = fileOutputStream.getChannel().lock();
 			try
@@ -126,10 +120,6 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
 			{
 				fileLock.release();
 			}
-		}
-		finally
-		{
-			fileOutputStream.close();
 		}
 	}
 

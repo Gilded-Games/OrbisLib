@@ -19,6 +19,6 @@ public interface ISchedule extends NBT, IWorldObjectChild
 
 	IRegion getBounds();
 
-	void onGenerateLayer(DataPrimer primer, ICreationData data);
+	void onGenerateLayer(DataPrimer primer, ICreationData<?> data);
 
 }

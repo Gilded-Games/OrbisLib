@@ -19,12 +19,12 @@ public class RectFunnel
 
 	public static RectFunnel collect(final List<RectHolder> holders)
 	{
-		return RectFunnel.collect(holders.toArray(new RectHolder[holders.size()]));
+		return RectFunnel.collect(holders.toArray(new RectHolder[0]));
 	}
 
 	public static RectFunnel collect(final RectHolder... holders)
 	{
-		final List<BuildIntoRectHolder> modifiers = new ArrayList<BuildIntoRectHolder>();
+		final List<BuildIntoRectHolder> modifiers = new ArrayList<>();
 
 		for (final RectHolder holder : holders)
 		{

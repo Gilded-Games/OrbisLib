@@ -36,7 +36,7 @@ public class BlueprintWorldGen implements IWorldGen
 				BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)] :
 				BlueprintPlacer.ROTATIONS[0];
 
-		final ICreationData data = new CreationData(world).pos(position);
+		final ICreationData<CreationData> data = new CreationData(world).pos(position);
 
 		data.rotation(rotation);
 

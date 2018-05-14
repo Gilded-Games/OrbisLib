@@ -33,6 +33,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	private final static IBlockState _air = Blocks.AIR.getDefaultState();
 
 	private short[] blocks;
+
 	private byte[] blocksMeta;
 
 	private Int2ObjectOpenHashMap<NBTTagCompound> entities = new Int2ObjectOpenHashMap<>();
@@ -40,7 +41,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	private int width, height, length;
 
 	private IDataMetadata metadata;
-
 
 	public BlockDataContainer()
 	{

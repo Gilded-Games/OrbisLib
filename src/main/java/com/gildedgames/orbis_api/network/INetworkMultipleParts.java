@@ -11,7 +11,8 @@ import java.util.Map;
 
 public interface INetworkMultipleParts
 {
-	<REQ extends IMessage, REPLY extends IMessage> void reg(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType, Side side);
+	<REQ extends IMessage, REPLY extends IMessage> void reg(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType,
+			Side side);
 
 	Map<Integer, ArrayList<byte[]>> getPacketParts();
 

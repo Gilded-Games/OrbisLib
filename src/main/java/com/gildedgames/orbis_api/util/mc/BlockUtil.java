@@ -115,7 +115,7 @@ public class BlockUtil
 		{
 			final IBlockState l = chunk.getBlockState(posX, k, posZ);
 
-			if (l != Blocks.AIR && l.getMaterial().blocksMovement() && l.getMaterial() != Material.LEAVES
+			if (l != Blocks.AIR.getDefaultState() && l.getMaterial().blocksMovement() && l.getMaterial() != Material.LEAVES
 					&& !l.getBlock().isFoliage(world, new BlockPos(x, k, z)))
 			{
 				return k + 1;

@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.network;
 
-import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.network.util.IMessageMultipleParts;
 import com.google.common.collect.Maps;
 import net.minecraft.entity.EntityLivingBase;
@@ -35,7 +34,8 @@ public class NetworkMultipleParts implements INetworkMultipleParts
 	}
 
 	@Override
-	public <REQ extends IMessage, REPLY extends IMessage> void reg(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType, Side side)
+	public <REQ extends IMessage, REPLY extends IMessage> void reg(Class<? extends IMessageHandler<REQ, REPLY>> messageHandler, Class<REQ> requestMessageType,
+			Side side)
 	{
 		this.instance.registerMessage(messageHandler, requestMessageType, this.discriminant++, side);
 	}
@@ -140,5 +140,5 @@ public class NetworkMultipleParts implements INetworkMultipleParts
 			this.instance.sendToServer(part);
 		}
 	}
-	
+
 }

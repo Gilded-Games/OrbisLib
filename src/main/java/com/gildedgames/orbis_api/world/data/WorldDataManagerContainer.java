@@ -26,7 +26,6 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 		return this.manager;
 	}
 
-
 	public static class Storage implements Capability.IStorage<IWorldDataManagerContainer>
 	{
 		@Nullable
@@ -37,7 +36,8 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 		}
 
 		@Override
-		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side, final NBTBase nbt)
+		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side,
+				final NBTBase nbt)
 		{
 
 		}

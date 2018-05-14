@@ -1,7 +1,6 @@
 package com.gildedgames.orbis_api.data.framework.generation.csp;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -19,12 +18,16 @@ public abstract class AbstractConstraintProblem<VAR> implements IConstraintProbl
 	@Override
 	public VAR selectNextVar(Collection<VAR> unassigned, Map<VAR, List<Object>> domains, VAR lastAssigned)
 	{
-//		return unassigned.stream().min(Comparator.comparingInt())
+		//		return unassigned.stream().min(Comparator.comparingInt())
 		int bestSize = Integer.MAX_VALUE;
 		VAR bestVar = null;
 		for (VAR var : unassigned)
+		{
 			if (domains.get(var).size() < bestSize)
+			{
 				bestVar = var;
+			}
+		}
 		return bestVar;
 	}
 

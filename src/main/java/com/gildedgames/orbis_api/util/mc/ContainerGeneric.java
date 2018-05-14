@@ -1,4 +1,4 @@
-package com.gildedgames.orbis_api.common.containers;
+package com.gildedgames.orbis_api.util.mc;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;

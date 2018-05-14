@@ -14,15 +14,15 @@ public class FileHelper
 		{
 			final File[] files = path.listFiles();
 
-			for (int i = 0; i < files.length; i++)
+			for (File file : files)
 			{
-				if (files[i].isDirectory())
+				if (file.isDirectory())
 				{
-					deleteDirectory(files[i]);
+					deleteDirectory(file);
 				}
 				else
 				{
-					files[i].delete();
+					file.delete();
 				}
 			}
 		}

@@ -17,6 +17,7 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 	private final Env<ByteBuffer> env;
 
 	private final HashMap<String, Dbi<ByteBuffer>> registeredDatabases = new HashMap<>();
+
 	private final HashMap<String, IWorldData> registeredDatas = new HashMap<>();
 
 	private Txn<ByteBuffer> write;
@@ -41,7 +42,7 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 			throw new IllegalArgumentException("Data name can not be null");
 		}
 
-		this.registeredDatabases.put(data.getName().toString(), env.openDbi(data.getName().toString(), DbiFlags.MDB_CREATE));
+		this.registeredDatabases.put(data.getName().toString(), this.env.openDbi(data.getName().toString(), DbiFlags.MDB_CREATE));
 		this.registeredDatas.put(data.getName().toString(), data);
 	}
 

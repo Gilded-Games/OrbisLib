@@ -71,7 +71,7 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public void onGenerateLayer(DataPrimer primer, ICreationData data)
+	public void onGenerateLayer(DataPrimer primer, ICreationData<?> data)
 	{
 
 	}

@@ -210,10 +210,8 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 
 		int itHeight = chosenBottom.getHeight();
 
-		for (int i = 0; i < chosenSegments.length; i++)
+		for (BlueprintData segment : chosenSegments)
 		{
-			BlueprintData segment = chosenSegments[i];
-
 			this.funnelInto(result, segment.getBlockDataContainer(), (this.getLargestWidth() - segment.getWidth()) / 2, itHeight,
 					(this.getLargestLength() - segment.getLength()) / 2);
 

@@ -70,7 +70,7 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public void onGenerateLayer(DataPrimer primer, ICreationData data)
+	public void onGenerateLayer(DataPrimer primer, ICreationData<?> data)
 	{
 		primer.create(this.palette, data.clone().pos(data.getPos().add(this.bounds.getMin().add(this.bounds.getWidth() / 2, 0, this.bounds.getLength() / 2))));
 	}

@@ -7,6 +7,7 @@ public abstract class AbstractConstraint<VAR> implements IConstraint<VAR>
 {
 	private final List<VAR> vars;
 
+	@SafeVarargs
 	public AbstractConstraint(VAR... vars)
 	{
 		this.vars = Arrays.asList(vars);

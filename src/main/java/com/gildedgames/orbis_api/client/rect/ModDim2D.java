@@ -3,10 +3,7 @@ package com.gildedgames.orbis_api.client.rect;
 import com.gildedgames.orbis_api.util.ObjectFilter;
 import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * A wrapper around a Rect object to provide a modified state via RectModifiers.
@@ -83,16 +80,7 @@ public class ModDim2D implements Rect
 
 	private RectListener createListener()
 	{
-		return new RectListener()
-		{
-
-			@Override
-			public void notifyDimChange(final List<RectModifier.ModifierType> types)
-			{
-				ModDim2D.this.refreshModifiedState();
-			}
-
-		};
+		return types -> ModDim2D.this.refreshModifiedState();
 	}
 
 	public Rect originalState()
@@ -144,8 +132,8 @@ public class ModDim2D implements Rect
 
 	public ModDim2D set(final ModDim2D modDim)
 	{
-		this.modifiers = new ArrayList<RectModifier>(modDim.modifiers);
-		this.listeners = new ArrayList<RectListener>(modDim.listeners);
+		this.modifiers = new ArrayList<>(modDim.modifiers);
+		this.listeners = new ArrayList<>(modDim.listeners);
 		this.originalState = modDim.originalState;
 		this.modifiedState = modDim.modifiedState;
 		this.buildInto.set(this.originalState);
@@ -269,10 +257,7 @@ public class ModDim2D implements Rect
 		}
 
 		final List<RectModifier.ModifierType> list = Lists.newArrayList();
-		for (final RectModifier.ModifierType type : types)
-		{
-			list.add(type);
-		}
+		Collections.addAll(list, types);
 
 		final List<RectModifier.ModifierType> filteredTypes = this.filterModifierTypes(list);
 		this.modifiers = ObjectFilter.getTypesFrom(this.modifiers, new ObjectFilter.FilterCondition<RectModifier>(this.modifiers)
@@ -365,10 +350,7 @@ public class ModDim2D implements Rect
 	{
 		final List<RectModifier.ModifierType> list = Lists.newArrayList();
 		list.add(manda);
-		for (final RectModifier.ModifierType type : types)
-		{
-			list.add(type);
-		}
+		list.addAll(Arrays.asList(types));
 		return list;
 	}
 

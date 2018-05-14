@@ -78,8 +78,8 @@ public class CSPSolver
 	{
 		Collection<? extends VAR> vars = problem.variables();
 
-		List<VAR> assigned = new ArrayList<VAR>();
-		List<VAR> unassigned = new ArrayList<VAR>();
+		List<VAR> assigned = new ArrayList<>();
+		List<VAR> unassigned = new ArrayList<>();
 		for (VAR var : vars)
 		{
 			int domainSize = domains.get(var).size();
@@ -99,7 +99,7 @@ public class CSPSolver
 
 		if (unassigned.isEmpty())
 		{
-			Map<VAR, Object> result = new HashMap<VAR, Object>(vars.size());
+			Map<VAR, Object> result = new HashMap<>(vars.size());
 			for (VAR var : vars)
 			{
 				result.put(var, domains.get(var).get(0));
@@ -159,7 +159,7 @@ public class CSPSolver
 			{
 				continue;
 			}
-			Map<VAR, List<Object>> newDomains = new HashMap<VAR, List<Object>>(domains.size());
+			Map<VAR, List<Object>> newDomains = new HashMap<>(domains.size());
 			for (Entry<VAR, List<Object>> entry : domains.entrySet())
 			{
 				newDomains.put(entry.getKey(), new ArrayList<>(entry.getValue()));

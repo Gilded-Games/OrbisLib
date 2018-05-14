@@ -26,7 +26,7 @@ public class BlueprintPlacer
 		return BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)];
 	}
 
-	public static boolean place(final World placeWith, final BlueprintDefinition def, final ICreationData data, final Random rand)
+	public static boolean place(final World placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
 	{
 		DataPrimer chosen = null;
 
@@ -49,7 +49,7 @@ public class BlueprintPlacer
 		return BlueprintPlacer.place(chosen, def, data, rand);
 	}
 
-	public static void placeForced(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData data, final Random rand)
+	public static void placeForced(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
 	{
 		placeWith.create(def.getData().getBlockDataContainer(), data);
 
@@ -62,7 +62,7 @@ public class BlueprintPlacer
 		}
 	}
 
-	public static boolean place(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData data, final Random rand)
+	public static boolean place(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
 	{
 		final boolean result = placeWith.canGenerate(def, data);
 
@@ -82,7 +82,7 @@ public class BlueprintPlacer
 		return result;
 	}
 
-	public static boolean findPlace(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData data, final Random rand)
+	public static boolean findPlace(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
 	{
 		final Rotation rotation = def.hasRandomRotation() ? ROTATIONS[rand.nextInt(ROTATIONS.length)] : ROTATIONS[0];
 
