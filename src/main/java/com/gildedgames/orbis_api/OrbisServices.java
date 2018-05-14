@@ -34,6 +34,7 @@ import com.gildedgames.orbis_api.util.io.Instantiator;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.io.SimpleSerializer;
 import com.gildedgames.orbis_api.util.mc.BlockPosDimension;
+import com.gildedgames.orbis_api.world.data.IWorldDataManager;
 import com.gildedgames.orbis_api.world.instances.IInstanceRegistry;
 import com.gildedgames.orbis_api.world.instances.InstanceRegistryImpl;
 import com.google.common.collect.Lists;
@@ -44,6 +45,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.commons.io.IOUtils;
@@ -95,12 +97,6 @@ public class OrbisServices implements IOrbisServices
 		this.network.reg(PacketRegisterDimension.Handler.class, PacketRegisterDimension.class, Side.CLIENT);
 		this.network.reg(PacketUnregisterDimension.Handler.class, PacketUnregisterDimension.class, Side.CLIENT);
 		this.network.reg(PacketRegisterInstance.Handler.class, PacketRegisterInstance.class, Side.CLIENT);
-	}
-
-	@Override
-	public Logger log()
-	{
-		return this.logger;
 	}
 
 	@Nullable
@@ -266,7 +262,7 @@ public class OrbisServices implements IOrbisServices
 		catch (final IOException var10)
 		{
 			flag = false;
-			this.log().error(var10);
+			OrbisAPI.LOGGER.error(var10);
 		}
 		finally
 		{
@@ -376,6 +372,12 @@ public class OrbisServices implements IOrbisServices
 	public IInstanceRegistry instances()
 	{
 		return this.instancesRegistry;
+	}
+
+	@Override
+	public IWorldDataManager getWorldDataManager(World world)
+	{
+		return world.getCapability(OrbisAPICapabilities.WORLD_DATA, null).get();
 	}
 
 	@Override

@@ -27,7 +27,7 @@ public class NBTFunnel
 	{
 		NBTTagCompound f = new NBTTagCompound();
 
-		f.setBoolean("b", o);
+		f.setBoolean("bsss", o);
 
 		return f;
 	};
@@ -68,7 +68,7 @@ public class NBTFunnel
 		this.tag = tag;
 	}
 
-	/**
+	/**wha
 	 * @return The tag we're reading and writing from.
 	 */
 	public NBTTagCompound getTag()

@@ -4,6 +4,9 @@ import com.gildedgames.orbis_api.preparation.IPrepManager;
 import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepManager;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepManagerStorageProvider;
+import com.gildedgames.orbis_api.world.data.IWorldDataManagerContainer;
+import com.gildedgames.orbis_api.world.data.WorldDataManagerContainer;
+import com.gildedgames.orbis_api.world.data.WorldDataManagerContainerProvider;
 import com.gildedgames.orbis_api.world.instances.IPlayerInstances;
 import com.gildedgames.orbis_api.world.instances.PlayerInstances;
 import com.gildedgames.orbis_api.world.instances.PlayerInstancesProvider;
@@ -25,12 +28,15 @@ public class CapabilityManagerOrbisAPI
 	{
 		CapabilityManager.INSTANCE.register(IPlayerInstances.class, new PlayerInstances.Storage(), PlayerInstances::new);
 		CapabilityManager.INSTANCE.register(IPrepManager.class, new PrepManager.Storage(), PrepManager::new);
+		CapabilityManager.INSTANCE.register(IWorldDataManagerContainer.class, new WorldDataManagerContainer.Storage(), WorldDataManagerContainer::new);
 	}
 
 	@SubscribeEvent
 	public static void onWorldAttachCapability(final AttachCapabilitiesEvent<World> event)
 	{
 		final World world = event.getObject();
+
+		event.addCapability(OrbisAPI.getResource("WorldData"), new WorldDataManagerContainerProvider(event.getObject()));
 
 		for (IPrepRegistryEntry entry : OrbisAPI.sectors().getEntries())
 		{

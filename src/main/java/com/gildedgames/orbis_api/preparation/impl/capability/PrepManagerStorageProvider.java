@@ -10,19 +10,19 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 
 public class PrepManagerStorageProvider implements ICapabilityProvider
 {
-	private final IPrepManager manager;
+	private final World world;
+
+	private IPrepRegistryEntry entry;
+
+	private IPrepManager manager;
 
 	public PrepManagerStorageProvider(World world, IPrepRegistryEntry entry)
 	{
-		File dir = new File(world.getSaveHandler().getWorldDirectory(),
-				world.provider.getSaveFolder() + "/data/orbis/" + entry.getUniqueId().getResourceDomain() + "/" + entry.getUniqueId().getResourcePath()
-						+ "/");
-
-		this.manager = new PrepManager(world, dir, entry);
+		this.world = world;
+		this.entry = entry;
 	}
 
 	@Override
@@ -38,6 +38,11 @@ public class PrepManagerStorageProvider implements ICapabilityProvider
 	{
 		if (this.hasCapability(capability, facing))
 		{
+			if (this.manager == null)
+			{
+				this.manager = new PrepManager(this.world, this.entry);
+			}
+
 			return (T) this.manager;
 		}
 

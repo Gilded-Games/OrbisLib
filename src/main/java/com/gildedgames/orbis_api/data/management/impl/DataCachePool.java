@@ -57,7 +57,7 @@ public class DataCachePool implements IDataCachePool
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.services().log().catching(e);
+			OrbisAPI.LOGGER.catching(e);
 		}
 	}
 
@@ -76,7 +76,7 @@ public class DataCachePool implements IDataCachePool
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.services().log().error("Failed to save IDataCache to disk", e);
+			OrbisAPI.LOGGER.error("Failed to save IDataCache to disk", e);
 		}
 	}
 
@@ -108,7 +108,7 @@ public class DataCachePool implements IDataCachePool
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.services().log().error(e);
+			OrbisAPI.LOGGER.error(e);
 		}
 	}
 
@@ -131,7 +131,7 @@ public class DataCachePool implements IDataCachePool
 
 		if (cache == null)
 		{
-			OrbisAPI.services().log().warn("The cache you attempted to find could not be found. Something might be wrong.");
+			OrbisAPI.LOGGER.warn("The cache you attempted to find could not be found. Something might be wrong.");
 		}
 
 		return (T) cache;

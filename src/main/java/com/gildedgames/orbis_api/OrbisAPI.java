@@ -5,6 +5,7 @@ import com.gildedgames.orbis_api.network.INetworkMultipleParts;
 import com.gildedgames.orbis_api.preparation.IPrepRegistry;
 import com.gildedgames.orbis_api.preparation.impl.PrepTasks;
 import com.gildedgames.orbis_api.world.WorldObjectManagerEvents;
+import com.gildedgames.orbis_api.world.data.WorldDataManagerContainerEvents;
 import com.gildedgames.orbis_api.world.instances.IInstanceRegistry;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.DimensionManager;
@@ -64,6 +65,7 @@ public class OrbisAPI
 			MinecraftForge.EVENT_BUS.register(OrbisAPI.services().instances());
 
 			MinecraftForge.EVENT_BUS.register(WorldObjectManagerEvents.class);
+			MinecraftForge.EVENT_BUS.register(WorldDataManagerContainerEvents.class);
 			MinecraftForge.EVENT_BUS.register(PartialTicks.class);
 
 			MinecraftForge.EVENT_BUS.register(PrepTasks.class);

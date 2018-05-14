@@ -1,16 +1,19 @@
 package com.gildedgames.orbis_api.preparation;
 
+import com.gildedgames.orbis_api.world.data.IWorldData;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.Optional;
 
 /**
  * Server-side access interface for a world's sectors.
  */
-public interface IPrepSectorAccess
+public interface IPrepSectorAccessAsync extends IWorldData
 {
 	/**
 	 * Fetches an {@link IPrepSector} from the world that belongs to the specified chunk.
 	 *
-	 * This will only return currently loaded sectors. Use {@link IPrepSectorAccess#provideSector(int, int)}
+	 * This will only return currently loaded sectors. Use {@link IPrepSectorAccessAsync#provideSector(int, int)}
 	 * if you want to fetch offline sectors or generate new ones.
 	 *
 	 * @param chunkX The x-coordinate of the chunk
@@ -32,7 +35,7 @@ public interface IPrepSectorAccess
 	 *
 	 * @return The {@link IPrepSector} for the chunk
 	 */
-	IPrepSector provideSector(int chunkX, int chunkZ);
+	ListenableFuture<IPrepSector> provideSector(int chunkX, int chunkZ);
 
 	/**
 	 * Called when a chunk possibly containing a sector is loaded for the world.
@@ -53,9 +56,4 @@ public interface IPrepSectorAccess
 	 * @param chunkZ The y-coordinate of the sector
 	 */
 	void onChunkUnloaded(int chunkX, int chunkZ);
-
-	/**
-	 * Flushes dirty sectors to disk. Should be called on world save.
-	 */
-	void flush();
 }

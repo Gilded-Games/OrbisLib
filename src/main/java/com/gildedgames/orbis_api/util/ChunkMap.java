@@ -18,44 +18,44 @@ public class ChunkMap<T>
 	/**
 	 * Returns whether or not this map contains the value at the coordinates.
 	 *
-	 * @param chunkX The x-coordinate to check
-	 * @param chunkZ The z-coordinate to check
+	 * @param x The x-coordinate to check
+	 * @param z The z-coordinate to check
 	 * @return True if the map contains an entry, otherwise false
 	 */
-	public boolean containsKey(int chunkX, int chunkZ)
+	public boolean containsKey(int x, int z)
 	{
-		return this.map.containsKey(ChunkPos.asLong(chunkX, chunkZ));
+		return this.map.containsKey(ChunkPos.asLong(x, z));
 	}
 
 	/**
 	 * Gets an entry from the map at the specified coordinates.
 	 *
-	 * @param chunkX The entry's x-coordinate
-	 * @param chunkZ The entry's z-coordinate
+	 * @param x The entry's x-coordinate
+	 * @param z The entry's z-coordinate
 	 * @return The value in the map at the specified coordinates, null if none
 	 */
-	public T get(int chunkX, int chunkZ)
+	public T get(int x, int z)
 	{
-		return this.map.get(ChunkPos.asLong(chunkX, chunkZ));
+		return this.map.get(ChunkPos.asLong(x, z));
 	}
 
 	/**
 	 * Puts an entry into the map, replacing the existing value if it exists. If
 	 * the value is null, the entry will be removed.
 	 *
-	 * @param chunkX The entry's x-coordinate
-	 * @param chunkZ The entry's z-coordinate
+	 * @param x The entry's x-coordinate
+	 * @param z The entry's z-coordinate
 	 * @param value The value to put, null to remove the entry from the map
 	 * @return The previous value at the coordinates specified, null if none
 	 */
-	public T put(int chunkX, int chunkZ, T value)
+	public T put(int x, int z, T value)
 	{
 		if (value == null)
 		{
-			return this.remove(chunkX, chunkZ);
+			return this.remove(x, z);
 		}
 
-		long key = ChunkPos.asLong(chunkX, chunkZ);
+		long key = ChunkPos.asLong(x, z);
 
 		return this.map.put(key, value);
 	}
@@ -63,13 +63,13 @@ public class ChunkMap<T>
 	/**
 	 * Removes an entry from the map.
 	 *
-	 * @param chunkX The entry's x-coordinate
-	 * @param chunkZ The entry's z-coordinate
+	 * @param x The entry's x-coordinate
+	 * @param z The entry's z-coordinate
 	 * @return The entry removed from the map, null if none.
 	 */
-	public T remove(int chunkX, int chunkZ)
+	public T remove(int x, int z)
 	{
-		return this.map.remove(ChunkPos.asLong(chunkX, chunkZ));
+		return this.map.remove(ChunkPos.asLong(x, z));
 	}
 
 	/**
@@ -92,7 +92,6 @@ public class ChunkMap<T>
 	 * Returns the {@link Collection<T>} of values in this map.
 	 * @return A {@link Collection<T>} of values in this map, empty if none
 	 */
-	@Deprecated
 	public Collection<T> getValues()
 	{
 		return this.map.valueCollection();

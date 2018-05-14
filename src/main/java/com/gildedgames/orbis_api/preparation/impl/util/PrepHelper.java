@@ -7,6 +7,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 public class PrepHelper
 {
@@ -34,7 +35,14 @@ public class PrepHelper
 	{
 		IPrepManager manager = PrepHelper.getManager(world);
 
-		return manager.access().provideSector(chunkX, chunkY);
+		try
+		{
+			return manager.access().provideSector(chunkX, chunkY).get();
+		}
+		catch (InterruptedException | ExecutionException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static boolean isSectorLoaded(World world, int chunkX, int chunkY)

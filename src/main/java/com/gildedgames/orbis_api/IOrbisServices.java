@@ -6,10 +6,11 @@ import com.gildedgames.orbis_api.data.management.IProject;
 import com.gildedgames.orbis_api.data.management.IProjectManager;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
 import com.gildedgames.orbis_api.preparation.IPrepRegistry;
+import com.gildedgames.orbis_api.world.data.IWorldDataManager;
 import com.gildedgames.orbis_api.world.instances.IInstanceRegistry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
@@ -25,8 +26,6 @@ public interface IOrbisServices
 	boolean unlisten(IOrbisServicesListener listener);
 
 	GameRegistrar registrar();
-
-	Logger log();
 
 	/**
 	 * Searches for the definition registry linked with the
@@ -64,4 +63,5 @@ public interface IOrbisServices
 
 	IInstanceRegistry instances();
 
+	IWorldDataManager getWorldDataManager(World world);
 }

@@ -189,7 +189,7 @@ public class OrbisProject implements IProject
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.services().log().error("Failed to save project data to disk", e);
+			OrbisAPI.LOGGER.error("Failed to save project data to disk", e);
 		}
 	}
 
@@ -219,7 +219,7 @@ public class OrbisProject implements IProject
 		 * Save the data to disk to ensure it doesn't keep creating
 		 * new identifiers each time the project is loaded.
 		 */
-		if (this.locationFile != null && (shouldSaveAfter || fromOtherProject))
+		if (this.locationFile != null && (shouldSaveAfter || fromOtherProject) && !OrbisAPI.isClient())
 		{
 			this.writeData(data, file);
 		}
@@ -377,19 +377,19 @@ public class OrbisProject implements IProject
 							}
 							catch (final IOException e)
 							{
-								OrbisAPI.services().log().error(e);
+								OrbisAPI.LOGGER.error(e);
 							}
 						}
 						catch (final IOException e)
 						{
-							OrbisAPI.services().log().error(e);
+							OrbisAPI.LOGGER.error(e);
 						}
 					}
 				});
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.services().log().error(e);
+				OrbisAPI.LOGGER.error(e);
 			}
 
 			if (fileSystem != null)
@@ -415,7 +415,7 @@ public class OrbisProject implements IProject
 			}
 			else
 			{
-				OrbisAPI.services().log().error("Failed to load back a data file from project.", uri);
+				OrbisAPI.LOGGER.error("Failed to load back a data file from project.", uri);
 			}
 		});
 	}

@@ -117,18 +117,9 @@ public class OrbisProjectCache implements IProjectCache
 	@Override
 	public void setDataLocation(final int dataId, final String location)
 	{
-		boolean notEquals = !Objects.equals(this.idToLocation.get(dataId), location);
-
-		if (!this.idToLocation.containsKey(dataId) || notEquals)
+		if (!this.idToLocation.containsKey(dataId) || !Objects.equals(this.idToLocation.get(dataId), location))
 		{
-			if (notEquals)
-			{
-				this.idToLocation.forcePut(dataId, location);
-			}
-			else
-			{
-				this.idToLocation.put(dataId, location);
-			}
+			this.idToLocation.put(dataId, location);
 		}
 	}
 

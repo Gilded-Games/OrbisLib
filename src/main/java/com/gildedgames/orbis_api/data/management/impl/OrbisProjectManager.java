@@ -147,7 +147,7 @@ public class OrbisProjectManager implements IProjectManager
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.services().log().catching(e);
+				OrbisAPI.LOGGER.catching(e);
 			}
 		});
 
@@ -188,7 +188,7 @@ public class OrbisProjectManager implements IProjectManager
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.services().log().catching(e);
+				OrbisAPI.LOGGER.catching(e);
 			}
 		});
 	}
@@ -229,7 +229,7 @@ public class OrbisProjectManager implements IProjectManager
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.services().log().catching(e);
+				OrbisAPI.LOGGER.catching(e);
 			}
 		});
 
@@ -266,7 +266,7 @@ public class OrbisProjectManager implements IProjectManager
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.services().log().catching(e);
+				OrbisAPI.LOGGER.catching(e);
 			}
 		});
 
@@ -334,7 +334,7 @@ public class OrbisProjectManager implements IProjectManager
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.services().log().error(e);
+			OrbisAPI.LOGGER.error(e);
 		}
 
 		return null;
@@ -494,14 +494,14 @@ public class OrbisProjectManager implements IProjectManager
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.services().log().error("Failed to save Project to disk", e);
+				OrbisAPI.LOGGER.error("Failed to save Project to disk", e);
 			}
 
 			FileHelper.hide(projectFile);
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.services().log().error(e);
+			OrbisAPI.LOGGER.error(e);
 		}
 	}
 

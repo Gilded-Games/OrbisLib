@@ -28,8 +28,33 @@ version = "${config.mod_version}"
 group = "com.gildedgames"
 archivesBaseName = "orbis_api"
 
+configurations {
+	shade
+	shade.exclude group: "org.ow2.asm"
+
+	compile.extendsFrom shade
+}
+
+dependencies {
+	shade 'org.lmdbjava:lmdbjava:0.6.1'
+}
+
 jar {
 	from sourceSets.main.output
+
+	configurations.shade.each { dep ->
+		from(project.zipTree(dep)){
+			exclude 'META-INF', 'META-INF/**'
+		}
+	}
+}
+
+reobf {
+	jar {
+		extraLines 'PK: org/lmdbjava com/gildedgames/orbis_api/deps/lmdbjava',
+				'PK: com/github/jnr com/gildedgames/orbis_api/deps/jnr',
+				'PK: com/ow2/asm com/gildedgames/orbis_api/deps/asm'
+	}
 }
 
 minecraft {
