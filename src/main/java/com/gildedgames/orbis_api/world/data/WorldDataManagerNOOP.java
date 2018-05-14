@@ -1,7 +1,5 @@
 package com.gildedgames.orbis_api.world.data;
 
-import java.io.IOException;
-
 public class WorldDataManagerNOOP implements IWorldDataManager
 {
 
@@ -12,13 +10,13 @@ public class WorldDataManagerNOOP implements IWorldDataManager
 	}
 
 	@Override
-	public byte[] readBytes(IWorldData data, String path) throws IOException
+	public byte[] readBytes(IWorldData data, String path)
 	{
 		return new byte[0];
 	}
 
 	@Override
-	public void writeBytes(IWorldData data, String path, byte[] bytes) throws IOException
+	public void writeBytes(IWorldData data, String path, byte[] bytes)
 	{
 
 	}
