@@ -63,26 +63,10 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 
 			if (this.lastStorageMethod == null)
 			{
-				if (this.isLMDBSupported())
-				{
-					this.lastStorageMethod = WorldDataStorageMethod.LMDB;
-				}
-				else
-				{
-					this.lastStorageMethod = WorldDataStorageMethod.FLAT;
-				}
+				this.lastStorageMethod = WorldDataStorageMethod.FLAT;
 			}
 
-			if (this.lastStorageMethod == WorldDataStorageMethod.LMDB)
-			{
-				if (!this.isLMDBSupported())
-				{
-					throw new RuntimeException("Cannot initialize LMDB storage on this platform (need 64-bit Java on Windows, Mac OS, or Linux)");
-				}
-
-				return new WorldDataManagerLmdb(dir);
-			}
-			else if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
+			if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
 			{
 				return new WorldDataManagerFlat(dir);
 			}
