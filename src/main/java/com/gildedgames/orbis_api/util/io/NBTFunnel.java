@@ -23,11 +23,22 @@ import java.util.function.Supplier;
 
 public class NBTFunnel
 {
+	public static Function<String, NBTTagCompound> STRING_SETTER = o ->
+	{
+		NBTTagCompound f = new NBTTagCompound();
+
+		f.setString("s", o);
+
+		return f;
+	};
+
+	public static Function<NBTTagCompound, String> STRING_GETTER = n -> n.getString("s");
+
 	public static Function<Boolean, NBTTagCompound> BOOLEAN_SETTER = o ->
 	{
 		NBTTagCompound f = new NBTTagCompound();
 
-		f.setBoolean("bsss", o);
+		f.setBoolean("b", o);
 
 		return f;
 	};
