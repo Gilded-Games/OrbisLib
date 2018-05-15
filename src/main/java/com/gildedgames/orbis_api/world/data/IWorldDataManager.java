@@ -38,4 +38,9 @@ public interface IWorldDataManager
 	 * to all registered {@link IWorldData}.
 	 */
 	void flush();
+
+	/**
+	 * Called when the world is unloaded.
+	 */
+	void close();
 }

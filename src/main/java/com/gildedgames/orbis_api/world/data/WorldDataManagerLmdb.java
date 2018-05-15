@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.world.data;
 
+import com.gildedgames.orbis_api.OrbisAPI;
 import org.lmdbjava.Dbi;
 import org.lmdbjava.DbiFlags;
 import org.lmdbjava.Env;
@@ -17,7 +18,6 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 	private final Env<ByteBuffer> env;
 
 	private final HashMap<String, Dbi<ByteBuffer>> registeredDatabases = new HashMap<>();
-
 	private final HashMap<String, IWorldData> registeredDatas = new HashMap<>();
 
 	private Txn<ByteBuffer> write;
@@ -25,6 +25,8 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 	public WorldDataManagerLmdb(File file)
 	{
 		this.file = new File(file, "lmdb");
+
+		OrbisAPI.LOGGER.info("Creating LMDB-backed world storage at " + this.file.getAbsolutePath());
 
 		if (!this.file.isDirectory() && !this.file.mkdirs())
 		{
@@ -37,18 +39,33 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 	@Override
 	public void register(IWorldData data)
 	{
+		this.checkClosed();
+
 		if (data.getName() == null)
 		{
 			throw new IllegalArgumentException("Data name can not be null");
 		}
 
-		this.registeredDatabases.put(data.getName().toString(), this.env.openDbi(data.getName().toString(), DbiFlags.MDB_CREATE));
+		Dbi<ByteBuffer> dbi;
+
+		try
+		{
+			dbi = this.env.openDbi(data.getName().toString(), DbiFlags.MDB_CREATE);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Failed to open database");
+		}
+
+		this.registeredDatabases.put(data.getName().toString(), dbi);
 		this.registeredDatas.put(data.getName().toString(), data);
 	}
 
 	@Override
 	public byte[] readBytes(IWorldData data, String path)
 	{
+		this.checkClosed();
+
 		IWorldData item = this.registeredDatas.get(data.getName().toString());
 		Dbi<ByteBuffer> db = this.registeredDatabases.get(data.getName().toString());
 
@@ -83,6 +100,8 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 	@Override
 	public void writeBytes(IWorldData data, String path, byte[] bytes)
 	{
+		this.checkClosed();
+
 		if (this.write == null)
 		{
 			throw new IllegalStateException("Write Txn not available (did you wait for flush()?)");
@@ -113,6 +132,8 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 	@Override
 	public void flush()
 	{
+		this.checkClosed();
+
 		try (Txn<ByteBuffer> txn = this.env.txnWrite())
 		{
 			this.write = txn;
@@ -125,6 +146,14 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 		{
 			this.write = null;
 		}
+	}
+
+	@Override
+	public void close()
+	{
+		this.flush();
+
+		this.env.close();
 	}
 
 	private ByteBuffer createKey(String path)
@@ -142,4 +171,11 @@ public class WorldDataManagerLmdb implements IWorldDataManager
 		return key;
 	}
 
+	private void checkClosed()
+	{
+		if (this.env.isClosed())
+		{
+			throw new IllegalStateException("World storage has been closed!");
+		}
+	}
 }

@@ -15,6 +15,6 @@ public class WorldDataManagerContainerEvents
 	@SubscribeEvent
 	public static void onWorldUnload(WorldEvent.Unload event)
 	{
-		OrbisAPI.services().getWorldDataManager(event.getWorld()).flush();
+		OrbisAPI.services().getWorldDataManager(event.getWorld()).close();
 	}
 }
