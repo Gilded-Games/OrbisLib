@@ -35,7 +35,7 @@ public class OrbisAPI
 
 	public static final String MOD_ID = "orbis_api";
 
-	public static final String MOD_VERSION = "1.12.2-1.0.3";
+	public static final String MOD_VERSION = "1.12.2-1.1";
 
 	public static final Logger LOGGER = LogManager.getLogger("OrbisAPI");
 
