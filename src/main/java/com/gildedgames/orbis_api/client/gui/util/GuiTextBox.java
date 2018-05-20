@@ -33,6 +33,8 @@ public class GuiTextBox extends GuiFrame
 	@Override
 	public void init()
 	{
+		this.clearChildren();
+
 		int textHeight = 0;
 
 		final float halfWidth = this.dim().width() / 2;
@@ -71,7 +73,7 @@ public class GuiTextBox extends GuiFrame
 
 					this.addChildren(textElement);
 
-					textHeight += 0.9f * t.scaledHeight();
+					textHeight += 1.2f * t.scaledHeight();
 				}
 			}
 		}
