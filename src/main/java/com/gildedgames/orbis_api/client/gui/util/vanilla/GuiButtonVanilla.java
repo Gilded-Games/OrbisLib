@@ -69,6 +69,9 @@ public class GuiButtonVanilla extends GuiFrame
 		this.button.width = (int) this.dim().width();
 		this.button.height = (int) this.dim().height();
 
+		this.button.enabled = this.isEnabled();
+		this.button.visible = this.isVisible();
+
 		this.button.drawButton(Minecraft.getMinecraft(), (int) InputHelper.getMouseX(), (int) InputHelper.getMouseY(), PartialTicks.get());
 
 		GlStateManager.popMatrix();
