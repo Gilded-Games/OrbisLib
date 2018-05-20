@@ -26,4 +26,10 @@ public class WorldDataManagerNOOP implements IWorldDataManager
 	{
 
 	}
+
+	@Override
+	public void close()
+	{
+
+	}
 }

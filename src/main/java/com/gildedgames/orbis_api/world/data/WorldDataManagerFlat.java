@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.world.data;
 
+import com.gildedgames.orbis_api.OrbisAPI;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -12,14 +13,20 @@ public class WorldDataManagerFlat implements IWorldDataManager
 
 	private final List<IWorldData> registered = new ArrayList<>();
 
+	private boolean closed;
+
 	public WorldDataManagerFlat(File file)
 	{
 		this.file = new File(file, "flat");
+
+		OrbisAPI.LOGGER.info("Creating file-backed world storage at " + this.file.getAbsolutePath());
 	}
 
 	@Override
 	public void register(IWorldData data)
 	{
+		this.checkClosed();
+
 		if (data.getName() == null)
 		{
 			throw new IllegalArgumentException("Data name can not be null");
@@ -38,6 +45,8 @@ public class WorldDataManagerFlat implements IWorldDataManager
 	@Override
 	public byte[] readBytes(IWorldData data, String path) throws IOException
 	{
+		this.checkClosed();
+
 		File file = this.getFile(data, path);
 
 		if (!file.exists())
@@ -61,6 +70,8 @@ public class WorldDataManagerFlat implements IWorldDataManager
 	@Override
 	public void writeBytes(IWorldData data, String path, byte[] bytes) throws IOException
 	{
+		this.checkClosed();
+
 		File file = this.getFile(data, path);
 		File parent = file.getParentFile();
 
@@ -84,5 +95,19 @@ public class WorldDataManagerFlat implements IWorldDataManager
 	public void flush()
 	{
 		this.registered.forEach(IWorldData::flush);
+	}
+
+	@Override
+	public void close()
+	{
+		this.flush();
+	}
+
+	private void checkClosed()
+	{
+		if (this.closed)
+		{
+			throw new IllegalStateException("World storage has been closed!");
+		}
 	}
 }

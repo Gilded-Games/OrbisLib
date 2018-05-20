@@ -1,22 +1,24 @@
 package com.gildedgames.orbis_api.world.data;
 
 import com.gildedgames.orbis_api.OrbisAPICapabilities;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 
-public class WorldDataManagerContainerProvider implements ICapabilityProvider
+public class WorldDataManagerContainerProvider implements ICapabilitySerializable<NBTBase>
 {
 	private final IWorldDataManagerContainer container;
 
+	private final WorldDataManagerContainer.Storage storage = new WorldDataManagerContainer.Storage();
+
 	public WorldDataManagerContainerProvider(World world)
 	{
-		this.container = new WorldDataManagerContainer(this.createDataManager(world));
+		this.container = new WorldDataManagerContainer(world);
 	}
 
 	@Override
@@ -38,18 +40,15 @@ public class WorldDataManagerContainerProvider implements ICapabilityProvider
 		return null;
 	}
 
-	private IWorldDataManager createDataManager(World world)
+	@Override
+	public NBTBase serializeNBT()
 	{
-		if (world.isRemote)
-		{
-			return new WorldDataManagerNOOP();
-		}
-		else
-		{
-			File dir = new File(world.getSaveHandler().getWorldDirectory(),
-					(world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
+		return this.storage.writeNBT(OrbisAPICapabilities.WORLD_DATA, this.container, null);
+	}
 
-			return new WorldDataManagerLmdb(dir);
-		}
+	@Override
+	public void deserializeNBT(NBTBase nbt)
+	{
+		this.storage.readNBT(OrbisAPICapabilities.WORLD_DATA, this.container, null, nbt);
 	}
 }
