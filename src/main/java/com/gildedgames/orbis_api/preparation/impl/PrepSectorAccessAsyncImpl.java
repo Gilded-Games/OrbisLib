@@ -4,45 +4,66 @@ import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.util.ChunkMap;
 import com.gildedgames.orbis_api.world.data.IWorldDataManager;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.*;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
-/**
- * Implementation of {@link IPrepSectorAccessAsync} that uses a flat-file database.
- */
 public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 {
-	private final ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
-
-	// THREAD-SAFE
-	private final ChunkMap<ListenableFuture<IPrepSector>> futures = new ChunkMap<>();
+	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Sector Access %d").build();
 
 	private final World world;
+
+	private final ListeningExecutorService service =
+			MoreExecutors.listeningDecorator(new ThreadPoolExecutor(0, 1, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), threadFactory));
 
 	private final IPrepRegistryEntry registry;
 
 	private final IPrepManager prepManager;
 
-	// NOT THREAD-SAFE, ONLY MODIFY ON GAME THREAD
-	private final ChunkMap<IPrepSector> loaded = new ChunkMap<>();
+	private final ChunkMap<IPrepSector> generating = new ChunkMap<>();
 
-	// NOT THREAD-SAFE, ONLY MODIFY ON GAME THREAD
-	private final Queue<IPrepSector> dirty = new ArrayDeque<>();
+	private final LoadingCache<ChunkPos, IPrepSector> dormantCache = CacheBuilder.newBuilder()
+			.maximumSize(32)
+			.expireAfterAccess(2, TimeUnit.MINUTES)
+			.build(new CacheLoader<ChunkPos, IPrepSector>()
+			{
+				@Override
+				public IPrepSector load(ChunkPos key) throws Exception
+				{
+					IPrepSector sector;
+
+					synchronized (PrepSectorAccessAsyncImpl.this.loaded)
+					{
+						sector = PrepSectorAccessAsyncImpl.this.loaded.get(key.x, key.z);
+					}
+
+					if (sector == null)
+					{
+						return PrepSectorAccessAsyncImpl.this.loadSector(key.x, key.z);
+					}
+
+					return sector;
+				}
+			});
+
+	private final ChunkMap<IPrepSector> loaded = new ChunkMap<>();
 
 	private final IWorldDataManager dataManager;
 
@@ -59,10 +80,25 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	@Override
 	public Optional<IPrepSector> getLoadedSector(final int chunkX, final int chunkZ)
 	{
+		if (this.world.isRemote)
+		{
+			return Optional.empty();
+		}
+
 		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
 		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
 
-		return Optional.ofNullable(this.loaded.get(sectorX, sectorZ));
+		synchronized (this.generating)
+		{
+			IPrepSector job = PrepSectorAccessAsyncImpl.this.generating.get(sectorX, sectorZ);
+
+			if (job != null)
+			{
+				return Optional.of(job);
+			}
+		}
+
+		return Optional.ofNullable(this.dormantCache.getIfPresent(new ChunkPos(sectorX, sectorZ)));
 	}
 
 	@Override
@@ -76,118 +112,87 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
 		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
 
-		// Check if the sector is already loaded
-		if (this.loaded.containsKey(sectorX, sectorZ))
+		synchronized (this.generating)
 		{
-			return Futures.immediateFuture(this.loaded.get(sectorX, sectorZ));
-		}
+			IPrepSector job = PrepSectorAccessAsyncImpl.this.generating.get(sectorX, sectorZ);
 
-		synchronized (this.futures)
-		{
-			if (this.futures.containsKey(sectorX, sectorZ))
+			if (job != null)
 			{
-				return this.futures.get(sectorX, sectorZ);
+				return Futures.immediateFuture(job);
 			}
 		}
 
-		SettableFuture<IPrepSector> future = SettableFuture.create();
+		return this.service.submit(() -> PrepSectorAccessAsyncImpl.this.dormantCache.get(new ChunkPos(sectorX, sectorZ)));
+	}
 
-		synchronized (this.futures)
+	private IPrepSector loadSector(int sectorX, int sectorZ) throws Exception
+	{
+		if (this.world.isRemote)
 		{
-			this.futures.put(sectorX, sectorZ, future);
+			return null;
 		}
 
-		this.service.execute(() -> {
-			IPrepSectorData data = null;
+		IPrepSectorData data = this.readSectorDataFromDisk(sectorX, sectorZ);
 
-			try
-			{
-				data = this.readSectorDataFromDisk(sectorX, sectorZ);
-			}
-			catch (IOException e)
-			{
-				future.setException(e);
-			}
+		PrepSector sector;
 
-			if (data != null)
-			{
-				future.set(new PrepSector(data));
-
-				return;
-			}
-
-			Futures.addCallback(this.prepManager.createSector(sectorX, sectorZ), new FutureCallback<IPrepSectorData>()
-			{
-				@Override
-				public void onSuccess(@Nullable IPrepSectorData result)
-				{
-					PrepSector sector = new PrepSector(result);
-					sector.markDirty();
-
-					future.set(sector);
-				}
-
-				@Override
-				public void onFailure(@Nonnull Throwable t)
-				{
-					future.setException(t);
-				}
-			}, this.service);
-		});
-
-		Futures.addCallback(future, new FutureCallback<IPrepSector>()
+		if (data != null)
 		{
-			@Override
-			public void onSuccess(IPrepSector result)
+			sector = new PrepSector(data);
+
+			OrbisAPI.LOGGER.info("Loaded Sector (" + sectorX + ", " + sectorZ + ") from disk");
+		}
+		else
+		{
+			OrbisAPI.LOGGER.info("Generating Sector (" + sectorX + ", " + sectorZ + ")");
+
+			data = this.prepManager.createSector(sectorX, sectorZ);
+			sector = new PrepSector(data);
+
+			synchronized (this.generating)
 			{
-				FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(() -> {
-					// Store the sector in memory
-					PrepSectorAccessAsyncImpl.this.loaded.put(sectorX, sectorZ, result);
-
-					// Queue the sector for saving if we just generated it
-					if (result.isDirty())
-					{
-						PrepSectorAccessAsyncImpl.this.dirty.add(result);
-					}
-
-					// Begin watching the sector
-					result.addWatchingChunk(chunkX, chunkZ);
-
-					synchronized (PrepSectorAccessAsyncImpl.this.futures)
-					{
-						PrepSectorAccessAsyncImpl.this.futures.remove(sectorX, sectorZ);
-					}
-				});
+				this.generating.put(sectorX, sectorZ, sector);
 			}
 
-			@Override
-			public void onFailure(@Nonnull Throwable t)
-			{
-				t.printStackTrace();
-			}
-		}, this.service);
+			this.prepManager.decorateSectorData(data);
 
-		return future;
+			synchronized (this.generating)
+			{
+				this.generating.remove(sectorX, sectorZ);
+			}
+
+			sector.markDirty();
+		}
+
+		synchronized (PrepSectorAccessAsyncImpl.this.loaded)
+		{
+			if (!PrepSectorAccessAsyncImpl.this.loaded.containsKey(sectorX, sectorZ))
+			{
+				PrepSectorAccessAsyncImpl.this.loaded.put(sectorX, sectorZ, sector);
+			}
+		}
+
+		return sector;
 	}
 
 	@Override
 	public void onChunkLoaded(final int chunkX, final int chunkZ)
 	{
-		if (this.world.isRemote)
+		try
 		{
-			return;
+			IPrepSector sector = this.provideSector(chunkX, chunkZ).get();
+
+			if (sector == null)
+			{
+				return;
+			}
+
+			sector.addWatchingChunk(chunkX, chunkZ);
 		}
-
-		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
-		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
-
-		// Check if the sector is already loaded
-		if (this.loaded.containsKey(sectorX, sectorZ))
+		catch (InterruptedException | ExecutionException e)
 		{
-			return;
+			e.printStackTrace();
 		}
-
-		this.provideSector(sectorX, sectorZ);
 	}
 
 	@Override
@@ -201,19 +206,6 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 		if (sector != null)
 		{
 			sector.removeWatchingChunk(chunkX, chunkZ);
-
-			if (!sector.hasWatchers())
-			{
-				// If the sector is dirty, queue it for saving, otherwise drop it
-				if (sector.isDirty())
-				{
-					this.dirty.add(sector);
-				}
-				else
-				{
-					this.loaded.remove(sectorX, sectorZ);
-				}
-			}
 		}
 	}
 
@@ -230,10 +222,26 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	@Override
 	public void flush()
 	{
-		while (!this.dirty.isEmpty())
+		if (this.world.isRemote)
 		{
-			final IPrepSector sector = this.dirty.remove();
+			return;
+		}
 
+		List<IPrepSector> dirty = new ArrayList<>();
+
+		synchronized (this.loaded)
+		{
+			for (IPrepSector sector : this.loaded.getValues())
+			{
+				if (sector.isDirty())
+				{
+					dirty.add(sector);
+				}
+			}
+		}
+
+		for (IPrepSector sector : dirty)
+		{
 			try
 			{
 				this.writeSectorDataToDisk(sector.getData());
@@ -244,14 +252,23 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 			}
 
 			sector.markClean();
+		}
 
-			// If the sector has no watchers after flushing, remove it from cache
-			if (!sector.hasWatchers())
+		synchronized (this.loaded)
+		{
+			List<IPrepSector> removal = new ArrayList<>();
+
+			for (IPrepSector sector : this.loaded.getValues())
 			{
-				synchronized (this.loaded)
+				if (!sector.hasWatchers())
 				{
-					this.loaded.remove(sector.getData().getSectorX(), sector.getData().getSectorY());
+					removal.add(sector);
 				}
+			}
+
+			for (IPrepSector sector : removal)
+			{
+				this.loaded.remove(sector.getData().getSectorX(), sector.getData().getSectorY());
 			}
 		}
 	}

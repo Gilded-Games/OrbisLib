@@ -42,7 +42,6 @@ public class PrepChunkManager implements IPrepChunkManager
 						   int y = PointSerializer.y(key);
 
 						   Biome[] biomes = new Biome[256];
-
 						   biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, x * 16, y * 16, 16, 16);
 
 						   ChunkPrimer primer = new ChunkPrimer();
@@ -68,10 +67,7 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	private LoadingCache<Long, ChunkPrimer> getChunkCache()
 	{
-		synchronized (this.chunkCache)
-		{
-			return this.chunkCache;
-		}
+		return this.chunkCache;
 	}
 
 	@Override

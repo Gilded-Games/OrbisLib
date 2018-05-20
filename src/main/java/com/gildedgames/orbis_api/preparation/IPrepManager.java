@@ -1,7 +1,5 @@
 package com.gildedgames.orbis_api.preparation;
 
-import com.google.common.util.concurrent.ListenableFuture;
-
 public interface IPrepManager
 {
 	IPrepRegistryEntry getRegistryEntry();
@@ -10,5 +8,7 @@ public interface IPrepManager
 
 	IPrepSectorAccessAsync access();
 
-	ListenableFuture<IPrepSectorData> createSector(int sectorX, int sectorZ);
+	IPrepSectorData createSector(int sectorX, int sectorZ);
+
+	void decorateSectorData(IPrepSectorData data);
 }

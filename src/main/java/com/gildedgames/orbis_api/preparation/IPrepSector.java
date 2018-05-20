@@ -26,15 +26,19 @@ public interface IPrepSector
 	 * Adds a belonging loaded chunk to this sector.
 	 * @param chunkX The chunk's x-coordinate
 	 * @param chunkZ The chunk's z-coordinate
+	 *
+	 * @return True if the chunk wasn't watching before
 	 */
-	void addWatchingChunk(int chunkX, int chunkZ);
+	boolean addWatchingChunk(int chunkX, int chunkZ);
 
 	/**
 	 * Removes a loaded chunk belonging to this sector.
 	 * @param chunkX The chunk's x-coordinate
 	 * @param chunkZ The chunk's z-coordinate
+	 *
+	 * @return True if the chunk was watching
 	 */
-	void removeWatchingChunk(int chunkX, int chunkZ);
+	boolean removeWatchingChunk(int chunkX, int chunkZ);
 
 	/**
 	 * @return True if the sector has currently watching chunks

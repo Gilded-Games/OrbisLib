@@ -12,7 +12,7 @@ public class WorldDataManagerNOOP implements IWorldDataManager
 	@Override
 	public byte[] readBytes(IWorldData data, String path)
 	{
-		return new byte[0];
+		return null;
 	}
 
 	@Override

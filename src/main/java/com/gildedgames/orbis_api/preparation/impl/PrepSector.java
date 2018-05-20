@@ -44,15 +44,15 @@ public class PrepSector implements IPrepSector
 	}
 
 	@Override
-	public void addWatchingChunk(final int chunkX, final int chunkZ)
+	public boolean addWatchingChunk(final int chunkX, final int chunkZ)
 	{
-		this.watching.add(ChunkPos.asLong(chunkX, chunkZ));
+		return this.watching.add(ChunkPos.asLong(chunkX, chunkZ));
 	}
 
 	@Override
-	public void removeWatchingChunk(final int chunkX, final int chunkZ)
+	public boolean removeWatchingChunk(final int chunkX, final int chunkZ)
 	{
-		this.watching.remove(ChunkPos.asLong(chunkX, chunkZ));
+		return this.watching.remove(ChunkPos.asLong(chunkX, chunkZ));
 	}
 
 	@Override
