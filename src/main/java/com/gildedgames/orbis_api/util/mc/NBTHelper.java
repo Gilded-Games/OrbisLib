@@ -121,7 +121,11 @@ public class NBTHelper
 		}
 
 		ItemStack itemstack = new ItemStack(Item.getItemById(tag.getShort("id")), tag.getByte("count"), tag.getShort("meta"));
-		itemstack.setTagCompound(tag.getCompoundTag("shareTag"));
+
+		if (tag.hasKey("shareTag"))
+		{
+			itemstack.setTagCompound(tag.getCompoundTag("shareTag"));
+		}
 
 		return itemstack;
 	}
