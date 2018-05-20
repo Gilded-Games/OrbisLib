@@ -43,7 +43,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 	public GuiFrame()
 	{
-		super(new ContainerGeneric(Minecraft.getMinecraft().player));
+		super(new ContainerGeneric());
 
 		this.prevFrame = null;
 	}
@@ -55,7 +55,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 	public GuiFrame(GuiFrame prevFrame, final Rect rect)
 	{
-		this(prevFrame, rect, new ContainerGeneric(Minecraft.getMinecraft().player));
+		this(prevFrame, rect, new ContainerGeneric());
 	}
 
 	public GuiFrame(GuiFrame prevFrame, final Rect rect, final Container inventorySlotsIn)
@@ -257,14 +257,19 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 		{
 			this.init();
 
-			this.guiLeft = (int) this.dim().x();
-			this.guiTop = (int) this.dim().y();
-
-			this.xSize = (int) this.dim().width();
-			this.ySize = (int) this.dim().height();
+			this.initContainerSize();
 
 			this.hasInit = true;
 		}
+	}
+
+	public void initContainerSize()
+	{
+		this.guiLeft = (int) this.dim().x();
+		this.guiTop = (int) this.dim().y();
+
+		this.xSize = (int) this.dim().width();
+		this.ySize = (int) this.dim().height();
 	}
 
 	@Override

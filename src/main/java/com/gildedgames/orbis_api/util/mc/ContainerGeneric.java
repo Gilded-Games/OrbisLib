@@ -6,11 +6,8 @@ import net.minecraft.inventory.Container;
 public class ContainerGeneric extends Container
 {
 
-	private final EntityPlayer player;
-
-	public ContainerGeneric(final EntityPlayer player)
+	public ContainerGeneric()
 	{
-		this.player = player;
 	}
 
 	@Override
