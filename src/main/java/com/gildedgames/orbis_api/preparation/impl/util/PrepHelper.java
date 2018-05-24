@@ -35,9 +35,14 @@ public class PrepHelper
 	{
 		IPrepManager manager = PrepHelper.getManager(world);
 
+		if (manager == null)
+		{
+			return null;
+		}
+
 		try
 		{
-			return manager.access().provideSector(chunkX, chunkY).get();
+			return manager.getAccess().provideSectorForChunk(chunkX, chunkY).get();
 		}
 		catch (InterruptedException | ExecutionException e)
 		{
@@ -54,7 +59,7 @@ public class PrepHelper
 
 	public static boolean isSectorLoaded(IPrepManager manager, int chunkX, int chunkY)
 	{
-		Optional<IPrepSector> sector = manager.access().getLoadedSector(chunkX, chunkY);
+		Optional<IPrepSector> sector = manager.getAccess().getLoadedSectorForChunk(chunkX, chunkY);
 
 		return sector.isPresent();
 	}

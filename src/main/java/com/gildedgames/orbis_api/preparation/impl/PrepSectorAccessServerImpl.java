@@ -3,28 +3,27 @@ package com.gildedgames.orbis_api.preparation.impl;
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.util.ChunkMap;
+import com.gildedgames.orbis_api.world.data.IWorldData;
 import com.gildedgames.orbis_api.world.data.IWorldDataManager;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.*;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.capabilities.Capability;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
+public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 {
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Sector Access %d").build();
 
@@ -45,18 +44,18 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 			.build(new CacheLoader<ChunkPos, IPrepSector>()
 			{
 				@Override
-				public IPrepSector load(ChunkPos key) throws Exception
+				public IPrepSector load(@Nonnull ChunkPos key) throws Exception
 				{
 					IPrepSector sector;
 
-					synchronized (PrepSectorAccessAsyncImpl.this.loaded)
+					synchronized (PrepSectorAccessServerImpl.this.loaded)
 					{
-						sector = PrepSectorAccessAsyncImpl.this.loaded.get(key.x, key.z);
+						sector = PrepSectorAccessServerImpl.this.loaded.get(key.x, key.z);
 					}
 
 					if (sector == null)
 					{
-						return PrepSectorAccessAsyncImpl.this.loadSector(key.x, key.z);
+						return PrepSectorAccessServerImpl.this.loadSector(key.x, key.z);
 					}
 
 					return sector;
@@ -67,7 +66,7 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 
 	private final IWorldDataManager dataManager;
 
-	public PrepSectorAccessAsyncImpl(World world, IPrepRegistryEntry registry, IPrepManager prepManager, IWorldDataManager dataManager)
+	public PrepSectorAccessServerImpl(World world, IPrepRegistryEntry registry, IPrepManager prepManager, IWorldDataManager dataManager)
 	{
 		this.world = world;
 		this.prepManager = prepManager;
@@ -78,19 +77,16 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	}
 
 	@Override
-	public Optional<IPrepSector> getLoadedSector(final int chunkX, final int chunkZ)
+	public Optional<IPrepSector> getLoadedSector(int sectorX, int sectorZ)
 	{
 		if (this.world.isRemote)
 		{
 			return Optional.empty();
 		}
 
-		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
-		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
-
 		synchronized (this.generating)
 		{
-			IPrepSector job = PrepSectorAccessAsyncImpl.this.generating.get(sectorX, sectorZ);
+			IPrepSector job = PrepSectorAccessServerImpl.this.generating.get(sectorX, sectorZ);
 
 			if (job != null)
 			{
@@ -102,27 +98,34 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	}
 
 	@Override
-	public ListenableFuture<IPrepSector> provideSector(final int chunkX, final int chunkZ)
+	public Optional<IPrepSector> getLoadedSectorForChunk(final int chunkX, final int chunkZ)
 	{
-		if (this.world.isRemote)
-		{
-			return Futures.immediateFuture(null);
-		}
-
 		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
 		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
 
-		synchronized (this.generating)
-		{
-			IPrepSector job = PrepSectorAccessAsyncImpl.this.generating.get(sectorX, sectorZ);
+		return this.getLoadedSector(sectorX, sectorZ);
+	}
 
-			if (job != null)
-			{
-				return Futures.immediateFuture(job);
-			}
+	@Override
+	public ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ)
+	{
+		Optional<IPrepSector> sector = this.getLoadedSector(sectorX, sectorZ);
+
+		if (sector.isPresent())
+		{
+			return Futures.immediateFuture(sector.get());
 		}
 
-		return this.service.submit(() -> PrepSectorAccessAsyncImpl.this.dormantCache.get(new ChunkPos(sectorX, sectorZ)));
+		return this.service.submit(() -> PrepSectorAccessServerImpl.this.dormantCache.get(new ChunkPos(sectorX, sectorZ)));
+	}
+
+	@Override
+	public ListenableFuture<IPrepSector> provideSectorForChunk(final int chunkX, final int chunkZ)
+	{
+		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
+		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
+
+		return this.provideSector(sectorX, sectorZ);
 	}
 
 	private IPrepSector loadSector(int sectorX, int sectorZ) throws Exception
@@ -161,15 +164,7 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 				this.generating.remove(sectorX, sectorZ);
 			}
 
-			sector.markDirty();
-		}
-
-		synchronized (PrepSectorAccessAsyncImpl.this.loaded)
-		{
-			if (!PrepSectorAccessAsyncImpl.this.loaded.containsKey(sectorX, sectorZ))
-			{
-				PrepSectorAccessAsyncImpl.this.loaded.put(sectorX, sectorZ, sector);
-			}
+			sector.getData().markDirty();
 		}
 
 		return sector;
@@ -180,11 +175,19 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	{
 		try
 		{
-			IPrepSector sector = this.provideSector(chunkX, chunkZ).get();
+			IPrepSector sector = this.provideSectorForChunk(chunkX, chunkZ).get();
 
 			if (sector == null)
 			{
 				return;
+			}
+
+			int sectorX = sector.getData().getSectorX();
+			int sectorZ = sector.getData().getSectorY();
+
+			if (!PrepSectorAccessServerImpl.this.loaded.containsKey(sectorX, sectorZ))
+			{
+				PrepSectorAccessServerImpl.this.loaded.put(sectorX, sectorZ, sector);
 			}
 
 			sector.addWatchingChunk(chunkX, chunkZ);
@@ -198,15 +201,23 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 	@Override
 	public void onChunkUnloaded(final int chunkX, final int chunkZ)
 	{
-		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
-		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
-
-		final IPrepSector sector = this.loaded.get(sectorX, sectorZ);
-
-		if (sector != null)
-		{
+		this.getLoadedSectorForChunk(chunkX, chunkZ).ifPresent(sector -> {
 			sector.removeWatchingChunk(chunkX, chunkZ);
-		}
+
+			int sectorX = sector.getData().getSectorX();
+			int sectorZ = sector.getData().getSectorY();
+
+			if (!sector.hasWatchers() && !sector.getData().isDirty())
+			{
+				PrepSectorAccessServerImpl.this.loaded.remove(sectorX, sectorZ);
+			}
+		});
+	}
+
+	@Override
+	public Collection<IPrepSector> getLoadedSectors()
+	{
+		return this.loaded.getValues();
 	}
 
 	@Override
@@ -233,7 +244,7 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 		{
 			for (IPrepSector sector : this.loaded.getValues())
 			{
-				if (sector.isDirty())
+				if (sector.getData().isDirty())
 				{
 					dirty.add(sector);
 				}
@@ -251,7 +262,7 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 				OrbisAPI.LOGGER.warn("Failed to flush sector", e);
 			}
 
-			sector.markClean();
+			sector.getData().markClean();
 		}
 
 		synchronized (this.loaded)
@@ -350,22 +361,5 @@ public class PrepSectorAccessAsyncImpl implements IPrepSectorAccessAsync
 		sector.write(tag);
 
 		CompressedStreamTools.writeCompressed(tag, out);
-	}
-
-	public static class Storage implements Capability.IStorage<IPrepSectorAccessAsync>
-	{
-		@Nullable
-		@Override
-		public NBTBase writeNBT(final Capability<IPrepSectorAccessAsync> capability, final IPrepSectorAccessAsync instance, final EnumFacing side)
-		{
-			return null;
-		}
-
-		@Override
-		public void readNBT(final Capability<IPrepSectorAccessAsync> capability, final IPrepSectorAccessAsync instance, final EnumFacing side,
-				final NBTBase nbt)
-		{
-
-		}
 	}
 }

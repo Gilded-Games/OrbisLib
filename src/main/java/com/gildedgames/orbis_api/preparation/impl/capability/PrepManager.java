@@ -2,7 +2,8 @@ package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.*;
-import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessAsyncImpl;
+import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessClientImpl;
+import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessServerImpl;
 import com.gildedgames.orbis_api.world.WorldObjectManager;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
@@ -17,7 +18,7 @@ public class PrepManager implements IPrepManager
 
 	private final IPrepRegistryEntry registry;
 
-	private IPrepSectorAccessAsync access;
+	private IPrepSectorAccess access;
 
 	private IPrepChunkManager chunkManager;
 
@@ -32,7 +33,15 @@ public class PrepManager implements IPrepManager
 		this.world = world;
 		this.registry = registry;
 
-		this.access = new PrepSectorAccessAsyncImpl(this.world, this.registry, this, OrbisAPI.services().getWorldDataManager(world));
+		if (world.isRemote)
+		{
+			this.access = new PrepSectorAccessClientImpl(this.world, this.registry);
+		}
+		else
+		{
+			this.access = new PrepSectorAccessServerImpl(this.world, this.registry, this, OrbisAPI.services().getWorldDataManager(world));
+		}
+
 		this.chunkManager = new PrepChunkManager(this.world, this.registry);
 	}
 
@@ -43,13 +52,13 @@ public class PrepManager implements IPrepManager
 	}
 
 	@Override
-	public IPrepChunkManager getChunkManager()
+	public IPrepSectorAccessClient getClientAccess()
 	{
-		return this.chunkManager;
+		return (IPrepSectorAccessClient) this.access;
 	}
 
 	@Override
-	public IPrepSectorAccessAsync access()
+	public IPrepSectorAccess getAccess()
 	{
 		return this.access;
 	}

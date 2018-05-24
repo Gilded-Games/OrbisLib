@@ -12,8 +12,6 @@ public class PrepSector implements IPrepSector
 
 	private IPrepSectorData data;
 
-	private boolean dirty;
-
 	public PrepSector(IPrepSectorData data)
 	{
 		this.data = data;
@@ -23,24 +21,6 @@ public class PrepSector implements IPrepSector
 	public IPrepSectorData getData()
 	{
 		return this.data;
-	}
-
-	@Override
-	public boolean isDirty()
-	{
-		return this.dirty;
-	}
-
-	@Override
-	public void markDirty()
-	{
-		this.dirty = true;
-	}
-
-	@Override
-	public void markClean()
-	{
-		this.dirty = false;
 	}
 
 	@Override
@@ -58,6 +38,6 @@ public class PrepSector implements IPrepSector
 	@Override
 	public boolean hasWatchers()
 	{
-		return this.watching.isEmpty();
+		return !this.watching.isEmpty();
 	}
 }

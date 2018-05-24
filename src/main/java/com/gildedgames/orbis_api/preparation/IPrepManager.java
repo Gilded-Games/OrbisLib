@@ -4,9 +4,9 @@ public interface IPrepManager
 {
 	IPrepRegistryEntry getRegistryEntry();
 
-	IPrepChunkManager getChunkManager();
+	IPrepSectorAccess getAccess();
 
-	IPrepSectorAccessAsync access();
+	IPrepSectorAccessClient getClientAccess();
 
 	IPrepSectorData createSector(int sectorX, int sectorZ);
 

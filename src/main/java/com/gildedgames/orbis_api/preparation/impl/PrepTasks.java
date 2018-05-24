@@ -17,7 +17,7 @@ public class PrepTasks
 	 * The chunk radius at which the manager searches around players to mark
 	 * sectors as active.
 	 */
-	private static int CHUNK_RADIUS_SEARCHING = 180;
+	private static int CHUNK_RADIUS_SEARCHING = 80;
 
 	@SubscribeEvent
 	public static void onChunkLoaded(final ChunkEvent.Load event)
@@ -30,7 +30,7 @@ public class PrepTasks
 
 			if (manager != null)
 			{
-				manager.access().onChunkLoaded(event.getChunk().x, event.getChunk().z);
+				manager.getAccess().onChunkLoaded(event.getChunk().x, event.getChunk().z);
 			}
 		}
 	}
@@ -46,7 +46,7 @@ public class PrepTasks
 
 			if (manager != null)
 			{
-				manager.access().onChunkUnloaded(event.getChunk().x, event.getChunk().z);
+				manager.getAccess().onChunkUnloaded(event.getChunk().x, event.getChunk().z);
 			}
 		}
 	}
@@ -66,11 +66,6 @@ public class PrepTasks
 				return;
 			}
 
-			if (!PrepHelper.isSectorLoaded(manager, 0, 0))
-			{
-				return;
-			}
-
 			IPrepRegistryEntry entry = manager.getRegistryEntry();
 
 			int chunkX = ((int) player.posX) >> 4;
@@ -86,7 +81,7 @@ public class PrepTasks
 			int centerSectorY = Math.floorDiv(chunkY, entry.getSectorChunkArea());
 
 			// Prepare this first to give priority to sectors the player is in
-			PrepHelper.getManager(world).access().provideSector(centerSectorX, centerSectorY);
+			PrepHelper.getManager(world).getAccess().provideSector(centerSectorX, centerSectorY);
 
 			int minSectorX = Math.floorDiv(minChunkX, entry.getSectorChunkArea());
 			int minSectorY = Math.floorDiv(minChunkY, entry.getSectorChunkArea());
@@ -98,7 +93,7 @@ public class PrepTasks
 			{
 				for (int y = minSectorY; y < maxSectorY; y++)
 				{
-					PrepHelper.getManager(world).access().provideSector(centerSectorX, centerSectorY);
+					PrepHelper.getManager(world).getAccess().provideSector(x, y);
 				}
 			}
 		}

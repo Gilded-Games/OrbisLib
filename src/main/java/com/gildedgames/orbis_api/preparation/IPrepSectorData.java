@@ -14,6 +14,23 @@ public interface IPrepSectorData extends NBT
 {
 	IPrepSector setParent(IPrepSector sector);
 
+	IPrepSector getParent();
+
+	/**
+	 * @return True if this sector should be saved again, such as if it's data has changed.
+	 */
+	boolean isDirty();
+
+	/**
+	 * Marks the sector as dirty for saving later.
+	 */
+	void markDirty();
+
+	/**
+	 * Marks the sector as clean. Should be called after saving.
+	 */
+	void markClean();
+
 	int getSectorX();
 
 	int getSectorY();

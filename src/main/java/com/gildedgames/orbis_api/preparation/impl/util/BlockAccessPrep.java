@@ -24,12 +24,12 @@ public class BlockAccessPrep implements IBlockAccessExtended
 
 	private IPrepSectorData sectorData;
 
-	public BlockAccessPrep(World world, IPrepSectorData sectorData)
+	public BlockAccessPrep(World world, IPrepSectorData sectorData, IPrepChunkManager iPrepChunkManager)
 	{
 		this.world = world;
 
 		this.sectorData = sectorData;
-		this.chunkManager = PrepHelper.getManager(world).getChunkManager();
+		this.chunkManager = iPrepChunkManager;
 	}
 
 	@Nullable
