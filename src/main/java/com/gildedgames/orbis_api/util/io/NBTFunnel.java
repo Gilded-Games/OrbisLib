@@ -18,11 +18,23 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class NBTFunnel
 {
+	public static Function<UUID, NBTTagCompound> UUID_SETTER = o ->
+	{
+		NBTTagCompound tag = new NBTTagCompound();
+
+		tag.setString("u", o.toString());
+
+		return tag;
+	};
+
+	public static Function<NBTTagCompound, UUID> UUID_GETTER = n -> UUID.fromString(n.getString("u"));
+
 	public static Function<String, NBTTagCompound> STRING_SETTER = o ->
 	{
 		NBTTagCompound f = new NBTTagCompound();
@@ -77,6 +89,29 @@ public class NBTFunnel
 	public NBTFunnel(final NBTTagCompound tag)
 	{
 		this.tag = tag;
+	}
+
+	public static <T extends NBT> Function<NBTTagCompound, T> getter()
+	{
+		return n ->
+		{
+			NBTFunnel funnel = new NBTFunnel(n);
+
+			return funnel.get("o");
+		};
+	}
+
+	public static <T extends NBT> Function<T, NBTTagCompound> setter()
+	{
+		return o ->
+		{
+			NBTTagCompound tag = new NBTTagCompound();
+			NBTFunnel funnel = new NBTFunnel(tag);
+
+			funnel.set("o", o);
+
+			return tag;
+		};
 	}
 
 	/**wha
