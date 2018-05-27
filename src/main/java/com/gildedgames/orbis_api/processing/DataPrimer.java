@@ -75,7 +75,7 @@ public class DataPrimer
 
 	public boolean canGenerate(final BlueprintDefinition def, final ICreationData<?> data)
 	{
-		final BlockPos pos = data.getPos();
+		final BlockPos min = data.getPos();
 
 		final IRegion bb = BlueprintUtil.getRegionFromDefinition(def.getData(), data);
 
@@ -92,7 +92,6 @@ public class DataPrimer
 
 		if (rotAmount != 0)
 		{
-			final BlockPos min = data.getPos();
 			final BlockPos max = new BlockPos(min.getX() + blocks.getWidth() - 1, min.getY() + blocks.getHeight() - 1,
 					min.getZ() + blocks.getLength() - 1);
 
@@ -106,30 +105,7 @@ public class DataPrimer
 
 				for (final PlacementCondition condition : def.getConditions())
 				{
-					if (!this.access.canAccess(rotated) || !condition.canPlace(def.getData(), this.access, pos, block, rotated))
-					{
-						return false;
-					}
-				}
-			}
-
-			// TODO: Do check for canPlaceCheckAll as well
-		}
-		else
-		{
-			BlockPos.MutableBlockPos xyz = new BlockPos.MutableBlockPos();
-
-			for (int index = 0; index < blocks.getVolume(); index++)
-			{
-				final int x = def.getData().getBlockDataContainer().getX(index) + pos.getX();
-				final int y = def.getData().getBlockDataContainer().getY(index) + pos.getY();
-				final int z = def.getData().getBlockDataContainer().getZ(index) + pos.getZ();
-
-				xyz.setPos(x, y, z);
-
-				for (final PlacementCondition condition : def.getConditions())
-				{
-					if (!this.access.canAccess(xyz) || !condition.canPlace(def.getData(), this.access, pos, blocks.getBlockState(index), xyz))
+					if (!this.access.canAccess(rotated) || !condition.canPlace(def.getData(), this.access, min, block, rotated))
 					{
 						return false;
 					}
@@ -138,7 +114,34 @@ public class DataPrimer
 
 			for (final PlacementCondition condition : def.getConditions())
 			{
-				if (!condition.canPlaceCheckAll(def.getData(), this.access, pos, blocks))
+				if (!condition.canPlaceCheckAll(def.getData(), this.access, min, blocks))
+				{
+					return false;
+				}
+			}
+		}
+		else
+		{
+			final Region region = new Region(new BlockPos(0, 0, 0),
+					new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1));
+
+			for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
+			{
+				final IBlockState block = blocks.getBlockState(iterPos.getX(), iterPos.getY(), iterPos.getZ());
+				BlockPos pos = iterPos.toImmutable().add(min.getX(), min.getY(), min.getZ());
+
+				for (final PlacementCondition condition : def.getConditions())
+				{
+					if (!this.access.canAccess(pos) || !condition.canPlace(def.getData(), this.access, min, block, pos))
+					{
+						return false;
+					}
+				}
+			}
+
+			for (final PlacementCondition condition : def.getConditions())
+			{
+				if (!condition.canPlaceCheckAll(def.getData(), this.access, min, blocks))
 				{
 					return false;
 				}
@@ -215,7 +218,6 @@ public class DataPrimer
 						return false;
 					}
 				}
-
 			}
 
 			for (final PlacementCondition condition : def.getConditions())

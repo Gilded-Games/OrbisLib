@@ -22,9 +22,22 @@ public class BlueprintDefinition
 
 	private boolean randomRotation = true;
 
+	private int floorHeight;
+
 	public BlueprintDefinition(final BlueprintData data)
 	{
 		this.data = data;
+	}
+
+	public BlueprintDefinition(final BlueprintData data, int floorHeight)
+	{
+		this.data = data;
+		this.floorHeight = floorHeight;
+	}
+
+	public int getFloorHeight()
+	{
+		return this.floorHeight;
 	}
 
 	public BlueprintDefinition setPostPlacements(final PostPlacement postPlacement, final PostPlacement... postPlacements)
