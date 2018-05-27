@@ -119,7 +119,14 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		if (!this.idToLocation.containsKey(dataId) || !Objects.equals(this.idToLocation.get(dataId), location))
 		{
-			this.idToLocation.put(dataId, location);
+			if (this.idToLocation.containsValue(location))
+			{
+				this.idToLocation.forcePut(dataId, location);
+			}
+			else
+			{
+				this.idToLocation.put(dataId, location);
+			}
 		}
 	}
 
