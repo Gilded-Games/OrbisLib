@@ -10,7 +10,7 @@ public interface IPrepSectorAccess
 	/**
 	 * Fetches an {@link IPrepSector} from the world that belongs to the chunk at the specified coordinates.
 	 *
-	 * This will only return currently loaded sectors. Use {@link IPrepSectorAccess#provideSectorForChunk(int, int)}
+	 * This will only return currently loaded sectors. Use {@link IPrepSectorAccess#provideSectorForChunk(int, int, boolean)}
 	 * if you want to fetch offline sectors or generate new ones.
 	 *
 	 * @param sectorX The x-coordinate of the sector
@@ -23,7 +23,7 @@ public interface IPrepSectorAccess
 	/**
 	 * Fetches an {@link IPrepSector} from the world at the specified sector coordinates.
 	 *
-	 * This will only return currently loaded sectors. Use {@link IPrepSectorAccess#provideSectorForChunk(int, int)}
+	 * This will only return currently loaded sectors. Use {@link IPrepSectorAccess#provideSectorForChunk(int, int, boolean)}
 	 * if you want to fetch offline sectors or generate new ones.
 	 *
 	 * @param sectorX The x-coordinate of the chunk
@@ -42,10 +42,11 @@ public interface IPrepSectorAccess
 	 *
 	 * @param sectorX The x-coordinate of the chunk
 	 * @param sectorZ The y-coordinate of the chunk
+	 * @param highPriority True to prioritize loading this sector
 	 *
 	 * @return The {@link IPrepSector} for the chunk
 	 */
-	ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ);
+	ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ, boolean highPriority);
 
 	/**
 	 * Fetches an {@link IPrepSector} from the world that belongs to the specified chunk.
@@ -56,10 +57,11 @@ public interface IPrepSectorAccess
 	 *
 	 * @param chunkX The x-coordinate of the chunk
 	 * @param chunkZ The y-coordinate of the chunk
+	 * @param highPriority True to prioritize loading this sector
 	 *
 	 * @return The {@link IPrepSector} for the chunk
 	 */
-	ListenableFuture<IPrepSector> provideSectorForChunk(int chunkX, int chunkZ);
+	ListenableFuture<IPrepSector> provideSectorForChunk(int chunkX, int chunkZ, boolean highPriority);
 
 	/**
 	 * Called when a chunk possibly containing a sector is loaded for the world.

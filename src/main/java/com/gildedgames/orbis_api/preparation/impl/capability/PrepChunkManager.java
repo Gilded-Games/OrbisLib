@@ -1,19 +1,19 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
 import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
 import com.gildedgames.orbis_api.preparation.IPrepSectorData;
+import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import com.gildedgames.orbis_api.util.PointSerializer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
@@ -30,13 +30,13 @@ public class PrepChunkManager implements IPrepChunkManager
 	private ThreadLocal<IPrepSectorData> currentSectorData = new ThreadLocal<>();
 
 	//TODO: Need to save these, since they often get modified by prep registry sources
-	private final LoadingCache<Long, ChunkPrimer> chunkCache = CacheBuilder.newBuilder()
-			.maximumSize(40)
+	private final LoadingCache<Long, ChunkMask> chunkCache = CacheBuilder.newBuilder()
+			.maximumSize(512)
 			.expireAfterWrite(10, TimeUnit.MINUTES)
-			.build(new CacheLoader<Long, ChunkPrimer>()
+			.build(new CacheLoader<Long, ChunkMask>()
 				   {
 					   @Override
-					   public ChunkPrimer load(Long key)
+					   public ChunkMask load(Long key)
 					   {
 						   int x = PointSerializer.x(key);
 						   int y = PointSerializer.y(key);
@@ -44,12 +44,12 @@ public class PrepChunkManager implements IPrepChunkManager
 						   Biome[] biomes = new Biome[256];
 						   biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, x * 16, y * 16, 16, 16);
 
-						   ChunkPrimer primer = new ChunkPrimer();
+						   ChunkMask mask = new ChunkMask();
 
 						   PrepChunkManager.this.registryEntry
-								   .threadSafeGenerateChunk(PrepChunkManager.this.world, PrepChunkManager.this.currentSectorData.get(), biomes, primer, x, y);
+								   .threadSafeGenerateMask(PrepChunkManager.this.world, PrepChunkManager.this.currentSectorData.get(), biomes, mask, x, y);
 
-						   return primer;
+						   return mask;
 					   }
 				   }
 			);
@@ -65,7 +65,7 @@ public class PrepChunkManager implements IPrepChunkManager
 		this.registryEntry = registryEntry;
 	}
 
-	private LoadingCache<Long, ChunkPrimer> getChunkCache()
+	private LoadingCache<Long, ChunkMask> getChunkCache()
 	{
 		return this.chunkCache;
 	}
@@ -78,7 +78,7 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	@Nullable
 	@Override
-	public ChunkPrimer getChunk(IPrepSectorData sectorData, int chunkX, int chunkY)
+	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY)
 	{
 		this.currentSectorData.set(sectorData);
 
@@ -97,62 +97,9 @@ public class PrepChunkManager implements IPrepChunkManager
 	}
 
 	@Override
-	public IBlockState getPreparedState(IPrepSectorData sectorData, int x, int y, int z)
+	public IChunkMaskTransformer createMaskTransformer()
 	{
-		this.currentSectorData.set(sectorData);
-
-		int chunkX = x >> 4;
-		int chunkY = z >> 4;
-
-		ChunkPrimer chunk = this.getChunk(sectorData, chunkX, chunkY);
-
-		int xDif = x % 16;
-		int zDif = z % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		return chunk.getBlockState(xDif, y, zDif);
-	}
-
-	@Override
-	public boolean setPreparedState(IPrepSectorData sectorData, int x, int y, int z, IBlockState state)
-	{
-		this.currentSectorData.set(sectorData);
-
-		int chunkX = x >> 4;
-		int chunkY = z >> 4;
-
-		ChunkPrimer chunk = this.getChunk(sectorData, chunkX, chunkY);
-
-		if (chunk == null)
-		{
-			return false;
-		}
-
-		int xDif = x % 16;
-		int zDif = z % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		chunk.setBlockState(xDif, y, zDif, state);
-
-		return true;
+		return this.registryEntry.createMaskTransformer();
 	}
 
 	public static class Storage implements Capability.IStorage<IPrepChunkManager>

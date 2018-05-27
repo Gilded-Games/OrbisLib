@@ -41,18 +41,18 @@ public class PrepSectorAccessClientImpl implements IPrepSectorAccessClient
 	}
 
 	@Override
-	public ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ)
+	public ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ, boolean highPriority)
 	{
 		return Futures.immediateFuture(this.loaded.get(sectorX, sectorZ));
 	}
 
 	@Override
-	public ListenableFuture<IPrepSector> provideSectorForChunk(int chunkX, int chunkZ)
+	public ListenableFuture<IPrepSector> provideSectorForChunk(int chunkX, int chunkZ, boolean highPriority)
 	{
 		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
 		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
 
-		return this.provideSector(sectorX, sectorZ);
+		return this.provideSector(sectorX, sectorZ, highPriority);
 	}
 
 	@Override

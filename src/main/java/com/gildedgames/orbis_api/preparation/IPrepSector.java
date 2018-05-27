@@ -25,8 +25,12 @@ public interface IPrepSector
 	 */
 	boolean removeWatchingChunk(int chunkX, int chunkZ);
 
+	void addWatchingPlayer(int entityId);
+
+	void removeWatchingPlayer(int entityId);
+
 	/**
-	 * @return True if the sector has currently watching chunks
+	 * @return True if the sector has currently watching chunks or watching players
 	 */
 	boolean hasWatchers();
 }

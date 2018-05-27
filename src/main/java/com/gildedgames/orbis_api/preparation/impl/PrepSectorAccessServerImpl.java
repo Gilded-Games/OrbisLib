@@ -25,12 +25,26 @@ import java.util.concurrent.*;
 
 public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 {
+	private static final int THREADS = Math.min(1, Runtime.getRuntime().availableProcessors() / 2);
+
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Sector Access %d").build();
 
 	private final World world;
 
 	private final ListeningExecutorService service =
-			MoreExecutors.listeningDecorator(new ThreadPoolExecutor(0, 1, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), threadFactory));
+			MoreExecutors.listeningDecorator(new ThreadPoolExecutor(0, THREADS, 1L, TimeUnit.MINUTES, new PriorityBlockingQueue<>(8, (o1, o2) -> {
+				if (o1 instanceof PriorityFuture<?> && o2 instanceof PriorityFuture<?>)
+				{
+					return Integer.compare(((PriorityFuture<?>) o1).priority, ((PriorityFuture<?>) o2).priority);
+				}
+
+				return 0;
+			}), threadFactory) {
+				@Override
+				protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
+					return new PriorityFuture<>(super.newTaskFor(callable), ((PriorityCallable<T>) callable).priority);
+				}
+			});
 
 	private final IPrepRegistryEntry registry;
 
@@ -39,7 +53,7 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	private final ChunkMap<IPrepSector> generating = new ChunkMap<>();
 
 	private final LoadingCache<ChunkPos, IPrepSector> dormantCache = CacheBuilder.newBuilder()
-			.maximumSize(32)
+			.maximumSize(32 + (8 * THREADS))
 			.expireAfterAccess(2, TimeUnit.MINUTES)
 			.build(new CacheLoader<ChunkPos, IPrepSector>()
 			{
@@ -107,7 +121,7 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	}
 
 	@Override
-	public ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ)
+	public ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ, boolean highPriority)
 	{
 		Optional<IPrepSector> sector = this.getLoadedSector(sectorX, sectorZ);
 
@@ -116,16 +130,18 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 			return Futures.immediateFuture(sector.get());
 		}
 
-		return this.service.submit(() -> PrepSectorAccessServerImpl.this.dormantCache.get(new ChunkPos(sectorX, sectorZ)));
+		PriorityCallable<IPrepSector> callable = new PriorityCallable<>(() -> PrepSectorAccessServerImpl.this.dormantCache.get(new ChunkPos(sectorX, sectorZ)), highPriority ? 10 : 1);
+
+		return this.service.submit(callable);
 	}
 
 	@Override
-	public ListenableFuture<IPrepSector> provideSectorForChunk(final int chunkX, final int chunkZ)
+	public ListenableFuture<IPrepSector> provideSectorForChunk(final int chunkX, final int chunkZ, boolean highPriority)
 	{
 		final int sectorX = Math.floorDiv(chunkX, this.registry.getSectorChunkArea());
 		final int sectorZ = Math.floorDiv(chunkZ, this.registry.getSectorChunkArea());
 
-		return this.provideSector(sectorX, sectorZ);
+		return this.provideSector(sectorX, sectorZ, highPriority);
 	}
 
 	private IPrepSector loadSector(int sectorX, int sectorZ) throws Exception
@@ -175,7 +191,7 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	{
 		try
 		{
-			IPrepSector sector = this.provideSectorForChunk(chunkX, chunkZ).get();
+			IPrepSector sector = this.provideSectorForChunk(chunkX, chunkZ, true).get();
 
 			if (sector == null)
 			{
@@ -361,5 +377,73 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 		sector.write(tag);
 
 		CompressedStreamTools.writeCompressed(tag, out);
+	}
+
+	private static final class PriorityCallable<V> implements Callable<V>
+	{
+		private final Callable<V> delegate;
+
+		private final int priority;
+
+		public PriorityCallable(Callable<V> delegate, int priority)
+		{
+			this.delegate = delegate;
+			this.priority = priority;
+		}
+
+		@Override
+		public V call() throws Exception
+		{
+			return this.delegate.call();
+		}
+	}
+
+	private static final class PriorityFuture<V> implements RunnableFuture<V>
+	{
+		private final RunnableFuture<V> delegate;
+
+		private final int priority;
+
+		public PriorityFuture(RunnableFuture<V> callable, int priority)
+		{
+			this.delegate = callable;
+			this.priority = priority;
+		}
+
+		@Override
+		public void run()
+		{
+			this.delegate.run();
+		}
+
+		@Override
+		public boolean cancel(boolean mayInterruptIfRunning)
+		{
+			return this.delegate.cancel(mayInterruptIfRunning);
+		}
+
+		@Override
+		public boolean isCancelled()
+		{
+			return this.delegate.isCancelled();
+		}
+
+		@Override
+		public boolean isDone()
+		{
+			return this.delegate.isDone();
+		}
+
+		@Override
+		public V get() throws InterruptedException, ExecutionException
+		{
+			return this.delegate.get();
+		}
+
+		@Override
+		public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException
+		{
+			return this.delegate.get(timeout, unit);
+		}
 	}
 }

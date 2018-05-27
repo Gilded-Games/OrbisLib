@@ -1,7 +1,9 @@
 package com.gildedgames.orbis_api.preparation.impl.util;
 
+import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
 import com.gildedgames.orbis_api.preparation.IPrepSectorData;
+import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -12,12 +14,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.ChunkPrimer;
 
 import javax.annotation.Nullable;
 
 public class BlockAccessPrep implements IBlockAccessExtended
 {
+	private IChunkMaskTransformer transformer;
+
 	private World world;
 
 	private IPrepChunkManager chunkManager;
@@ -30,103 +33,66 @@ public class BlockAccessPrep implements IBlockAccessExtended
 
 		this.sectorData = sectorData;
 		this.chunkManager = iPrepChunkManager;
+		this.transformer = iPrepChunkManager.createMaskTransformer();
 	}
 
 	@Nullable
-	@Override
 	public World getWorld()
 	{
 		return this.world;
 	}
 
-	@Override
 	public boolean canAccess(BlockPos pos)
 	{
 		return true;
 	}
 
-	@Override
 	public boolean canAccess(int x, int z)
 	{
 		return true;
 	}
 
-	@Override
 	public boolean canAccess(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
 	{
 		return true;
 	}
 
-	@Override
 	public BlockPos getTopPos(BlockPos pos)
 	{
 		return new BlockPos(pos.getX(), this.getTopY(pos.getX(), pos.getZ()), pos.getZ());
 	}
 
-	@Override
 	public int getTopY(int x, int z)
 	{
-		ChunkPrimer chunk = this.getChunk(x, z);
+		ChunkMask chunk = this.getChunk(x >> 4, z >> 4);
 
-		int xDif = x % 16;
-		int zDif = z % 16;
-
-		if (xDif < 0)
+		for (int y = 255; y > 0; y--)
 		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		for (int y = this.world.getActualHeight() - 1; y > 0; y--)
-		{
-			IBlockState state = chunk.getBlockState(xDif, y, zDif);
-
-			if (state != Blocks.AIR.getDefaultState())
+			if (chunk.getBlock(x & 15, y, z & 15) > 0)
 			{
 				return y;
 			}
 		}
 
-		return 0;
+		return -1;
 	}
 
 	@Override
 	public void setBlockToAir(BlockPos pos)
 	{
-		this.setBlockState(pos, Blocks.AIR.getDefaultState());
+
 	}
 
 	@Override
 	public boolean setBlockState(BlockPos pos, IBlockState state)
 	{
-		ChunkPrimer chunk = this.getChunk(pos.getX(), pos.getZ());
-
-		int xDif = pos.getX() % 16;
-		int zDif = pos.getZ() % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		chunk.setBlockState(xDif, pos.getY(), zDif, state);
-
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean setBlockState(BlockPos pos, IBlockState state, int flags)
 	{
-		return this.setBlockState(pos, state);
+		return false;
 	}
 
 	@Override
@@ -144,7 +110,7 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	@Override
 	public Biome getServerBiome(BlockPos pos)
 	{
-		return this.world.getBiome(pos);
+		return null;
 	}
 
 	@Nullable
@@ -160,36 +126,18 @@ public class BlockAccessPrep implements IBlockAccessExtended
 		return 0;
 	}
 
-	@Override
 	public IBlockState getBlockState(BlockPos pos)
 	{
-		ChunkPrimer chunk = this.getChunk(pos.getX(), pos.getZ());
+		ChunkMask chunk = this.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
 
-		int xDif = pos.getX() % 16;
-		int zDif = pos.getZ() % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		return chunk.getBlockState(xDif, pos.getY(), zDif);
+		return this.transformer.remapBlock(chunk.getBlock(pos.getX() & 15, pos.getY(), pos.getZ() & 15));
 	}
 
-	@Override
 	public boolean isAirBlock(BlockPos pos)
 	{
-		IBlockState state = this.getBlockState(pos);
-
-		return state.getBlock().isAir(state, this, pos);
+		return this.getBlockState(pos).getBlock() == Blocks.AIR;
 	}
 
-	@Override
 	public Biome getBiome(BlockPos pos)
 	{
 		return this.world.getBiome(pos);
@@ -204,34 +152,22 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	@Override
 	public WorldType getWorldType()
 	{
-		return this.world.getWorldType();
+		return null;
 	}
 
 	@Override
 	public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default)
 	{
-		if (!this.world.isValid(pos))
-		{
-			return _default;
-		}
-
-		ChunkPrimer chunk = this.getChunk(pos.getX(), pos.getZ());
-
-		if (chunk == null)
-		{
-			return _default;
-		}
-
-		return this.getBlockState(pos).isSideSolid(this, pos, side);
+		return false;
 	}
 
-	private ChunkPrimer getChunk(int x, int z)
+	private ChunkMask getChunk(int x, int z)
 	{
-		ChunkPrimer chunk = this.chunkManager.getChunk(this.sectorData, x >> 4, z >> 4);
+		ChunkMask chunk = this.chunkManager.getChunk(this.sectorData, x, z);
 
 		if (chunk == null)
 		{
-			throw new RuntimeException("Chunk is null at position: x(" + x + "), y(" + z + ")");
+			throw new RuntimeException("ChunkMask is null at position: x(" + x + "), y(" + z + ")");
 		}
 
 		return chunk;

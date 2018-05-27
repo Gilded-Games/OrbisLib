@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.preparation;
 
+import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -52,4 +53,8 @@ public interface IPrepRegistryEntry
 	 * @param chunkY The chunk's y position.
 	 */
 	void threadSafeGenerateChunk(World world, IPrepSectorData sectorData, Biome[] biomes, ChunkPrimer primer, int chunkX, int chunkY);
+
+	void threadSafeGenerateMask(World world, IPrepSectorData sectorData, Biome[] biomes, ChunkMask mask, int x, int y);
+
+	IChunkMaskTransformer createMaskTransformer();
 }

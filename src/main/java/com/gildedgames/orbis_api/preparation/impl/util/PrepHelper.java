@@ -42,7 +42,7 @@ public class PrepHelper
 
 		try
 		{
-			return manager.getAccess().provideSectorForChunk(chunkX, chunkY).get();
+			return manager.getAccess().provideSectorForChunk(chunkX, chunkY, false).get();
 		}
 		catch (InterruptedException | ExecutionException e)
 		{
