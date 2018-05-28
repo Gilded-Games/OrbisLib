@@ -271,7 +271,10 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 	@SubscribeEvent
 	public void onClientDisconnect(final FMLNetworkEvent.ClientDisconnectionFromServerEvent event)
 	{
-		this.cleanup();
+		if (FMLCommonHandler.instance().getMinecraftServerInstance() == null)
+		{
+			this.cleanup();
+		}
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOWEST)
