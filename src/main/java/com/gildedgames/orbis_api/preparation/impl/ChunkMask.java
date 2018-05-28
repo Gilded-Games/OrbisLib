@@ -21,12 +21,25 @@ public class ChunkMask
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		this.mask[x + 16 * (y + 256 * z)] = (byte) b;
+		this.mask[x << 12 | z << 8 | y] = (byte) b;
 	}
 
 	public int getBlock(int x, int y, int z)
 	{
-		return this.mask[x + 16 * (y + 256 * z)];
+		return this.mask[x << 12 | z << 8 | y];
+	}
+
+	public int getTopBlock(int x, int z)
+	{
+		for (int y = 255; y > 0; y--)
+		{
+			if (this.getBlock(x, y, z) > 0)
+			{
+				return y;
+			}
+		}
+
+		return -1;
 	}
 
 	public ChunkPrimer createChunk(ChunkPrimer primer, IChunkMaskTransformer func)
