@@ -1,12 +1,15 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.block.BlockFilter;
+import com.gildedgames.orbis_api.core.CreationData;
 import com.gildedgames.orbis_api.data.IDataHolder;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.Region;
+import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.block.state.IBlockState;
@@ -203,22 +206,52 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 			chosenSegments[j++] = chosen;
 		}
 
+		final BlockDataContainer chosenBottomBlocks = chosenBottom.getBlockDataContainer().clone();
+
+		for (IScheduleLayer layer : chosenBottom.getScheduleLayers().values())
+		{
+			for (BlockFilter filter : layer.getFilterRecord().getData())
+			{
+				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), chosenBottomBlocks, new CreationData(world), layer.getOptions());
+			}
+		}
+
 		BlockDataContainer result = new BlockDataContainer(this.getLargestWidth(), height, this.getLargestLength());
 
-		this.funnelInto(result, chosenBottom.getBlockDataContainer(), (this.getLargestWidth() - chosenBottom.getWidth()) / 2, 0,
+		this.funnelInto(result, chosenBottomBlocks, (this.getLargestWidth() - chosenBottom.getWidth()) / 2, 0,
 				(this.getLargestLength() - chosenBottom.getLength()) / 2);
 
 		int itHeight = chosenBottom.getHeight();
 
 		for (BlueprintData segment : chosenSegments)
 		{
-			this.funnelInto(result, segment.getBlockDataContainer(), (this.getLargestWidth() - segment.getWidth()) / 2, itHeight,
+			final BlockDataContainer blocks = segment.getBlockDataContainer().clone();
+
+			for (IScheduleLayer layer : segment.getScheduleLayers().values())
+			{
+				for (BlockFilter filter : layer.getFilterRecord().getData())
+				{
+					filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), blocks, new CreationData(world), layer.getOptions());
+				}
+			}
+
+			this.funnelInto(result, blocks, (this.getLargestWidth() - segment.getWidth()) / 2, itHeight,
 					(this.getLargestLength() - segment.getLength()) / 2);
 
 			itHeight += segment.getHeight();
 		}
 
-		this.funnelInto(result, chosenTop.getBlockDataContainer(), (this.getLargestWidth() - chosenTop.getWidth()) / 2, itHeight,
+		final BlockDataContainer chosenTopBlocks = chosenTop.getBlockDataContainer().clone();
+
+		for (IScheduleLayer layer : chosenTop.getScheduleLayers().values())
+		{
+			for (BlockFilter filter : layer.getFilterRecord().getData())
+			{
+				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), chosenTopBlocks, new CreationData(world), layer.getOptions());
+			}
+		}
+
+		this.funnelInto(result, chosenTopBlocks, (this.getLargestWidth() - chosenTop.getWidth()) / 2, itHeight,
 				(this.getLargestLength() - chosenTop.getLength()) / 2);
 
 		return result;
