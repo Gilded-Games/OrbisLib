@@ -5,6 +5,7 @@ import com.gildedgames.orbis_api.data.DataCondition;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
 import com.gildedgames.orbis_api.data.schedules.IFilterOptions;
+import com.gildedgames.orbis_api.data.schedules.IPositionRecord;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayerHolder;
 import com.gildedgames.orbis_api.processing.BlockAccessBlockDataContainer;
 import com.gildedgames.orbis_api.processing.BlockAccessExtendedWrapper;
@@ -68,17 +69,17 @@ public class BlockFilterLayer implements NBT
 	/**
 	 * Sets the list of blocks that trigger the filter
 	 */
-	public void setRequiredBlocks(final List<BlockDataWithConditions> requiredBlocks)
+	public void setRequiredBlocks(final BlockDataWithConditions... requiredBlocks)
 	{
-		this.requiredBlocks = Lists.newArrayList(requiredBlocks);
+		this.requiredBlocks = Lists.newArrayList(Arrays.asList(requiredBlocks));
 	}
 
 	/**
 	 * Sets the list of blocks that trigger the filter
 	 */
-	public void setRequiredBlocks(final BlockDataWithConditions... requiredBlocks)
+	public void setRequiredBlocks(final List<BlockDataWithConditions> requiredBlocks)
 	{
-		this.requiredBlocks = Lists.newArrayList(Arrays.asList(requiredBlocks));
+		this.requiredBlocks = Lists.newArrayList(requiredBlocks);
 	}
 
 	public List<BlockDataWithConditions> getReplacementBlocks()
@@ -86,14 +87,14 @@ public class BlockFilterLayer implements NBT
 		return this.replacementBlocks;
 	}
 
-	public void setReplacementBlocks(final List<BlockDataWithConditions> newBlocks)
-	{
-		this.replacementBlocks = newBlocks;
-	}
-
 	public void setReplacementBlocks(final BlockDataWithConditions... newBlocks)
 	{
 		this.replacementBlocks = Lists.newArrayList(Arrays.asList(newBlocks));
+	}
+
+	public void setReplacementBlocks(final List<BlockDataWithConditions> newBlocks)
+	{
+		this.replacementBlocks = newBlocks;
 	}
 
 	public BlockFilterType getFilterType()
@@ -249,17 +250,19 @@ public class BlockFilterLayer implements NBT
 		{
 			for (final BlockPos.MutableBlockPos iterPos : shape.getShapeData())
 			{
-				this.applyInner(primer, iterPos, replacementBlock, intersect, holder, parentFilter, shape, creationData, options);
+				this.applyInner(primer, iterPos,
+						replacementBlock, intersect, holder,
+						parentFilter, shape, creationData, options);
 			}
 		}
 	}
 
 	private void applyInner(DataPrimer primer, BlockPos p, BlockDataWithConditions replacementBlock, IShape intersect, IScheduleLayerHolder holder,
-			final BlockFilter parentFilter, IShape boundingBox, final ICreationData<?> creationData, IFilterOptions options)
+			final BlockFilter parentFilter, IShape shape, final ICreationData<?> creationData, IFilterOptions options)
 	{
 		World world = creationData.getWorld();
 
-		BlockPos without = p.add(-creationData.getPos().getX(), -creationData.getPos().getY(), -creationData.getPos().getZ());
+		BlockPos without = p;
 
 		int schedX = 0;
 		int schedY = 0;
@@ -267,9 +270,9 @@ public class BlockFilterLayer implements NBT
 
 		if (holder != null)
 		{
-			schedX = without.getX() - intersect.getBoundingBox().getMin().getX();
-			schedY = without.getY() - intersect.getBoundingBox().getMin().getY();
-			schedZ = without.getZ() - intersect.getBoundingBox().getMin().getZ();
+			schedX = without.getX() - intersect.getBoundingBox().getMin().getX() + creationData.getPos().getX() - shape.getBoundingBox().getMin().getX();
+			schedY = without.getY() - intersect.getBoundingBox().getMin().getY() + creationData.getPos().getY() - shape.getBoundingBox().getMin().getY();
+			schedZ = without.getZ() - intersect.getBoundingBox().getMin().getZ() + creationData.getPos().getZ() - shape.getBoundingBox().getMin().getZ();
 		}
 
 		final IBlockState state;
@@ -294,66 +297,73 @@ public class BlockFilterLayer implements NBT
 			return;
 		}
 
-		if (!creationData.shouldCreate(replacementBlock.getBlockState(), without))
+		if (!creationData.shouldCreate(replacementBlock.getBlockState(), p))
 		{
 			return;
 		}
 
 		if (creationData.schedules() && holder != null)
 		{
-			BlockFilter posFilter = holder.getCurrentScheduleLayer().getFilterRecord().get(schedX, schedY, schedZ);
+			IPositionRecord<BlockFilter> record = holder.getCurrentScheduleLayer().getFilterRecord();
 
-			boolean found = false;
-
-			if (posFilter != null)
+			if (schedX >= 0 && schedY >= 0 && schedZ >= 0 && schedX < record.getWidth() && schedY < record.getHeight() && schedZ < record.getLength())
 			{
-				for (BlockFilterLayer layer : parentFilter.getFilters())
+				BlockFilter posFilter = holder.getCurrentScheduleLayer().getFilterRecord().get(schedX, schedY, schedZ);
+
+				boolean found = false;
+
+				if (posFilter != null)
 				{
-					if (layer.getFilterType() == BlockFilterType.ALL || layer.getRequiredBlocks()
-							.equals(posFilter.getFilters().get(0).getReplacementBlocks()))
+					for (BlockFilterLayer layer : parentFilter.getFilters())
 					{
-						found = true;
-						break;
+						if (layer.getFilterType() == BlockFilterType.ALL || layer.getRequiredBlocks()
+								.equals(posFilter.getFilters().get(0).getReplacementBlocks()))
+						{
+							found = true;
+							break;
+						}
 					}
-				}
-			}
-			else
-			{
-				for (BlockFilterLayer layer : parentFilter.getFilters())
-				{
-					if (layer.getFilterType() == BlockFilterType.ALL || layer.getRequiredBlocks().equals(AIR_BLOCKS))
-					{
-						found = true;
-						break;
-					}
-				}
-			}
-
-			if (!found)
-			{
-				return;
-			}
-
-			if (creationData.getRandom().nextFloat() > options.getEdgeNoise())
-			{
-				if (replacementBlock.isAir())
-				{
-					holder.getCurrentScheduleLayer().getFilterRecord().unmarkPos(schedX, schedY, schedZ);
 				}
 				else
 				{
-					holder.getCurrentScheduleLayer().getFilterRecord().markPos(parentFilter, schedX, schedY, schedZ);
+					for (BlockFilterLayer layer : parentFilter.getFilters())
+					{
+						if (layer.getFilterType() == BlockFilterType.ALL || layer.getRequiredBlocks().equals(AIR_BLOCKS))
+						{
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if (!found)
+				{
+					return;
+				}
+
+				if (creationData.getRandom().nextFloat() > options.getEdgeNoise())
+				{
+					if (replacementBlock.isAir())
+					{
+						holder.getCurrentScheduleLayer().getFilterRecord().unmarkPos(schedX, schedY, schedZ);
+					}
+					else
+					{
+						holder.getCurrentScheduleLayer().getFilterRecord().markPos(parentFilter, schedX, schedY, schedZ);
+					}
 				}
 			}
 		}
 		else
 		{
-			BlockPos c = p.toImmutable();
+			BlockPos c = new BlockPos(p.getX() - shape.getBoundingBox().getMin().getX() + creationData.getPos().getX(),
+					p.getY() - shape.getBoundingBox().getMin().getY() + creationData.getPos().getY(),
+					p.getZ() - shape.getBoundingBox().getMin().getZ() + creationData.getPos().getZ());
 
-			boolean edge = !boundingBox.contains(c.getX(), c.getY() + 1, c.getZ()) || !boundingBox.contains(c.getX(), c.getY() - 1, c.getZ())
-					|| !boundingBox
-					.contains(c.getX() + 1, c.getY(), c.getZ()) || !boundingBox.contains(c.getX() - 1, c.getY(), c.getZ()) || !boundingBox
-					.contains(c.getX(), c.getY(), c.getZ() + 1) || !boundingBox.contains(c.getX(), c.getY(), c.getZ() - 1);
+			boolean edge = !shape.contains(c.getX(), c.getY() + 1, c.getZ()) || !shape.contains(c.getX(), c.getY() - 1, c.getZ())
+					|| !shape
+					.contains(c.getX() + 1, c.getY(), c.getZ()) || !shape.contains(c.getX() - 1, c.getY(), c.getZ()) || !shape
+					.contains(c.getX(), c.getY(), c.getZ() + 1) || !shape.contains(c.getX(), c.getY(), c.getZ() - 1);
 
 			if (!edge || creationData.getRandom().nextFloat() > options.getEdgeNoise())
 			{

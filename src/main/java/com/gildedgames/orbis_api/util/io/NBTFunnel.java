@@ -554,6 +554,40 @@ public class NBTFunnel
 		return readObjects;
 	}
 
+	public <NBT_OBJECT> void setList(final String key, final List<NBT_OBJECT> nbtList, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	{
+		final NBTTagList writtenObjects = new NBTTagList();
+
+		for (final NBT_OBJECT nbt : nbtList)
+		{
+			if (setter != null)
+			{
+				writtenObjects.appendTag(setter.apply(nbt));
+			}
+			else
+			{
+				writtenObjects.appendTag(NBTHelper.write((NBT) nbt));
+			}
+		}
+
+		this.tag.setTag(key, writtenObjects);
+	}
+
+	public <NBT_OBJECT> List<NBT_OBJECT> getList(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	{
+		final List<NBT_OBJECT> readObjects = Lists.newArrayList();
+		final NBTTagList nbtList = this.tag.getTagList(key, 10);
+
+		for (int i = 0; i < nbtList.tagCount(); i++)
+		{
+			final NBTTagCompound data = nbtList.getCompoundTagAt(i);
+
+			readObjects.add(getter != null ? getter.apply(data) : NBTHelper.read(data));
+		}
+
+		return readObjects;
+	}
+
 	public void setList(final String key, final List<? extends NBT> nbtList)
 	{
 		final NBTTagList writtenObjects = new NBTTagList();
