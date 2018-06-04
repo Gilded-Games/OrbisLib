@@ -171,15 +171,17 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 
 		if (hook.getInstance() != null && hook.getOutside() != null)
 		{
-			int id = hook.getInstance().getDimensionId();
-
 			final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 
 			final BlockPosDimension pos = hook.getOutside();
+
 			final Teleporter teleporter = new TeleporterGeneric(server.getWorld(player.dimension));
+
 			final PlayerList playerList = server.getPlayerList();
 			playerList.transferPlayerToDimension(player, pos.getDim(), teleporter);
+
 			player.timeUntilPortal = player.getPortalCooldown();
+
 			hook.setReturnPosition(null);
 			hook.setInstance(null);
 

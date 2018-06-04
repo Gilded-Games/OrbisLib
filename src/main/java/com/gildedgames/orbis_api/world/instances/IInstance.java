@@ -13,6 +13,8 @@ public interface IInstance extends NBT
 
 	void onLeave(EntityPlayer player);
 
+	void onRespawn(EntityPlayer player);
+
 	List<EntityPlayer> getPlayers();
 
 	DimensionType getDimensionType();

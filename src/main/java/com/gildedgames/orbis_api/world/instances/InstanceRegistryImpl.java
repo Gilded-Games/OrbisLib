@@ -288,4 +288,22 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 			hook.setInstance(null);
 		}
 	}
+
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
+	{
+		if (event.player.world.isRemote || !event.player.world.provider.canRespawnHere())
+		{
+			return;
+		}
+
+		IPlayerInstances hook = this.getPlayer(event.player);
+
+		if (hook.getInstance() == null)
+		{
+			return;
+		}
+
+		hook.getInstance().onRespawn(event.player);
+	}
 }
