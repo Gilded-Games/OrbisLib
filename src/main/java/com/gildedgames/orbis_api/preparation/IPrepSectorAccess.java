@@ -42,11 +42,12 @@ public interface IPrepSectorAccess
 	 *
 	 * @param sectorX The x-coordinate of the chunk
 	 * @param sectorZ The y-coordinate of the chunk
-	 * @param highPriority True to prioritize loading this sector
+	 * @param background True if the sector should be generated on another thread, or False if it should be
+	 *                      immediately completed
 	 *
 	 * @return The {@link IPrepSector} for the chunk
 	 */
-	ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ, boolean highPriority);
+	ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ, boolean background);
 
 	/**
 	 * Fetches an {@link IPrepSector} from the world that belongs to the specified chunk.
@@ -57,11 +58,12 @@ public interface IPrepSectorAccess
 	 *
 	 * @param chunkX The x-coordinate of the chunk
 	 * @param chunkZ The y-coordinate of the chunk
-	 * @param highPriority True to prioritize loading this sector
+	 * @param background True if the sector should be generated on another thread, or False if it should be
+	 *                      immediately completed
 	 *
 	 * @return The {@link IPrepSector} for the chunk
 	 */
-	ListenableFuture<IPrepSector> provideSectorForChunk(int chunkX, int chunkZ, boolean highPriority);
+	ListenableFuture<IPrepSector> provideSectorForChunk(int chunkX, int chunkZ, boolean background);
 
 	/**
 	 * Called when a chunk possibly containing a sector is loaded for the world.
@@ -82,6 +84,12 @@ public interface IPrepSectorAccess
 	 * @param chunkZ The y-coordinate of the sector
 	 */
 	void onChunkUnloaded(int chunkX, int chunkZ);
+
+	/**
+	 * Called to retain a sector in memory. If no entities are watching the sector, this method will do nothing. If
+	 * a sector no longer has any watching entities when it is saved, it will be unloaded.
+	 */
+	void retainSector(IPrepSector sector);
 
 	Collection<IPrepSector> getLoadedSectors();
 }
