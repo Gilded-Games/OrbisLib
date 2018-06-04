@@ -4,7 +4,6 @@ import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -14,7 +13,6 @@ import net.minecraftforge.common.DimensionManager;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * TODO: IMPLEMENT CACHING for the object groups
@@ -25,8 +23,6 @@ import java.util.Map;
 public class WorldObjectManager extends WorldSavedData
 {
 	private static final String DATA_NAME = "Orbis_WorldObjectManager";
-
-	private static Map<Integer, Long> worldSeeds = Maps.newHashMap();
 
 	private final List<IWorldObjectManagerObserver> observers = Lists.newArrayList();
 
@@ -53,32 +49,6 @@ public class WorldObjectManager extends WorldSavedData
 		super(DATA_NAME);
 
 		this.world = world;
-	}
-
-	public static void setWorldSeed(int dimension, long seed)
-	{
-		worldSeeds.put(dimension, seed);
-	}
-
-	public static long getWorldSeed(int dimension)
-	{
-		//TODO: This shouldn't ever be the case, but is in SpongeForge for some reason. Why?
-		if (!worldSeeds.containsKey(dimension))
-		{
-			return 0;
-		}
-
-		return worldSeeds.get(dimension);
-	}
-
-	public static boolean hasWorldSeed(int dimension)
-	{
-		return worldSeeds.containsKey(dimension);
-	}
-
-	public static Map<Integer, Long> getWorldSeeds()
-	{
-		return worldSeeds;
 	}
 
 	public static WorldObjectManager get(final World world)

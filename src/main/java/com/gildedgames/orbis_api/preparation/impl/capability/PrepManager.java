@@ -4,7 +4,6 @@ import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessClientImpl;
 import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessServerImpl;
-import com.gildedgames.orbis_api.world.WorldObjectManager;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -66,8 +65,7 @@ public class PrepManager implements IPrepManager
 	@Override
 	public IPrepSectorData createSector(int sectorX, int sectorZ)
 	{
-		long seed = WorldObjectManager.getWorldSeed(this.world.provider.getDimension())
-				^ ((long) sectorX * 341873128712L + (long) sectorZ * 132897987541L);
+		long seed = this.world.getSeed() ^ ((long) sectorX * 341873128712L + (long) sectorZ * 132897987541L);
 
 		return this.registry.createData(this.world, seed, sectorX, sectorZ);
 	}

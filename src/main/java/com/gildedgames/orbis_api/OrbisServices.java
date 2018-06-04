@@ -23,7 +23,6 @@ import com.gildedgames.orbis_api.data.shapes.*;
 import com.gildedgames.orbis_api.inventory.InventorySpawnEggs;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
 import com.gildedgames.orbis_api.network.NetworkMultipleParts;
-import com.gildedgames.orbis_api.network.PacketWorldSeed;
 import com.gildedgames.orbis_api.network.instances.PacketRegisterDimension;
 import com.gildedgames.orbis_api.network.instances.PacketRegisterInstance;
 import com.gildedgames.orbis_api.network.instances.PacketUnregisterDimension;
@@ -93,7 +92,6 @@ public class OrbisServices implements IOrbisServices
 	{
 		this.network = new NetworkMultipleParts(OrbisAPI.MOD_ID);
 
-		this.network.reg(PacketWorldSeed.Handler.class, PacketWorldSeed.class, Side.CLIENT);
 		this.network.reg(PacketRegisterDimension.Handler.class, PacketRegisterDimension.class, Side.CLIENT);
 		this.network.reg(PacketUnregisterDimension.Handler.class, PacketUnregisterDimension.class, Side.CLIENT);
 		this.network.reg(PacketRegisterInstance.Handler.class, PacketRegisterInstance.class, Side.CLIENT);
