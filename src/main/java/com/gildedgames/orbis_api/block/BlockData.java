@@ -7,6 +7,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -82,7 +83,15 @@ public class BlockData implements NBT
 	public void write(final NBTTagCompound tag)
 	{
 		tag.setBoolean("noState", this.blockState == null);
-		tag.setInteger("id", OrbisAPI.services().registrar().getStateId(this.getBlockState()));
+
+		Block block = this.blockState == null ? this.block : this.blockState.getBlock();
+
+		final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(Block.getBlockById(Block.getIdFromBlock(block)));
+		short meta = (short) (this.blockState == null ? 0 : block.getMetaFromState(this.blockState));
+
+		tag.setString("mod", identifier.getResourceDomain());
+		tag.setString("name", identifier.getResourcePath());
+		tag.setShort("meta", meta);
 
 		final boolean hasTileEntity = this.tileEntity != null;
 		tag.setBoolean("hasTileEntity", hasTileEntity);
@@ -98,13 +107,32 @@ public class BlockData implements NBT
 	{
 		final boolean noState = tag.getBoolean("noState");
 
+		String mod = tag.getString("mod");
+		String name = tag.getString("name");
+
+		final Block block = OrbisAPI.services().registrar().findBlock(new ResourceLocation(mod, name));
+
+		int meta = tag.getShort("meta");
+
 		if (noState)
 		{
-			this.block = OrbisAPI.services().registrar().getStateFromId(tag.getInteger("id")).getBlock();
+			this.block = block;
+
+			if (this.block == null)
+			{
+				this.block = Blocks.AIR;
+			}
 		}
 		else
 		{
-			this.blockState = OrbisAPI.services().registrar().getStateFromId(tag.getInteger("id"));
+			if (block != null)
+			{
+				this.blockState = block.getStateFromMeta(meta);
+			}
+			else
+			{
+				this.blockState = Blocks.AIR.getDefaultState();
+			}
 		}
 
 		final boolean hasTileEntity = tag.getBoolean("hasTileEntity");
