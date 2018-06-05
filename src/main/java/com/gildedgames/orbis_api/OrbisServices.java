@@ -172,6 +172,7 @@ public class OrbisServices implements IOrbisServices
 			s.register(37, PathwayData.class, new Instantiator<>(PathwayData.class));
 			s.register(38, BlueprintDataHolder.class, new Instantiator<>(BlueprintDataHolder.class));
 			s.register(39, BlueprintStackerData.class, new Instantiator<>(BlueprintStackerData.class));
+			s.register(40, PostGenReplaceLayer.class, new Instantiator<>(PostGenReplaceLayer.class));
 
 			this.io.register(s);
 		}

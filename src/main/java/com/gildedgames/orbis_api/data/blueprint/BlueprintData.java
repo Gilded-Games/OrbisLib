@@ -50,6 +50,8 @@ public class BlueprintData
 
 	private LinkedHashMap<Integer, IScheduleLayer> scheduleLayers = Maps.newLinkedHashMap();
 
+	private LinkedHashMap<Integer, PostGenReplaceLayer> postGenReplaceLayers = Maps.newLinkedHashMap();
+
 	private List<Entrance> entrances = Lists.newArrayList();
 
 	private IWorldObject worldObjectParent;
@@ -136,6 +138,7 @@ public class BlueprintData
 
 		this.scheduleLayers.values().forEach(s -> s.setWorldObjectParent(this.worldObjectParent));
 		this.entrances.forEach(e -> e.setWorldObjectParent(this.worldObjectParent));
+		this.postGenReplaceLayers.values().forEach(l -> l.setWorldObjectParent(this.worldObjectParent));
 	}
 
 	public void addEntrance(Entrance entrance)
@@ -349,6 +352,7 @@ public class BlueprintData
 		funnel.set("metadata", this.metadata);
 		funnel.set("dataContainer", this.dataContainer);
 		funnel.setIntMap("scheduleLayers", this.scheduleLayers);
+		funnel.setIntMap("postGenReplaceLayers", this.postGenReplaceLayers);
 		funnel.setList("entrances", this.entrances);
 	}
 
@@ -360,6 +364,7 @@ public class BlueprintData
 		this.metadata = funnel.get("metadata");
 		this.dataContainer = funnel.get("dataContainer");
 		this.scheduleLayers = Maps.newLinkedHashMap(funnel.getIntMap("scheduleLayers"));
+		this.postGenReplaceLayers = Maps.newLinkedHashMap(funnel.getIntMap("postGenReplaceLayers"));
 
 		this.scheduleLayers.values().forEach(l -> l.setDimensions(this));
 
@@ -459,5 +464,69 @@ public class BlueprintData
 	public int getLargestLength()
 	{
 		return this.getLength();
+	}
+
+	public LinkedHashMap<Integer, PostGenReplaceLayer> getPostGenReplaceLayers()
+	{
+		return this.postGenReplaceLayers;
+	}
+
+	public void setPostGenReplaceLayer(final int index, final PostGenReplaceLayer layer)
+	{
+		layer.setLayerId(index);
+		layer.setWorldObjectParent(this.worldObjectParent);
+
+		this.postGenReplaceLayers.put(index, layer);
+	}
+
+	public int findNextAvailablePostGenId()
+	{
+		int i = 0;
+
+		while (this.postGenReplaceLayers.containsKey(i))
+		{
+			i++;
+		}
+
+		return i;
+	}
+
+	public int addPostGenReplaceLayer(final PostGenReplaceLayer layer)
+	{
+		int id = this.findNextAvailablePostGenId();
+
+		this.setPostGenReplaceLayer(id, layer);
+
+		return id;
+	}
+
+	public boolean removePostGenReplaceLayer(final int index)
+	{
+		final boolean removed = this.postGenReplaceLayers.get(index) != null;
+
+		final PostGenReplaceLayer layer = this.postGenReplaceLayers.remove(index);
+
+		return removed;
+	}
+
+	public PostGenReplaceLayer getPostGenReplaceLayer(int id)
+	{
+		return this.postGenReplaceLayers.get(id);
+	}
+
+	public int getPostGenReplaceLayerId(final PostGenReplaceLayer layer)
+	{
+		for (Map.Entry<Integer, PostGenReplaceLayer> entry : this.postGenReplaceLayers.entrySet())
+		{
+			int i = entry.getKey();
+			final PostGenReplaceLayer s = entry.getValue();
+
+			if (layer.equals(s))
+			{
+				return i;
+			}
+		}
+
+		return -1;
 	}
 }

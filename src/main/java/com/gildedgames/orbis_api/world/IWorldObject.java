@@ -15,6 +15,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public interface IWorldObject extends NBT
 {
 
+	void markDirty();
+
 	void markClean();
 
 	boolean isDirty();

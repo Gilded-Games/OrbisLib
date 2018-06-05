@@ -6,6 +6,7 @@ import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemMultiTexture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
@@ -32,6 +33,11 @@ public class BlockUtil
 		if (stack.getItem() instanceof ItemBlock)
 		{
 			return ((ItemBlock) stack.getItem()).getBlock().getStateFromMeta(stack.getItemDamage());
+		}
+
+		if ((ItemMultiTexture.class.isAssignableFrom(stack.getItem().getClass())))
+		{
+			return ((ItemMultiTexture) stack.getItem()).getBlock().getStateFromMeta(stack.getItemDamage());
 		}
 
 		return null;

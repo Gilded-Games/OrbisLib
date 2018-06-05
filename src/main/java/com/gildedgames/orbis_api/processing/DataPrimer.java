@@ -1,7 +1,6 @@
 package com.gildedgames.orbis_api.processing;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
-import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.block.BlockInstance;
 import com.gildedgames.orbis_api.core.*;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
@@ -9,10 +8,6 @@ import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintDataPalette;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
-import com.gildedgames.orbis_api.data.schedules.IPositionRecord;
-import com.gildedgames.orbis_api.data.schedules.ISchedule;
-import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
-import com.gildedgames.orbis_api.data.shapes.IterablePosShape;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RotationHelp;
 import net.minecraft.block.material.Material;
@@ -281,7 +276,11 @@ public class DataPrimer
 
 		final IRegion region = RotationHelp.regionFromCenter(data.getPos(), b, rotation);
 
-		this.create(region, b, data.clone().pos(region.getMin()));
+		BakedBlueprint baked = new BakedBlueprint(b, data.clone().pos(region.getMin()));
+
+		baked.bake();
+
+		this.create(region, baked);
 	}
 
 	public void create(final BlockDataContainer container, final ICreationData<?> data)
@@ -289,37 +288,38 @@ public class DataPrimer
 		this.create(null, container, data, null);
 	}
 
-	public void create(IRegion relocateTo, BlueprintData bData, ICreationData<?> data)
+	public void create(PlacedBlueprint blueprint)
 	{
-		this.create(relocateTo, bData.getBlockDataContainer(), data, null);
+		this.create(blueprint.getBaked());
+	}
 
-		for (IScheduleLayer layer : bData.getScheduleLayers().values())
+	public void create(IRegion relocateTo, PlacedBlueprint blueprint)
+	{
+		this.create(relocateTo, blueprint.getBaked());
+	}
+
+	public void create(BakedBlueprint baked)
+	{
+		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
-			for (BlockFilter filter : layer.getFilterRecord().getData())
-			{
-				IPositionRecord<BlockFilter> r = layer.getFilterRecord();
-
-				filter.apply(relocateTo, new IterablePosShape(r.getPositions(filter, data.getPos()), data.getPos(), r.getWidth(), r.getHeight(), r.getLength()),
-						data, layer.getOptions());
-			}
-
-			layer.getScheduleRecord().getSchedules(ISchedule.class).forEach(s -> s.onGenerateLayer(this, data));
+			this.create(null, chunk.getContainer(), baked.getCreationData().clone().pos(chunk.getPos().getBlock(0, 0, 0)), null);
 		}
 
-		if (data.spawnsEntities())
+		for (List<PlacedEntity> l : baked.getPlacedEntities().values())
 		{
-			BlueprintData.spawnEntities(this, bData, data.getPos());
+			l.forEach(p -> p.spawn(this));
 		}
 	}
 
-	public void create(PlacedBlueprint blueprint, ICreationData<?> data)
+	public void create(IRegion relocateTo, BakedBlueprint baked)
 	{
-		for (BlockDataChunk chunk : blueprint.getDataChunks())
+		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
-			this.create(null, chunk.getContainer(), data.clone().pos(chunk.getPos().getBlock(0, 0, 0)), null);
+			this.create(relocateTo, chunk.getContainer(),
+					baked.getCreationData().clone().pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)), null);
 		}
 
-		for (List<PlacedEntity> l : blueprint.getPlacedEntities().values())
+		for (List<PlacedEntity> l : baked.getPlacedEntities().values())
 		{
 			l.forEach(p -> p.spawn(this));
 		}
