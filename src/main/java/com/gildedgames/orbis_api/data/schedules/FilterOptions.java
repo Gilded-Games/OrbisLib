@@ -63,8 +63,8 @@ public class FilterOptions implements IFilterOptions
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.choosesPerBlock = funnel.get("choosesPerBlock");
-		this.edgeNoise = funnel.get("edgeNoise");
-		this.displayName = funnel.get("displayName");
+		this.choosesPerBlock = funnel.getWithDefault("choosesPerBlock", () -> this.choosesPerBlock);
+		this.edgeNoise = funnel.getWithDefault("edgeNoise", () -> this.edgeNoise);
+		this.displayName = funnel.getWithDefault("displayName", () -> this.displayName);
 	}
 }

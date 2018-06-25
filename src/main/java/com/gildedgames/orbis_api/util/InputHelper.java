@@ -6,9 +6,7 @@ import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 
 import java.util.List;
 
@@ -24,19 +22,9 @@ public class InputHelper
 		return (Mouse.getEventX() * getScreenWidth() / mc.displayWidth);
 	}
 
-	public static void setMouseX(final int x)
-	{
-		Mouse.setCursorPosition(MathHelper.floor((x / getScreenWidth() * mc.displayWidth)), Mouse.getY());
-	}
-
 	public static int getMouseY()
 	{
 		return (getScreenHeight() - Mouse.getEventY() * getScreenHeight() / mc.displayHeight - 1);
-	}
-
-	public static void setMouseY(final int y)
-	{
-		Mouse.setCursorPosition(Mouse.getX(), Display.getHeight() - MathHelper.floor((y / getScreenHeight() * mc.displayHeight + 1)));
 	}
 
 	public static boolean isHovered(final Rect dim)
