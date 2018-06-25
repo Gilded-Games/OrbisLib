@@ -264,7 +264,7 @@ public class DataPrimer
 		}
 
 		// TODO: Re-enable event.
-		/*final ChangeBlockEvent changeBlockEvent = new ChangeBlockEvent(creationData.getWorld(), pos, creationData.getCreator());
+		/*final ChangeBlockEvent changeBlockEvent = new ChangeBlockEvent(creationData.getWorld(), min, creationData.getCreator());
 		MinecraftForge.EVENT_BUS.post(changeBlockEvent);*/
 	}
 
@@ -302,7 +302,8 @@ public class DataPrimer
 	{
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
-			this.create(null, chunk.getContainer(), baked.getCreationData().clone().pos(chunk.getPos().getBlock(0, 0, 0)), null);
+			this.create(null, chunk.getContainer(), baked.getCreationData().clone().pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
+					null);
 		}
 
 		for (List<PlacedEntity> l : baked.getPlacedEntities().values())

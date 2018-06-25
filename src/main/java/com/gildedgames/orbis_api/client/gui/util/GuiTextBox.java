@@ -84,7 +84,7 @@ public class GuiTextBox extends GuiFrame
 	@Override
 	public void draw()
 	{
-		for (IGuiFrame c : this.seekAllContent())
+		for (IGuiFrame c : this.getChildren())
 		{
 			if (c instanceof GuiText)
 			{

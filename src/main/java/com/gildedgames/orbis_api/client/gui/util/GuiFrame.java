@@ -41,6 +41,12 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 	private boolean shouldScaleRender = true;
 
+	private boolean inputDisabledWhenNotHovered = false;
+
+	private int zOrder;
+
+	private boolean isHoveredOnTop;
+
 	public GuiFrame()
 	{
 		super(new ContainerGeneric());
@@ -64,6 +70,27 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 		this.prevFrame = prevFrame;
 		this.dim.set(rect);
+	}
+
+	public void setInputDisabledWhenNotHovered(boolean flag)
+	{
+		this.inputDisabledWhenNotHovered = flag;
+	}
+
+	public boolean isInputEnabled()
+	{
+		return !(!this.isEnabled() || (this.inputDisabledWhenNotHovered && !this.isHoveredOnTop));
+	}
+
+	@Override
+	public int getZOrder()
+	{
+		return this.zOrder;
+	}
+
+	public void setZOrder(int zOrder)
+	{
+		this.zOrder = zOrder;
 	}
 
 	public void setShouldScaleRender(boolean shouldScaleRender)
@@ -130,7 +157,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	}
 
 	@Override
-	public List<IGuiFrame> seekAllContent()
+	public List<IGuiFrame> getChildren()
 	{
 		return this.children;
 	}
@@ -287,6 +314,8 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	public void drawScreen(final int mouseX, final int mouseY, final float partialTicks)
 	{
+		this.isHoveredOnTop = InputHelper.isHoveredAndTopElement(this);
+
 		if (!this.isVisible())
 		{
 			return;
@@ -403,7 +432,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}
@@ -419,7 +448,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	protected void mouseClickMove(final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}
@@ -435,7 +464,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	protected void mouseReleased(final int mouseX, final int mouseY, final int state)
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}
@@ -449,9 +478,36 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	}
 
 	@Override
+	public void mouseReleasedOutsideBounds(final int mouseX, final int mouseY, final int state)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseReleasedOutsideBounds(mouseX, mouseY, state);
+		}
+	}
+
+	@Override
+	public void mouseClickMoveOutsideBounds(final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseClickMoveOutsideBounds(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+		}
+	}
+
+	@Override
+	public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
+		}
+	}
+
+	@Override
 	protected void handleMouseClick(final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}
@@ -473,7 +529,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	public void handleMouseInput() throws IOException
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}
@@ -491,7 +547,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	public void onMouseWheel(final int state)
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}
@@ -505,7 +561,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	protected void keyTyped(final char typedChar, final int keyCode) throws IOException
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}
@@ -577,7 +633,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	@Override
 	protected void actionPerformed(final GuiButton button) throws IOException
 	{
-		if (!this.isEnabled())
+		if (!this.isInputEnabled())
 		{
 			return;
 		}

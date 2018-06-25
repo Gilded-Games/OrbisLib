@@ -2,7 +2,9 @@ package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockFilter;
+import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.PlacedEntity;
+import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.data.IDataHolder;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
@@ -36,7 +38,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlueprintData
-		implements IDimensions, IData, IScheduleLayerListener, IPositionRecordListener<BlockFilter>, IWorldObjectChild, IDataHolder<BlueprintData>
+		implements IDimensions, IData, IPositionRecordListener<BlockFilter>, IWorldObjectChild, IDataHolder<BlueprintData>,
+		INodeTreeListener<IScheduleLayer, LayerLink>
 {
 	public static final String EXTENSION = "blueprint";
 
@@ -48,7 +51,7 @@ public class BlueprintData
 
 	private BlockDataContainer dataContainer;
 
-	private LinkedHashMap<Integer, IScheduleLayer> scheduleLayers = Maps.newLinkedHashMap();
+	private NodeTree<IScheduleLayer, LayerLink> scheduleLayerTree = new NodeTree<>();
 
 	private LinkedHashMap<Integer, PostGenReplaceLayer> postGenReplaceLayers = Maps.newLinkedHashMap();
 
@@ -56,9 +59,12 @@ public class BlueprintData
 
 	private IWorldObject worldObjectParent;
 
+	private Pos2D treeGuiPos;
+
 	private BlueprintData()
 	{
 		this.metadata = new DataMetadata();
+		this.getScheduleLayerTree().listen(this);
 	}
 
 	public BlueprintData(final IRegion region)
@@ -66,7 +72,7 @@ public class BlueprintData
 		this();
 
 		this.dataContainer = new BlockDataContainer(region);
-		this.addScheduleLayer(new ScheduleLayer("Default Layer", this));
+		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Default Layer", this), false));
 	}
 
 	public BlueprintData(final BlockDataContainer container)
@@ -74,13 +80,15 @@ public class BlueprintData
 		this();
 
 		this.dataContainer = container;
-		this.addScheduleLayer(new ScheduleLayer("Default Layer", this));
+		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Default Layer", this), false));
 	}
 
 	public static void spawnEntities(DataPrimer primer, BlueprintData data, BlockPos pos)
 	{
-		for (IScheduleLayer layer : data.getScheduleLayers().values())
+		for (INode<IScheduleLayer, LayerLink> node : data.getScheduleLayerTree().getNodes())
 		{
+			IScheduleLayer layer = node.getData();
+
 			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
 			{
 				for (int i = 0; i < s.getSpawnEggsInventory().getSizeInventory(); i++)
@@ -99,6 +107,18 @@ public class BlueprintData
 				}
 			}
 		}
+	}
+
+	public Pos2D getTreeGuiPos()
+	{
+		return this.treeGuiPos;
+	}
+
+	public void setTreeGuiPos(Pos2D treeGuiPos)
+	{
+		this.treeGuiPos = treeGuiPos;
+
+		this.markDirty();
 	}
 
 	public int getEntranceId(Entrance entrance)
@@ -136,9 +156,10 @@ public class BlueprintData
 	{
 		this.worldObjectParent = parent;
 
-		this.scheduleLayers.values().forEach(s -> s.setWorldObjectParent(this.worldObjectParent));
+		this.scheduleLayerTree.getNodes().forEach(s -> s.getData().setWorldObjectParent(this.worldObjectParent));
 		this.entrances.forEach(e -> e.setWorldObjectParent(this.worldObjectParent));
 		this.postGenReplaceLayers.values().forEach(l -> l.setWorldObjectParent(this.worldObjectParent));
+		this.scheduleLayerTree.setWorldObjectParent(this.worldObjectParent);
 	}
 
 	public void addEntrance(Entrance entrance)
@@ -218,76 +239,9 @@ public class BlueprintData
 		return this.dataContainer;
 	}
 
-	public LinkedHashMap<Integer, IScheduleLayer> getScheduleLayers()
+	public NodeTree<IScheduleLayer, LayerLink> getScheduleLayerTree()
 	{
-		return this.scheduleLayers;
-	}
-
-	public void setScheduleLayer(final int index, final IScheduleLayer layer)
-	{
-		this.listeners.forEach(o -> o.onAddScheduleLayer(layer, this.scheduleLayers.size()));
-
-		layer.setWorldObjectParent(this.worldObjectParent);
-		layer.setLayerId(index);
-
-		this.scheduleLayers.put(index, layer);
-
-		layer.listen(this);
-	}
-
-	public int findNextAvailableId()
-	{
-		int i = 0;
-
-		while (this.scheduleLayers.containsKey(i))
-		{
-			i++;
-		}
-
-		return i;
-	}
-
-	public int addScheduleLayer(final IScheduleLayer layer)
-	{
-		int id = this.findNextAvailableId();
-
-		this.setScheduleLayer(id, layer);
-
-		return id;
-	}
-
-	public boolean removeScheduleLayer(final int index)
-	{
-		final boolean removed = this.scheduleLayers.get(index) != null;
-
-		final IScheduleLayer layer = this.scheduleLayers.remove(index);
-
-		this.listeners.forEach(o -> o.onRemoveScheduleLayer(layer, index));
-
-		layer.unlisten(this);
-
-		return removed;
-	}
-
-	public IScheduleLayer getScheduleLayer(int id)
-	{
-		return this.scheduleLayers.get(id);
-	}
-
-	public int getScheduleLayerId(final IScheduleLayer layer)
-	{
-		for (Map.Entry<Integer, IScheduleLayer> entry : this.scheduleLayers.entrySet())
-		{
-			int i = entry.getKey();
-			final IScheduleLayer s = entry.getValue();
-
-			if (layer.equals(s))
-			{
-				return i;
-			}
-		}
-
-		return -1;
+		return this.scheduleLayerTree;
 	}
 
 	public List<Entrance> entrances()
@@ -351,9 +305,10 @@ public class BlueprintData
 
 		funnel.set("metadata", this.metadata);
 		funnel.set("dataContainer", this.dataContainer);
-		funnel.setIntMap("scheduleLayers", this.scheduleLayers);
+		funnel.set("scheduleLayerTree", this.scheduleLayerTree);
 		funnel.setIntMap("postGenReplaceLayers", this.postGenReplaceLayers);
 		funnel.setList("entrances", this.entrances);
+		funnel.set("treeGuiPos", this.treeGuiPos, NBTFunnel.POS2D_SETTER);
 	}
 
 	@Override
@@ -363,15 +318,15 @@ public class BlueprintData
 
 		this.metadata = funnel.get("metadata");
 		this.dataContainer = funnel.get("dataContainer");
-		this.scheduleLayers = Maps.newLinkedHashMap(funnel.getIntMap("scheduleLayers"));
+		this.scheduleLayerTree = funnel.getWithDefault("scheduleLayerTree", () -> this.scheduleLayerTree);
 		this.postGenReplaceLayers = Maps.newLinkedHashMap(funnel.getIntMap("postGenReplaceLayers"));
 
-		this.scheduleLayers.values().forEach(l -> l.setDimensions(this));
-
-		this.scheduleLayers.values().forEach(l -> l.listen(this));
-		this.scheduleLayers.values().forEach(l -> l.getFilterRecord().listen(this));
+		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().setDimensions(this));
+		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().getFilterRecord().listen(this));
 
 		this.entrances = funnel.getList("entrances");
+
+		this.treeGuiPos = funnel.get("treeGuiPos", NBTFunnel.POS2D_GETTER);
 	}
 
 	@Override
@@ -421,12 +376,6 @@ public class BlueprintData
 	public void onUnmarkPos(final int x, final int y, final int z)
 	{
 		this.listeners.forEach(IBlueprintDataListener::onDataChanged);
-	}
-
-	@Override
-	public void onSetDimensions(final IDimensions dimensions)
-	{
-
 	}
 
 	public void markDirty()
@@ -528,5 +477,20 @@ public class BlueprintData
 		}
 
 		return -1;
+	}
+
+	@Override
+	public void onPut(INode<IScheduleLayer, LayerLink> node, int id)
+	{
+		IScheduleLayer layer = node.getData();
+
+		layer.setWorldObjectParent(this.worldObjectParent);
+		layer.setNodeParent(node);
+	}
+
+	@Override
+	public void onRemove(INode<IScheduleLayer, LayerLink> node, int id)
+	{
+		node.getData().setNodeParent(null);
 	}
 }

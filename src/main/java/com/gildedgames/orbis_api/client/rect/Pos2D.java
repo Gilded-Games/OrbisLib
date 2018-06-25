@@ -2,6 +2,7 @@ package com.gildedgames.orbis_api.client.rect;
 
 public class Pos2D
 {
+	public static Pos2D ORIGIN = Pos2D.flush(0, 0);
 
 	private final float x, y;
 

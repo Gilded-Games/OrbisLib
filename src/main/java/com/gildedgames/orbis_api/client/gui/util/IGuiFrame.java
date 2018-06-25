@@ -9,6 +9,8 @@ import java.util.List;
 public interface IGuiFrame extends RectHolder
 {
 
+	int getZOrder();
+
 	float getAlpha();
 
 	void setAlpha(float alpha);
@@ -25,7 +27,7 @@ public interface IGuiFrame extends RectHolder
 
 	void init();
 
-	List<IGuiFrame> seekAllContent();
+	List<IGuiFrame> getChildren();
 
 	boolean isVisible();
 
@@ -63,4 +65,9 @@ public interface IGuiFrame extends RectHolder
 
 	void publicDrawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY);
 
+	void mouseReleasedOutsideBounds(final int mouseX, final int mouseY, final int state);
+
+	void mouseClickMoveOutsideBounds(final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick);
+
+	void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton);
 }

@@ -1,5 +1,8 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.core.tree.INode;
+import com.gildedgames.orbis_api.core.tree.LayerLink;
+
 public interface IScheduleLayerHolder
 {
 
@@ -7,7 +10,7 @@ public interface IScheduleLayerHolder
 
 	void setCurrentScheduleLayerIndex(final int index);
 
-	IScheduleLayer getCurrentScheduleLayer();
+	INode<IScheduleLayer, LayerLink> getCurrentScheduleLayerNode();
 
 	void listen(IScheduleLayerHolderListener listener);
 

@@ -8,6 +8,7 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 
 import java.io.IOException;
+import java.util.List;
 
 public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implements Decorator<T>
 {
@@ -23,6 +24,84 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 	public T getDecoratedElement()
 	{
 		return this.element;
+	}
+
+	@Override
+	public void setShouldScaleRender(boolean shouldScaleRender)
+	{
+		this.element.setShouldScaleRender(shouldScaleRender);
+	}
+
+	@Override
+	public GuiFrame getPrevFrame()
+	{
+		return this.element.getPrevFrame();
+	}
+
+	@Override
+	public void preDrawChildren()
+	{
+		this.element.preDrawChildren();
+	}
+
+	@Override
+	public List<IGuiFrame> getChildren()
+	{
+		return this.element.getChildren();
+	}
+
+	@Override
+	public void initContainerSize()
+	{
+		this.element.initContainerSize();
+	}
+
+	@Override
+	public void setInputDisabledWhenNotHovered(boolean flag)
+	{
+		this.element.setInputDisabledWhenNotHovered(flag);
+	}
+
+	@Override
+	public boolean isInputEnabled()
+	{
+		return this.element.isInputEnabled();
+	}
+
+	@Override
+	public boolean isEnabled()
+	{
+		return this.element.isEnabled();
+	}
+
+	@Override
+	public void setEnabled(boolean enabled)
+	{
+		this.element.setEnabled(enabled);
+	}
+
+	@Override
+	public boolean isVisible()
+	{
+		return this.element.isVisible();
+	}
+
+	@Override
+	public void setVisible(boolean visible)
+	{
+		this.element.setVisible(visible);
+	}
+
+	@Override
+	public void addChildren(IGuiFrame... children)
+	{
+		this.element.addChildren(children);
+	}
+
+	@Override
+	public void addChildNoMods(IGuiFrame child)
+	{
+		this.element.addChildNoMods(child);
 	}
 
 	public <D> D findDecoratedElement(final Class<? extends D> clazz)
@@ -54,6 +133,54 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 		}
 
 		return null;
+	}
+
+	@Override
+	public int getZOrder()
+	{
+		return this.element.getZOrder();
+	}
+
+	@Override
+	public float getAlpha()
+	{
+		return this.element.getAlpha();
+	}
+
+	@Override
+	public void setAlpha(float alpha)
+	{
+		this.element.setAlpha(alpha);
+	}
+
+	@Override
+	public void clearChildren()
+	{
+		this.element.clearChildren();
+	}
+
+	@Override
+	public boolean hasInit()
+	{
+		return this.element.hasInit();
+	}
+
+	@Override
+	public void onHovered()
+	{
+		this.element.onHovered();
+	}
+
+	@Override
+	public void onHoverEnter()
+	{
+		this.element.onHoverEnter();
+	}
+
+	@Override
+	public void onHoverExit()
+	{
+		this.element.onHoverExit();
 	}
 
 	@Override
@@ -107,6 +234,8 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 	@Override
 	public void initGui()
 	{
+		super.initGui();
+
 		this.element.initGui();
 	}
 
@@ -171,7 +300,10 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 	@Override
 	public void setWorldAndResolution(final Minecraft mc, final int width, final int height)
 	{
+		super.setWorldAndResolution(mc, width, height);
+
 		this.element.setWorldAndResolution(mc, width, height);
+		this.mc = mc;
 	}
 
 	@Override

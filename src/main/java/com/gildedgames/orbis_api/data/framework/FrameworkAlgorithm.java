@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
 
 public class FrameworkAlgorithm
 {
-	// How quickly the algorithm adds nodes on intersections of edges
+	// How quickly the algorithm adds tree on intersections of edges
 	private final static float spiderwebGrowth = 0.5f, graphDestroy = 0.3f;
 
 	// We can only add edges during the create/destroy phase when
-	// the two nodes are within addEdgeDistanceRatio of the
+	// the two tree are within addEdgeDistanceRatio of the
 	// length of the diagonal of the surrounding boundingbox.
 	private final static float addEdgeDistanceRatio = 0.4f;
 
@@ -198,7 +198,7 @@ public class FrameworkAlgorithm
 
 		this._nodeMap = nodeLookup; // temperorary;
 
-		//Create all nodes, which are now fixed size
+		//Create all tree, which are now fixed size
 		for (FrameworkNode node : this.framework.graph.vertexSet())
 		{
 			BlueprintData data = node.possibleValues(this.random).get(0);
@@ -251,7 +251,7 @@ public class FrameworkAlgorithm
 	//		this.fdgdGraph = new SimpleGraph<FDGDNode, FDGDEdge>(FDGDEdge.class);
 	//		final Map<FrameworkNode, FDGDNode> nodeLookup = new HashMap<FrameworkNode, FDGDNode>(this.framework.graph.vertexSet().size());
 	//
-	//		//Create all nodes, which are now fixed size
+	//		//Create all tree, which are now fixed size
 	//		for (final Entry<Object, Object> entry : assignments.entrySet())
 	//		{
 	//			final Object key = entry.getKey();
@@ -377,9 +377,9 @@ public class FrameworkAlgorithm
 		final int maxAmount = (int) Math.pow(edges.size(), spiderwebGrowth);
 		OrbisAPI.LOGGER.info(maxAmount);
 
-		//		for (int j = 0; j < nodes.size(); j++)
+		//		for (int j = 0; j < tree.size(); j++)
 		//		{
-		//			FDGDNode n = nodes.get(j);
+		//			FDGDNode n = tree.get(j);
 		//			if (n.isIntersection())
 		//			{
 		//				FDGDEdge e1 = n.getOldEdge1();
@@ -556,7 +556,7 @@ public class FrameworkAlgorithm
 					}
 
 					final FDGDEdge toRemove = this.random.nextBoolean() ? edge1 : edge2;
-					//Remove the edge, and make sure we can still reach the nodes it connected
+					//Remove the edge, and make sure we can still reach the tree it connected
 					this.fdgdGraph.removeEdge(toRemove);
 					if (this.fdgdGraph.canReach(toRemove.node1(), toRemove.node2()))
 					{

@@ -17,7 +17,7 @@ public interface IGDAlgorithm
 	void initialize(Graph<FDGDNode, FDGDEdge> graph, FrameworkType type, Random random);
 
 	/**
-	 * This method computes the forces on the nodes and the edges.
+	 * This method computes the forces on the tree and the edges.
 	 * @param graph
 	 * @param type
 	 */

@@ -5,6 +5,12 @@ import com.gildedgames.orbis_api.core.CreationData;
 import com.gildedgames.orbis_api.core.GameRegistrar;
 import com.gildedgames.orbis_api.core.PlacedBlueprint;
 import com.gildedgames.orbis_api.core.registry.IOrbisDefinitionRegistry;
+import com.gildedgames.orbis_api.core.tree.ConditionLink;
+import com.gildedgames.orbis_api.core.tree.LayerLink;
+import com.gildedgames.orbis_api.core.tree.NodeMultiParented;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
+import com.gildedgames.orbis_api.core.variables.*;
+import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionRatio;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis_api.data.DataCondition;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
@@ -173,6 +179,17 @@ public class OrbisServices implements IOrbisServices
 			s.register(38, BlueprintDataHolder.class, new Instantiator<>(BlueprintDataHolder.class));
 			s.register(39, BlueprintStackerData.class, new Instantiator<>(BlueprintStackerData.class));
 			s.register(40, PostGenReplaceLayer.class, new Instantiator<>(PostGenReplaceLayer.class));
+			s.register(41, GuiVarBoolean.class, new Instantiator<>(GuiVarBoolean.class));
+			s.register(42, GuiVarDouble.class, new Instantiator<>(GuiVarDouble.class));
+			s.register(43, GuiVarFloat.class, new Instantiator<>(GuiVarFloat.class));
+			s.register(44, GuiVarFloatRange.class, new Instantiator<>(GuiVarFloatRange.class));
+			s.register(45, GuiVarInteger.class, new Instantiator<>(GuiVarInteger.class));
+			s.register(46, GuiVarString.class, new Instantiator<>(GuiVarString.class));
+			s.register(47, GuiConditionRatio.class, new Instantiator<>(GuiConditionRatio.class));
+			s.register(48, NodeMultiParented.class, new Instantiator<>(NodeMultiParented.class));
+			s.register(49, NodeTree.class, new Instantiator<>(NodeTree.class));
+			s.register(50, ConditionLink.class, new Instantiator<>(ConditionLink.class));
+			s.register(51, LayerLink.class, new Instantiator<>(LayerLink.class));
 
 			this.io.register(s);
 		}

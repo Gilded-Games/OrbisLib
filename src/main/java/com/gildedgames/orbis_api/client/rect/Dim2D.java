@@ -8,30 +8,27 @@ import java.util.List;
 public class Dim2D implements Rect
 {
 
-	final float posX, posY, maxPosX, maxPosY;
+	private final Pos2D min, max;
 
-	final float degrees;
+	private final float degrees;
 
-	final float originX, originY;
+	private final float originX, originY;
 
-	final float width, height;
+	private final float width, height;
 
-	final boolean centeredX, centeredY;
+	private final boolean centeredX, centeredY;
 
-	final Pos2D center;
+	private final Pos2D center;
 
-	final float scale;
+	private final float scale;
 
-	Dim2D()
+	private Dim2D()
 	{
 		this(new RectBuilder());
 	}
 
 	Dim2D(final RectBuilder builder)
 	{
-		this.posX = builder.posX;
-		this.posY = builder.posY;
-
 		this.width = builder.width;
 		this.height = builder.height;
 
@@ -45,10 +42,10 @@ public class Dim2D implements Rect
 		this.originX = builder.originX;
 		this.originY = builder.originY;
 
-		this.maxPosX = this.posX + this.width;
-		this.maxPosY = this.posY + this.height;
+		this.min = Pos2D.flush(builder.posX, builder.posY);
+		this.max = Pos2D.flush(this.min.x() + this.width, this.min.y() + this.height);
 
-		this.center = Pos2D.flush(this.posX + (this.width / 2), this.posY + (this.height / 2));
+		this.center = Pos2D.flush(this.min.x() + (this.width / 2), this.min.y() + (this.height / 2));
 	}
 
 	/**
@@ -160,25 +157,25 @@ public class Dim2D implements Rect
 	@Override
 	public float maxX()
 	{
-		return this.maxPosX;
+		return this.max.x();
 	}
 
 	@Override
 	public float maxY()
 	{
-		return this.maxPosY;
+		return this.max.y();
 	}
 
 	@Override
 	public float x()
 	{
-		return this.posX;
+		return this.min.x();
 	}
 
 	@Override
 	public float y()
 	{
-		return this.posY;
+		return this.min.y();
 	}
 
 	@Override
@@ -233,7 +230,8 @@ public class Dim2D implements Rect
 	{
 		final String link = ", ";
 
-		return "X " + this.posX + " Y " + this.posY + link + "Area() Width: '" + this.width() + "', Height: '" + this.height() + "'" + link + "Centered() X: '"
+		return "X " + this.min.x() + " Y " + this.min.y() + link + "Area() Width: '" + this.width() + "', Height: '" + this.height() + "'" + link
+				+ "Centered() X: '"
 				+ this.centeredX + "', Y: '" + this.centeredY + "'" + link + "Scale() Value: '" + this.scale() + "'";
 	}
 
@@ -278,6 +276,12 @@ public class Dim2D implements Rect
 	public Pos2D center()
 	{
 		return this.center;
+	}
+
+	@Override
+	public Pos2D min()
+	{
+		return this.min;
 	}
 
 }

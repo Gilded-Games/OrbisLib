@@ -70,7 +70,7 @@ public interface IDirectoryNavigator
 	File currentDirectory();
 
 	/**
-	 * Provides a list of navigator nodes within the current directory.
+	 * Provides a list of navigator tree within the current directory.
 	 */
 	List<INavigatorNode> getNodes();
 

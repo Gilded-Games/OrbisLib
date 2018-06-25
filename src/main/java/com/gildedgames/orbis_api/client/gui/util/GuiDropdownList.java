@@ -22,12 +22,40 @@ public class GuiDropdownList extends GuiFrame
 		this.elements.addAll(Arrays.asList(elements));
 	}
 
+	public void display(final Collection<IDropdownElement> elements, Pos2D pos)
+	{
+		this.setDropdownElements(elements);
+
+		this.dim().mod().pos(pos).flush();
+
+		this.setVisible(true);
+		this.setEnabled(true);
+	}
+
 	public void setDropdownElements(final Collection<IDropdownElement> elements)
 	{
 		this.clearChildren();
 
 		this.elements.clear();
 		this.elements.addAll(elements);
+
+		this.init();
+	}
+
+	public void addDropdownElements(Collection<IDropdownElement> elements)
+	{
+		this.clearChildren();
+
+		this.elements.addAll(elements);
+
+		this.init();
+	}
+
+	public void addDropdownElements(IDropdownElement... elements)
+	{
+		this.clearChildren();
+
+		this.elements.addAll(Arrays.asList(elements));
 
 		this.init();
 	}
@@ -40,6 +68,8 @@ public class GuiDropdownList extends GuiFrame
 			final IDropdownElement element = this.elements.get(i);
 			final int y = 17 * i;
 
+			final int id = i;
+
 			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).area(60, 10).flush(), element.text())
 			{
 				@Override
@@ -47,9 +77,18 @@ public class GuiDropdownList extends GuiFrame
 				{
 					super.mouseReleased(mouseX, mouseY, mouseButton);
 
-					if (InputHelper.isHovered(this) && GuiDropdownList.this.isVisible())
+					if (mouseButton == 0)
 					{
-						element.onClick(GuiDropdownList.this, Minecraft.getMinecraft().player);
+						if (InputHelper.isHovered(this) && GuiDropdownList.this.isEnabled())
+						{
+							element.onClick(GuiDropdownList.this, Minecraft.getMinecraft().player);
+						}
+
+						if (id >= GuiDropdownList.this.elements.size() - 1)
+						{
+							GuiDropdownList.this.setVisible(false);
+							GuiDropdownList.this.setEnabled(false);
+						}
 					}
 				}
 			};

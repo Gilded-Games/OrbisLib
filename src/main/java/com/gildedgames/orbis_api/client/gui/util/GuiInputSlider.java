@@ -24,7 +24,7 @@ public class GuiInputSlider extends GuiFrame
 
 	private DecimalFormat df;
 
-	public GuiInputSlider(final Rect rect, int minValue, int maxValue, float sliderValue)
+	public GuiInputSlider(final Rect rect, float minValue, float maxValue, float sliderValue)
 	{
 		super(rect);
 

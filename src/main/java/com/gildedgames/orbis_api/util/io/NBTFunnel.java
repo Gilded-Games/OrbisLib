@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.util.io;
 
+import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
@@ -57,6 +58,17 @@ public class NBTFunnel
 
 	public static Function<NBTTagCompound, Boolean> BOOLEAN_GETTER = n -> n.getBoolean("b");
 
+	public static Function<Integer, NBTTagCompound> INTEGER_SETTER = o ->
+	{
+		NBTTagCompound f = new NBTTagCompound();
+
+		f.setInteger("i", o);
+
+		return f;
+	};
+
+	public static Function<NBTTagCompound, Integer> INTEGER_GETTER = n -> n.getInteger("i");
+
 	public static Function<ResourceLocation, NBTTagCompound> LOC_SETTER = o ->
 	{
 		NBTTagCompound f = new NBTTagCompound();
@@ -83,6 +95,18 @@ public class NBTFunnel
 
 		return f.getPos("p");
 	};
+
+	public static Function<Pos2D, NBTTagCompound> POS2D_SETTER = o ->
+	{
+		NBTTagCompound tag = new NBTTagCompound();
+
+		tag.setFloat("x", o.x());
+		tag.setFloat("y", o.y());
+
+		return tag;
+	};
+
+	public static Function<NBTTagCompound, Pos2D> POS2D_GETTER = n -> Pos2D.flush(n.getFloat("x"), n.getFloat("y"));
 
 	private final NBTTagCompound tag;
 
@@ -164,6 +188,93 @@ public class NBTFunnel
 		tag.setString("date", date.toString());
 
 		this.tag.setTag(key, tag);
+	}
+
+	public <NBT_OBJECT> void setSet(final String key, final Set<NBT_OBJECT> nbtList, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	{
+		final NBTTagList writtenObjects = new NBTTagList();
+
+		for (final NBT_OBJECT nbt : nbtList)
+		{
+			if (setter != null)
+			{
+				writtenObjects.appendTag(setter.apply(nbt));
+			}
+			else
+			{
+				writtenObjects.appendTag(NBTHelper.write((NBT) nbt));
+			}
+		}
+
+		this.tag.setTag(key, writtenObjects);
+	}
+
+	public <NBT_OBJECT> Set<NBT_OBJECT> getSet(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	{
+		final Set<NBT_OBJECT> readObjects = Sets.newHashSet();
+		final NBTTagList nbtList = this.tag.getTagList(key, 10);
+
+		for (int i = 0; i < nbtList.tagCount(); i++)
+		{
+			final NBTTagCompound data = nbtList.getCompoundTagAt(i);
+
+			readObjects.add(getter != null ? getter.apply(data) : NBTHelper.read(data));
+		}
+
+		return readObjects;
+	}
+
+	public <NBT_OBJECT> void set(final String key, NBT_OBJECT nbt, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	{
+		final NBTTagCompound tag = new NBTTagCompound();
+
+		if (nbt == null)
+		{
+			tag.setBoolean("_null", true);
+		}
+		else
+		{
+			tag.setBoolean("_null", false);
+
+			if (setter != null)
+			{
+				tag.setTag("data", setter.apply(nbt));
+			}
+			else
+			{
+				tag.setTag("data", NBTHelper.write((NBT) nbt));
+			}
+		}
+
+		this.tag.setTag(key, tag);
+	}
+
+	public <NBT_OBJECT> NBT_OBJECT get(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	{
+		final NBTTagCompound tag = this.tag.getCompoundTag(key);
+
+		if (tag.getBoolean("_null") || !tag.hasKey("_null"))
+		{
+			return null;
+		}
+
+		final NBTTagCompound data = tag.getCompoundTag("data");
+
+		return getter != null ? getter.apply(data) : NBTHelper.read(data);
+	}
+
+	public <NBT_OBJECT> NBT_OBJECT getWithDefault(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter, Supplier<NBT_OBJECT> def)
+	{
+		final NBTTagCompound tag = this.tag.getCompoundTag(key);
+
+		if (tag.getBoolean("_null") || !tag.hasKey("_null"))
+		{
+			return def.get();
+		}
+
+		final NBTTagCompound data = tag.getCompoundTag("data");
+
+		return getter != null ? getter.apply(data) : NBTHelper.read(data);
 	}
 
 	public <T extends NBTMeta> T loadWithoutReading(final String key)

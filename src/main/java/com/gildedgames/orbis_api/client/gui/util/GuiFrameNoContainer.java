@@ -120,7 +120,7 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 	}
 
 	@Override
-	public List<IGuiFrame> seekAllContent()
+	public List<IGuiFrame> getChildren()
 	{
 		return this.children;
 	}

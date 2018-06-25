@@ -152,7 +152,7 @@ public class BlockFilterLayer implements NBT
 
 		BlockDataWithConditions replacementBlock = null;
 
-		if (!options.choosesPerBlock())
+		if (!options.getChoosesPerBlockVar().getData())
 		{
 			replacementBlock = this.getRandom(creationData.getRandom(), world);
 		}
@@ -168,7 +168,7 @@ public class BlockFilterLayer implements NBT
 				continue;
 			}
 
-			if (options.choosesPerBlock())
+			if (options.getChoosesPerBlockVar().getData())
 			{
 				replacementBlock = this.getRandom(creationData.getRandom(), world);
 			}
@@ -221,7 +221,7 @@ public class BlockFilterLayer implements NBT
 
 		BlockDataWithConditions replacementBlock = null;
 
-		if (!options.choosesPerBlock())
+		if (!options.getChoosesPerBlockVar().getData())
 		{
 			replacementBlock = this.getRandom(creationData.getRandom(), world);
 		}
@@ -287,7 +287,7 @@ public class BlockFilterLayer implements NBT
 			}
 		}
 
-		if (options.choosesPerBlock())
+		if (options.getChoosesPerBlockVar().getData())
 		{
 			replacementBlock = this.getRandom(creationData.getRandom(), world);
 		}
@@ -304,11 +304,11 @@ public class BlockFilterLayer implements NBT
 
 		if (creationData.schedules() && holder != null)
 		{
-			IPositionRecord<BlockFilter> record = holder.getCurrentScheduleLayer().getFilterRecord();
+			IPositionRecord<BlockFilter> record = holder.getCurrentScheduleLayerNode().getData().getFilterRecord();
 
 			if (schedX >= 0 && schedY >= 0 && schedZ >= 0 && schedX < record.getWidth() && schedY < record.getHeight() && schedZ < record.getLength())
 			{
-				BlockFilter posFilter = holder.getCurrentScheduleLayer().getFilterRecord().get(schedX, schedY, schedZ);
+				BlockFilter posFilter = holder.getCurrentScheduleLayerNode().getData().getFilterRecord().get(schedX, schedY, schedZ);
 
 				boolean found = false;
 
@@ -326,8 +326,18 @@ public class BlockFilterLayer implements NBT
 				}
 				else
 				{
+					outer:
 					for (BlockFilterLayer layer : parentFilter.getFilters())
 					{
+						for (BlockDataWithConditions data : layer.getRequiredBlocks())
+						{
+							if (data.isAir())
+							{
+								found = true;
+								break outer;
+							}
+						}
+
 						if (layer.getFilterType() == BlockFilterType.ALL || layer.getRequiredBlocks().equals(AIR_BLOCKS))
 						{
 							found = true;
@@ -341,15 +351,15 @@ public class BlockFilterLayer implements NBT
 					return;
 				}
 
-				if (creationData.getRandom().nextFloat() > options.getEdgeNoise())
+				if (creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())
 				{
 					if (replacementBlock.isAir())
 					{
-						holder.getCurrentScheduleLayer().getFilterRecord().unmarkPos(schedX, schedY, schedZ);
+						holder.getCurrentScheduleLayerNode().getData().getFilterRecord().unmarkPos(schedX, schedY, schedZ);
 					}
 					else
 					{
-						holder.getCurrentScheduleLayer().getFilterRecord().markPos(parentFilter, schedX, schedY, schedZ);
+						holder.getCurrentScheduleLayerNode().getData().getFilterRecord().markPos(parentFilter, schedX, schedY, schedZ);
 					}
 				}
 			}
@@ -365,14 +375,14 @@ public class BlockFilterLayer implements NBT
 					.contains(c.getX() + 1, c.getY(), c.getZ()) || !shape.contains(c.getX() - 1, c.getY(), c.getZ()) || !shape
 					.contains(c.getX(), c.getY(), c.getZ() + 1) || !shape.contains(c.getX(), c.getY(), c.getZ() - 1);
 
-			if (!edge || creationData.getRandom().nextFloat() > options.getEdgeNoise())
+			if (!edge || creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())
 			{
 				primer.create(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), c, creationData);
 			}
 		}
 
 		// TODO: Re-enable event
-		/*final ChangeBlockEvent blockEvent = new ChangeBlockEvent(world, pos, options.getCreator());
+		/*final ChangeBlockEvent blockEvent = new ChangeBlockEvent(world, min, options.getCreator());
 		MinecraftForge.EVENT_BUS.post(blockEvent);*/
 	}
 

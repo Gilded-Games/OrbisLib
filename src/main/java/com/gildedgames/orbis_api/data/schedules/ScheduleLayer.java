@@ -1,20 +1,16 @@
 package com.gildedgames.orbis_api.data.schedules;
 
 import com.gildedgames.orbis_api.block.BlockFilter;
+import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.core.tree.*;
+import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.world.IWorldObject;
-import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
 
-import java.util.List;
-
-public class ScheduleLayer implements IScheduleLayer
+public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCondition, ConditionLink>
 {
-	private final List<IScheduleLayerListener> listeners = Lists.newArrayList();
-
-	private String displayName;
-
 	private IDimensions dimensions;
 
 	private IPositionRecord<BlockFilter> positionRecord;
@@ -23,9 +19,13 @@ public class ScheduleLayer implements IScheduleLayer
 
 	private IWorldObject worldObjectParent;
 
-	private int layerId;
-
 	private IFilterOptions options = new FilterOptions();
+
+	private NodeTree<IGuiCondition, ConditionLink> conditionNodeTree = new NodeTree<>();
+
+	private Pos2D guiPos = Pos2D.ORIGIN, conditionGuiPos = Pos2D.ORIGIN;
+
+	private INode<IScheduleLayer, LayerLink> nodeParent;
 
 	private ScheduleLayer()
 	{
@@ -34,45 +34,31 @@ public class ScheduleLayer implements IScheduleLayer
 
 	public ScheduleLayer(final String displayName, final IDimensions dimensions)
 	{
-		this.displayName = displayName;
+		this.getOptions().getDisplayNameVar().setData(displayName);
 		this.dimensions = dimensions;
 
 		this.positionRecord = new FilterRecord(this.dimensions.getWidth(), this.dimensions.getHeight(), this.dimensions.getLength());
 
 		this.scheduleRecord.setParent(this);
+		this.conditionNodeTree.listen(this);
 	}
 
 	@Override
-	public void listen(final IScheduleLayerListener listener)
+	public INode<IScheduleLayer, LayerLink> getNodeParent()
 	{
-		if (!this.listeners.contains(listener))
-		{
-			this.listeners.add(listener);
-		}
+		return this.nodeParent;
 	}
 
 	@Override
-	public boolean unlisten(final IScheduleLayerListener listener)
+	public void setNodeParent(INode<IScheduleLayer, LayerLink> nodeParent)
 	{
-		return this.listeners.remove(listener);
+		this.nodeParent = nodeParent;
 	}
 
 	@Override
 	public IFilterOptions getOptions()
 	{
 		return this.options;
-	}
-
-	@Override
-	public String getDisplayName()
-	{
-		return this.displayName;
-	}
-
-	@Override
-	public void setDisplayName(String displayName)
-	{
-		this.displayName = displayName;
 	}
 
 	@Override
@@ -94,15 +80,39 @@ public class ScheduleLayer implements IScheduleLayer
 	}
 
 	@Override
-	public int getLayerId()
+	public NodeTree<IGuiCondition, ConditionLink> getConditionNodeTree()
 	{
-		return this.layerId;
+		return this.conditionNodeTree;
 	}
 
 	@Override
-	public void setLayerId(int layerId)
+	public void setConditionNodeTree(NodeTree<IGuiCondition, ConditionLink> tree)
 	{
-		this.layerId = layerId;
+		this.conditionNodeTree = tree;
+	}
+
+	@Override
+	public Pos2D getGuiPos()
+	{
+		return this.guiPos;
+	}
+
+	@Override
+	public void setGuiPos(Pos2D pos)
+	{
+		this.guiPos = pos;
+	}
+
+	@Override
+	public Pos2D getConditionGuiPos()
+	{
+		return this.conditionGuiPos;
+	}
+
+	@Override
+	public void setConditionGuiPos(Pos2D pos)
+	{
+		this.conditionGuiPos = pos;
 	}
 
 	@Override
@@ -115,8 +125,10 @@ public class ScheduleLayer implements IScheduleLayer
 
 		funnel.set("options", this.options);
 
-		tag.setString("displayName", this.displayName);
-		tag.setInteger("layerId", this.layerId);
+		funnel.set("guiPos", this.guiPos, NBTFunnel.POS2D_SETTER);
+		funnel.set("conditionGuiPos", this.conditionGuiPos, NBTFunnel.POS2D_SETTER);
+
+		funnel.set("conditionNodeTree", this.conditionNodeTree);
 	}
 
 	@Override
@@ -130,13 +142,17 @@ public class ScheduleLayer implements IScheduleLayer
 
 		this.options = funnel.getWithDefault("options", FilterOptions::new);
 
-		this.displayName = tag.getString("displayName");
-		this.layerId = tag.getInteger("layerId");
-
 		if (this.scheduleRecord != null)
 		{
 			this.scheduleRecord.setParent(this);
 		}
+
+		this.guiPos = funnel.get("guiPos", NBTFunnel.POS2D_GETTER);
+		this.conditionGuiPos = funnel.getWithDefault("conditionGuiPos", NBTFunnel.POS2D_GETTER, () -> this.conditionGuiPos);
+
+		this.conditionNodeTree = funnel.getWithDefault("conditionNodeTree", () -> this.conditionNodeTree);
+
+		this.conditionNodeTree.listen(this);
 	}
 
 	@Override
@@ -151,6 +167,24 @@ public class ScheduleLayer implements IScheduleLayer
 		this.worldObjectParent = parent;
 
 		this.scheduleRecord.setWorldObjectParent(parent);
+		this.conditionNodeTree.setWorldObjectParent(parent);
 	}
 
+	@Override
+	public void onPut(INode<IGuiCondition, ConditionLink> node, int id)
+	{
+		if (this.worldObjectParent != null)
+		{
+			this.worldObjectParent.markDirty();
+		}
+	}
+
+	@Override
+	public void onRemove(INode<IGuiCondition, ConditionLink> node, int id)
+	{
+		if (this.worldObjectParent != null)
+		{
+			this.worldObjectParent.markDirty();
+		}
+	}
 }

@@ -34,6 +34,8 @@ public class GuiFrameCreative extends GuiContainerCreativePublic implements IGui
 
 	private float alpha;
 
+	private int zOrder;
+
 	public GuiFrameCreative(final EntityPlayer player)
 	{
 		super(player);
@@ -42,6 +44,12 @@ public class GuiFrameCreative extends GuiContainerCreativePublic implements IGui
 	public void setDrawDefaultBackground(final boolean flag)
 	{
 		this.drawDefaultBackground = flag;
+	}
+
+	@Override
+	public int getZOrder()
+	{
+		return this.zOrder;
 	}
 
 	@Override
@@ -93,7 +101,7 @@ public class GuiFrameCreative extends GuiContainerCreativePublic implements IGui
 	}
 
 	@Override
-	public List<IGuiFrame> seekAllContent()
+	public List<IGuiFrame> getChildren()
 	{
 		return this.children;
 	}
@@ -156,6 +164,33 @@ public class GuiFrameCreative extends GuiContainerCreativePublic implements IGui
 	public void publicDrawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
 	{
 		this.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+	}
+
+	@Override
+	public void mouseReleasedOutsideBounds(int mouseX, int mouseY, int state)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseReleasedOutsideBounds(mouseX, mouseY, state);
+		}
+	}
+
+	@Override
+	public void mouseClickMoveOutsideBounds(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseClickMoveOutsideBounds(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+		}
+	}
+
+	@Override
+	public void mouseClickedOutsideBounds(int mouseX, int mouseY, int mouseButton)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
+		}
 	}
 
 	@Override

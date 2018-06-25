@@ -3,6 +3,8 @@ package com.gildedgames.orbis_api.data.blueprint;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.core.CreationData;
+import com.gildedgames.orbis_api.core.tree.INode;
+import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.data.IDataHolder;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
@@ -208,8 +210,10 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 
 		final BlockDataContainer chosenBottomBlocks = chosenBottom.getBlockDataContainer().clone();
 
-		for (IScheduleLayer layer : chosenBottom.getScheduleLayers().values())
+		for (INode<IScheduleLayer, LayerLink> node : chosenBottom.getScheduleLayerTree().getNodes())
 		{
+			IScheduleLayer layer = node.getData();
+
 			for (BlockFilter filter : layer.getFilterRecord().getData())
 			{
 				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), chosenBottomBlocks, new CreationData(world), layer.getOptions());
@@ -227,8 +231,10 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 		{
 			final BlockDataContainer blocks = segment.getBlockDataContainer().clone();
 
-			for (IScheduleLayer layer : segment.getScheduleLayers().values())
+			for (INode<IScheduleLayer, LayerLink> node : segment.getScheduleLayerTree().getNodes())
 			{
+				IScheduleLayer layer = node.getData();
+
 				for (BlockFilter filter : layer.getFilterRecord().getData())
 				{
 					filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), blocks, new CreationData(world), layer.getOptions());
@@ -243,8 +249,10 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 
 		final BlockDataContainer chosenTopBlocks = chosenTop.getBlockDataContainer().clone();
 
-		for (IScheduleLayer layer : chosenTop.getScheduleLayers().values())
+		for (INode<IScheduleLayer, LayerLink> node : chosenTop.getScheduleLayerTree().getNodes())
 		{
+			IScheduleLayer layer = node.getData();
+
 			for (BlockFilter filter : layer.getFilterRecord().getData())
 			{
 				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), chosenTopBlocks, new CreationData(world), layer.getOptions());

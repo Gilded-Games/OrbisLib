@@ -1,16 +1,19 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.core.variables.GuiVarBoolean;
+import com.gildedgames.orbis_api.core.variables.GuiVarFloatRange;
+import com.gildedgames.orbis_api.core.variables.GuiVarString;
 import com.gildedgames.orbis_api.util.mc.NBT;
 
 public interface IFilterOptions extends NBT
 {
 
-	IFilterOptions setChoosesPerBlock(boolean choosesPerBlock);
+	GuiVarString getDisplayNameVar();
 
-	boolean choosesPerBlock();
+	GuiVarBoolean getChoosesPerBlockVar();
 
-	float getEdgeNoise();
+	GuiVarFloatRange getEdgeNoiseVar();
 
-	IFilterOptions setEdgeNoise(float edgeNoise);
+	void copyFrom(IFilterOptions options);
 
 }

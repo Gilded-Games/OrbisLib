@@ -131,7 +131,7 @@ public class Region implements IMutableRegion
 	}
 
 	/**
-	 * Sets the min coordinate of the region to the given pos,
+	 * Sets the min coordinate of the region to the given min,
 	 * and the max so that the current dimensions are kept.
 	 */
 	public void relocate(final BlockPos pos)

@@ -134,7 +134,7 @@ public class DeprecatedFDGD implements IGDAlgorithm
 			v.setForce(forceX * c, forceY * c, forceZ * c);
 		}
 
-		// After computing the forces, apply them to the nodes
+		// After computing the forces, apply them to the tree
 		graph.vertexSet().forEach(FDGDNode::applyForce);
 		graph.edgeSet().forEach(FDGDEdge::applyForce);
 	}

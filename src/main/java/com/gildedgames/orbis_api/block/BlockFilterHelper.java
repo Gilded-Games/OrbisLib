@@ -191,7 +191,9 @@ public class BlockFilterHelper
 
 		final BlockFilterLayer layer = new BlockFilterLayer();
 
-		layer.setFilterType(BlockFilterType.ALL);
+		layer.setRequiredBlocks(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), 1.0f));
+
+		layer.setFilterType(BlockFilterType.ONLY);
 
 		final IBlockState[] blocks = getBlocksFromStack(stack);
 

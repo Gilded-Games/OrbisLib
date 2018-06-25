@@ -1,58 +1,70 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.core.variables.GuiVarBoolean;
+import com.gildedgames.orbis_api.core.variables.GuiVarFloatRange;
+import com.gildedgames.orbis_api.core.variables.GuiVarString;
+import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class FilterOptions implements IFilterOptions
 {
 
-	private boolean choosesPerBlock;
+	private GuiVarBoolean choosesPerBlock;
 
-	private float edgeNoise;
+	private GuiVarFloatRange edgeNoise;
+
+	private GuiVarString displayName;
 
 	public FilterOptions()
 	{
-
+		this.choosesPerBlock = new GuiVarBoolean("Chooses Per Block");
+		this.edgeNoise = new GuiVarFloatRange("Edge Noise", 0.0F, 100.0F);
+		this.displayName = new GuiVarString("Display Name");
 	}
 
 	@Override
-	public IFilterOptions setChoosesPerBlock(boolean choosesPerBlock)
+	public GuiVarString getDisplayNameVar()
 	{
-		this.choosesPerBlock = choosesPerBlock;
-
-		return this;
+		return this.displayName;
 	}
 
 	@Override
-	public boolean choosesPerBlock()
+	public GuiVarBoolean getChoosesPerBlockVar()
 	{
 		return this.choosesPerBlock;
 	}
 
 	@Override
-	public float getEdgeNoise()
+	public GuiVarFloatRange getEdgeNoiseVar()
 	{
 		return this.edgeNoise;
 	}
 
 	@Override
-	public IFilterOptions setEdgeNoise(float edgeNoise)
+	public void copyFrom(IFilterOptions options)
 	{
-		this.edgeNoise = edgeNoise;
-
-		return this;
+		this.choosesPerBlock.setData(options.getChoosesPerBlockVar().getData());
+		this.edgeNoise.setData(options.getEdgeNoiseVar().getData());
+		this.displayName.setData(options.getDisplayNameVar().getData());
 	}
 
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setBoolean("choosesPerBlock", this.choosesPerBlock);
-		tag.setFloat("edgeNoise", this.edgeNoise);
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		funnel.set("choosesPerBlock", this.choosesPerBlock);
+		funnel.set("edgeNoise", this.edgeNoise);
+		funnel.set("displayName", this.displayName);
 	}
 
 	@Override
 	public void read(NBTTagCompound tag)
 	{
-		this.choosesPerBlock = tag.getBoolean("choosesPerBlock");
-		this.edgeNoise = tag.getFloat("edgeNoise");
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		this.choosesPerBlock = funnel.get("choosesPerBlock");
+		this.edgeNoise = funnel.get("edgeNoise");
+		this.displayName = funnel.get("displayName");
 	}
 }

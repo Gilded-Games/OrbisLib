@@ -530,4 +530,10 @@ public class ModDim2D implements Rect
 		return this.modifiedState.center();
 	}
 
+	@Override
+	public Pos2D min()
+	{
+		return this.modifiedState.min();
+	}
+
 }

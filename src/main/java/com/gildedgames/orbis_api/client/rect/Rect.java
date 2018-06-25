@@ -23,6 +23,8 @@ public interface Rect
 
 	Pos2D center();
 
+	Pos2D min();
+
 	float x();
 
 	float y();

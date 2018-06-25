@@ -12,7 +12,7 @@ import java.util.Random;
 
 /**
  * Represents data that can be used to randomly choose other data.
- * This is used in {@link FrameworkNode Framework nodes}.
+ * This is used in {@link FrameworkNode Framework tree}.
  * Some implementations are <tt>ScheduleData</tt> and <tt>
  * FrameworkData</tt>.
  * @see FrameworkData

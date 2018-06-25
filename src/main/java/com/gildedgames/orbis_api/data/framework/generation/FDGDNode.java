@@ -276,7 +276,7 @@ public class FDGDNode extends BlueprintRegion
 	 * Returns null if no better config was found.
 	 * If a better config was found it returns a tuple with the connections chosen
 	 * for each edge, and an integer representing the total distance between 
-	 * the connections and the nodes they're connected to.
+	 * the connections and the tree they're connected to.
 	 */
 	private Tuple<Map<FDGDEdge, Entrance>, Integer> bestEntrances(List<FDGDEdge> edges, List<Entrance> entrancesLeft, int edgeIndex, int cost, int best)
 	{

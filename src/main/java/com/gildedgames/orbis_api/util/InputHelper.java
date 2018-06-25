@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.util;
 
+import com.gildedgames.orbis_api.client.gui.util.IGuiFrame;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectHolder;
@@ -9,6 +10,8 @@ import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
+import java.util.List;
+
 public class InputHelper
 {
 
@@ -16,22 +19,22 @@ public class InputHelper
 
 	private static ScaledResolution resolution;
 
-	public static float getMouseX()
+	public static int getMouseX()
 	{
-		return (Mouse.getX() * getScreenWidth() / mc.displayWidth);
+		return (Mouse.getEventX() * getScreenWidth() / mc.displayWidth);
 	}
 
-	public static void setMouseX(final float x)
+	public static void setMouseX(final int x)
 	{
 		Mouse.setCursorPosition(MathHelper.floor((x / getScreenWidth() * mc.displayWidth)), Mouse.getY());
 	}
 
-	public static float getMouseY()
+	public static int getMouseY()
 	{
-		return (getScreenHeight() - Mouse.getY() * getScreenHeight() / mc.displayHeight - 1);
+		return (getScreenHeight() - Mouse.getEventY() * getScreenHeight() / mc.displayHeight - 1);
 	}
 
-	public static void setMouseY(final float y)
+	public static void setMouseY(final int y)
 	{
 		Mouse.setCursorPosition(Mouse.getX(), Display.getHeight() - MathHelper.floor((y / getScreenHeight() * mc.displayHeight + 1)));
 	}
@@ -52,18 +55,36 @@ public class InputHelper
 		resolution = new ScaledResolution(mc);
 	}
 
-	public static float getScreenWidth()
+	public static int getScreenWidth()
 	{
 		refreshResolution();
 
 		return resolution.getScaledWidth();
 	}
 
-	public static float getScreenHeight()
+	public static int getScreenHeight()
 	{
 		refreshResolution();
 
 		return resolution.getScaledHeight();
+	}
+
+	public static boolean isHovered(final List<IGuiFrame> frames, IGuiFrame ignore)
+	{
+		if (frames == null)
+		{
+			return false;
+		}
+
+		for (IGuiFrame frame : frames)
+		{
+			if (frame != ignore && isHovered(frame))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static boolean isHovered(final RectHolder holder)
@@ -74,6 +95,29 @@ public class InputHelper
 		}
 
 		return isHovered(holder.dim());
+	}
+
+	public static boolean isHoveredAndTopElement(IGuiFrame check)
+	{
+		if (check == null)
+		{
+			return false;
+		}
+
+		if (Minecraft.getMinecraft().currentScreen instanceof IGuiFrame)
+		{
+			IGuiFrame frame = (IGuiFrame) Minecraft.getMinecraft().currentScreen;
+
+			for (IGuiFrame child : frame.getChildren())
+			{
+				if (child.isVisible() && child.isEnabled() && InputHelper.isHovered(child) && child.getZOrder() > check.getZOrder())
+				{
+					return false;
+				}
+			}
+		}
+
+		return isHovered(check.dim());
 	}
 
 	public static float getScaleFactor()

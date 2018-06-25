@@ -1,7 +1,11 @@
 package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.block.*;
+import com.gildedgames.orbis_api.core.tree.ConditionLink;
+import com.gildedgames.orbis_api.core.tree.INode;
+import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
+import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
@@ -29,7 +33,9 @@ public class BakedBlueprint
 
 	private Map<ChunkPos, List<PlacedEntity>> placedEntities = Maps.newHashMap();
 
-	private List<ScheduleRegion> scheduleRegions = Lists.newArrayList();
+	private List<ScheduleRegion> bakedScheduleRegions = Lists.newArrayList();
+
+	private List<INode<IScheduleLayer, LayerLink>> bakedScheduleLayerNodes = Lists.newArrayList();
 
 	private BlueprintData blueprintData;
 
@@ -48,14 +54,14 @@ public class BakedBlueprint
 		return this.data;
 	}
 
-	public List<ScheduleRegion> getScheduleRegions()
+	public List<ScheduleRegion> getBakedScheduleRegions()
 	{
-		return this.scheduleRegions;
+		return this.bakedScheduleRegions;
 	}
 
 	public ScheduleRegion getScheduleFromTriggerID(String triggerId)
 	{
-		for (ScheduleRegion s : this.scheduleRegions)
+		for (ScheduleRegion s : this.bakedScheduleRegions)
 		{
 			if (s.getTriggerId().equals(triggerId))
 			{
@@ -66,10 +72,70 @@ public class BakedBlueprint
 		return null;
 	}
 
+	private void bakeScheduleLayers()
+	{
+		List<INode<IScheduleLayer, LayerLink>> layers = Lists.newArrayList();
+
+		outer:
+		for (INode<IScheduleLayer, LayerLink> node : this.blueprintData.getScheduleLayerTree().getNodes())
+		{
+			IScheduleLayer layer = node.getData();
+
+			if (layer.getConditionNodeTree().isEmpty())
+			{
+				layers.add(node);
+			}
+			else if (layer.getConditionNodeTree().getProminentRoot() != null)
+			{
+				List<INode<IGuiCondition, ConditionLink>> allChildren = Lists.newArrayList();
+
+				allChildren.add(layer.getConditionNodeTree().getProminentRoot());
+
+				layer.getConditionNodeTree().getProminentRoot().fetchAllChildren(allChildren);
+
+				for (INode<IGuiCondition, ConditionLink> conditionNode : allChildren)
+				{
+					IGuiCondition condition = conditionNode.getData();
+
+					boolean resolved = condition.resolve(this.data.getRandom());
+
+					//TODO: Implement actual condition link logic - AND and OR logic. Currently just goes through all checks if all are resolved.
+
+					if (!resolved)
+					{
+						continue outer;
+					}
+				}
+
+				layers.add(node);
+			}
+		}
+
+		List<INode<IScheduleLayer, LayerLink>> finalLinkResolvedNodes = Lists.newArrayList();
+
+		outer:
+		for (INode<IScheduleLayer, LayerLink> node : layers)
+		{
+			for (INode<IScheduleLayer, LayerLink> parent : node.getTree().get(node.getParentsIds()))
+			{
+				if (!layers.contains(parent))
+				{
+					continue outer;
+				}
+			}
+
+			finalLinkResolvedNodes.add(node);
+		}
+
+		this.bakedScheduleLayerNodes = finalLinkResolvedNodes;
+	}
+
 	private void bakeScheduleRegions()
 	{
-		for (IScheduleLayer layer : this.blueprintData.getScheduleLayers().values())
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
+			IScheduleLayer layer = node.getData();
+
 			layer.getScheduleRecord().getSchedules(ScheduleRegion.class).forEach(s ->
 			{
 				ScheduleRegion c = NBTHelper.clone(s);
@@ -77,15 +143,17 @@ public class BakedBlueprint
 				RegionHelp.translate(c.getBounds(), this.data.getPos().getX(), this.data.getPos().getY(),
 						this.data.getPos().getZ());
 
-				this.scheduleRegions.add(c);
+				this.bakedScheduleRegions.add(c);
 			});
 		}
 	}
 
 	private void bakeEntities()
 	{
-		for (IScheduleLayer layer : this.blueprintData.getScheduleLayers().values())
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
+			IScheduleLayer layer = node.getData();
+
 			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
 			{
 				for (int i = 0; i < s.getSpawnEggsInventory().getSizeInventory(); i++)
@@ -118,8 +186,10 @@ public class BakedBlueprint
 	{
 		final BlockDataContainer blocks = this.blueprintData.getBlockDataContainer().clone();
 
-		for (IScheduleLayer layer : this.blueprintData.getScheduleLayers().values())
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
+			IScheduleLayer layer = node.getData();
+
 			for (BlockFilter filter : layer.getFilterRecord().getData())
 			{
 				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), blocks, this.data, layer.getOptions());
@@ -181,8 +251,8 @@ public class BakedBlueprint
 				final BlockPos.MutableBlockPos beforeRot = tuple.getFirst();
 				BlockPos.MutableBlockPos rotated = tuple.getSecond();
 
-				final int chunkX = ((min.getX() + rotated.getX()) >> 4) - startChunkX;
-				final int chunkZ = ((min.getZ() + rotated.getZ()) >> 4) - startChunkZ;
+				final int chunkX = ((rotated.getX()) >> 4) - startChunkX;
+				final int chunkZ = ((rotated.getZ()) >> 4) - startChunkZ;
 
 				int index = 0;
 
@@ -207,7 +277,7 @@ public class BakedBlueprint
 				if (chunk != null)
 				{
 					chunk.getContainer().copyBlockFrom(blocks, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ(),
-							(rotated.getX() + xDif) % 16, rotated.getY(), (rotated.getZ() + zDif) % 16);
+							(rotated.getX() + xDif) % 16, rotated.getY() - min.getY(), (rotated.getZ() + zDif) % 16);
 				}
 			}
 		}
@@ -267,6 +337,7 @@ public class BakedBlueprint
 	{
 		if (!this.hasBaked)
 		{
+			this.bakeScheduleLayers();
 			this.bakeChunks();
 			this.bakeEntities();
 			this.bakeScheduleRegions();

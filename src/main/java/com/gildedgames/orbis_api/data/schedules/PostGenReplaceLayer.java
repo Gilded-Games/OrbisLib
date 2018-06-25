@@ -29,7 +29,7 @@ public class PostGenReplaceLayer implements NBT, IWorldObjectChild
 		this.replaced = replaced;
 		this.options = new FilterOptions();
 
-		this.options.setChoosesPerBlock(false);
+		this.options.getChoosesPerBlockVar().setData(false);
 	}
 
 	public int getLayerId()

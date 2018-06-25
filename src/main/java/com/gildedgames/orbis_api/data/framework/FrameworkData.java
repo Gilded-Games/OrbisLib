@@ -28,14 +28,14 @@ import java.util.*;
  * Orbis's Framework algorithm. This can be used to model large
  * collections of structures, such as cities or dungeons.
  *
- * <p> The graph is build up off of <strong>nodes and edges</strong> connecting the nodes. 
+ * <p> The graph is build up off of <strong>tree and edges</strong> connecting the tree.
  * Edges represent that a pathway will be generated between the buildings 
- * represented by the nodes. The nodes then are 
+ * represented by the tree. The tree then are
  * saved in the {@link FrameworkNode FrameworkNode} class. First of
  * all, they have some sort of data inside of them. Right now, this can
  * be a <tt>ScheduleData</tt> or another <tt>FrameworkData</tt>.
  *
- * <p> This class contains Conditions on how the various nodes are going to
+ * <p> This class contains Conditions on how the various tree are going to
  * turn out. This can be used to model relations such as that each node
  * needs to choose a different <tt>BlueprintData</tt>, or that some building
  * should only generate once.
@@ -73,7 +73,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 
 	/**
 	 * The underlying graph of a Framework. It is an undirected graph with at most
-	 * one edge between its nodes.
+	 * one edge between its tree.
 	 */
 	protected final Graph<FrameworkNode, FrameworkEdge> graph = new Graph<>();
 
@@ -90,7 +90,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	private IDataMetadata metadata;
 
 	/**
-	 * The list of all conditions on the nodes.
+	 * The list of all conditions on the tree.
 	 */
 	//	protected final List<Condition<Object>> conditions = new ArrayList<Condition<Object>>();
 
@@ -147,7 +147,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	 */
 	public GeneratedFramework prepare(World world, BlockPos pos)
 	{
-		//TODO: What really does the pos here represent? We need the pos to make sure the Framework
+		//TODO: What really does the min here represent? We need the min to make sure the Framework
 		//shapes well around the terrain, but where can it actually generate at all?
 
 		final FrameworkAlgorithm algorithm = new FrameworkAlgorithm(this, world);
@@ -269,9 +269,9 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	}
 
 	/**
-	 * Adds an edge between two nodes. When the two nodes given are not
+	 * Adds an edge between two tree. When the two tree given are not
 	 * yet added to the framework, this returns false. Furthermore, if no
-	 * more edges are allowed for one of the two nodes, it does the same.
+	 * more edges are allowed for one of the two tree, it does the same.
 	 * @return True if the edge was successfully added
 	 */
 	public boolean addEdge(FrameworkNode node1, FrameworkNode node2)
