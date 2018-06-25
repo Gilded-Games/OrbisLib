@@ -23,6 +23,9 @@ public class GuiConditionRatio implements IGuiCondition
 		this.numerator = new GuiVarInteger("Numerator");
 		this.denominator = new GuiVarInteger("Denominator");
 
+		this.numerator.setData(1);
+		this.denominator.setData(2);
+
 		this.variables.add(this.numerator);
 		this.variables.add(this.denominator);
 	}

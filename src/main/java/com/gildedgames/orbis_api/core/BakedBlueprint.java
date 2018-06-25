@@ -113,21 +113,31 @@ public class BakedBlueprint
 
 		List<INode<IScheduleLayer, LayerLink>> finalLinkResolvedNodes = Lists.newArrayList();
 
-		outer:
 		for (INode<IScheduleLayer, LayerLink> node : layers)
 		{
-			for (INode<IScheduleLayer, LayerLink> parent : node.getTree().get(node.getParentsIds()))
+			// TODO: MAKE SURE PARENTS/LINKS BETWEEN NODES CANNOT CREATE A CLOSED LOOP/INFINITE LOOP
+			if (!this.areParentsResolved(node, layers))
 			{
-				if (!layers.contains(parent))
-				{
-					continue outer;
-				}
+				continue;
 			}
 
 			finalLinkResolvedNodes.add(node);
 		}
 
 		this.bakedScheduleLayerNodes = finalLinkResolvedNodes;
+	}
+
+	private boolean areParentsResolved(INode<IScheduleLayer, LayerLink> node, List<INode<IScheduleLayer, LayerLink>> resolvedNodes)
+	{
+		for (INode<IScheduleLayer, LayerLink> parent : node.getTree().get(node.getParentsIds()))
+		{
+			if (!resolvedNodes.contains(parent) || !this.areParentsResolved(parent, resolvedNodes))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private void bakeScheduleRegions()

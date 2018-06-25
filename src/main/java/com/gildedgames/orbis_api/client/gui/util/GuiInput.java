@@ -40,7 +40,15 @@ public class GuiInput extends GuiFrame
 	@Override
 	public void init()
 	{
+		Keyboard.enableRepeatEvents(true);
+	}
 
+	@Override
+	public void onGuiClosed()
+	{
+		super.onGuiClosed();
+
+		Keyboard.enableRepeatEvents(false);
 	}
 
 	@Override
