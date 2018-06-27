@@ -27,7 +27,7 @@ import java.io.File;
  * into their mod designs. It's recommended you create an
  * IOrbisDefinitionRegistry and register it in this API's services.
  */
-@Mod(name = OrbisAPI.MOD_NAME, modid = OrbisAPI.MOD_ID, version = OrbisAPI.MOD_VERSION)
+@Mod(name = OrbisAPI.MOD_NAME, modid = OrbisAPI.MOD_ID, version = OrbisAPI.MOD_VERSION, certificateFingerprint = OrbisAPI.MOD_FINGERPRINT)
 @Mod.EventBusSubscriber
 public class OrbisAPI
 {
@@ -36,6 +36,8 @@ public class OrbisAPI
 	public static final String MOD_ID = "orbis_api";
 
 	public static final String MOD_VERSION = "1.12.2-1.1.5";
+
+	public static final String MOD_FINGERPRINT = "db341c083b1b8ce9160a769b569ef6737b3f4cdf";
 
 	public static final Logger LOGGER = LogManager.getLogger("OrbisAPI");
 
