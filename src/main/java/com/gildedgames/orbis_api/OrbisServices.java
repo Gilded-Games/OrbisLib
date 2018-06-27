@@ -10,6 +10,7 @@ import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.core.tree.NodeMultiParented;
 import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.variables.*;
+import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionPercentage;
 import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionRatio;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis_api.data.DataCondition;
@@ -190,6 +191,7 @@ public class OrbisServices implements IOrbisServices
 			s.register(49, NodeTree.class, new Instantiator<>(NodeTree.class));
 			s.register(50, ConditionLink.class, new Instantiator<>(ConditionLink.class));
 			s.register(51, LayerLink.class, new Instantiator<>(LayerLink.class));
+			s.register(52, GuiConditionPercentage.class, new Instantiator<>(GuiConditionPercentage.class));
 
 			this.io.register(s);
 		}

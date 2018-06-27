@@ -35,6 +35,11 @@ public class GuiVarDisplay extends GuiFrame
 		this.variables = Collections.emptyList();
 	}
 
+	public void display(Collection<IGuiVar> variables)
+	{
+		this.display(variables, null);
+	}
+
 	public void display(Collection<IGuiVar> variables, String displayTitle)
 	{
 		this.clearChildren();

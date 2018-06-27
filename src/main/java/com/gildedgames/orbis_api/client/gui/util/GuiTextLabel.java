@@ -12,13 +12,21 @@ import net.minecraft.util.text.ITextComponent;
 
 public class GuiTextLabel extends GuiFrame
 {
-	private final GuiText text;
+	private GuiText text;
 
 	public GuiTextLabel(final Rect rect, final ITextComponent component)
 	{
 		super(rect);
 
 		this.text = new GuiText(Dim2D.flush(), new Text(component, 1.0F));
+	}
+
+	public void setText(ITextComponent component)
+	{
+		this.text = new GuiText(Dim2D.flush(), new Text(component, 1.0F));
+
+		this.clearChildren();
+		this.init();
 	}
 
 	@Override

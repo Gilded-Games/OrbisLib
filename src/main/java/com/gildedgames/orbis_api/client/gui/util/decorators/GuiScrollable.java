@@ -6,6 +6,7 @@ import com.gildedgames.orbis_api.client.gui.util.GuiFrameDummy;
 import com.gildedgames.orbis_api.client.gui.util.GuiTexture;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
+import com.gildedgames.orbis_api.client.rect.RectModifier;
 import com.gildedgames.orbis_api.util.InputHelper;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.inventory.ClickType;
@@ -39,8 +40,11 @@ public class GuiScrollable extends GuiFrame
 
 		this.decorated = decorated;
 
-		this.window = new GuiFrameDummy(Dim2D.build(pane).addWidth(16).x(0).y(0).flush());
-		this.pane = new GuiFrameDummy(Dim2D.build(this).x(16).y(0).flush());
+		this.window = new GuiFrameDummy(Dim2D.build().width(16).x(0).y(0).flush());
+		this.pane = new GuiFrameDummy(Dim2D.build().x(16).y(0).flush());
+
+		this.window.dim().add(this, RectModifier.ModifierType.WIDTH, RectModifier.ModifierType.HEIGHT);
+		this.pane.dim().add(this, RectModifier.ModifierType.WIDTH, RectModifier.ModifierType.HEIGHT);
 	}
 
 	@Override
@@ -51,7 +55,9 @@ public class GuiScrollable extends GuiFrame
 		this.pane.addChildren(this.decorated);
 
 		this.scrollKnob = new GuiTexture(Dim2D.build().width(12).height(15).x(1).y(1).flush(), SCROLL_KNOB);
-		this.scrollBar = new GuiTexture(Dim2D.build().width(14).height(this.dim().height()).flush(), SCROLL_BAR);
+		this.scrollBar = new GuiTexture(Dim2D.build().width(14).flush(), SCROLL_BAR);
+
+		this.scrollBar.dim().add(this, RectModifier.ModifierType.HEIGHT);
 
 		this.addChildren(this.window, this.pane, this.scrollBar, this.scrollKnob);
 	}

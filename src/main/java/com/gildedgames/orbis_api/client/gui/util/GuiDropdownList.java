@@ -3,26 +3,48 @@ package com.gildedgames.orbis_api.client.gui.util;
 import com.gildedgames.orbis_api.client.gui.data.IDropdownElement;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.client.rect.Rect;
+import com.gildedgames.orbis_api.client.rect.RectModifier;
 import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import net.minecraft.client.Minecraft;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-public class GuiDropdownList extends GuiFrame
+public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 {
-	private final List<IDropdownElement> elements = Lists.newArrayList();
+	private final List<ELEMENT> elements = Lists.newArrayList();
 
-	public GuiDropdownList(final Pos2D pos, final IDropdownElement... elements)
+	private Set<IDropdownListListener<ELEMENT>> listeners = Sets.newHashSet();
+
+	public GuiDropdownList(Rect rect, final ELEMENT... elements)
 	{
-		super(Dim2D.build().pos(pos).flush());
+		super(rect);
 
 		this.elements.addAll(Arrays.asList(elements));
 	}
 
-	public void display(final Collection<IDropdownElement> elements, Pos2D pos)
+	public void listen(IDropdownListListener<ELEMENT> listener)
+	{
+		this.listeners.add(listener);
+	}
+
+	public boolean unlisten(IDropdownListListener<ELEMENT> listener)
+	{
+		return this.listeners.remove(listener);
+	}
+
+	public List<ELEMENT> getElements()
+	{
+		return this.elements;
+	}
+
+	public void display(final Collection<ELEMENT> elements, Pos2D pos)
 	{
 		this.setDropdownElements(elements);
 
@@ -32,7 +54,7 @@ public class GuiDropdownList extends GuiFrame
 		this.setEnabled(true);
 	}
 
-	public void setDropdownElements(final Collection<IDropdownElement> elements)
+	public void setDropdownElements(final Collection<ELEMENT> elements)
 	{
 		this.clearChildren();
 
@@ -42,7 +64,7 @@ public class GuiDropdownList extends GuiFrame
 		this.init();
 	}
 
-	public void addDropdownElements(Collection<IDropdownElement> elements)
+	public void addDropdownElements(Collection<ELEMENT> elements)
 	{
 		this.clearChildren();
 
@@ -51,7 +73,7 @@ public class GuiDropdownList extends GuiFrame
 		this.init();
 	}
 
-	public void addDropdownElements(IDropdownElement... elements)
+	public void addDropdownElements(ELEMENT... elements)
 	{
 		this.clearChildren();
 
@@ -65,23 +87,25 @@ public class GuiDropdownList extends GuiFrame
 	{
 		for (int i = 0; i < this.elements.size(); i++)
 		{
-			final IDropdownElement element = this.elements.get(i);
+			final ELEMENT element = this.elements.get(i);
 			final int y = 17 * i;
 
 			final int id = i;
 
-			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).area(60, 10).flush(), element.text())
+			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).height(10).flush(), element.text())
 			{
 				@Override
-				protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton)
+				protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
 				{
-					super.mouseReleased(mouseX, mouseY, mouseButton);
+					super.mouseClicked(mouseX, mouseY, mouseButton);
 
 					if (mouseButton == 0)
 					{
 						if (InputHelper.isHovered(this) && GuiDropdownList.this.isEnabled())
 						{
 							element.onClick(GuiDropdownList.this, Minecraft.getMinecraft().player);
+
+							GuiDropdownList.this.listeners.forEach((l) -> l.onClick(element));
 						}
 
 						if (id >= GuiDropdownList.this.elements.size() - 1)
@@ -93,9 +117,11 @@ public class GuiDropdownList extends GuiFrame
 				}
 			};
 
+			label.dim().add(this, RectModifier.ModifierType.WIDTH);
+
 			this.addChildren(label);
 		}
 
-		this.dim().mod().width(60).height(17 * this.elements.size()).flush();
+		this.dim().mod().height(17 * this.elements.size()).flush();
 	}
 }
