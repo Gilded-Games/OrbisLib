@@ -232,7 +232,7 @@ public class GuiFrameCreative extends GuiContainerCreativePublic implements IGui
 
 			if (gui != null)
 			{
-				g.setWorldAndResolution(this.mc, (int) InputHelper.getScreenWidth(), (int) InputHelper.getScreenHeight());
+				g.setWorldAndResolution(this.mc, InputHelper.getScreenWidth(), InputHelper.getScreenHeight());
 			}
 		}
 

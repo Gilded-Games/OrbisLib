@@ -72,7 +72,7 @@ public class GuiButtonVanilla extends GuiFrame
 		this.button.enabled = this.isEnabled();
 		this.button.visible = this.isVisible();
 
-		this.button.drawButton(Minecraft.getMinecraft(), (int) InputHelper.getMouseX(), (int) InputHelper.getMouseY(), PartialTicks.get());
+		this.button.drawButton(Minecraft.getMinecraft(), InputHelper.getMouseX(), InputHelper.getMouseY(), PartialTicks.get());
 
 		GlStateManager.popMatrix();
 	}

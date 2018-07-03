@@ -216,7 +216,7 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 
 			if (gui != null)
 			{
-				g.setWorldAndResolution(this.mc, (int) InputHelper.getScreenWidth(), (int) InputHelper.getScreenHeight());
+				g.setWorldAndResolution(this.mc, InputHelper.getScreenWidth(), InputHelper.getScreenHeight());
 			}
 		}
 

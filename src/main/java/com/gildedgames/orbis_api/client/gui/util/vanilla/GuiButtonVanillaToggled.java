@@ -88,7 +88,7 @@ public class GuiButtonVanillaToggled extends GuiFrame
 		this.button.width = (int) this.dim().width();
 		this.button.height = (int) this.dim().height();
 
-		this.button.drawButton(Minecraft.getMinecraft(), (int) InputHelper.getMouseX(), (int) InputHelper.getMouseY(), PartialTicks.get());
+		this.button.drawButton(Minecraft.getMinecraft(), InputHelper.getMouseX(), InputHelper.getMouseY(), PartialTicks.get());
 
 		if (this.id == TOGGLED_BUTTON_ID)
 		{
