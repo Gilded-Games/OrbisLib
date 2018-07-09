@@ -98,22 +98,24 @@ public class BakedBlueprint
 
 		boolean resolved = condition.resolve(this.data.getRandom());
 
-		if (!resolved)
+		boolean result = false;
+
+		if (resolved)
 		{
-			return false;
+			result = true;
 		}
 
 		for (INode<IGuiCondition, ConditionLink> child : parent.getTree().get(parent.getChildrenIds()))
 		{
 			//TODO: Implement actual condition link logic - AND and OR logic. Currently just goes through all checks if all are resolved.
 
-			if (!this.resolveChildrenConditions(child))
+			if (this.resolveChildrenConditions(child))
 			{
-				return false;
+				result = true;
 			}
 		}
 
-		return true;
+		return result;
 	}
 
 	private void bakeScheduleLayers()
