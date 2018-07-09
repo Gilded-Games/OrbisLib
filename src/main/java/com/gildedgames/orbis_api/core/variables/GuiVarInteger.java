@@ -1,16 +1,49 @@
 package com.gildedgames.orbis_api.core.variables;
 
+import com.gildedgames.orbis_api.client.gui.data.DropdownElementWithData;
 import com.gildedgames.orbis_api.client.gui.util.GuiInput;
+import com.gildedgames.orbis_api.client.gui.util.IGuiInputListener;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
+import com.gildedgames.orbis_api.core.variables.var_comparators.*;
+import com.gildedgames.orbis_api.core.variables.var_mutators.*;
+import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextComponentTranslation;
 import org.apache.commons.lang3.StringUtils;
 
-public class GuiVarInteger implements IGuiVar<Integer, GuiInput>
+import java.util.List;
+import java.util.function.Supplier;
+
+public class GuiVarInteger implements IGuiVar<Integer, GuiInput>, IGuiInputListener
 {
+	public static final List<DropdownElementWithData<Supplier<IGuiVarCompareExpression>>> COMPARE_EXPRESSIONS = Lists.newArrayList(
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.equals"), () -> new NumberEquals<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.doesnt_equal"),
+					() -> new NumberDoesntEqual<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.greater_than"),
+					() -> new NumberGreaterThan<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.less_than"),
+					() -> new NumberLessThan<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.greater_than_or_equal"),
+					() -> new NumberGreaterThanOrEqual<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.less_than_or_equal"),
+					() -> new NumberLessThanOrEqual<>(new GuiVarInteger("orbis.gui.value")))
+	);
+
+	public static final List<DropdownElementWithData<Supplier<IGuiVarMutateExpression>>> MUTATE_EXPRESSIONS = Lists.newArrayList(
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.set"), () -> new NumberSet<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.increase"), () -> new NumberIncrease<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.decrease"), () -> new NumberDecrease<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.multiply"), () -> new NumberMultiply<>(new GuiVarInteger("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.divide"), () -> new NumberDivide<>(new GuiVarInteger("orbis.gui.value")))
+	);
+
 	private int data;
 
-	private String name;
+	private String name = "";
+
+	private GuiVarDisplay parentDisplay;
 
 	private GuiVarInteger()
 	{
@@ -25,13 +58,19 @@ public class GuiVarInteger implements IGuiVar<Integer, GuiInput>
 	@Override
 	public void setParentDisplay(GuiVarDisplay parentDisplay)
 	{
-
+		this.parentDisplay = parentDisplay;
 	}
 
 	@Override
-	public String getName()
+	public String getVariableName()
 	{
 		return this.name;
+	}
+
+	@Override
+	public String getDataName()
+	{
+		return "orbis.gui.integer";
 	}
 
 	@Override
@@ -50,6 +89,8 @@ public class GuiVarInteger implements IGuiVar<Integer, GuiInput>
 	public GuiInput createDisplay(int maxWidth)
 	{
 		GuiInput input = new GuiInput(Dim2D.build().width(maxWidth).x(1).height(20).flush());
+
+		input.listen(this);
 
 		input.getInner().setText(String.valueOf(this.data));
 		input.getInner().setMaxStringLength(15);
@@ -78,6 +119,18 @@ public class GuiVarInteger implements IGuiVar<Integer, GuiInput>
 	}
 
 	@Override
+	public List<DropdownElementWithData<Supplier<IGuiVarCompareExpression>>> getCompareExpressions()
+	{
+		return COMPARE_EXPRESSIONS;
+	}
+
+	@Override
+	public List<DropdownElementWithData<Supplier<IGuiVarMutateExpression>>> getMutateExpressions()
+	{
+		return MUTATE_EXPRESSIONS;
+	}
+
+	@Override
 	public void write(NBTTagCompound tag)
 	{
 		tag.setInteger("data", this.data);
@@ -89,5 +142,14 @@ public class GuiVarInteger implements IGuiVar<Integer, GuiInput>
 	{
 		this.data = tag.getInteger("data");
 		this.name = tag.getString("name");
+	}
+
+	@Override
+	public void onPressEnter()
+	{
+		if (this.parentDisplay != null)
+		{
+			this.parentDisplay.updateVariableData();
+		}
 	}
 }

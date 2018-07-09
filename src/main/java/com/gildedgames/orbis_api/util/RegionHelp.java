@@ -100,6 +100,18 @@ public class RegionHelp
 		return x <= max.getX() && x >= min.getX() && y <= max.getY() && y >= min.getY() && z <= max.getZ() && z >= min.getZ();
 	}
 
+	public static boolean contains(final IDimensions region, final BlockPos pos)
+	{
+		return contains(region, pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	public static boolean contains(final IDimensions region, final float x, final float y, final float z)
+	{
+		final BlockPos min = BlockPos.ORIGIN;
+		final BlockPos max = new BlockPos(region.getWidth(), region.getHeight(), region.getLength());
+		return x <= max.getX() && x >= min.getX() && y <= max.getY() && y >= min.getY() && z <= max.getZ() && z >= min.getZ();
+	}
+
 	public static boolean containsIgnoreY(final IRegion region, final BlockPos pos)
 	{
 		return containsIgnoreY(region, pos.getX(), pos.getZ());

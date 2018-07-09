@@ -4,25 +4,40 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class RectModifier
 {
+	private final RectHolder source;
 
-	private final RectHolder modifyWith;
+	private final ModifierType modifying;
 
-	private final ModifierType type;
+	private final RectModification modification;
 
-	public RectModifier(final RectHolder modifyWith, final ModifierType types)
+	private String identifier;
+
+	public RectModifier(String identifier, final RectHolder source, final RectModification modification, final ModifierType modifying)
 	{
-		this.modifyWith = modifyWith;
-		this.type = types;
+		this.identifier = identifier;
+		this.source = source;
+		this.modification = modification;
+		this.modifying = modifying;
 	}
 
-	public RectHolder modifyingWith()
+	public String getIdentifier()
 	{
-		return this.modifyWith;
+		return this.identifier;
 	}
 
-	public ModifierType getType()
+	public RectHolder getSource()
 	{
-		return this.type;
+		return this.source;
+	}
+
+	public RectModification getModification()
+	{
+		return this.modification;
+	}
+
+	public ModifierType getModifying()
+	{
+		return this.modifying;
 	}
 
 	@Override
@@ -39,18 +54,153 @@ public class RectModifier
 		}
 
 		final RectModifier modifier = (RectModifier) obj;
-		return modifier.modifyWith.equals(this.modifyWith) && modifier.type.equals(this.type);
+		return modifier.identifier.equals(this.identifier);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return new HashCodeBuilder(97, 37).append(this.modifyWith).append(this.type).toHashCode();
+		return new HashCodeBuilder(97, 37).append(this.identifier).toHashCode();
 	}
 
 	public enum ModifierType
 	{
-		X, Y, POS, WIDTH, HEIGHT, AREA, SCALE, ROTATION, CENTERING, ALL
+		X
+				{
+					private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().x();
+
+					@Override
+					public RectModification getModification()
+					{
+						return this.modification;
+					}
+				}, Y
+			{
+				private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().y();
+
+				@Override
+				public RectModification getModification()
+				{
+					return this.modification;
+				}
+			},
+		MAX_X
+				{
+					private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().maxX();
+
+					@Override
+					public RectModification getModification()
+					{
+						return this.modification;
+					}
+				},
+		MAX_Y
+				{
+					private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().maxY();
+
+					@Override
+					public RectModification getModification()
+					{
+						return this.modification;
+					}
+				}, POS
+			{
+				private RectModification modification;
+
+				@Override
+				public RectModification getModification()
+				{
+					if (this.modification == null)
+					{
+						this.modification = (modifyingWith, modifying) ->
+						{
+							if (modifying == X)
+							{
+								return modifyingWith.dim().x();
+							}
+
+							if (modifying == Y)
+							{
+								return modifyingWith.dim().y();
+							}
+
+							return 0;
+						};
+					}
+
+					return this.modification;
+				}
+			}, WIDTH
+			{
+				private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().width();
+
+				@Override
+				public RectModification getModification()
+				{
+					return this.modification;
+				}
+			}, HEIGHT
+			{
+				private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().height();
+
+				@Override
+				public RectModification getModification()
+				{
+					return this.modification;
+				}
+			}, AREA
+			{
+				private RectModification modification;
+
+				@Override
+				public RectModification getModification()
+				{
+					if (this.modification == null)
+					{
+						this.modification = (modifyingWith, modifying) ->
+						{
+							if (modifying == WIDTH)
+							{
+								return modifyingWith.dim().width();
+							}
+
+							if (modifying == HEIGHT)
+							{
+								return modifyingWith.dim().height();
+							}
+
+							return 0;
+						};
+					}
+
+					return this.modification;
+				}
+			}, SCALE
+			{
+				private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().scale();
+
+				@Override
+				public RectModification getModification()
+				{
+					return this.modification;
+				}
+			}, ROTATION
+			{
+				private RectModification modification = (modifyingWith, modifying) -> modifyingWith.dim().degrees();
+
+				@Override
+				public RectModification getModification()
+				{
+					return this.modification;
+				}
+			};
+
+		public abstract RectModification getModification();
+	}
+
+	public interface RectModification
+	{
+		Object getValue(RectHolder modifyingWith, ModifierType modifying);
 	}
 
 }

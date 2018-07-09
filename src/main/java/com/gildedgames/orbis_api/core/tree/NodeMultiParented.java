@@ -22,6 +22,8 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 	private Set<Integer> parents = Sets.newHashSet();
 
+	private Set<INodeListener<DATA, LINK>> listeners;
+
 	private int nodeId;
 
 	private DATA data;
@@ -32,6 +34,8 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 	private IWorldObject worldObjectParent;
 
+	private boolean canLink;
+
 	private NodeMultiParented()
 	{
 
@@ -39,8 +43,36 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 	public NodeMultiParented(DATA data, boolean isDirectionless)
 	{
+		this(data, isDirectionless, true);
+	}
+
+	public NodeMultiParented(DATA data, boolean isDirectionless, boolean canLink)
+	{
 		this.data = data;
 		this.isDirectionless = isDirectionless;
+		this.canLink = canLink;
+	}
+
+	@Override
+	public void listen(INodeListener<DATA, LINK> listener)
+	{
+		if (this.listeners == null)
+		{
+			this.listeners = Sets.newHashSet();
+		}
+
+		this.listeners.add(listener);
+	}
+
+	@Override
+	public boolean unlisten(INodeListener<DATA, LINK> listener)
+	{
+		if (this.listeners == null)
+		{
+			return false;
+		}
+
+		return this.listeners.remove(listener);
 	}
 
 	@Override
@@ -58,9 +90,14 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	@Override
 	public void addChild(int nodeId, LINK link)
 	{
+		if (!this.canLink)
+		{
+			throw new RuntimeException("Tried to add a child to an INode that has canLink disabled. Should not be able to link children or parents.");
+		}
+
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to add a child to an INode that doesn't have a NodeTree set to it.");
+			throw new RuntimeException("Tried to add a child to an INode that doesn't have a NodeTree setUsedData to it.");
 		}
 
 		INode<DATA, LINK> node = this.tree.get(nodeId);
@@ -96,9 +133,14 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	@Override
 	public boolean removeChild(int nodeId)
 	{
+		if (!this.canLink)
+		{
+			throw new RuntimeException("Tried to remove a child to an INode that has canLink disabled. Should not be able to link children or parents.");
+		}
+
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to remove a child from an INode that doesn't have a NodeTree set to it.");
+			throw new RuntimeException("Tried to remove a child from an INode that doesn't have a NodeTree setUsedData to it.");
 		}
 
 		INode<DATA, LINK> node = this.tree.get(nodeId);
@@ -149,6 +191,11 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 		{
 			((IWorldObjectChild) this.data).setWorldObjectParent(this.worldObjectParent);
 		}
+
+		if (this.listeners != null)
+		{
+			this.listeners.forEach((l) -> l.onSetData(this, data));
+		}
 	}
 
 	@Override
@@ -166,9 +213,14 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	@Override
 	public void addParent(int nodeId)
 	{
+		if (!this.canLink)
+		{
+			throw new RuntimeException("Tried to add a parent to an INode that has canLink disabled. Should not be able to link children or parents.");
+		}
+
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to add a parent to an INode that doesn't have a NodeTree set to it.");
+			throw new RuntimeException("Tried to add a parent to an INode that doesn't have a NodeTree setUsedData to it.");
 		}
 
 		if (this.isDirectionless)
@@ -218,6 +270,11 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	@Override
 	public void removeParent(int nodeId)
 	{
+		if (!this.canLink)
+		{
+			throw new RuntimeException("Tried to remove a parent to an INode that has canLink disabled. Should not be able to link children or parents.");
+		}
+
 		this.parents.remove(nodeId);
 
 		if (this.worldObjectParent != null)
@@ -231,7 +288,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to fetch roots from a INode that doesn't have a NodeTree set to it.");
+			throw new RuntimeException("Tried to fetch roots from a INode that doesn't have a NodeTree setUsedData to it.");
 		}
 
 		visitedNodes.add(this);
@@ -259,7 +316,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to fetch all children from a INode that doesn't have a NodeTree set to it.");
+			throw new RuntimeException("Tried to fetch all children from a INode that doesn't have a NodeTree setUsedData to it.");
 		}
 
 		for (Integer childNodeId : this.children.keySet())
@@ -287,6 +344,25 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	public boolean isDirectionless()
 	{
 		return this.isDirectionless;
+	}
+
+	@Override
+	public boolean canLink()
+	{
+		return this.canLink;
+	}
+
+	@Override
+	public INode<DATA, LINK> deepClone()
+	{
+		NodeMultiParented<DATA, LINK> clone = new NodeMultiParented<>();
+
+		NBTTagCompound tag = new NBTTagCompound();
+
+		this.write(tag);
+		clone.read(tag);
+
+		return clone;
 	}
 
 	@Override
@@ -328,8 +404,14 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		tag.setInteger("nodeId", this.nodeId);
 		funnel.set("data", this.data);
-		funnel.setMap("children", this.children, NBTFunnel.INTEGER_SETTER, NBTFunnel.setter());
-		funnel.setSet("parents", this.parents, NBTFunnel.INTEGER_SETTER);
+		tag.setBoolean("canLink", this.canLink);
+
+		if (this.canLink)
+		{
+			funnel.setMap("children", this.children, NBTFunnel.INTEGER_SETTER, NBTFunnel.setter());
+			funnel.setSet("parents", this.parents, NBTFunnel.INTEGER_SETTER);
+		}
+
 		tag.setBoolean("directionless", this.isDirectionless);
 	}
 
@@ -340,8 +422,14 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		this.nodeId = tag.getInteger("nodeId");
 		this.data = funnel.get("data");
-		this.children = Maps.newLinkedHashMap(funnel.getMap("children", NBTFunnel.INTEGER_GETTER, NBTFunnel.getter()));
-		this.parents = funnel.getSet("parents", NBTFunnel.INTEGER_GETTER);
+		this.canLink = tag.getBoolean("canLink");
+
+		if (this.canLink)
+		{
+			this.children = Maps.newLinkedHashMap(funnel.getMap("children", NBTFunnel.INTEGER_GETTER, NBTFunnel.getter()));
+			this.parents = funnel.getSet("parents", NBTFunnel.INTEGER_GETTER);
+		}
+
 		this.isDirectionless = tag.getBoolean("directionless");
 	}
 

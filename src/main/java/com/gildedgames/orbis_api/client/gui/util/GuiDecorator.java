@@ -33,15 +33,15 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 	}
 
 	@Override
-	public GuiFrame getPrevFrame()
+	public IGuiFrame getPrevFrame()
 	{
 		return this.element.getPrevFrame();
 	}
 
 	@Override
-	public void preDrawChildren()
+	public void preDrawChild(IGuiFrame child)
 	{
-		this.element.preDrawChildren();
+		this.element.preDrawChild(child);
 	}
 
 	@Override

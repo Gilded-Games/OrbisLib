@@ -97,7 +97,10 @@ public class GuiInput extends GuiFrame
 	@Override
 	public void draw()
 	{
-		GuiFrame.preventInnerTyping = this.getInner().isFocused();
+		if (this.getInner().isFocused())
+		{
+			GuiFrame.preventInnerTyping();
+		}
 
 		this.field.x = (int) this.dim().x();
 		this.field.y = (int) this.dim().y();

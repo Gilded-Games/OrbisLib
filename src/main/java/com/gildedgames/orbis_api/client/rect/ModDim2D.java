@@ -92,7 +92,7 @@ public class ModDim2D implements Rect
 	{
 		for (final RectModifier modifier : this.modifiers)
 		{
-			modifier.modifyingWith().updateState();
+			modifier.getSource().updateState();
 		}
 		return this.modifiedState;
 	}
@@ -164,41 +164,71 @@ public class ModDim2D implements Rect
 				continue;
 			}
 
-			final RectHolder modifyingWith = modifier.modifyingWith();
+			final RectHolder source = modifier.getSource();
 
-			if (modifyingWith.dim() == null || modifyingWith.dim() == this)
+			if (source.dim() == null || source.dim() == this)
 			{
 				continue;
 			}
 
-			if (modifier.getType().equals(RectModifier.ModifierType.ROTATION))
+			if (modifier.getModifying().equals(RectModifier.ModifierType.ROTATION))
 			{
-				degrees += modifyingWith.dim().degrees();
+				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.ROTATION);
+
+				if (modifyingWithValue instanceof Float)
+				{
+					degrees += (Float) modifyingWithValue;
+				}
 			}
 
-			if (modifier.getType().equals(RectModifier.ModifierType.SCALE))
+			if (modifier.getModifying().equals(RectModifier.ModifierType.SCALE))
 			{
-				scale *= modifyingWith.dim().scale();
+				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.SCALE);
+
+				if (modifyingWithValue instanceof Float)
+				{
+					scale *= (Float) modifyingWithValue;
+				}
 			}
 
-			if (modifier.getType().equals(RectModifier.ModifierType.X))
+			if (modifier.getModifying().equals(RectModifier.ModifierType.X) || modifier.getModifying().equals(RectModifier.ModifierType.POS))
 			{
-				posX += modifyingWith.dim().x();
+				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.X);
+
+				if (modifyingWithValue instanceof Float)
+				{
+					posX += (Float) modifyingWithValue;
+				}
 			}
 
-			if (modifier.getType().equals(RectModifier.ModifierType.Y))
+			if (modifier.getModifying().equals(RectModifier.ModifierType.Y) || modifier.getModifying().equals(RectModifier.ModifierType.POS))
 			{
-				posY += modifyingWith.dim().y();
+				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.Y);
+
+				if (modifyingWithValue instanceof Float)
+				{
+					posY += (Float) modifyingWithValue;
+				}
 			}
 
-			if (modifier.getType().equals(RectModifier.ModifierType.WIDTH))
+			if (modifier.getModifying().equals(RectModifier.ModifierType.WIDTH) || modifier.getModifying().equals(RectModifier.ModifierType.AREA))
 			{
-				width += modifyingWith.dim().width();
+				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.WIDTH);
+
+				if (modifyingWithValue instanceof Float)
+				{
+					width += (Float) modifyingWithValue;
+				}
 			}
 
-			if (modifier.getType().equals(RectModifier.ModifierType.HEIGHT))
+			if (modifier.getModifying().equals(RectModifier.ModifierType.HEIGHT) || modifier.getModifying().equals(RectModifier.ModifierType.AREA))
 			{
-				height += modifyingWith.dim().height();
+				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.HEIGHT);
+
+				if (modifyingWithValue instanceof Float)
+				{
+					height += (Float) modifyingWithValue;
+				}
 			}
 		}
 
@@ -235,9 +265,30 @@ public class ModDim2D implements Rect
 		return this.modifiers;
 	}
 
-	public boolean containsModifier(final RectHolder modifier)
+	public boolean containsModifier(String identifier)
 	{
-		return this.modifiers.contains(modifier);
+		for (RectModifier modifier : this.modifiers)
+		{
+			if (modifier.getIdentifier().equals(identifier))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public boolean containsModifier(String identifier, final RectHolder source)
+	{
+		for (RectModifier modifier : this.modifiers)
+		{
+			if (modifier.getIdentifier().equals(identifier) && modifier.getSource() == source)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -249,7 +300,7 @@ public class ModDim2D implements Rect
 		{
 			for (final RectModifier modifier : this.modifiers)
 			{
-				modifier.modifyingWith().dim().removeListener(this.ourListener);
+				modifier.getSource().dim().removeListener(this.ourListener);
 			}
 			this.modifiers.clear();
 			this.refreshModifiedState();
@@ -259,15 +310,14 @@ public class ModDim2D implements Rect
 		final List<RectModifier.ModifierType> list = Lists.newArrayList();
 		Collections.addAll(list, types);
 
-		final List<RectModifier.ModifierType> filteredTypes = this.filterModifierTypes(list);
 		this.modifiers = ObjectFilter.getTypesFrom(this.modifiers, new ObjectFilter.FilterCondition<RectModifier>(this.modifiers)
 		{
 			@Override
 			public boolean isType(final RectModifier modifier)
 			{
-				for (final RectModifier.ModifierType type : ObjectFilter.getTypesFrom(filteredTypes, RectModifier.ModifierType.class))
+				for (final RectModifier.ModifierType type : ObjectFilter.getTypesFrom(list, RectModifier.ModifierType.class))
 				{
-					if (modifier.getType().equals(type))
+					if (modifier.getModifying().equals(type))
 					{
 						return false;
 					}
@@ -281,109 +331,111 @@ public class ModDim2D implements Rect
 		return this;
 	}
 
-	private List<RectModifier.ModifierType> filterModifierTypes(final List<RectModifier.ModifierType> types)
+	public ModDim2D add(RectModifier rectModifier)
 	{
-		if (types.contains(RectModifier.ModifierType.AREA))
+		if (!this.modifiers.contains(rectModifier))
 		{
-			types.remove(RectModifier.ModifierType.AREA);
-			if (!types.contains(RectModifier.ModifierType.WIDTH))
-			{
-				types.add(RectModifier.ModifierType.WIDTH);
-			}
-			if (!types.contains(RectModifier.ModifierType.HEIGHT))
-			{
-				types.add(RectModifier.ModifierType.HEIGHT);
-			}
+			this.modifiers.add(rectModifier);
+
+			rectModifier.getSource().dim().addListener(this.ourListener);
+
+			this.refreshModifiedState();
 		}
 
-		if (types.contains(RectModifier.ModifierType.POS))
-		{
-			types.remove(RectModifier.ModifierType.POS);
-			if (!types.contains(RectModifier.ModifierType.X))
-			{
-				types.add(RectModifier.ModifierType.X);
-			}
-			if (!types.contains(RectModifier.ModifierType.Y))
-			{
-				types.add(RectModifier.ModifierType.Y);
-			}
-		}
-
-		if (types.contains(RectModifier.ModifierType.ALL))
-		{
-			types.remove(RectModifier.ModifierType.ALL);
-			for (final RectModifier.ModifierType type : RectModifier.ModifierType.values())
-			{
-				if (!types.contains(type))
-				{
-					types.add(type);
-				}
-			}
-		}
-		return types;
+		return this;
 	}
 
-	public ModDim2D add(final RectHolder modifyingWith, final RectModifier.ModifierType mandatoryType, final RectModifier.ModifierType... otherTypes)
+	public ModDim2D add(String identifier, final RectHolder source, RectModifier.ModifierType mandatory, final RectModifier.ModifierType... modifying)
 	{
-		if (modifyingWith.dim().equals(this))
+		List<RectModifier.ModifierType> modifiers = Lists.newArrayList();
+
+		modifiers.add(mandatory);
+		modifiers.addAll(Lists.newArrayList(modifying));
+
+		for (RectModifier.ModifierType type : modifiers)
+		{
+			this.add(identifier, source, new RectModifier.RectModification[] { type.getModification() }, new RectModifier.ModifierType[] { type });
+		}
+
+		return this;
+	}
+
+	public ModDim2D add(String identifier, final RectHolder source, RectModifier.RectModification[] modifications, final RectModifier.ModifierType[] modifying)
+	{
+		if (source.dim().equals(this))
 		{
 			throw new IllegalArgumentException();
 		}
 
-		for (final RectModifier.ModifierType type : this.filterModifierTypes(this.toList(mandatoryType, otherTypes)))
+		for (final RectModifier.RectModification modificationEntry : modifications)
 		{
-			final RectModifier modifier = new RectModifier(modifyingWith, type);
-
-			if (!this.modifiers.contains(modifier))
+			for (final RectModifier.ModifierType modifyingEntry : Lists.newArrayList(modifying))
 			{
-				this.modifiers.add(modifier);
+				final RectModifier modifier = new RectModifier(identifier, source, modificationEntry, modifyingEntry);
 
-				modifyingWith.dim().addListener(this.ourListener);
+				if (!this.modifiers.contains(modifier))
+				{
+					this.modifiers.add(modifier);
 
-				this.refreshModifiedState();
+					source.dim().addListener(this.ourListener);
+
+					this.refreshModifiedState();
+				}
 			}
 		}
+
 		return this;
 	}
 
-	private List<RectModifier.ModifierType> toList(final RectModifier.ModifierType manda, final RectModifier.ModifierType... types)
+	public boolean removeModifiers(String identifier, RectHolder source)
 	{
-		final List<RectModifier.ModifierType> list = Lists.newArrayList();
-		list.add(manda);
-		list.addAll(Arrays.asList(types));
-		return list;
-	}
+		boolean success = false;
 
-	/**
-	 * Removes from this modDim the modifiers using the given 
-	 * RectHolder for the given types.
-	 * @param modifyingWith
-	 * @param mandatoryType
-	 * @param otherTypes
-	 * @return
-	 */
-	public boolean remove(final RectHolder modifyingWith, final RectModifier.ModifierType mandatoryType, final RectModifier.ModifierType... otherTypes)
-	{
-		boolean success = true;
-		outerloop:
-		for (final RectModifier.ModifierType type : this.filterModifierTypes(this.toList(mandatoryType, otherTypes)))
+		final Iterator<RectModifier> iter = this.modifiers.iterator();
+
+		while (iter.hasNext())
 		{
-			final Iterator<RectModifier> iter = this.modifiers.iterator();
-			while (iter.hasNext())
+			final RectModifier modifier = iter.next();
+
+			if (modifier.getIdentifier().equals(identifier) && modifier.getSource() == source)
 			{
-				final RectModifier modifier = iter.next();
-				if (modifier.modifyingWith() == modifyingWith && modifier.getType().equals(type))
-				{
-					iter.remove();
-					continue outerloop;
-				}
+				iter.remove();
+
+				success = true;
 			}
-			success = false;
 		}
 
-		if (!this.hasModifiersFor(modifyingWith))
+		if (!this.hasModifiersFor(source))
 		{
-			modifyingWith.dim().removeListener(this.ourListener);
+			source.dim().removeListener(this.ourListener);
+		}
+
+		this.refreshModifiedState();
+
+		return success;
+	}
+
+	public boolean removeModifiers(String identifier)
+	{
+		boolean success = false;
+
+		final Iterator<RectModifier> iter = this.modifiers.iterator();
+
+		while (iter.hasNext())
+		{
+			final RectModifier modifier = iter.next();
+
+			if (modifier.getIdentifier().equals(identifier))
+			{
+				iter.remove();
+
+				if (!this.hasModifiersFor(modifier.getSource()))
+				{
+					modifier.getSource().dim().removeListener(this.ourListener);
+				}
+
+				success = true;
+			}
 		}
 
 		this.refreshModifiedState();
@@ -395,7 +447,7 @@ public class ModDim2D implements Rect
 	{
 		for (final RectModifier rModifier : this.modifiers)
 		{
-			if (rModifier.modifyingWith().equals(holder))
+			if (rModifier.getSource().equals(holder))
 			{
 				return true;
 			}

@@ -53,7 +53,7 @@ public class GuiAbstractButton extends GuiFrame
 	{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 
-		if (this.isEnabled() && InputHelper.isHovered(this.clickedState) && mouseButton == 0)
+		if (this.isEnabled() && InputHelper.isHoveredAndTopElement(this.clickedState) && mouseButton == 0)
 		{
 			this.clickedState.setVisible(true);
 
@@ -118,7 +118,7 @@ public class GuiAbstractButton extends GuiFrame
 			}
 		}
 
-		if (InputHelper.isHovered(this.dim()) || this.selected)
+		if (InputHelper.isHoveredAndTopElement(this) || this.selected)
 		{
 			this.defaultState.setVisible(false);
 			this.hoveredState.setVisible(true);

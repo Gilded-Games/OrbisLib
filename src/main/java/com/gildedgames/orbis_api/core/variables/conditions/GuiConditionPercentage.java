@@ -3,6 +3,7 @@ package com.gildedgames.orbis_api.core.variables.conditions;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.variables.GuiVarFloatRange;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
+import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,9 +19,11 @@ public class GuiConditionPercentage implements IGuiCondition
 
 	private Pos2D guiPos = Pos2D.ORIGIN;
 
+	private GuiVarDisplay parentDisplay;
+
 	public GuiConditionPercentage()
 	{
-		this.percent = new GuiVarFloatRange("Value", 0.0F, 100.0F);
+		this.percent = new GuiVarFloatRange("orbis.gui.value", 0.0F, 100.0F);
 
 		this.percent.setData(50.0F);
 
@@ -30,7 +33,7 @@ public class GuiConditionPercentage implements IGuiCondition
 	@Override
 	public String getName()
 	{
-		return "Percentage";
+		return "orbis.gui.percentage";
 	}
 
 	@Override
@@ -77,5 +80,11 @@ public class GuiConditionPercentage implements IGuiCondition
 		this.variables.clear();
 
 		this.variables.add(this.percent);
+	}
+
+	@Override
+	public void setParentDisplay(GuiVarDisplay parentDisplay)
+	{
+		this.parentDisplay = parentDisplay;
 	}
 }

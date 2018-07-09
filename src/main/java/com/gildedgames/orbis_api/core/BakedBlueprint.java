@@ -1,12 +1,17 @@
 package com.gildedgames.orbis_api.core;
 
+import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.block.*;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
 import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
+import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
+import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.data.schedules.PostGenReplaceLayer;
@@ -15,15 +20,18 @@ import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RegionHelp;
 import com.gildedgames.orbis_api.util.RotationHelp;
+import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +46,8 @@ public class BakedBlueprint
 	private List<INode<IScheduleLayer, LayerLink>> bakedScheduleLayerNodes = Lists.newArrayList();
 
 	private BlueprintData blueprintData;
+
+	private NodeTree<BlueprintVariable, NBT> bakedBlueprintVariables;
 
 	private ICreationData<?> data;
 
@@ -72,42 +82,96 @@ public class BakedBlueprint
 		return null;
 	}
 
+	private boolean resolveChildrenConditions(INode<IGuiCondition, ConditionLink> parent)
+	{
+		IGuiCondition condition = parent.getData();
+
+		if (condition instanceof IDataUser)
+		{
+			IDataUser user = (IDataUser) condition;
+
+			if (user.getDataIdentifier().equals("blueprintVariables"))
+			{
+				user.setUsedData(this.bakedBlueprintVariables);
+			}
+		}
+
+		boolean resolved = condition.resolve(this.data.getRandom());
+
+		if (!resolved)
+		{
+			return false;
+		}
+
+		for (INode<IGuiCondition, ConditionLink> child : parent.getTree().get(parent.getChildrenIds()))
+		{
+			//TODO: Implement actual condition link logic - AND and OR logic. Currently just goes through all checks if all are resolved.
+
+			if (!this.resolveChildrenConditions(child))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	private void bakeScheduleLayers()
 	{
+		this.bakedBlueprintVariables = this.blueprintData.getVariableTree().deepClone();
+
 		List<INode<IScheduleLayer, LayerLink>> layers = Lists.newArrayList();
 
-		outer:
-		for (INode<IScheduleLayer, LayerLink> node : this.blueprintData.getScheduleLayerTree().getNodes())
+		List<INode<IScheduleLayer, LayerLink>> nodes = Lists.newArrayList(this.blueprintData.getScheduleLayerTree().getNodes());
+
+		Collections.shuffle(nodes, this.data.getRandom());
+
+		for (INode<IScheduleLayer, LayerLink> node : nodes)
 		{
 			IScheduleLayer layer = node.getData();
 
 			if (layer.getConditionNodeTree().isEmpty())
 			{
 				layers.add(node);
+
+				for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
+				{
+					if (action.getData() instanceof IDataUser)
+					{
+						IDataUser user = (IDataUser) action.getData();
+
+						if (user.getDataIdentifier().equals("blueprintVariables"))
+						{
+							user.setUsedData(this.bakedBlueprintVariables);
+						}
+					}
+
+					action.getData().resolve(this.data.getRandom());
+				}
 			}
 			else if (layer.getConditionNodeTree().getProminentRoot() != null)
 			{
-				List<INode<IGuiCondition, ConditionLink>> allChildren = Lists.newArrayList();
-
-				allChildren.add(layer.getConditionNodeTree().getProminentRoot());
-
-				layer.getConditionNodeTree().getProminentRoot().fetchAllChildren(allChildren);
-
-				for (INode<IGuiCondition, ConditionLink> conditionNode : allChildren)
+				if (!this.resolveChildrenConditions(layer.getConditionNodeTree().getProminentRoot()))
 				{
-					IGuiCondition condition = conditionNode.getData();
-
-					boolean resolved = condition.resolve(this.data.getRandom());
-
-					//TODO: Implement actual condition link logic - AND and OR logic. Currently just goes through all checks if all are resolved.
-
-					if (!resolved)
-					{
-						continue outer;
-					}
+					continue;
 				}
 
 				layers.add(node);
+
+				for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
+				{
+					if (action.getData() instanceof IDataUser)
+					{
+						IDataUser user = (IDataUser) action.getData();
+
+						if (user.getDataIdentifier().equals("blueprintVariables"))
+						{
+							user.setUsedData(this.bakedBlueprintVariables);
+						}
+					}
+
+					action.getData().resolve(this.data.getRandom());
+				}
 			}
 		}
 
@@ -194,7 +258,7 @@ public class BakedBlueprint
 
 	private void bakeChunks()
 	{
-		final BlockDataContainer blocks = this.blueprintData.getBlockDataContainer().clone();
+		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer().clone();
 
 		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
@@ -210,11 +274,11 @@ public class BakedBlueprint
 
 		this.chunks = new BlockDataChunk[chunksOccupied.length];
 
-		final BlockPos min = this.data.getPos();
+		BlockPos min = this.data.getPos();
 		BlockPos max = new BlockPos(min.getX() + blocks.getWidth() - 1, min.getY() + blocks.getHeight() - 1,
 				min.getZ() + blocks.getLength() - 1);
 
-		final Region region = new Region(new BlockPos(0, 0, 0), new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1));
+		Region region = new Region(new BlockPos(0, 0, 0), new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1));
 
 		for (PostGenReplaceLayer postGenReplaceLayer : this.blueprintData.getPostGenReplaceLayers().values())
 		{
@@ -235,31 +299,38 @@ public class BakedBlueprint
 			filter.apply(region.createShapeData(), blocks, this.data, postGenReplaceLayer.getOptions());
 		}
 
-		final int startChunkX = min.getX() >> 4;
-		final int startChunkZ = min.getZ() >> 4;
-
-		int xDif = min.getX() % 16;
-		int zDif = min.getZ() % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
 		final int rotAmount = Math.abs(RotationHelp.getRotationAmount(this.data.getRotation(), Rotation.NONE));
 
 		if (rotAmount != 0)
 		{
-			for (final OrbisTuple<BlockPos.MutableBlockPos, BlockPos.MutableBlockPos> tuple : RotationHelp
-					.getAllInBoxRotated(min, max, this.data.getRotation(), null))
+			Region rotatedRegion = (Region) RotationHelp.rotate(new Region(min, max), this.data.getRotation());
+
+			BlockPos m = new BlockPos(Math.min(rotatedRegion.getMin().getX(), rotatedRegion.getMax().getX()),
+					Math.min(rotatedRegion.getMin().getY(), rotatedRegion.getMax().getY()),
+					Math.min(rotatedRegion.getMin().getZ(), rotatedRegion.getMax().getZ()));
+
+			int startChunkX = m.getX() >> 4;
+			int startChunkZ = m.getZ() >> 4;
+
+			int xDif = m.getX() % 16;
+			int zDif = m.getZ() % 16;
+
+			if (xDif < 0)
 			{
-				final BlockPos.MutableBlockPos beforeRot = tuple.getFirst();
-				BlockPos.MutableBlockPos rotated = tuple.getSecond();
+				xDif = 16 - Math.abs(xDif);
+			}
+
+			if (zDif < 0)
+			{
+				zDif = 16 - Math.abs(zDif);
+			}
+
+			for (final OrbisTuple<BlockPos.MutableBlockPos, BlockPos.MutableBlockPos> tuple : RotationHelp
+					.getAllInBoxRotated(min, max,
+							this.data.getRotation(), null))
+			{
+				BlockPos beforeRot = tuple.getFirst();
+				BlockPos rotated = tuple.getSecond();
 
 				final int chunkX = ((rotated.getX()) >> 4) - startChunkX;
 				final int chunkZ = ((rotated.getZ()) >> 4) - startChunkZ;
@@ -286,13 +357,44 @@ public class BakedBlueprint
 
 				if (chunk != null)
 				{
-					chunk.getContainer().copyBlockFrom(blocks, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ(),
-							(rotated.getX() + xDif) % 16, rotated.getY() - min.getY(), (rotated.getZ() + zDif) % 16);
+					try
+					{
+						int xIndex = (rotated.getX() - m.getX() + xDif) % 16;
+						int zIndex = (rotated.getZ() - m.getZ() + zDif) % 16;
+
+						chunk.getContainer()
+								.copyBlockFrom(blocks, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ(),
+										xIndex, rotated.getY() - m.getY(),
+										zIndex);
+
+						IBlockState original = chunk.getContainer().getBlockState(xIndex, rotated.getY() - m.getY(), zIndex);
+						chunk.getContainer().setBlockState(original.withRotation(this.data.getRotation()), xIndex, rotated.getY() - m.getY(), zIndex);
+					}
+					catch (ArrayIndexOutOfBoundsException e)
+					{
+						OrbisAPI.LOGGER.error(e);
+					}
 				}
 			}
 		}
 		else
 		{
+			int startChunkX = min.getX() >> 4;
+			int startChunkZ = min.getZ() >> 4;
+
+			int xDif = min.getX() % 16;
+			int zDif = min.getZ() % 16;
+
+			if (xDif < 0)
+			{
+				xDif = 16 - Math.abs(xDif);
+			}
+
+			if (zDif < 0)
+			{
+				zDif = 16 - Math.abs(zDif);
+			}
+
 			for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
 			{
 				final int chunkX = ((min.getX() + iterPos.getX()) >> 4) - startChunkX;
@@ -320,9 +422,17 @@ public class BakedBlueprint
 
 				if (chunk != null)
 				{
-					chunk.getContainer()
-							.copyBlockFrom(blocks, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16, iterPos.getY(),
-									(iterPos.getZ() + zDif) % 16);
+					try
+					{
+
+						chunk.getContainer()
+								.copyBlockFrom(blocks, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16, iterPos.getY(),
+										(iterPos.getZ() + zDif) % 16);
+					}
+					catch (ArrayIndexOutOfBoundsException e)
+					{
+						OrbisAPI.LOGGER.error(e);
+					}
 				}
 			}
 		}

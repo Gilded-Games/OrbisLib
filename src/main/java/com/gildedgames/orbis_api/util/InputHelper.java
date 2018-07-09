@@ -27,7 +27,7 @@ public class InputHelper
 		return (getScreenHeight() - Mouse.getEventY() * getScreenHeight() / mc.displayHeight - 1);
 	}
 
-	public static boolean isHovered(final Rect dim)
+	private static boolean isHovered(final Rect dim)
 	{
 		if (dim == null)
 		{
@@ -57,7 +57,7 @@ public class InputHelper
 		return resolution.getScaledHeight();
 	}
 
-	public static boolean isHovered(final List<IGuiFrame> frames, IGuiFrame ignore)
+	private static boolean isHovered(final List<IGuiFrame> frames, IGuiFrame ignore)
 	{
 		if (frames == null)
 		{
@@ -96,7 +96,7 @@ public class InputHelper
 		{
 			IGuiFrame frame = (IGuiFrame) Minecraft.getMinecraft().currentScreen;
 
-			for (IGuiFrame child : frame.getChildren())
+			for (IGuiFrame child : frame.getAllChildrenSortedByZOrder())
 			{
 				if (child.isVisible() && child.isEnabled() && InputHelper.isHovered(child) && child.getZOrder() > check.getZOrder())
 				{

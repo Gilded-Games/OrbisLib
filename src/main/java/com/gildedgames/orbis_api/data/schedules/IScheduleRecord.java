@@ -20,7 +20,7 @@ public interface IScheduleRecord extends NBT, IWorldObjectChild
 	/**
 	 * Should check if the schedule fits within the record
 	 * @param schedule
-	 * @return -1 if the schedule did not set
+	 * @return -1 if the schedule did not setUsedData
 	 */
 	int addSchedule(final ISchedule schedule);
 
@@ -28,7 +28,7 @@ public interface IScheduleRecord extends NBT, IWorldObjectChild
 	 *
 	 * @param id
 	 * @param schedule
-	 * @return Whether the schedule successfully set or not
+	 * @return Whether the schedule successfully setUsedData or not
 	 */
 	boolean setSchedule(int id, ISchedule schedule);
 

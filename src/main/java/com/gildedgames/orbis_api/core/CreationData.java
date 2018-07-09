@@ -203,7 +203,7 @@ public class CreationData implements ICreationData<CreationData>
 				.schedules(this.schedules).placesVoid(this.placesVoid).spawnEntities(this.spawnEntities);
 
 		data.seed = this.seed;
-		data.rand = this.rand;
+		data.rand = new Random(this.seed);
 
 		return data;
 	}

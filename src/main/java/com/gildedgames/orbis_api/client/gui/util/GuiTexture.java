@@ -45,6 +45,12 @@ public class GuiTexture extends GuiFrame
 		this.texture = texture;
 	}
 
+	public void setResourceLocation(final ResourceLocation texture, float width, float height)
+	{
+		this.texture = texture;
+		this.dim().mod().width(width).height(height).flush();
+	}
+
 	@Override
 	public void init()
 	{

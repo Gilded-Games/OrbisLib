@@ -127,6 +127,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	}
 
 	public void copyBlockFrom(BlockDataContainer data, int otherX, int otherY, int otherZ, int thisX, int thisY, int thisZ)
+			throws ArrayIndexOutOfBoundsException
 	{
 		int indexThis = this.getIndex(thisX, thisY, thisZ);
 		int indexOther = data.getIndex(otherX, otherY, otherZ);

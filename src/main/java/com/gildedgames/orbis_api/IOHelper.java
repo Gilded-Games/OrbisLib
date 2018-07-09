@@ -2,6 +2,7 @@ package com.gildedgames.orbis_api;
 
 import com.gildedgames.orbis_api.util.io.IClassSerializer;
 import com.gildedgames.orbis_api.util.io.IClassSerializerRegistry;
+import com.gildedgames.orbis_api.util.io.Instantiator;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.BiMap;
@@ -17,6 +18,11 @@ public class IOHelper implements IClassSerializerRegistry
 	public IOHelper()
 	{
 
+	}
+
+	public static <T extends NBT> void register(IClassSerializer s, int id, Class<T> clazz)
+	{
+		s.register(id, clazz, new Instantiator<>(clazz));
 	}
 
 	public NBTTagCompound write(final NBT nbt)

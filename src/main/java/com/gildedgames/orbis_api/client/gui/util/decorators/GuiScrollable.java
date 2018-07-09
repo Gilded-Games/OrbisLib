@@ -4,6 +4,7 @@ import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrame;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrameDummy;
 import com.gildedgames.orbis_api.client.gui.util.GuiTexture;
+import com.gildedgames.orbis_api.client.gui.util.IGuiFrame;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectModifier;
@@ -43,8 +44,8 @@ public class GuiScrollable extends GuiFrame
 		this.window = new GuiFrameDummy(Dim2D.build().width(16).x(0).y(0).flush());
 		this.pane = new GuiFrameDummy(Dim2D.build().x(16).y(0).flush());
 
-		this.window.dim().add(this, RectModifier.ModifierType.WIDTH, RectModifier.ModifierType.HEIGHT);
-		this.pane.dim().add(this, RectModifier.ModifierType.WIDTH, RectModifier.ModifierType.HEIGHT);
+		this.window.dim().add("scrollableArea", this, RectModifier.ModifierType.AREA);
+		this.pane.dim().add("scrollableArea", this, RectModifier.ModifierType.AREA);
 	}
 
 	@Override
@@ -57,42 +58,44 @@ public class GuiScrollable extends GuiFrame
 		this.scrollKnob = new GuiTexture(Dim2D.build().width(12).height(15).x(1).y(1).flush(), SCROLL_KNOB);
 		this.scrollBar = new GuiTexture(Dim2D.build().width(14).flush(), SCROLL_BAR);
 
-		this.scrollBar.dim().add(this, RectModifier.ModifierType.HEIGHT);
+		this.scrollBar.dim().add("scrollableHeight", this, RectModifier.ModifierType.HEIGHT);
 
 		this.addChildren(this.window, this.pane, this.scrollBar, this.scrollKnob);
 	}
 
 	@Override
+	public void preDrawChild(IGuiFrame child)
+	{
+		ScaledResolution res = new ScaledResolution(this.mc);
+
+		double scaleW = this.mc.displayWidth / res.getScaledWidth_double();
+		double scaleH = this.mc.displayHeight / res.getScaledHeight_double();
+
+		GL11.glEnable(GL11.GL_SCISSOR_TEST);
+		GL11.glScissor((int) ((this.window.dim().x()) * scaleW),
+				(int) (this.mc.displayHeight - ((this.window.dim().y() + this.window.dim().height()) * scaleH)),
+				(int) (this.window.dim().width() * scaleW), (int) (this.window.dim().height() * scaleH));
+	}
+
+	@Override
+	public void postDrawChild(IGuiFrame child)
+	{
+		GL11.glDisable(GL11.GL_SCISSOR_TEST);
+	}
+
+	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks)
 	{
-		if (this.isVisible())
+		if (this.dim().height() >= this.decorated.dim().height())
 		{
-			if (this.dim().height() >= this.decorated.dim().height())
-			{
-				this.scrollKnob.setResourceLocation(SCROLL_KNOB_DISABLED);
-			}
-			else
-			{
-				this.scrollKnob.setResourceLocation(SCROLL_KNOB);
-			}
-
-			ScaledResolution res = new ScaledResolution(this.mc);
-
-			double scaleW = this.mc.displayWidth / res.getScaledWidth_double();
-			double scaleH = this.mc.displayHeight / res.getScaledHeight_double();
-
-			GL11.glEnable(GL11.GL_SCISSOR_TEST);
-			GL11.glScissor((int) ((this.window.dim().x()) * scaleW),
-					(int) (this.mc.displayHeight - ((this.window.dim().y() + this.window.dim().height()) * scaleH)),
-					(int) (this.window.dim().width() * scaleW), (int) (this.window.dim().height() * scaleH));
+			this.scrollKnob.setResourceLocation(SCROLL_KNOB_DISABLED);
+		}
+		else
+		{
+			this.scrollKnob.setResourceLocation(SCROLL_KNOB);
 		}
 
 		super.drawScreen(mouseX, mouseY, partialTicks);
-
-		if (this.isVisible())
-		{
-			GL11.glDisable(GL11.GL_SCISSOR_TEST);
-		}
 	}
 
 	@Override
@@ -100,7 +103,7 @@ public class GuiScrollable extends GuiFrame
 	{
 		super.onMouseWheel(state);
 
-		if (InputHelper.isHovered(this.window))
+		if (InputHelper.isHoveredAndTopElement(this.window))
 		{
 			float prevScroll = this.scroll;
 
@@ -111,7 +114,7 @@ public class GuiScrollable extends GuiFrame
 			this.pane.dim().mod().addY(prevScroll - this.scroll).flush();
 			float height = this.decorated.dim().height() - this.dim().height();
 
-			float percent = this.scroll <= 0.0F ? 0.0F : ((height) / this.scroll);
+			float percent = this.scroll <= 0.0F ? 0.0F : this.scroll / height;
 
 			float y = Math.max(0.0F, (percent * this.dim().height()) - this.scrollKnob.dim().height());
 

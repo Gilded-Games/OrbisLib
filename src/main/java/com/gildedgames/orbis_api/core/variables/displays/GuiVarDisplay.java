@@ -7,22 +7,30 @@ import com.gildedgames.orbis_api.client.gui.util.vanilla.GuiButtonVanilla;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
+import com.gildedgames.orbis_api.core.variables.IGuiVarDisplayContents;
 import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Maps;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GuiVarDisplay extends GuiFrame
 {
 	private Collection<IGuiVar> variables;
 
+	private IGuiVarDisplayContents contents;
+
+	private String displayTitle;
+
 	private Map<IGuiVar, GuiFrame> varToDisplay = Maps.newHashMap();
 
 	private GuiButtonVanilla apply, reset;
+
+	private int refreshRequests;
 
 	public GuiVarDisplay(Rect rect)
 	{
@@ -35,16 +43,36 @@ public class GuiVarDisplay extends GuiFrame
 		this.variables = Collections.emptyList();
 	}
 
-	public void display(Collection<IGuiVar> variables)
+	public void refresh()
 	{
-		this.display(variables, null);
+		this.refreshRequests++;
 	}
 
-	public void display(Collection<IGuiVar> variables, String displayTitle)
+	public void display(IGuiVarDisplayContents contents)
 	{
+		this.display(contents, null);
+	}
+
+	public void display(IGuiVarDisplayContents contents, String displayTitle)
+	{
+		if (contents == null)
+		{
+			return;
+		}
+
+		if (this.contents != null)
+		{
+			this.contents.setParentDisplay(null);
+		}
+
+		contents.setParentDisplay(this);
+
+		this.contents = contents;
+		this.displayTitle = displayTitle;
+
 		this.clearChildren();
 
-		this.variables = variables;
+		this.variables = new CopyOnWriteArrayList<>(contents.getVariables());
 
 		for (IGuiVar var : this.variables)
 		{
@@ -53,10 +81,10 @@ public class GuiVarDisplay extends GuiFrame
 
 		int currentY = 0;
 
-		if (displayTitle != null)
+		if (this.displayTitle != null)
 		{
 			GuiText title = new GuiText(Dim2D.build().y(currentY).x(this.dim().width() / 2).centerX(true).flush(),
-					new Text(new TextComponentString(displayTitle), 1.0F));
+					new Text(new TextComponentTranslation(this.displayTitle), 1.0F));
 
 			currentY += 15;
 
@@ -65,7 +93,7 @@ public class GuiVarDisplay extends GuiFrame
 
 		for (IGuiVar var : this.variables)
 		{
-			GuiText text = new GuiText(Dim2D.build().y(currentY).flush(), new Text(new TextComponentString(var.getName()), 1.0F));
+			GuiText text = new GuiText(Dim2D.build().y(currentY).flush(), new Text(new TextComponentTranslation(var.getVariableName()), 1.0F));
 
 			currentY += 13;
 
@@ -104,7 +132,12 @@ public class GuiVarDisplay extends GuiFrame
 	@Override
 	public void draw()
 	{
+		if (this.refreshRequests > 0)
+		{
+			this.display(this.contents, this.displayTitle);
 
+			this.refreshRequests--;
+		}
 	}
 
 	@Override
@@ -119,12 +152,12 @@ public class GuiVarDisplay extends GuiFrame
 
 		if (this.variables != null)
 		{
-			if (InputHelper.isHovered(this.apply) && mouseButton == 0)
+			if (InputHelper.isHoveredAndTopElement(this.apply) && mouseButton == 0)
 			{
 				this.updateVariableData();
 			}
 
-			if (InputHelper.isHovered(this.reset) && mouseButton == 0)
+			if (InputHelper.isHoveredAndTopElement(this.reset) && mouseButton == 0)
 			{
 				this.resetVariableData();
 			}

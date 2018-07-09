@@ -302,7 +302,8 @@ public class DataPrimer
 	{
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
-			this.create(null, chunk.getContainer(), baked.getCreationData().clone().pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
+			this.create(null, chunk.getContainer(),
+					baked.getCreationData().clone().rotation(Rotation.NONE).pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
 					null);
 		}
 
@@ -316,8 +317,12 @@ public class DataPrimer
 	{
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
-			this.create(relocateTo, chunk.getContainer(),
-					baked.getCreationData().clone().pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)), null);
+			if (chunk != null)
+			{
+				this.create(relocateTo, chunk.getContainer(),
+						baked.getCreationData().clone().rotation(Rotation.NONE).pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
+						null);
+			}
 		}
 
 		for (List<PlacedEntity> l : baked.getPlacedEntities().values())

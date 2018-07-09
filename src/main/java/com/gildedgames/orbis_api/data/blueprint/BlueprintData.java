@@ -6,6 +6,7 @@ import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.PlacedEntity;
 import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.data.IDataHolder;
+import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
@@ -17,6 +18,7 @@ import com.gildedgames.orbis_api.data.schedules.*;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.BlueprintHelper;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import com.gildedgames.orbis_api.world.IWorldObjectChild;
 import com.google.common.collect.Lists;
@@ -53,18 +55,40 @@ public class BlueprintData
 
 	private NodeTree<IScheduleLayer, LayerLink> scheduleLayerTree = new NodeTree<>();
 
+	private NodeTree<BlueprintVariable, NBT> variableTree = new NodeTree<>();
+
 	private LinkedHashMap<Integer, PostGenReplaceLayer> postGenReplaceLayers = Maps.newLinkedHashMap();
 
 	private List<Entrance> entrances = Lists.newArrayList();
 
 	private IWorldObject worldObjectParent;
 
-	private Pos2D treeGuiPos;
+	private Pos2D scheduleTreeGuiPos, variableTreeGuiPos = Pos2D.ORIGIN;
 
 	private BlueprintData()
 	{
 		this.metadata = new DataMetadata();
 		this.getScheduleLayerTree().listen(this);
+		this.getVariableTree().listen(new INodeTreeListener<BlueprintVariable, NBT>()
+		{
+			@Override
+			public void onSetData(INode<BlueprintVariable, NBT> node, BlueprintVariable variable, int id)
+			{
+				node.getData().setWorldObjectParent(BlueprintData.this.worldObjectParent);
+			}
+
+			@Override
+			public void onPut(INode<BlueprintVariable, NBT> node, int id)
+			{
+				node.getData().setWorldObjectParent(BlueprintData.this.worldObjectParent);
+			}
+
+			@Override
+			public void onRemove(INode<BlueprintVariable, NBT> node, int id)
+			{
+				node.getData().setWorldObjectParent(null);
+			}
+		});
 	}
 
 	public BlueprintData(final IRegion region)
@@ -109,14 +133,26 @@ public class BlueprintData
 		}
 	}
 
-	public Pos2D getTreeGuiPos()
+	public Pos2D getScheduleTreeGuiPos()
 	{
-		return this.treeGuiPos;
+		return this.scheduleTreeGuiPos;
 	}
 
-	public void setTreeGuiPos(Pos2D treeGuiPos)
+	public void setScheduleTreeGuiPos(Pos2D treeGuiPos)
 	{
-		this.treeGuiPos = treeGuiPos;
+		this.scheduleTreeGuiPos = treeGuiPos;
+
+		this.markDirty();
+	}
+
+	public Pos2D getVariableTreeGuiPos()
+	{
+		return this.variableTreeGuiPos;
+	}
+
+	public void setVariableTreeGuiPos(Pos2D treeGuiPos)
+	{
+		this.variableTreeGuiPos = treeGuiPos;
 
 		this.markDirty();
 	}
@@ -156,10 +192,10 @@ public class BlueprintData
 	{
 		this.worldObjectParent = parent;
 
-		this.scheduleLayerTree.getNodes().forEach(s -> s.getData().setWorldObjectParent(this.worldObjectParent));
 		this.entrances.forEach(e -> e.setWorldObjectParent(this.worldObjectParent));
 		this.postGenReplaceLayers.values().forEach(l -> l.setWorldObjectParent(this.worldObjectParent));
 		this.scheduleLayerTree.setWorldObjectParent(this.worldObjectParent);
+		this.variableTree.setWorldObjectParent(this.worldObjectParent);
 	}
 
 	public void addEntrance(Entrance entrance)
@@ -244,6 +280,11 @@ public class BlueprintData
 		return this.scheduleLayerTree;
 	}
 
+	public NodeTree<BlueprintVariable, NBT> getVariableTree()
+	{
+		return this.variableTree;
+	}
+
 	public List<Entrance> entrances()
 	{
 		return this.entrances;
@@ -306,9 +347,11 @@ public class BlueprintData
 		funnel.set("metadata", this.metadata);
 		funnel.set("dataContainer", this.dataContainer);
 		funnel.set("scheduleLayerTree", this.scheduleLayerTree);
+		funnel.set("variableTree", this.variableTree);
 		funnel.setIntMap("postGenReplaceLayers", this.postGenReplaceLayers);
 		funnel.setList("entrances", this.entrances);
-		funnel.set("treeGuiPos", this.treeGuiPos, NBTFunnel.POS2D_SETTER);
+		funnel.set("scheduleTreeGuiPos", this.scheduleTreeGuiPos, NBTFunnel.POS2D_SETTER);
+		funnel.set("variableTreeGuiPos", this.variableTreeGuiPos, NBTFunnel.POS2D_SETTER);
 	}
 
 	@Override
@@ -319,6 +362,7 @@ public class BlueprintData
 		this.metadata = funnel.get("metadata");
 		this.dataContainer = funnel.get("dataContainer");
 		this.scheduleLayerTree = funnel.getWithDefault("scheduleLayerTree", () -> this.scheduleLayerTree);
+		this.variableTree = funnel.getWithDefault("variableTree", () -> this.variableTree);
 		this.postGenReplaceLayers = Maps.newLinkedHashMap(funnel.getIntMap("postGenReplaceLayers"));
 
 		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().setDimensions(this));
@@ -326,7 +370,34 @@ public class BlueprintData
 
 		this.entrances = funnel.getList("entrances");
 
-		this.treeGuiPos = funnel.get("treeGuiPos", NBTFunnel.POS2D_GETTER);
+		this.scheduleTreeGuiPos = funnel.get("scheduleTreeGuiPos", NBTFunnel.POS2D_GETTER);
+		this.variableTreeGuiPos = funnel.getWithDefault("variableTreeGuiPos", NBTFunnel.POS2D_GETTER, () -> this.variableTreeGuiPos);
+
+		this.scheduleLayerTree.getNodes().forEach(
+				(s) ->
+				{
+					s.getData().getConditionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataUser)
+							.forEach((n) ->
+							{
+								IDataUser user = (IDataUser) n.getData();
+
+								if (user.getDataIdentifier().equals("blueprintVariables"))
+								{
+									user.setUsedData(this.getVariableTree());
+								}
+							});
+
+					s.getData().getPostResolveActionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataUser)
+							.forEach((n) ->
+							{
+								IDataUser user = (IDataUser) n.getData();
+
+								if (user.getDataIdentifier().equals("blueprintVariables"))
+								{
+									user.setUsedData(this.getVariableTree());
+								}
+							});
+				});
 	}
 
 	@Override
@@ -477,6 +548,15 @@ public class BlueprintData
 		}
 
 		return -1;
+	}
+
+	@Override
+	public void onSetData(INode<IScheduleLayer, LayerLink> node, IScheduleLayer iScheduleLayer, int id)
+	{
+		IScheduleLayer layer = node.getData();
+
+		layer.setWorldObjectParent(this.worldObjectParent);
+		layer.setNodeParent(node);
 	}
 
 	@Override

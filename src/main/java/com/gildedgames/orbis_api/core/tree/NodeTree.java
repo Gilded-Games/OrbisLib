@@ -10,7 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.*;
 
-public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild
+public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListener<DATA, LINK>
 {
 	private LinkedHashMap<Integer, INode<DATA, LINK>> nodes = Maps.newLinkedHashMap();
 
@@ -23,6 +23,26 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild
 	public NodeTree()
 	{
 
+	}
+
+	public NodeTree<DATA, LINK> deepClone()
+	{
+		NodeTree<DATA, LINK> clone = new NodeTree<>();
+
+		for (Map.Entry<Integer, INode<DATA, LINK>> entry : this.nodes.entrySet())
+		{
+			Integer id = entry.getKey();
+			INode<DATA, LINK> node = entry.getValue();
+
+			clone.nodes.put(id, node.deepClone());
+		}
+
+		clone.prominentRoot = this.prominentRoot;
+		clone.worldObjectParent = this.worldObjectParent;
+
+		clone.listeners = Sets.newHashSet(this.listeners);
+
+		return clone;
 	}
 
 	public void listen(INodeTreeListener<DATA, LINK> listener)
@@ -73,6 +93,7 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild
 	public void put(int id, INode<DATA, LINK> node)
 	{
 		node.setTree(this);
+		node.listen(this);
 
 		node.setNodeId(id);
 		node.setWorldObjectParent(this.worldObjectParent);
@@ -108,6 +129,7 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild
 		INode<DATA, LINK> node = this.nodes.remove(id);
 
 		node.setTree(null);
+		node.unlisten(this);
 
 		this.listeners.forEach((l) -> l.onRemove(node, id));
 
@@ -164,6 +186,7 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild
 		this.prominentRoot = tag.getInteger("prominentRoot");
 
 		this.nodes.values().forEach((n) -> n.setTree(this));
+		this.nodes.values().forEach((n) -> n.listen(this));
 		this.nodes.values().forEach((n) -> NodeTree.this.listeners.forEach((l) -> l.onPut(n, n.getNodeId())));
 	}
 
@@ -179,6 +202,12 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild
 		this.worldObjectParent = parent;
 
 		this.nodes.values().forEach((n) -> n.setWorldObjectParent(parent));
+	}
+
+	@Override
+	public void onSetData(INode<DATA, LINK> node, DATA data)
+	{
+		this.listeners.forEach((l) -> l.onSetData(node, data, node.getNodeId()));
 	}
 
 	public static class NodeIterable<DATA, LINK> implements Iterable<INode<DATA, LINK>>

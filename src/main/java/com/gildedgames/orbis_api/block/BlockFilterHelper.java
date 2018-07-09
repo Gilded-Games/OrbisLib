@@ -186,7 +186,7 @@ public class BlockFilterHelper
 		if (!(ItemBlock.class.isAssignableFrom(stack.getItem().getClass())) && !(stack.getItem() instanceof ItemBucket) && !(ItemMultiTexture.class
 				.isAssignableFrom(stack.getItem().getClass())))
 		{
-			throw new NullPointerException("ItemStack given to getNewFillLayer() is not a Block. Aborting.");
+			throw new NullPointerException("ItemStack given to getNewFillLayer() is not a Block. Aborting." + stack.getItem());
 		}
 
 		final BlockFilterLayer layer = new BlockFilterLayer();

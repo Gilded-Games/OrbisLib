@@ -62,7 +62,7 @@ public class GuiInputSlider extends GuiFrame
 	{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 
-		if (mouseButton == 0 && InputHelper.isHovered(this))
+		if (mouseButton == 0 && InputHelper.isHoveredAndTopElement(this))
 		{
 			this.sliderValue = (InputHelper.getMouseX() - (this.dim().x() + 4)) / (this.dim().width() - 8);
 			this.sliderValue = MathHelper.clamp(this.sliderValue, 0.0F, 1.0F);

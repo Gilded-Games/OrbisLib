@@ -4,10 +4,14 @@ import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
+import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.nbt.NBTTagCompound;
+
+import javax.annotation.Nonnull;
 
 public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCondition, ConditionLink>
 {
@@ -23,9 +27,41 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 	private NodeTree<IGuiCondition, ConditionLink> conditionNodeTree = new NodeTree<>();
 
-	private Pos2D guiPos = Pos2D.ORIGIN, conditionGuiPos = Pos2D.ORIGIN;
+	private NodeTree<IPostResolveAction, NBT> postResolveActionNodeTree = new NodeTree<>();
+
+	private Pos2D guiPos = Pos2D.ORIGIN, conditionGuiPos = Pos2D.ORIGIN, postResolveActionGuiPos = Pos2D.ORIGIN;
 
 	private INode<IScheduleLayer, LayerLink> nodeParent;
+
+	private INodeTreeListener<IPostResolveAction, NBT> postResolveListener = new INodeTreeListener<IPostResolveAction, NBT>()
+	{
+		@Override
+		public void onSetData(INode<IPostResolveAction, NBT> node, IPostResolveAction iPostResolveAction, int id)
+		{
+			if (ScheduleLayer.this.worldObjectParent != null)
+			{
+				ScheduleLayer.this.worldObjectParent.markDirty();
+			}
+		}
+
+		@Override
+		public void onPut(INode<IPostResolveAction, NBT> node, int id)
+		{
+			if (ScheduleLayer.this.worldObjectParent != null)
+			{
+				ScheduleLayer.this.worldObjectParent.markDirty();
+			}
+		}
+
+		@Override
+		public void onRemove(INode<IPostResolveAction, NBT> node, int id)
+		{
+			if (ScheduleLayer.this.worldObjectParent != null)
+			{
+				ScheduleLayer.this.worldObjectParent.markDirty();
+			}
+		}
+	};
 
 	private ScheduleLayer()
 	{
@@ -41,6 +77,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 		this.scheduleRecord.setParent(this);
 		this.conditionNodeTree.listen(this);
+		this.postResolveActionNodeTree.listen(this.postResolveListener);
 	}
 
 	@Override
@@ -77,6 +114,19 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	public void setDimensions(final IDimensions dimensions)
 	{
 		this.dimensions = dimensions;
+	}
+
+	@Nonnull
+	@Override
+	public NodeTree<IPostResolveAction, NBT> getPostResolveActionNodeTree()
+	{
+		return this.postResolveActionNodeTree;
+	}
+
+	@Override
+	public void setPostResolveActionNodeTree(NodeTree<IPostResolveAction, NBT> tree)
+	{
+		this.postResolveActionNodeTree = tree;
 	}
 
 	@Override
@@ -116,6 +166,18 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	}
 
 	@Override
+	public Pos2D getPostResolveActionGuiPos()
+	{
+		return this.postResolveActionGuiPos;
+	}
+
+	@Override
+	public void setPostResolveActionGuiPos(Pos2D pos)
+	{
+		this.postResolveActionGuiPos = pos;
+	}
+
+	@Override
 	public void write(final NBTTagCompound tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
@@ -127,8 +189,10 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 		funnel.set("guiPos", this.guiPos, NBTFunnel.POS2D_SETTER);
 		funnel.set("conditionGuiPos", this.conditionGuiPos, NBTFunnel.POS2D_SETTER);
+		funnel.set("postResolveActionGuiPos", this.postResolveActionGuiPos, NBTFunnel.POS2D_SETTER);
 
 		funnel.set("conditionNodeTree", this.conditionNodeTree);
+		funnel.set("postResolveActionNodeTree", this.postResolveActionNodeTree);
 	}
 
 	@Override
@@ -149,10 +213,13 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 		this.guiPos = funnel.get("guiPos", NBTFunnel.POS2D_GETTER);
 		this.conditionGuiPos = funnel.getWithDefault("conditionGuiPos", NBTFunnel.POS2D_GETTER, () -> this.conditionGuiPos);
+		this.postResolveActionGuiPos = funnel.getWithDefault("postResolveActionGuiPos", NBTFunnel.POS2D_GETTER, () -> this.postResolveActionGuiPos);
 
 		this.conditionNodeTree = funnel.getWithDefault("conditionNodeTree", () -> this.conditionNodeTree);
+		this.postResolveActionNodeTree = funnel.getWithDefault("postResolveActionNodeTree", () -> this.postResolveActionNodeTree);
 
 		this.conditionNodeTree.listen(this);
+		this.postResolveActionNodeTree.listen(this.postResolveListener);
 	}
 
 	@Override
@@ -168,6 +235,16 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 		this.scheduleRecord.setWorldObjectParent(parent);
 		this.conditionNodeTree.setWorldObjectParent(parent);
+		this.postResolveActionNodeTree.setWorldObjectParent(parent);
+	}
+
+	@Override
+	public void onSetData(INode<IGuiCondition, ConditionLink> node, IGuiCondition condition, int id)
+	{
+		if (this.worldObjectParent != null)
+		{
+			this.worldObjectParent.markDirty();
+		}
 	}
 
 	@Override

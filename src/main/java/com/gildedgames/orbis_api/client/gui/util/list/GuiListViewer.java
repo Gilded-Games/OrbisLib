@@ -161,7 +161,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 	{
 		if (this.isEnabled() && mouseButton == 0)
 		{
-			if (InputHelper.isHovered(this.addButton) && this.addButton.isEnabled())
+			if (InputHelper.isHoveredAndTopElement(this.addButton) && this.addButton.isEnabled())
 			{
 				int index = this.newNodeIndex.apply(this.getNavigator());
 
@@ -176,13 +176,13 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 
 				final NODE node = this.visibleNodes.get(i);
 
-				if (InputHelper.isHovered(button) && button.isEnabled())
+				if (InputHelper.isHoveredAndTopElement(button) && button.isEnabled())
 				{
 					this.getNavigator().remove(node, this.navigator.getNodes().inverse().get(node));
 
 					return;
 				}
-				else if (InputHelper.isHovered(nodeGui) && nodeGui.isEnabled())
+				else if (InputHelper.isHoveredAndTopElement(nodeGui) && nodeGui.isEnabled())
 				{
 					this.getNavigator().click(node, this.navigator.getNodes().inverse().get(node));
 				}

@@ -1,15 +1,19 @@
 package com.gildedgames.orbis_api.core.variables;
 
+import com.gildedgames.orbis_api.client.gui.data.DropdownElementWithData;
 import com.gildedgames.orbis_api.client.gui.util.GuiInputSlider;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.List;
+import java.util.function.Supplier;
+
 public class GuiVarFloatRange implements IGuiVar<Float, GuiInputSlider>
 {
 	private float min, max, data;
 
-	private String name;
+	private String name = "";
 
 	private GuiVarFloatRange()
 	{
@@ -31,9 +35,15 @@ public class GuiVarFloatRange implements IGuiVar<Float, GuiInputSlider>
 	}
 
 	@Override
-	public String getName()
+	public String getVariableName()
 	{
 		return this.name;
+	}
+
+	@Override
+	public String getDataName()
+	{
+		return "orbis.gui.float_range";
 	}
 
 	@Override
@@ -64,6 +74,18 @@ public class GuiVarFloatRange implements IGuiVar<Float, GuiInputSlider>
 	public void resetDisplayFromData(GuiInputSlider guiFrame)
 	{
 		guiFrame.setSliderValue(this.data / this.max);
+	}
+
+	@Override
+	public List<DropdownElementWithData<Supplier<IGuiVarCompareExpression>>> getCompareExpressions()
+	{
+		return null;
+	}
+
+	@Override
+	public List<DropdownElementWithData<Supplier<IGuiVarMutateExpression>>> getMutateExpressions()
+	{
+		return null;
 	}
 
 	@Override

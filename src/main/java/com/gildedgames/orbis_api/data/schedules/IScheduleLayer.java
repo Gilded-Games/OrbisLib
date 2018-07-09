@@ -7,6 +7,7 @@ import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
+import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObjectChild;
@@ -28,6 +29,11 @@ public interface IScheduleLayer extends NBT, IWorldObjectChild
 	void setDimensions(IDimensions dimensions);
 
 	@Nonnull
+	NodeTree<IPostResolveAction, NBT> getPostResolveActionNodeTree();
+
+	void setPostResolveActionNodeTree(NodeTree<IPostResolveAction, NBT> tree);
+
+	@Nonnull
 	NodeTree<IGuiCondition, ConditionLink> getConditionNodeTree();
 
 	void setConditionNodeTree(NodeTree<IGuiCondition, ConditionLink> tree);
@@ -39,4 +45,8 @@ public interface IScheduleLayer extends NBT, IWorldObjectChild
 	Pos2D getConditionGuiPos();
 
 	void setConditionGuiPos(Pos2D pos);
+
+	Pos2D getPostResolveActionGuiPos();
+
+	void setPostResolveActionGuiPos(Pos2D pos);
 }

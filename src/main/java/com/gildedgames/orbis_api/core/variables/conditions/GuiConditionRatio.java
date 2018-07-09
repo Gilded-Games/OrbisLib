@@ -3,6 +3,7 @@ package com.gildedgames.orbis_api.core.variables.conditions;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.variables.GuiVarInteger;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
+import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,10 +19,12 @@ public class GuiConditionRatio implements IGuiCondition
 
 	private Pos2D guiPos = Pos2D.ORIGIN;
 
+	private GuiVarDisplay parentDisplay;
+
 	public GuiConditionRatio()
 	{
-		this.numerator = new GuiVarInteger("Numerator");
-		this.denominator = new GuiVarInteger("Denominator");
+		this.numerator = new GuiVarInteger("orbis.gui.numerator");
+		this.denominator = new GuiVarInteger("orbis.gui.denominator");
 
 		this.numerator.setData(1);
 		this.denominator.setData(2);
@@ -33,7 +36,7 @@ public class GuiConditionRatio implements IGuiCondition
 	@Override
 	public String getName()
 	{
-		return "Ratio";
+		return "orbis.gui.ratio";
 	}
 
 	@Override
@@ -88,5 +91,11 @@ public class GuiConditionRatio implements IGuiCondition
 
 		this.variables.add(this.numerator);
 		this.variables.add(this.denominator);
+	}
+
+	@Override
+	public void setParentDisplay(GuiVarDisplay parentDisplay)
+	{
+		this.parentDisplay = parentDisplay;
 	}
 }

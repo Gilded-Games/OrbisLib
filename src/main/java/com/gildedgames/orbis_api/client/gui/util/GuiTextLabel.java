@@ -18,12 +18,12 @@ public class GuiTextLabel extends GuiFrame
 	{
 		super(rect);
 
-		this.text = new GuiText(Dim2D.flush(), new Text(component, 1.0F));
+		this.text = new GuiText(Dim2D.build().centerY(true).x(3).y(this.dim().height() / 2).addY(1).flush(), new Text(component, 1.0F));
 	}
 
 	public void setText(ITextComponent component)
 	{
-		this.text = new GuiText(Dim2D.flush(), new Text(component, 1.0F));
+		this.text = new GuiText(Dim2D.build().centerY(true).x(3).y(this.dim().height() / 2).addY(1).flush(), new Text(component, 1.0F));
 
 		this.clearChildren();
 		this.init();
@@ -42,8 +42,9 @@ public class GuiTextLabel extends GuiFrame
 
 		GuiFrameUtils.applyAlpha(this);
 
-		this.drawTextBackground(this.dim().x(), this.dim().y(), this.dim().width(), this.dim().height(), InputHelper.isHovered(this) ? -267486864 : -267386864,
-				InputHelper.isHovered(this) ? 1547420415 : 1347420415);
+		this.drawTextBackground(this.dim().x() + 4, this.dim().y() + 4, this.dim().width() - 8, this.dim().height() - 8,
+				InputHelper.isHoveredAndTopElement(this) ? -267486864 : -267386864,
+				InputHelper.isHoveredAndTopElement(this) ? 1547420415 : 1347420415);
 
 		GlStateManager.popMatrix();
 	}

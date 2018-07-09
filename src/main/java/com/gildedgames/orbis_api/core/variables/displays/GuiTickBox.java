@@ -42,7 +42,7 @@ public class GuiTickBox extends GuiFrame
 	{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 
-		if (InputHelper.isHovered(this) && mouseButton == 0)
+		if (InputHelper.isHoveredAndTopElement(this) && mouseButton == 0)
 		{
 			this.ticked = !this.ticked;
 		}

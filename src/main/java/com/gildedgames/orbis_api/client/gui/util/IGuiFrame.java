@@ -2,20 +2,46 @@ package com.gildedgames.orbis_api.client.gui.util;
 
 import com.gildedgames.orbis_api.client.rect.RectHolder;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 public interface IGuiFrame extends RectHolder
 {
 
+	GuiScreen getActualScreen();
+
+	IGuiFrame getPrevFrame();
+
+	void setInputDisabledWhenNotHovered(boolean flag);
+
+	boolean isInputEnabled();
+
+	void setShouldScaleRender(boolean shouldScaleRender);
+
 	int getZOrder();
+
+	void setZOrder(int zOrder);
 
 	float getAlpha();
 
 	void setAlpha(float alpha);
 
 	void clearChildren();
+
+	void addParent(IGuiFrame parent);
+
+	boolean removeParent(IGuiFrame parent);
+
+	List<IGuiFrame> getParents();
+
+	Set<IGuiFrame> getAllParents();
+
+	void refreshAllParents();
+
+	void fetchAllParents(Set<IGuiFrame> allParents);
 
 	boolean hasInit();
 
@@ -28,6 +54,8 @@ public interface IGuiFrame extends RectHolder
 	void init();
 
 	List<IGuiFrame> getChildren();
+
+	List<IGuiFrame> getAllChildrenSortedByZOrder();
 
 	boolean isVisible();
 
@@ -49,7 +77,9 @@ public interface IGuiFrame extends RectHolder
 
 	void draw();
 
-	void preDrawChildren();
+	void preDrawChild(IGuiFrame child);
+
+	void postDrawChild(IGuiFrame child);
 
 	void onMouseWheel(final int state);
 

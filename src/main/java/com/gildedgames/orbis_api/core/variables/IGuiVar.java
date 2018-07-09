@@ -1,15 +1,17 @@
 package com.gildedgames.orbis_api.core.variables;
 
+import com.gildedgames.orbis_api.client.gui.data.DropdownElementWithData;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrame;
-import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis_api.util.mc.NBT;
 
-public interface IGuiVar<T, DISPLAY extends GuiFrame> extends NBT
+import java.util.List;
+import java.util.function.Supplier;
+
+public interface IGuiVar<T, DISPLAY extends GuiFrame> extends NBT, IGuiVarDisplayChild
 {
+	String getVariableName();
 
-	void setParentDisplay(GuiVarDisplay parentDisplay);
-
-	String getName();
+	String getDataName();
 
 	T getData();
 
@@ -21,4 +23,7 @@ public interface IGuiVar<T, DISPLAY extends GuiFrame> extends NBT
 
 	void resetDisplayFromData(DISPLAY display);
 
+	List<DropdownElementWithData<Supplier<IGuiVarCompareExpression>>> getCompareExpressions();
+
+	List<DropdownElementWithData<Supplier<IGuiVarMutateExpression>>> getMutateExpressions();
 }

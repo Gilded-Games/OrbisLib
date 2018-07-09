@@ -9,6 +9,10 @@ import java.util.List;
 public interface INode<DATA, LINK> extends NBT, IWorldObjectChild
 {
 
+	void listen(INodeListener<DATA, LINK> listener);
+
+	boolean unlisten(INodeListener<DATA, LINK> listener);
+
 	NodeTree<DATA, LINK> getTree();
 
 	void setTree(NodeTree<DATA, LINK> tree);
@@ -42,5 +46,9 @@ public interface INode<DATA, LINK> extends NBT, IWorldObjectChild
 	void setNodeId(int nodeId);
 
 	boolean isDirectionless();
+
+	boolean canLink();
+
+	INode<DATA, LINK> deepClone();
 
 }

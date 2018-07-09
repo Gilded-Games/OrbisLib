@@ -3,8 +3,13 @@ package com.gildedgames.orbis_api.data.schedules;
 import com.gildedgames.orbis_api.core.variables.GuiVarBoolean;
 import com.gildedgames.orbis_api.core.variables.GuiVarFloatRange;
 import com.gildedgames.orbis_api.core.variables.GuiVarString;
+import com.gildedgames.orbis_api.core.variables.IGuiVar;
+import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
+
+import java.util.List;
 
 public class FilterOptions implements IFilterOptions
 {
@@ -15,11 +20,17 @@ public class FilterOptions implements IFilterOptions
 
 	private GuiVarString displayName;
 
+	private List<IGuiVar> variables = Lists.newArrayList();
+
 	public FilterOptions()
 	{
-		this.choosesPerBlock = new GuiVarBoolean("Chooses Per Block");
-		this.edgeNoise = new GuiVarFloatRange("Edge Noise", 0.0F, 100.0F);
-		this.displayName = new GuiVarString("Display Name");
+		this.choosesPerBlock = new GuiVarBoolean("orbis.gui.chooses_per_block");
+		this.edgeNoise = new GuiVarFloatRange("orbis.gui.edge_noise", 0.0F, 100.0F);
+		this.displayName = new GuiVarString("orbis.gui.display_name");
+
+		this.variables.add(this.displayName);
+		this.variables.add(this.choosesPerBlock);
+		this.variables.add(this.edgeNoise);
 	}
 
 	@Override
@@ -66,5 +77,23 @@ public class FilterOptions implements IFilterOptions
 		this.choosesPerBlock = funnel.getWithDefault("choosesPerBlock", () -> this.choosesPerBlock);
 		this.edgeNoise = funnel.getWithDefault("edgeNoise", () -> this.edgeNoise);
 		this.displayName = funnel.getWithDefault("displayName", () -> this.displayName);
+
+		this.variables.clear();
+
+		this.variables.add(this.displayName);
+		this.variables.add(this.choosesPerBlock);
+		this.variables.add(this.edgeNoise);
+	}
+
+	@Override
+	public List<IGuiVar> getVariables()
+	{
+		return this.variables;
+	}
+
+	@Override
+	public void setParentDisplay(GuiVarDisplay parentDisplay)
+	{
+
 	}
 }

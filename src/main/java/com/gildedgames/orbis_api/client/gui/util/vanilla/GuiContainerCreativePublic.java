@@ -557,7 +557,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 	}
 
 	/**
-	 * returns (if you are not on the inventoryTab) and (the flag isn't set) and (you have more than 1 page of items)
+	 * returns (if you are not on the inventoryTab) and (the flag isn't setUsedData) and (you have more than 1 page of items)
 	 */
 	private boolean needsScrollBars()
 	{

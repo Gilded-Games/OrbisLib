@@ -88,12 +88,27 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 		for (int i = 0; i < this.elements.size(); i++)
 		{
 			final ELEMENT element = this.elements.get(i);
-			final int y = 17 * i;
+			final int y = 18 * i;
 
 			final int id = i;
 
-			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).height(10).flush(), element.text())
+			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).height(18).flush(), element.text())
 			{
+				@Override
+				public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
+				{
+					super.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
+
+					try
+					{
+						this.mouseClicked(mouseX, mouseY, mouseButton);
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+
 				@Override
 				protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
 				{
@@ -101,7 +116,7 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 
 					if (mouseButton == 0)
 					{
-						if (InputHelper.isHovered(this) && GuiDropdownList.this.isEnabled())
+						if (InputHelper.isHoveredAndTopElement(this) && GuiDropdownList.this.isEnabled())
 						{
 							element.onClick(GuiDropdownList.this, Minecraft.getMinecraft().player);
 
@@ -117,11 +132,11 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 				}
 			};
 
-			label.dim().add(this, RectModifier.ModifierType.WIDTH);
+			label.dim().add("dropdownListWidth", this, RectModifier.ModifierType.WIDTH);
 
 			this.addChildren(label);
 		}
 
-		this.dim().mod().height(17 * this.elements.size()).flush();
+		this.dim().mod().height(18 * this.elements.size()).flush();
 	}
 }
