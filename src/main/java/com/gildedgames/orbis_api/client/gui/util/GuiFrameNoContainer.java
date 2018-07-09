@@ -7,6 +7,7 @@ import com.gildedgames.orbis_api.client.rect.RectModifier;
 import com.gildedgames.orbis_api.util.InputHelper;
 import com.gildedgames.orbis_api.util.ObjectFilter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -23,9 +24,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 {
 
-	public static boolean preventInnerTyping = false;
+	private static boolean preventInnerTyping = false;
 
 	private final List<IGuiFrame> children = new CopyOnWriteArrayList<>();
+
+	private final List<IGuiFrame> parents = new CopyOnWriteArrayList<>();
+
+	private final Set<IGuiFrame> allParents = Sets.newHashSet();
+
+	private final List<IGuiFrame> allChildren = Lists.newArrayList();
 
 	private final GuiFrameNoContainer prevFrame;
 
@@ -38,6 +45,12 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 	private float alpha = 1.0F;
 
 	private boolean shouldScaleRender = true;
+
+	private boolean inputDisabledWhenNotHovered = false;
+
+	private int zOrder;
+
+	private boolean isHoveredOnTop;
 
 	public GuiFrameNoContainer()
 	{
@@ -59,6 +72,37 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 		this.dim.set(rect);
 	}
 
+	public static void preventInnerTyping()
+	{
+		preventInnerTyping = true;
+	}
+
+	@Override
+	public void setInputDisabledWhenNotHovered(boolean flag)
+	{
+		this.inputDisabledWhenNotHovered = flag;
+	}
+
+	@Override
+	public boolean isInputEnabled()
+	{
+		return !(!this.isEnabled() || (this.inputDisabledWhenNotHovered && !this.isHoveredOnTop));
+	}
+
+	@Override
+	public int getZOrder()
+	{
+		int zOrderDif = this.parents.stream().mapToInt(IGuiFrame::getZOrder).sum();
+
+		return this.zOrder + zOrderDif;
+	}
+
+	@Override
+	public void setZOrder(int zOrder)
+	{
+		this.zOrder = zOrder;
+	}
+
 	@Override
 	public void setShouldScaleRender(boolean shouldScaleRender)
 	{
@@ -78,14 +122,69 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 	}
 
 	@Override
-	public GuiFrameNoContainer getPrevFrame()
+	public IGuiFrame getPrevFrame()
 	{
 		return this.prevFrame;
+	}
+
+	@Override
+	public GuiScreen getActualScreen()
+	{
+		return this;
 	}
 
 	public void setDrawDefaultBackground(final boolean flag)
 	{
 		this.drawDefaultBackground = flag;
+	}
+
+	@Override
+	public void addParent(IGuiFrame parent)
+	{
+		this.parents.add(parent);
+
+		this.refreshAllParents();
+	}
+
+	@Override
+	public boolean removeParent(IGuiFrame parent)
+	{
+		boolean flag = this.parents.remove(parent);
+
+		this.refreshAllParents();
+
+		return flag;
+	}
+
+	@Override
+	public List<IGuiFrame> getParents()
+	{
+		return this.parents;
+	}
+
+	@Override
+	public Set<IGuiFrame> getAllParents()
+	{
+		return this.allParents;
+	}
+
+	@Override
+	public void refreshAllParents()
+	{
+		this.allParents.clear();
+
+		this.fetchAllParents(this.allParents);
+	}
+
+	@Override
+	public void fetchAllParents(Set<IGuiFrame> allParents)
+	{
+		for (IGuiFrame parent : this.parents)
+		{
+			allParents.add(parent);
+
+			parent.fetchAllParents(allParents);
+		}
 	}
 
 	@Override
@@ -120,6 +219,12 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 
 	@Override
 	public void preDrawChild(IGuiFrame child)
+	{
+
+	}
+
+	@Override
+	public void postDrawChild(IGuiFrame child)
 	{
 
 	}
@@ -212,6 +317,11 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 
 		if (mods && gui != null && gui.dim().mod() != null && parentModifier != null)
 		{
+			if (gui.dim().containsModifier("parent", parentModifier))
+			{
+				gui.dim().removeModifiers("parent", parentModifier);
+			}
+
 			gui.dim().add("parent", parentModifier, RectModifier.ModifierType.POS, RectModifier.ModifierType.SCALE);
 		}
 
@@ -225,12 +335,16 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 			}
 		}
 
+		element.addParent(this);
+
 		this.children.add(element);
 	}
 
 	@Override
 	public void removeChild(final IGuiFrame gui)
 	{
+		gui.removeParent(this);
+
 		this.children.remove(gui);
 	}
 
@@ -265,14 +379,19 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 	@Override
 	public void drawScreen(final int mouseX, final int mouseY, final float partialTicks)
 	{
-		//this.isHoveredOnTop = InputHelper.isHoveredAndTopElement(this);
+		if (Minecraft.getMinecraft().currentScreen == this)
+		{
+			preventInnerTyping = false;
+		}
+
+		this.isHoveredOnTop = InputHelper.isHoveredAndTopElement(this);
 
 		if (!this.isVisible())
 		{
 			return;
 		}
 
-		if (InputHelper.isHoveredAndTopElement(this))
+		if (this.isHoveredOnTop)
 		{
 			if (!this.hoverEntered)
 			{
@@ -325,15 +444,21 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 
 		GuiFrameUtils.applyAlpha(this);
 
+		this.preDrawChild(this);
+
 		this.draw();
+
+		this.postDrawChild(this);
 
 		if (this == this.mc.currentScreen)
 		{
-			List<IGuiFrame> allChildren = Lists.newLinkedList();
+			this.allChildren.clear();
 
-			this.fetchAllChildren(allChildren, this);
+			this.fetchAllChildren(this.allChildren, this);
 
-			allChildren.stream().sorted(Comparator.comparingInt(IGuiFrame::getZOrder)).forEach((frame) ->
+			this.allChildren.sort(Comparator.comparingInt(IGuiFrame::getZOrder));
+
+			this.allChildren.forEach((frame) ->
 			{
 				final GuiScreen gui = ObjectFilter.cast(frame, GuiScreen.class);
 
@@ -369,9 +494,45 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 
 	private void fetchAllChildren(List<IGuiFrame> allChildren, IGuiFrame frame)
 	{
-		allChildren.addAll(frame.getChildren());
+		if (frame.isVisible())
+		{
+			allChildren.addAll(frame.getChildren());
 
-		frame.getChildren().forEach((f) -> this.fetchAllChildren(allChildren, f));
+			frame.getChildren().forEach((f) -> this.fetchAllChildren(allChildren, f));
+		}
+	}
+
+	@Override
+	public List<IGuiFrame> getAllChildrenSortedByZOrder()
+	{
+		return this.allChildren;
+	}
+
+	@Override
+	public void mouseReleasedOutsideBounds(final int mouseX, final int mouseY, final int state)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseReleasedOutsideBounds(mouseX, mouseY, state);
+		}
+	}
+
+	@Override
+	public void mouseClickMoveOutsideBounds(final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseClickMoveOutsideBounds(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+		}
+	}
+
+	@Override
+	public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
+	{
+		for (final IGuiFrame frame : this.children)
+		{
+			frame.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
+		}
 	}
 
 	@Override
