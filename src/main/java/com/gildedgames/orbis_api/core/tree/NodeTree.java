@@ -128,6 +128,16 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListen
 	{
 		INode<DATA, LINK> node = this.nodes.remove(id);
 
+		for (INode<DATA, LINK> parent : this.get(node.getParentsIds()))
+		{
+			parent.removeChild(id);
+		}
+
+		for (INode<DATA, LINK> child : this.get(node.getChildrenIds()))
+		{
+			child.removeParent(id);
+		}
+
 		node.setTree(null);
 		node.unlisten(this);
 

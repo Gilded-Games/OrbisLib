@@ -143,6 +143,11 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 			throw new RuntimeException("Tried to remove a child from an INode that doesn't have a NodeTree setUsedData to it.");
 		}
 
+		if (!this.children.containsKey(nodeId) || !this.tree.containsId(nodeId))
+		{
+			return false;
+		}
+
 		INode<DATA, LINK> node = this.tree.get(nodeId);
 
 		node.removeParent(this.nodeId);
@@ -273,6 +278,11 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 		if (!this.canLink)
 		{
 			throw new RuntimeException("Tried to remove a parent to an INode that has canLink disabled. Should not be able to link children or parents.");
+		}
+
+		if (!this.parents.contains(nodeId))
+		{
+			return;
 		}
 
 		this.parents.remove(nodeId);
