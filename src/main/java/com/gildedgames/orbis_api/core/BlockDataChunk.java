@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.ChunkPos;
@@ -8,9 +9,14 @@ import net.minecraft.util.math.ChunkPos;
 public class BlockDataChunk implements NBT
 {
 
-	private final ChunkPos pos;
+	private ChunkPos pos;
 
-	private final BlockDataContainer container;
+	private BlockDataContainer container;
+
+	private BlockDataChunk()
+	{
+
+	}
 
 	public BlockDataChunk(final ChunkPos pos, final BlockDataContainer container)
 	{
@@ -31,12 +37,18 @@ public class BlockDataChunk implements NBT
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
+		NBTFunnel funnel = new NBTFunnel(tag);
 
+		funnel.set("container", this.container);
+		funnel.set("pos", this.pos, NBTFunnel.CHUNK_POS_SETTER);
 	}
 
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
+		NBTFunnel funnel = new NBTFunnel(tag);
 
+		this.container = funnel.get("container");
+		this.pos = funnel.get("pos", NBTFunnel.CHUNK_POS_GETTER);
 	}
 }

@@ -40,9 +40,14 @@ public class BlueprintWorldGen implements IWorldGen
 
 		data.rotation(rotation);
 
+		BlueprintDefinition def = this.def == null ? this.defPool.getRandomDefinition(rand) : this.def;
+
+		BakedBlueprint baked = new BakedBlueprint(def.getData(), data);
+
+		baked.bake();
+
 		return BlueprintPlacer
-				.place(new DataPrimer(blockAccess), this.def == null ? this.defPool.getRandomDefinition(rand) : this.def,
-						data, rand);
+				.place(new DataPrimer(blockAccess), baked, def.getConditions(), true);
 	}
 
 	@Override

@@ -3,13 +3,13 @@ package com.gildedgames.orbis_api.processing;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockInstance;
 import com.gildedgames.orbis_api.core.*;
-import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintDataPalette;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RotationHelp;
+import com.gildedgames.orbis_api.util.mc.BlockUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -18,7 +18,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -26,6 +25,12 @@ import java.util.List;
 
 public class DataPrimer
 {
+	/**
+	 * If enabled, will generate Emerald version of structure above checked area if canGenerate returns true.
+	 *
+	 * Can be used to check/make sure that the checked area is the same as the generate area for a structure.
+	 */
+	public static final boolean CAN_GENERATE_DEBUG = false;
 
 	private final IBlockAccessExtended access;
 
@@ -50,176 +55,126 @@ public class DataPrimer
 		this.access.spawnEntity(entity);
 	}
 
-	public void createChunk(final ChunkPos chunk, final World world, final BlueprintData def, final ICreationData<?> data)
+	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, final boolean checkAreaLoaded)
 	{
-		if (def.getBlockDataContainer().getWidth() >= 1 && def.getBlockDataContainer().getHeight() >= 1 && def.getBlockDataContainer().getLength() >= 1)
-		{
-			final int minX = chunk.x * 16;
-			final int minY = 0;
-			final int minZ = chunk.z * 16;
-
-			final int maxX = minX + 15;
-			final int maxY = world.getActualHeight();
-			final int maxZ = minZ + 15;
-
-			final IRegion chunkBB = new Region(new BlockPos(minX, minY, minZ), new BlockPos(maxX, maxY, maxZ));
-
-			this.create(null, def.getBlockDataContainer(), data, chunkBB);
-		}
+		return this.canGenerate(baked, conditions, baked.getCreationData().getPos(), checkAreaLoaded);
 	}
 
-	public boolean canGenerate(final BlueprintDefinition def, final ICreationData<?> data)
+	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos relocateTo, final boolean checkAreaLoaded)
 	{
-		final BlockPos min = data.getPos();
+		BlockPos bakedMin = baked.getBakedMin();
+		BlockPos bakedMax = bakedMin.add(baked.getWidth() - 1, baked.getHeight() - 1, baked.getLength() - 1);
 
-		final IRegion bb = BlueprintUtil.getRegionFromDefinition(def.getData(), data);
+		int relocateX = -(baked.getBakedMin().getX() - relocateTo.getX());
+		int relocateY = -(baked.getBakedMin().getY() - relocateTo.getY());
+		int relocateZ = -(baked.getBakedMin().getZ() - relocateTo.getZ());
 
-		if ((!this.access
-				.canAccess(bb.getMin().getX(), bb.getMin().getY(), bb.getMin().getZ(), bb.getMax().getX(), bb.getMax().getY(), bb.getMax().getZ()))
-				|| bb.getMax().getY() > 256)
+		BlockPos minReloc = bakedMin.add(relocateX, relocateY, relocateZ);
+		BlockPos maxReloc = bakedMax.add(relocateX, relocateY, relocateZ);
+
+		if (checkAreaLoaded)
 		{
-			return false;
-		}
-
-		final BlockDataContainer blocks = def.getData().getBlockDataContainer();
-
-		final int rotAmount = Math.abs(RotationHelp.getRotationAmount(data.getRotation(), Rotation.NONE));
-
-		if (rotAmount != 0)
-		{
-			final BlockPos max = new BlockPos(min.getX() + blocks.getWidth() - 1, min.getY() + blocks.getHeight() - 1,
-					min.getZ() + blocks.getLength() - 1);
-
-			for (final OrbisTuple<BlockPos.MutableBlockPos, BlockPos.MutableBlockPos> tuple : RotationHelp.getAllInBoxRotated(min, max, data.getRotation()))
+			if (!this.access.canAccess(minReloc.getX(), minReloc.getY(), minReloc.getZ(), maxReloc.getX(), maxReloc.getY(), maxReloc.getZ()))
 			{
-				final BlockPos beforeRot = tuple.getFirst();
-				final BlockPos rotated = tuple.getSecond();
-
-				final IBlockState block = blocks
-						.getBlockState(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
-
-				for (final PlacementCondition condition : def.getConditions())
-				{
-					if (!this.access.canAccess(rotated) || !condition.canPlace(def.getData(), this.access, min, block, rotated))
-					{
-						return false;
-					}
-				}
-			}
-
-			for (final PlacementCondition condition : def.getConditions())
-			{
-				if (!condition.canPlaceCheckAll(def.getData(), this.access, min, blocks))
-				{
-					return false;
-				}
+				return false;
 			}
 		}
-		else
+
+		for (final PlacementCondition condition : conditions)
 		{
+			if (!condition.prePlacementResolve(this.access, minReloc))
+			{
+				return false;
+			}
+		}
+
+		for (BlockDataChunk chunk : baked.getDataChunks())
+		{
+			BlockDataContainer container = chunk.getContainer();
+
 			final Region region = new Region(new BlockPos(0, 0, 0),
-					new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1));
+					new BlockPos(container.getWidth() - 1, container.getHeight() - 1, container.getLength() - 1));
+
+			BlockPos chunkMin = chunk.getPos().getBlock(0, 0, 0);
 
 			for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
 			{
-				final IBlockState block = blocks.getBlockState(iterPos.getX(), iterPos.getY(), iterPos.getZ());
-				BlockPos pos = iterPos.toImmutable().add(min.getX(), min.getY(), min.getZ());
+				int origX = iterPos.getX();
+				int origY = iterPos.getY();
+				int origZ = iterPos.getZ();
 
-				for (final PlacementCondition condition : def.getConditions())
+				int newX = origX + chunkMin.getX();
+				int newY = origY + chunkMin.getY();
+				int newZ = origZ + chunkMin.getZ();
+
+				if (newX < bakedMin.getX() || newY < bakedMin.getY() || newZ < bakedMin.getZ() || newX > bakedMax.getX()
+						|| newY > bakedMax.getY()
+						|| newZ > bakedMax.getZ())
 				{
-					if (!this.access.canAccess(pos) || !condition.canPlace(def.getData(), this.access, min, block, pos))
-					{
-						return false;
-					}
+					continue;
 				}
-			}
 
-			for (final PlacementCondition condition : def.getConditions())
-			{
-				if (!condition.canPlaceCheckAll(def.getData(), this.access, min, blocks))
+				final IBlockState block = container.getBlockState(iterPos.getX(), iterPos.getY(), iterPos.getZ());
+
+				if (block == null)
 				{
-					return false;
+					continue;
 				}
-			}
-		}
 
-		return true;
-	}
+				BlockPos newPos = new BlockPos(newX + relocateX, newY + relocateY, newZ + relocateZ);
 
-	public boolean canGenerate(final World world, final BlueprintDefinition def, final ICreationData<?> data)
-	{
-		return this.canGenerate(world, def, data, true);
-	}
-
-	public boolean canGenerateWithoutAreaCheck(final World world, final BlueprintDefinition def, final ICreationData<?> data)
-	{
-		return this.canGenerate(world, def, data, false);
-	}
-
-	private boolean canGenerate(final World world, final BlueprintDefinition def, final ICreationData<?> data, final boolean checkAreaLoaded)
-	{
-		final BlockPos pos = data.getPos();
-
-		final IRegion bb = BlueprintUtil.getRegionFromDefinition(def.getData(), data);
-
-		if ((checkAreaLoaded && !this.access
-				.canAccess(bb.getMin().getX(), bb.getMin().getY(), bb.getMin().getZ(), bb.getMax().getX(), bb.getMax().getY(), bb.getMax().getZ()))
-				|| bb.getMax().getY() > world.getActualHeight())
-		{
-			return false;
-		}
-
-		final BlockDataContainer blocks = def.getData().getBlockDataContainer();
-
-		final int rotAmount = Math.abs(RotationHelp.getRotationAmount(data.getRotation(), Rotation.NONE));
-
-		if (rotAmount != 0)
-		{
-			final BlockPos min = data.getPos();
-			final BlockPos max = new BlockPos(min.getX() + blocks.getWidth() - 1, min.getY() + blocks.getHeight() - 1,
-					min.getZ() + blocks.getLength() - 1);
-
-			for (final OrbisTuple<BlockPos.MutableBlockPos, BlockPos.MutableBlockPos> tuple : RotationHelp.getAllInBoxRotated(min, max, data.getRotation()))
-			{
-				final BlockPos beforeRot = tuple.getFirst();
-				final BlockPos rotated = tuple.getSecond();
-
-				final IBlockState block = blocks
-						.getBlockState(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
-
-				for (final PlacementCondition condition : def.getConditions())
+				for (final PlacementCondition condition : conditions)
 				{
-					if (!this.access.canAccess(rotated) || !condition.canPlace(def.getData(), this.access, pos, block, rotated))
+					if (!this.access.canAccess(newPos) || !condition.canPlace(this.access, minReloc, block, newPos))
 					{
 						return false;
 					}
 				}
 			}
 		}
-		else
+
+		if (CAN_GENERATE_DEBUG)
 		{
-			for (int index = 0; index < blocks.getVolume(); index++)
+			for (BlockDataChunk chunk : baked.getDataChunks())
 			{
-				final int x = def.getData().getBlockDataContainer().getX(index) + pos.getX();
-				final int y = def.getData().getBlockDataContainer().getY(index) + pos.getY();
-				final int z = def.getData().getBlockDataContainer().getZ(index) + pos.getZ();
+				BlockDataContainer container = chunk.getContainer();
 
-				BlockPos xyz = new BlockPos(x, y, z);
+				final Region region = new Region(new BlockPos(0, 0, 0),
+						new BlockPos(container.getWidth() - 1, container.getHeight() - 1, container.getLength() - 1));
 
-				for (final PlacementCondition condition : def.getConditions())
+				BlockPos chunkMin = chunk.getPos().getBlock(0, 0, 0);
+
+				for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
 				{
-					if (!this.access.canAccess(xyz) || !condition.canPlace(def.getData(), this.access, pos, blocks.getBlockState(index), xyz))
+					int origX = iterPos.getX();
+					int origY = iterPos.getY();
+					int origZ = iterPos.getZ();
+
+					int newX = origX + chunkMin.getX();
+					int newY = origY + chunkMin.getY();
+					int newZ = origZ + chunkMin.getZ();
+
+					if (newX < bakedMin.getX() || newY < bakedMin.getY() || newZ < bakedMin.getZ() || newX > bakedMax.getX()
+							|| newY > bakedMax.getY()
+							|| newZ > bakedMax.getZ())
 					{
-						return false;
+						continue;
 					}
-				}
-			}
 
-			for (final PlacementCondition condition : def.getConditions())
-			{
-				if (!condition.canPlaceCheckAll(def.getData(), this.access, pos, blocks))
-				{
-					return false;
+					final IBlockState state = container.getBlockState(iterPos.getX(), iterPos.getY(), iterPos.getZ());
+
+					if (state == null || BlockUtil.isAir(state) || BlockUtil.isVoid(state))
+					{
+						BlockPos newPos = new BlockPos(newX + relocateX, newY + relocateY + baked.getHeight(), newZ + relocateZ);
+
+						this.getWorld().setBlockState(newPos, Blocks.GLASS.getDefaultState());
+
+						continue;
+					}
+
+					BlockPos newPos = new BlockPos(newX + relocateX, newY + relocateY + baked.getHeight(), newZ + relocateZ);
+
+					this.getWorld().setBlockState(newPos, Blocks.EMERALD_BLOCK.getDefaultState());
 				}
 			}
 		}
@@ -280,7 +235,7 @@ public class DataPrimer
 
 		baked.bake();
 
-		this.create(region, baked);
+		this.create(baked);
 	}
 
 	public void create(final BlockDataContainer container, final ICreationData<?> data)
@@ -293,36 +248,18 @@ public class DataPrimer
 		this.create(blueprint.getBaked());
 	}
 
-	public void create(IRegion relocateTo, PlacedBlueprint blueprint)
-	{
-		this.create(relocateTo, blueprint.getBaked());
-	}
-
 	public void create(BakedBlueprint baked)
 	{
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
+			if (chunk == null)
+			{
+				continue;
+			}
+
 			this.create(null, chunk.getContainer(),
 					baked.getCreationData().clone().rotation(Rotation.NONE).pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
 					null);
-		}
-
-		for (List<PlacedEntity> l : baked.getPlacedEntities().values())
-		{
-			l.forEach(p -> p.spawn(this));
-		}
-	}
-
-	public void create(IRegion relocateTo, BakedBlueprint baked)
-	{
-		for (BlockDataChunk chunk : baked.getDataChunks())
-		{
-			if (chunk != null)
-			{
-				this.create(relocateTo, chunk.getContainer(),
-						baked.getCreationData().clone().rotation(Rotation.NONE).pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
-						null);
-			}
 		}
 
 		for (List<PlacedEntity> l : baked.getPlacedEntities().values())

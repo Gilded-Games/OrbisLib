@@ -2,6 +2,8 @@ package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.block.*;
+import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
+import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
 import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
@@ -12,6 +14,8 @@ import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolv
 import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
+import com.gildedgames.orbis_api.data.management.IDataIdentifier;
+import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.data.schedules.PostGenReplaceLayer;
@@ -20,6 +24,7 @@ import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RegionHelp;
 import com.gildedgames.orbis_api.util.RotationHelp;
+import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
@@ -27,6 +32,7 @@ import com.google.common.collect.Maps;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -35,7 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class BakedBlueprint
+public class BakedBlueprint implements IDimensions
 {
 	private BlockDataChunk[] chunks;
 
@@ -53,10 +59,39 @@ public class BakedBlueprint
 
 	private boolean hasBaked;
 
+	private BlockDataContainer rawDataContainer;
+
+	private int width, height, length;
+
+	private BlockPos bakedMin;
+
+	private BakedBlueprint()
+	{
+
+	}
+
 	public BakedBlueprint(BlueprintData blueprintData, ICreationData<?> data)
 	{
 		this.blueprintData = blueprintData;
 		this.data = data;
+	}
+
+	public BlockPos getBakedMin()
+	{
+		return this.bakedMin;
+	}
+
+	@Override
+	public BakedBlueprint clone()
+	{
+		BakedBlueprint clone = new BakedBlueprint();
+
+		NBTTagCompound tag = new NBTTagCompound();
+
+		this.write(tag);
+		clone.read(tag);
+
+		return clone;
 	}
 
 	public ICreationData<?> getCreationData()
@@ -244,7 +279,7 @@ public class BakedBlueprint
 
 						PlacedEntity placedEntity = new PlacedEntity(stack, pos);
 
-						ChunkPos p = new ChunkPos(this.data.getPos().getX() >> 4, this.data.getPos().getZ() >> 4);
+						ChunkPos p = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
 
 						if (!this.placedEntities.containsKey(p))
 						{
@@ -260,7 +295,7 @@ public class BakedBlueprint
 
 	private void bakeChunks()
 	{
-		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer().clone();
+		this.rawDataContainer = this.blueprintData.getBlockDataContainer().clone();
 
 		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
@@ -268,19 +303,20 @@ public class BakedBlueprint
 
 			for (BlockFilter filter : layer.getFilterRecord().getData())
 			{
-				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), blocks, this.data, layer.getOptions());
+				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), this.rawDataContainer, this.data, layer.getOptions());
 			}
 		}
 
-		final ChunkPos[] chunksOccupied = BlueprintUtil.getChunksInsideTemplate(this.blueprintData, this.data);
+		final ChunkPos[] chunksOccupied = BlueprintUtil.getChunksInsideTemplate(this.rawDataContainer, this.data);
 
 		this.chunks = new BlockDataChunk[chunksOccupied.length];
 
 		BlockPos min = this.data.getPos();
-		BlockPos max = new BlockPos(min.getX() + blocks.getWidth() - 1, min.getY() + blocks.getHeight() - 1,
-				min.getZ() + blocks.getLength() - 1);
+		BlockPos max = new BlockPos(min.getX() + this.rawDataContainer.getWidth() - 1, min.getY() + this.rawDataContainer.getHeight() - 1,
+				min.getZ() + this.rawDataContainer.getLength() - 1);
 
-		Region region = new Region(new BlockPos(0, 0, 0), new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1));
+		Region boundsBeforeRotateAtOrigin = new Region(new BlockPos(0, 0, 0), new BlockPos(this.rawDataContainer.getWidth() - 1,
+				this.rawDataContainer.getHeight() - 1, this.rawDataContainer.getLength() - 1));
 
 		for (PostGenReplaceLayer postGenReplaceLayer : this.blueprintData.getPostGenReplaceLayers().values())
 		{
@@ -298,18 +334,29 @@ public class BakedBlueprint
 
 			BlockFilter filter = new BlockFilter(layer);
 
-			filter.apply(region.createShapeData(), blocks, this.data, postGenReplaceLayer.getOptions());
+			filter.apply(boundsBeforeRotateAtOrigin.createShapeData(), this.rawDataContainer, this.data, postGenReplaceLayer.getOptions());
 		}
 
-		final int rotAmount = Math.abs(RotationHelp.getRotationAmount(this.data.getRotation(), Rotation.NONE));
+		this.chunkUpBlocks(min, max, chunksOccupied, boundsBeforeRotateAtOrigin, this.data.getRotation());
+	}
+
+	private void chunkUpBlocks(BlockPos min, BlockPos max, ChunkPos[] chunksOccupied, Region boundsBeforeRotateAtOrigin, Rotation rotation)
+	{
+		final int rotAmount = Math.abs(RotationHelp.getRotationAmount(rotation, Rotation.NONE));
 
 		if (rotAmount != 0)
 		{
 			Region rotatedRegion = (Region) RotationHelp.rotate(new Region(min, max), this.data.getRotation());
 
+			this.width = rotatedRegion.getWidth();
+			this.height = rotatedRegion.getHeight();
+			this.length = rotatedRegion.getLength();
+
 			BlockPos m = new BlockPos(Math.min(rotatedRegion.getMin().getX(), rotatedRegion.getMax().getX()),
 					Math.min(rotatedRegion.getMin().getY(), rotatedRegion.getMax().getY()),
 					Math.min(rotatedRegion.getMin().getZ(), rotatedRegion.getMax().getZ()));
+
+			this.bakedMin = m;
 
 			int startChunkX = m.getX() >> 4;
 			int startChunkZ = m.getZ() >> 4;
@@ -347,7 +394,7 @@ public class BakedBlueprint
 					{
 						if (this.chunks[i] == null)
 						{
-							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainer(16, blocks.getHeight(), 16));
+							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainer(16, this.rawDataContainer.getHeight(), 16));
 						}
 
 						index = i;
@@ -365,7 +412,8 @@ public class BakedBlueprint
 						int zIndex = (rotated.getZ() - m.getZ() + zDif) % 16;
 
 						chunk.getContainer()
-								.copyBlockFrom(blocks, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ(),
+								.copyBlockFrom(this.rawDataContainer, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(),
+										beforeRot.getZ() - min.getZ(),
 										xIndex, rotated.getY() - m.getY(),
 										zIndex);
 
@@ -381,6 +429,10 @@ public class BakedBlueprint
 		}
 		else
 		{
+			this.width = boundsBeforeRotateAtOrigin.getWidth();
+			this.height = boundsBeforeRotateAtOrigin.getHeight();
+			this.length = boundsBeforeRotateAtOrigin.getLength();
+
 			int startChunkX = min.getX() >> 4;
 			int startChunkZ = min.getZ() >> 4;
 
@@ -397,7 +449,9 @@ public class BakedBlueprint
 				zDif = 16 - Math.abs(zDif);
 			}
 
-			for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
+			this.bakedMin = min;
+
+			for (final BlockPos.MutableBlockPos iterPos : boundsBeforeRotateAtOrigin.getMutableBlockPosInRegion())
 			{
 				final int chunkX = ((min.getX() + iterPos.getX()) >> 4) - startChunkX;
 				final int chunkZ = ((min.getZ() + iterPos.getZ()) >> 4) - startChunkZ;
@@ -412,7 +466,7 @@ public class BakedBlueprint
 					{
 						if (this.chunks[i] == null)
 						{
-							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainer(16, blocks.getHeight(), 16));
+							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainerDefaultVoid(16, this.rawDataContainer.getHeight(), 16));
 						}
 
 						index = i;
@@ -428,7 +482,8 @@ public class BakedBlueprint
 					{
 
 						chunk.getContainer()
-								.copyBlockFrom(blocks, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16, iterPos.getY(),
+								.copyBlockFrom(this.rawDataContainer, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16,
+										iterPos.getY(),
 										(iterPos.getZ() + zDif) % 16);
 					}
 					catch (ArrayIndexOutOfBoundsException e)
@@ -468,6 +523,129 @@ public class BakedBlueprint
 		}
 	}
 
+	public void rebake(BlockPos pos)
+	{
+		if (!this.hasBaked)
+		{
+			this.data.pos(pos);
+
+			this.bake();
+
+			return;
+		}
+
+		int relocateX = -(this.getBakedMin().getX() - pos.getX());
+		int relocateY = -(this.getBakedMin().getY() - pos.getY());
+		int relocateZ = -(this.getBakedMin().getZ() - pos.getZ());
+
+		// REBAKE CHUNKS
+		this.rawDataContainer = new BlockDataContainer(this.width, this.height, this.length);
+
+		BlockPos bakedMin = this.bakedMin;
+		BlockPos bakedMax = bakedMin.add(this.width - 1, this.height - 1, this.length - 1);
+
+		for (BlockDataChunk chunk : this.chunks)
+		{
+			BlockDataContainer container = chunk.getContainer();
+
+			final Region region = new Region(new BlockPos(0, 0, 0),
+					new BlockPos(container.getWidth() - 1, container.getHeight() - 1, container.getLength() - 1));
+
+			BlockPos chunkMin = chunk.getPos().getBlock(0, this.bakedMin.getY(), 0);
+
+			for (final BlockPos.MutableBlockPos p : region.getMutableBlockPosInRegion())
+			{
+				int origX = p.getX();
+				int origY = p.getY();
+				int origZ = p.getZ();
+
+				int newX = origX + chunkMin.getX();
+				int newY = origY + chunkMin.getY();
+				int newZ = origZ + chunkMin.getZ();
+
+				if (newX < bakedMin.getX() || newY < bakedMin.getY() || newZ < bakedMin.getZ() || newX > bakedMax.getX()
+						|| newY > bakedMax.getY()
+						|| newZ > bakedMax.getZ())
+				{
+					continue;
+				}
+
+				final IBlockState state = container.getBlockState(origX, origY, origZ);
+
+				if (state == null)
+				{
+					continue;
+				}
+
+				try
+				{
+					this.rawDataContainer.setBlockState(state, newX - bakedMin.getX(), newY - bakedMin.getY(), newZ - bakedMin.getZ());
+				}
+				catch (ArrayIndexOutOfBoundsException e)
+				{
+					OrbisAPI.LOGGER.info(e);
+				}
+			}
+		}
+
+		/*this.chunks = new BlockDataChunk[1];
+
+		this.chunks[0] = new BlockDataChunk(new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4), this.rawDataContainer);*/
+
+		this.data.pos(pos);
+
+		BlockPos bakedMinRelocated = bakedMin.add(relocateX, relocateY, relocateZ);
+
+		final ChunkPos[] chunksOccupied = BlueprintUtil
+				.getChunksInsideTemplate(this.rawDataContainer, new CreationData().pos(bakedMinRelocated).rotation(Rotation.NONE));
+
+		this.chunks = new BlockDataChunk[chunksOccupied.length];
+
+		Region boundsBeforeRotateAtOrigin = new Region(new BlockPos(0, 0, 0), new BlockPos(this.rawDataContainer.getWidth() - 1,
+				this.rawDataContainer.getHeight() - 1, this.rawDataContainer.getLength() - 1));
+
+		this.chunkUpBlocks(bakedMinRelocated, bakedMax.add(relocateX, relocateY, relocateZ), chunksOccupied,
+				boundsBeforeRotateAtOrigin, Rotation.NONE);
+
+		// RELOCATE PLACED ENTITIES
+		Map<ChunkPos, List<PlacedEntity>> rebakedPlacedEntities = Maps.newHashMap();
+
+		for (Map.Entry<ChunkPos, List<PlacedEntity>> entry : this.placedEntities.entrySet())
+		{
+			ChunkPos chunkPos = entry.getKey();
+			List<PlacedEntity> entities = entry.getValue();
+
+			int newPosX = (chunkPos.x * 16) + relocateX;
+			int newPosZ = (chunkPos.z * 16) + relocateZ;
+
+			chunkPos = new ChunkPos(newPosX >> 4, newPosZ >> 4);
+
+			for (PlacedEntity entity : entities)
+			{
+				entity.setPos(entity.getPos().add(relocateX, relocateY, relocateZ));
+			}
+
+			rebakedPlacedEntities.put(chunkPos, entities);
+		}
+
+		this.placedEntities.clear();
+		this.placedEntities.putAll(rebakedPlacedEntities);
+
+		List<Runnable> relocates = Lists.newArrayList();
+
+		// RELOCATE BAKED SCHEDULE REGIONS
+		for (ScheduleRegion scheduleRegion : this.bakedScheduleRegions)
+		{
+			RegionHelp.translate(scheduleRegion.getBounds(), relocateX, relocateY, relocateZ);
+
+			relocates.add(() -> this.bakedScheduleRegions.add(scheduleRegion));
+		}
+
+		this.bakedScheduleRegions.clear();
+
+		relocates.forEach(Runnable::run);
+	}
+
 	public Map<ChunkPos, List<PlacedEntity>> getPlacedEntities()
 	{
 		return this.placedEntities;
@@ -478,4 +656,80 @@ public class BakedBlueprint
 		return this.chunks;
 	}
 
+	@Override
+	public int getWidth()
+	{
+		return this.width;
+	}
+
+	@Override
+	public int getHeight()
+	{
+		return this.height;
+	}
+
+	@Override
+	public int getLength()
+	{
+		return this.length;
+	}
+
+	@Override
+	public void write(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		tag.setInteger("width", this.width);
+		tag.setInteger("height", this.height);
+		tag.setInteger("length", this.length);
+
+		funnel.setArray("chunks", this.chunks);
+		funnel.setList("bakedScheduleRegions", this.bakedScheduleRegions);
+		funnel.setList("bakedScheduleLayerNodes", this.bakedScheduleLayerNodes);
+		funnel.setMap("placedEntities", this.placedEntities, NBTFunnel.CHUNK_POS_SETTER, NBTFunnel.listSetter());
+
+		funnel.set("data", this.getCreationData());
+		funnel.set("bakedBlueprintVariables", this.bakedBlueprintVariables);
+		funnel.set("rawDataContainer", this.rawDataContainer);
+
+		tag.setBoolean("hasBaked", this.hasBaked);
+
+		funnel.setPos("bakedMin", this.bakedMin);
+
+		funnel.set("blueprintId", this.blueprintData.getMetadata().getIdentifier());
+	}
+
+	@Override
+	public void read(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		this.width = tag.getInteger("width");
+		this.height = tag.getInteger("height");
+		this.length = tag.getInteger("length");
+
+		this.chunks = funnel.getArray("chunks", BlockDataChunk.class);
+		this.bakedScheduleRegions = funnel.getList("bakedScheduleRegions");
+		this.bakedScheduleLayerNodes = funnel.getList("bakedScheduleLayerNodes");
+		this.placedEntities = funnel.getMap("placedEntities", NBTFunnel.CHUNK_POS_GETTER, NBTFunnel.listGetter());
+
+		this.data = funnel.get("data");
+		this.bakedBlueprintVariables = funnel.get("bakedBlueprintVariables");
+		this.rawDataContainer = funnel.get("rawDataContainer");
+
+		this.hasBaked = tag.getBoolean("hasBaked");
+
+		this.bakedMin = funnel.getPos("bakedMin");
+
+		try
+		{
+			final IDataIdentifier id = funnel.get("blueprintId");
+
+			this.blueprintData = OrbisAPI.services().getProjectManager().findData(id);
+		}
+		catch (final OrbisMissingDataException | OrbisMissingProjectException e)
+		{
+			OrbisAPI.LOGGER.error("Missing in " + this.getClass().getName() + " : ", e);
+		}
+	}
 }

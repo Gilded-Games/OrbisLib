@@ -16,6 +16,8 @@ import java.util.Collection;
 public interface IProjectManager
 {
 
+	void cacheProject(String folderName, IProject project);
+
 	/**
 	 * @return The location of all the projects this is managing.
 	 */

@@ -70,7 +70,8 @@ public class OrbisProjectManager implements IProjectManager
 		return false;
 	}
 
-	private void cacheProject(final String folderName, final IProject project)
+	@Override
+	public void cacheProject(final String folderName, final IProject project)
 	{
 		this.nameToProject.put(folderName, project);
 		this.idToProject.put(project.getProjectIdentifier(), project);

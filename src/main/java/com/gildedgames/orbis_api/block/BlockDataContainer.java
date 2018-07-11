@@ -163,7 +163,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return Block.getBlockById(id).getStateFromMeta(this.blocksMeta[index]);
 	}
 
-	public void setBlockState(final IBlockState state, final int x, final int y, final int z)
+	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
 	{
 		final int index = this.getIndex(x, y, z);
 
@@ -171,7 +171,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.blocksMeta[index] = (byte) state.getBlock().getMetaFromState(state);
 	}
 
-	public void setBlockState(final IBlockState state, final BlockPos pos)
+	public void setBlockState(final IBlockState state, final BlockPos pos) throws ArrayIndexOutOfBoundsException
 	{
 		this.setBlockState(state, pos.getX(), pos.getY(), pos.getZ());
 	}

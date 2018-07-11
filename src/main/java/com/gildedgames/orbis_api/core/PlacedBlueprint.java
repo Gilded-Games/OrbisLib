@@ -38,7 +38,7 @@ public class PlacedBlueprint implements NBT
 		this.world = world;
 	}
 
-	public PlacedBlueprint(final World world, final BlueprintDefinition def, final ICreationData<?> data)
+	public PlacedBlueprint(final World world, final BlueprintDefinition def, BakedBlueprint baked, final ICreationData<?> data)
 	{
 		this.world = world;
 		this.def = def;
@@ -48,8 +48,7 @@ public class PlacedBlueprint implements NBT
 
 		this.data = data;
 
-		this.baked = new BakedBlueprint(this.def.getData(), this.data);
-		this.baked.bake();
+		this.baked = baked;
 	}
 
 	public PlacedBlueprint(final World world, final NBTTagCompound tag)
@@ -146,6 +145,8 @@ public class PlacedBlueprint implements NBT
 		funnel.set("creation", this.data);
 
 		tag.setBoolean("hasGeneratedAChunk", this.hasGeneratedAChunk);
+
+		funnel.set("baked", this.baked);
 	}
 
 	@Override
@@ -162,16 +163,15 @@ public class PlacedBlueprint implements NBT
 
 		this.hasGeneratedAChunk = tag.getBoolean("hasGeneratedAChunk");
 
-		this.baked = new BakedBlueprint(this.def.getData(), this.data);
-		this.baked.bake();
+		this.baked = funnel.get("baked");
 	}
 
 	@Override
 	public PlacedBlueprint clone()
 	{
-		final PlacedBlueprint clone = new PlacedBlueprint(this.world, this.def, this.data.clone());
+		//TODO: Deep clone for BakedBlueprint?
+		final PlacedBlueprint clone = new PlacedBlueprint(this.world, this.def, this.baked.clone(), this.data.clone());
 
-		clone.baked = this.baked;
 		clone.hasGeneratedAChunk = this.hasGeneratedAChunk;
 
 		return clone;

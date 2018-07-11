@@ -1,12 +1,12 @@
 package com.gildedgames.orbis_api.core.util;
 
-import com.gildedgames.orbis_api.core.BlueprintDefinition;
-import com.gildedgames.orbis_api.core.ICreationData;
-import com.gildedgames.orbis_api.core.PostPlacement;
+import com.gildedgames.orbis_api.core.BakedBlueprint;
+import com.gildedgames.orbis_api.core.PlacementCondition;
 import com.gildedgames.orbis_api.processing.BlockAccessExtendedWrapper;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.google.common.collect.Lists;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -26,7 +26,8 @@ public class BlueprintPlacer
 		return BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)];
 	}
 
-	public static boolean place(final World placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
+	public static boolean place(final World placeWith, BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos relocateTo,
+			boolean checkAreaLoaded)
 	{
 		DataPrimer chosen = null;
 
@@ -46,49 +47,47 @@ public class BlueprintPlacer
 			BlueprintPlacer.primers.add(chosen);
 		}
 
-		return BlueprintPlacer.place(chosen, def, data, rand);
+		return BlueprintPlacer.place(chosen, baked, conditions, relocateTo, checkAreaLoaded);
 	}
 
-	public static void placeForced(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
+	public static boolean place(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos relocateTo,
+			boolean checkAreaLoaded)
 	{
-		placeWith.create(def.getData().getBlockDataContainer(), data);
-
-		if (placeWith.getWorld() != null)
-		{
-			for (final PostPlacement post : def.getPostPlacements())
-			{
-				post.postGenerate(placeWith.getWorld(), rand, data, def.getData().getBlockDataContainer());
-			}
-		}
-	}
-
-	public static boolean place(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
-	{
-		final boolean result = placeWith.canGenerate(def, data);
+		final boolean result = placeWith.canGenerate(baked, conditions, relocateTo, checkAreaLoaded);
 
 		if (result)
 		{
-			placeWith.create(def.getData().getBlockDataContainer(), data);
+			baked.rebake(relocateTo);
 
-			if (placeWith.getWorld() != null)
-			{
-				for (final PostPlacement post : def.getPostPlacements())
-				{
-					post.postGenerate(placeWith.getWorld(), rand, data, def.getData().getBlockDataContainer());
-				}
-			}
+			placeWith.create(baked);
 		}
 
 		return result;
 	}
 
-	public static boolean findPlace(final DataPrimer placeWith, final BlueprintDefinition def, final ICreationData<?> data, final Random rand)
+	public static boolean place(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions,
+			boolean checkAreaLoaded)
 	{
-		final Rotation rotation = def.hasRandomRotation() ? ROTATIONS[rand.nextInt(ROTATIONS.length)] : ROTATIONS[0];
+		final boolean result = placeWith.canGenerate(baked, conditions, checkAreaLoaded);
 
-		data.rotation(rotation);
+		if (result)
+		{
+			placeWith.create(baked);
+		}
 
-		return placeWith.canGenerate(def, data);
+		return result;
+	}
+
+	public static boolean findPlace(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos relocateTo,
+			boolean checkAreaLoaded)
+	{
+		return placeWith.canGenerate(baked, conditions, relocateTo, checkAreaLoaded);
+	}
+
+	public static boolean findPlace(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions,
+			boolean checkAreaLoaded)
+	{
+		return placeWith.canGenerate(baked, conditions, checkAreaLoaded);
 	}
 
 }

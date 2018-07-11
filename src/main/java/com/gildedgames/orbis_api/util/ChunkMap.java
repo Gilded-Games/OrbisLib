@@ -13,7 +13,25 @@ import java.util.Collection;
  */
 public class ChunkMap<T>
 {
-	private TLongObjectMap<T> map = new TLongObjectHashMap<>();
+	protected TLongObjectMap<T> map = new TLongObjectHashMap<>();
+
+	public ChunkMap()
+	{
+
+	}
+
+	public static <T> ChunkMap<T> createFrom(TLongObjectMap<T> map)
+	{
+		ChunkMap<T> created = new ChunkMap<>();
+		created.map = map;
+
+		return created;
+	}
+
+	public TLongObjectMap<T> getInnerMap()
+	{
+		return this.map;
+	}
 
 	/**
 	 * Returns whether or not this map contains the value at the coordinates.

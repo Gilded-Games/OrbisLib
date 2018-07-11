@@ -1,6 +1,8 @@
 package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.processing.DataPrimer;
+import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -17,11 +19,16 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class PlacedEntity
+public class PlacedEntity implements NBT
 {
 	private ItemStack egg;
 
 	private BlockPos pos;
+
+	private PlacedEntity()
+	{
+
+	}
 
 	public PlacedEntity(ItemStack egg, BlockPos pos)
 	{
@@ -68,6 +75,11 @@ public class PlacedEntity
 		return this.pos;
 	}
 
+	public void setPos(BlockPos pos)
+	{
+		this.pos = pos;
+	}
+
 	public void spawn(DataPrimer primer)
 	{
 		World world = primer.getWorld();
@@ -104,7 +116,24 @@ public class PlacedEntity
 					}
 				}
 			}
-
 		}
+	}
+
+	@Override
+	public void write(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		funnel.setStack("egg", this.egg);
+		funnel.setPos("pos", this.pos);
+	}
+
+	@Override
+	public void read(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		this.egg = funnel.getStack("egg");
+		this.pos = funnel.getPos("pos");
 	}
 }

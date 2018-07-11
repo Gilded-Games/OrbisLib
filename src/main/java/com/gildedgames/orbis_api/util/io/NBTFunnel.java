@@ -6,10 +6,13 @@ import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import gnu.trove.map.TLongObjectMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -25,6 +28,17 @@ import java.util.function.Supplier;
 
 public class NBTFunnel
 {
+	public static Function<ItemStack, NBTTagCompound> STACK_SETTER = o ->
+	{
+		NBTTagCompound tag = new NBTTagCompound();
+
+		tag.setTag("s", NBTHelper.writeStack(o));
+
+		return tag;
+	};
+
+	public static Function<NBTTagCompound, ItemStack> STACK_GETTER = n -> NBTHelper.readStack(n.getCompoundTag("s"));
+
 	public static Function<UUID, NBTTagCompound> UUID_SETTER = o ->
 	{
 		NBTTagCompound tag = new NBTTagCompound();
@@ -108,6 +122,18 @@ public class NBTFunnel
 
 	public static Function<NBTTagCompound, Pos2D> POS2D_GETTER = n -> Pos2D.flush(n.getFloat("x"), n.getFloat("y"));
 
+	public static Function<ChunkPos, NBTTagCompound> CHUNK_POS_SETTER = o ->
+	{
+		NBTTagCompound tag = new NBTTagCompound();
+
+		tag.setInteger("x", o.x);
+		tag.setInteger("z", o.z);
+
+		return tag;
+	};
+
+	public static Function<NBTTagCompound, ChunkPos> CHUNK_POS_GETTER = n -> new ChunkPos(n.getInteger("x"), n.getInteger("z"));
+
 	private final NBTTagCompound tag;
 
 	public NBTFunnel(final NBTTagCompound tag)
@@ -133,6 +159,29 @@ public class NBTFunnel
 			NBTFunnel funnel = new NBTFunnel(tag);
 
 			funnel.set("o", o);
+
+			return tag;
+		};
+	}
+
+	public static <T extends List<? extends NBT>> Function<NBTTagCompound, T> listGetter()
+	{
+		return n ->
+		{
+			NBTFunnel funnel = new NBTFunnel(n);
+
+			return (T) funnel.getList("l");
+		};
+	}
+
+	public static <T extends List<? extends NBT>> Function<T, NBTTagCompound> listSetter()
+	{
+		return l ->
+		{
+			NBTTagCompound tag = new NBTTagCompound();
+			NBTFunnel funnel = new NBTFunnel(tag);
+
+			funnel.setList("l", l);
 
 			return tag;
 		};
@@ -392,6 +441,50 @@ public class NBTFunnel
 
 		this.tag.setTag(key + "_keys", writtenKeys);
 		this.tag.setTag(key + "_obj", writtenObjects);
+	}
+
+	public <R> void setLongMap(final String key, final TLongObjectMap<R> nbtMap,
+			@Nullable Function<R, NBTTagCompound> rightSetter)
+	{
+		final NBTTagList writtenKeys = new NBTTagList();
+		final NBTTagList writtenObjects = new NBTTagList();
+
+		nbtMap.forEachEntry((chunkPos, valueNBT) ->
+		{
+			writtenKeys.appendTag(new NBTTagLong(chunkPos));
+
+			if (rightSetter != null)
+			{
+				writtenObjects.appendTag(rightSetter.apply(valueNBT));
+			}
+			else
+			{
+				writtenObjects.appendTag(NBTHelper.write((NBT) valueNBT));
+			}
+
+			return true;
+		});
+
+		this.tag.setTag(key + "_keys", writtenKeys);
+		this.tag.setTag(key + "_obj", writtenObjects);
+	}
+
+	public <R> TLongObjectMap<R> getLongMap(final String key, @Nullable Function<NBTTagCompound, R> rightGetter)
+	{
+		final TLongObjectMap<R> readObjects = new TLongObjectHashMap<>();
+
+		final NBTTagList keys = this.tag.getTagList(key + "_keys", 4);
+		final NBTTagList objects = this.tag.getTagList(key + "_obj", 10);
+
+		for (int i = 0; i < keys.tagCount(); i++)
+		{
+			final NBTTagLong keyData = (NBTTagLong) keys.get(i);
+			final NBTTagCompound valueData = objects.getCompoundTagAt(i);
+
+			readObjects.put(keyData.getLong(), rightGetter != null ? rightGetter.apply(valueData) : NBTHelper.read(valueData));
+		}
+
+		return readObjects;
 	}
 
 	public <L, R> void setMap(final String key, final Map<L, R> nbtMap, @Nullable Function<L, NBTTagCompound> leftSetter,

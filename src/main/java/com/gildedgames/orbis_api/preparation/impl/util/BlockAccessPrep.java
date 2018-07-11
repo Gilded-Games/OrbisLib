@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
 
 public class BlockAccessPrep implements IBlockAccessExtended
 {
-	private IChunkMaskTransformer transformer;
+	protected IChunkMaskTransformer transformer;
 
 	private World world;
 
@@ -170,7 +170,7 @@ public class BlockAccessPrep implements IBlockAccessExtended
 		return false;
 	}
 
-	private ChunkMask getChunk(int x, int z)
+	protected ChunkMask getChunk(int x, int z)
 	{
 		ChunkMask chunk = this.chunkManager.getChunk(this.sectorData, x, z);
 

@@ -1,8 +1,6 @@
 package com.gildedgames.orbis_api.core.util;
 
-import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.core.PlacementCondition;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
 import com.gildedgames.orbis_api.util.mc.BlockUtil;
 import com.google.common.collect.Lists;
@@ -19,44 +17,31 @@ public class PlacementConditions
 
 	public static PlacementCondition onSpecificBlock(final int floorHeight, final Block... blocks)
 	{
-		return new PlacementCondition()
-		{
-			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
-					final BlockPos pos)
+		return (world, placedAt, block, pos) -> {
+			if (pos.getY() == placedAt.getY() + floorHeight && block.getBlock() != Blocks.AIR
+					&& block.getBlock() != Blocks.STRUCTURE_VOID)
 			{
-				if (pos.getY() == placedAt.getY() + floorHeight && block.getBlock() != Blocks.AIR
-						&& block.getBlock() != Blocks.STRUCTURE_VOID)
+				final BlockPos down = pos.down();
+
+				if (!world.canAccess(down))
 				{
-					final BlockPos down = pos.down();
-
-					if (!world.canAccess(down))
-					{
-						return false;
-					}
-
-					final Block blockDown = world.getBlockState(down).getBlock();
-
-					for (final Block s : blocks)
-					{
-						if (s == blockDown)
-						{
-							return true;
-						}
-					}
-
 					return false;
 				}
 
-				return true;
+				final Block blockDown = world.getBlockState(down).getBlock();
+
+				for (final Block s : blocks)
+				{
+					if (s == blockDown)
+					{
+						return true;
+					}
+				}
+
+				return false;
 			}
 
-			@Override
-			public boolean canPlaceCheckAll(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt,
-					final BlockDataContainer blocks)
-			{
-				return true;
-			}
+			return true;
 		};
 	}
 
@@ -77,7 +62,7 @@ public class PlacementConditions
 			List<Material> materials = Lists.newArrayList(acceptedMaterials);
 
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
+			public boolean canPlace(final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
 				if (block.getBlock() != Blocks.STRUCTURE_VOID)
@@ -107,83 +92,50 @@ public class PlacementConditions
 
 				return true;
 			}
-
-			@Override
-			public boolean canPlaceCheckAll(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt,
-					final BlockDataContainer blocks)
-			{
-				return true;
-			}
 		};
 	}
 
 	public static PlacementCondition insideGround(final Block inside)
 	{
-		return new PlacementCondition()
-		{
-			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
-					final BlockPos pos)
+		return (world, placedAt, block, pos) -> {
+			if (pos.getY() == placedAt.getY() + 1 && block.getBlock() != Blocks.AIR
+					&& block.getBlock() != Blocks.STRUCTURE_VOID)
 			{
-				if (pos.getY() == placedAt.getY() + 1 && block.getBlock() != Blocks.AIR
-						&& block.getBlock() != Blocks.STRUCTURE_VOID)
+				final BlockPos down = pos.down();
+
+				if (!world.canAccess(down))
 				{
-					final BlockPos down = pos.down();
-
-					if (!world.canAccess(down))
-					{
-						return false;
-					}
-
-					final IBlockState state = world.getBlockState(down);
-
-					return state.getBlock() == inside;
+					return false;
 				}
 
-				return true;
+				final IBlockState state = world.getBlockState(down);
+
+				return state.getBlock() == inside;
 			}
 
-			@Override
-			public boolean canPlaceCheckAll(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt,
-					final BlockDataContainer blocks)
-			{
-				return true;
-			}
+			return true;
 		};
 	}
 
 	public static PlacementCondition flatGround()
 	{
-		return new PlacementCondition()
-		{
-			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
-					final BlockPos pos)
+		return (world, placedAt, block, pos) -> {
+			if (pos.getY() == placedAt.getY() && block.getBlock() != Blocks.AIR
+					&& block.getBlock() != Blocks.STRUCTURE_VOID)
 			{
-				if (pos.getY() == placedAt.getY() && block.getBlock() != Blocks.AIR
-						&& block.getBlock() != Blocks.STRUCTURE_VOID)
+				final BlockPos down = pos.down();
+
+				if (!world.canAccess(down))
 				{
-					final BlockPos down = pos.down();
-
-					if (!world.canAccess(down))
-					{
-						return false;
-					}
-
-					final IBlockState state = world.getBlockState(down);
-
-					return BlockUtil.isSolid(state, world, down);
+					return false;
 				}
 
-				return true;
+				final IBlockState state = world.getBlockState(down);
+
+				return BlockUtil.isSolid(state, world, down);
 			}
 
-			@Override
-			public boolean canPlaceCheckAll(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt,
-					final BlockDataContainer blocks)
-			{
-				return true;
-			}
+			return true;
 		};
 	}
 
@@ -192,7 +144,7 @@ public class PlacementConditions
 		return new PlacementCondition()
 		{
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
+			public boolean canPlace(final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
 				if (pos.getY() == placedAt.getY() + floorHeight && block.getBlock() != Blocks.AIR
@@ -214,8 +166,7 @@ public class PlacementConditions
 			}
 
 			@Override
-			public boolean canPlaceCheckAll(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt,
-					final BlockDataContainer blocks)
+			public boolean prePlacementResolve(IBlockAccessExtended world, BlockPos placedAt)
 			{
 				return true;
 			}
@@ -227,15 +178,28 @@ public class PlacementConditions
 		return new PlacementCondition()
 		{
 			@Override
-			public boolean canPlace(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
+			public boolean canPlace(final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
 					final BlockPos pos)
 			{
+				if (pos.getY() == placedAt.getY() && block.getBlock() != Blocks.AIR && block.getBlock() != Blocks.STRUCTURE_VOID)
+				{
+					final BlockPos down = pos.down();
+
+					if (!world.canAccess(down))
+					{
+						return false;
+					}
+
+					IBlockState state = world.getBlockState(down);
+
+					return BlockUtil.isSolid(state);
+				}
+
 				return true;
 			}
 
 			@Override
-			public boolean canPlaceCheckAll(final BlueprintData data, final IBlockAccessExtended world, final BlockPos placedAt,
-					final BlockDataContainer blocks)
+			public boolean prePlacementResolve(IBlockAccessExtended world, BlockPos placedAt)
 			{
 				if (!world.canAccess(placedAt))
 				{
@@ -244,38 +208,7 @@ public class PlacementConditions
 
 				IBlockState state = world.getBlockState(placedAt);
 
-				if (state.getBlock() != block)
-				{
-					return false;
-				}
-
-				for (int index = 0; index < blocks.getVolume(); index++)
-				{
-					final int x = blocks.getX(index) + placedAt.getX();
-					final int y = blocks.getY(index) + placedAt.getY();
-					final int z = blocks.getZ(index) + placedAt.getZ();
-
-					final IBlockState info = blocks.getBlockState(index);
-
-					if (y == placedAt.getY() && info.getBlock() != Blocks.AIR && info.getBlock() != Blocks.STRUCTURE_VOID)
-					{
-						final BlockPos down = new BlockPos(x, y - 1, z);
-
-						if (!world.canAccess(down))
-						{
-							return false;
-						}
-
-						state = world.getBlockState(down);
-
-						if (!BlockUtil.isSolid(state))
-						{
-							return false;
-						}
-					}
-				}
-
-				return true;
+				return state.getBlock() == block;
 			}
 		};
 	}
