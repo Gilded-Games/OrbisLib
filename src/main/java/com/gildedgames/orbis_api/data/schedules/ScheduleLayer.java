@@ -114,6 +114,11 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	public void setDimensions(final IDimensions dimensions)
 	{
 		this.dimensions = dimensions;
+
+		if (this.stateRecord == null)
+		{
+			this.stateRecord = new BlockStateRecord(this.dimensions.getWidth(), this.dimensions.getHeight(), this.dimensions.getLength());
+		}
 	}
 
 	@Nonnull

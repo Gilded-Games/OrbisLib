@@ -7,8 +7,7 @@ import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.INodeTreeListener;
 import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
-import com.gildedgames.orbis_api.data.IDataChild;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
+import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.google.common.collect.Lists;
@@ -21,7 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class GuiVarBlueprintVariable implements IGuiVar<INode<BlueprintVariable, NBT>, GuiDropdown<DropdownElementWithData<INode<BlueprintVariable, NBT>>>>,
-		IDataChild<BlueprintData>, INodeTreeListener<BlueprintVariable, NBT>
+		IDataUser<NodeTree<BlueprintVariable, NBT>>, INodeTreeListener<BlueprintVariable, NBT>
 {
 	private GuiVarDisplay parentDisplay;
 
@@ -34,8 +33,6 @@ public class GuiVarBlueprintVariable implements IGuiVar<INode<BlueprintVariable,
 	private int dataIndex;
 
 	private Consumer<BlueprintVariable<?>> onSetData;
-
-	private BlueprintData dataParent;
 
 	private GuiVarBlueprintVariable()
 	{
@@ -51,30 +48,6 @@ public class GuiVarBlueprintVariable implements IGuiVar<INode<BlueprintVariable,
 	public void setOnSetData(Consumer<BlueprintVariable<?>> onSetData)
 	{
 		this.onSetData = onSetData;
-	}
-
-	@Override
-	public Class<? extends BlueprintData> getDataClass()
-	{
-		return BlueprintData.class;
-	}
-
-	@Override
-	public BlueprintData getDataParent()
-	{
-		return this.dataParent;
-	}
-
-	@Override
-	public void setDataParent(BlueprintData blueprintData)
-	{
-		this.dataParent = blueprintData;
-
-		this.blueprintVariables = blueprintData.getVariableTree();
-
-		this.data = this.blueprintVariables.get(this.dataIndex);
-
-		this.blueprintVariables.listen(this);
 	}
 
 	@Override
@@ -253,5 +226,21 @@ public class GuiVarBlueprintVariable implements IGuiVar<INode<BlueprintVariable,
 				this.onSetData.accept(null);
 			}
 		}
+	}
+
+	@Override
+	public String getDataIdentifier()
+	{
+		return "blueprintVariables";
+	}
+
+	@Override
+	public void setUsedData(NodeTree<BlueprintVariable, NBT> data)
+	{
+		this.blueprintVariables = data;
+
+		this.data = this.blueprintVariables.get(this.dataIndex);
+
+		this.blueprintVariables.listen(this);
 	}
 }

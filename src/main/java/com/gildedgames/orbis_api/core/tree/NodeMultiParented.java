@@ -54,6 +54,13 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	}
 
 	@Override
+	public void clearLocalLinks()
+	{
+		this.children.clear();
+		this.parents.clear();
+	}
+
+	@Override
 	public void listen(INodeListener<DATA, LINK> listener)
 	{
 		if (this.listeners == null)
@@ -88,8 +95,13 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	}
 
 	@Override
-	public void addChild(int nodeId, LINK link)
+	public boolean addChild(int nodeId, LINK link)
 	{
+		if (this.tree != null && this.tree.getRootNodeId() == nodeId)
+		{
+			return false;
+		}
+
 		if (!this.canLink)
 		{
 			throw new RuntimeException("Tried to add a child to an INode that has canLink disabled. Should not be able to link children or parents.");
@@ -128,6 +140,8 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 				this.dataParent.markDirty();
 			}
 		}
+
+		return true;
 	}
 
 	@Override
@@ -221,8 +235,13 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	}
 
 	@Override
-	public void addParent(int nodeId)
+	public boolean addParent(int nodeId)
 	{
+		if (this.tree != null && this.tree.getRootNode() == this)
+		{
+			return false;
+		}
+
 		if (!this.canLink)
 		{
 			throw new RuntimeException("Tried to add a parent to an INode that has canLink disabled. Should not be able to link children or parents.");
@@ -275,6 +294,8 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 		{
 			this.dataParent.markDirty();
 		}
+
+		return true;
 	}
 
 	@Override

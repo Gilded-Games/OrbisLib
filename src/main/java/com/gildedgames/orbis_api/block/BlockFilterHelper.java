@@ -132,7 +132,6 @@ public class BlockFilterHelper
 		final BlockFilterLayer layer = new BlockFilterLayer();
 
 		layer.setFilterType(BlockFilterType.ALL);
-		layer.getRequiredBlocks().add(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), 1.0f));
 		layer.getReplacementBlocks().add(new BlockDataWithConditions(Blocks.STONE.getDefaultState(), 1.0f));
 
 		return layer;
@@ -197,9 +196,7 @@ public class BlockFilterHelper
 
 		final BlockFilterLayer layer = new BlockFilterLayer();
 
-		layer.setRequiredBlocks(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), 1.0f));
-
-		layer.setFilterType(BlockFilterType.ONLY);
+		layer.setFilterType(BlockFilterType.ALL);
 
 		final IBlockState[] blocks = getBlocksFromStack(stack);
 

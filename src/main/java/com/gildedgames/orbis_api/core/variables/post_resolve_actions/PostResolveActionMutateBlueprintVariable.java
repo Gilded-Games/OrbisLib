@@ -2,15 +2,16 @@ package com.gildedgames.orbis_api.core.variables.post_resolve_actions;
 
 import com.gildedgames.orbis_api.client.gui.data.DropdownElementWithData;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.variables.GuiVarBlueprintVariable;
 import com.gildedgames.orbis_api.core.variables.GuiVarDropdown;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
 import com.gildedgames.orbis_api.core.variables.IGuiVarMutateExpression;
 import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
-import com.gildedgames.orbis_api.data.IDataChild;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
+import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.NBT;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -20,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class PostResolveActionMutateBlueprintVariable implements IPostResolveAction, IDataChild<BlueprintData>
+public class PostResolveActionMutateBlueprintVariable implements IPostResolveAction, IDataUser<NodeTree<BlueprintVariable, NBT>>
 {
 	private List<IGuiVar> variables = Lists.newArrayList();
 
@@ -31,8 +32,6 @@ public class PostResolveActionMutateBlueprintVariable implements IPostResolveAct
 	private Pos2D guiPos = Pos2D.ORIGIN;
 
 	private GuiVarDisplay parentDisplay;
-
-	private BlueprintData dataParent;
 
 	private Consumer<IGuiVarMutateExpression<?>> onSetCompareDropdown = (e) ->
 	{
@@ -119,49 +118,6 @@ public class PostResolveActionMutateBlueprintVariable implements IPostResolveAct
 	}
 
 	@Override
-	public Class<? extends BlueprintData> getDataClass()
-	{
-		return BlueprintData.class;
-	}
-
-	@Override
-	public BlueprintData getDataParent()
-	{
-		return this.dataParent;
-	}
-
-	@Override
-	public void setDataParent(BlueprintData blueprintData)
-	{
-		this.dataParent = blueprintData;
-
-		this.blueprintVariable.setDataParent(blueprintData);
-
-		if (this.blueprintVariable.getData() != null)
-		{
-			BlueprintVariable b = this.blueprintVariable.getData().getData();
-
-			if (this.mutateDropdown != null)
-			{
-				this.mutateDropdown.setStringElements(this.createMutateDropdownStringElements(b));
-				this.mutateDropdown.setStringToDataFactory(this.createMutateDropdownDataFactory(b));
-
-				if (this.mutateDropdown.getData() != null)
-				{
-					for (IGuiVar var : this.mutateDropdown.getData().getInputs())
-					{
-						this.variables.add(var);
-					}
-				}
-			}
-			else
-			{
-				this.onSetBlueprintVariable.accept(b);
-			}
-		}
-	}
-
-	@Override
 	public String getName()
 	{
 		return "orbis.gui.mutate_blueprint_variable";
@@ -229,6 +185,41 @@ public class PostResolveActionMutateBlueprintVariable implements IPostResolveAct
 	public void setParentDisplay(GuiVarDisplay parentDisplay)
 	{
 		this.parentDisplay = parentDisplay;
+	}
+
+	@Override
+	public String getDataIdentifier()
+	{
+		return "blueprintVariables";
+	}
+
+	@Override
+	public void setUsedData(NodeTree<BlueprintVariable, NBT> data)
+	{
+		this.blueprintVariable.setUsedData(data);
+
+		if (this.blueprintVariable.getData() != null)
+		{
+			BlueprintVariable b = this.blueprintVariable.getData().getData();
+
+			if (this.mutateDropdown != null)
+			{
+				this.mutateDropdown.setStringElements(this.createMutateDropdownStringElements(b));
+				this.mutateDropdown.setStringToDataFactory(this.createMutateDropdownDataFactory(b));
+
+				if (this.mutateDropdown.getData() != null)
+				{
+					for (IGuiVar var : this.mutateDropdown.getData().getInputs())
+					{
+						this.variables.add(var);
+					}
+				}
+			}
+			else
+			{
+				this.onSetBlueprintVariable.accept(b);
+			}
+		}
 	}
 
 	private static class ResolveAction<DATA>

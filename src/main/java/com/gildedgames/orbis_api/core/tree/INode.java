@@ -9,6 +9,13 @@ import java.util.List;
 
 public interface INode<DATA, LINK> extends NBT, IDataChild<BlueprintData>
 {
+	/**
+	 * Clears the local links of this node ONLY. Will not go to other nodes and remove
+	 * their relationship between that node and this node.
+	 *
+	 * Links == lists of children ids and parent ids.
+	 */
+	void clearLocalLinks();
 
 	void listen(INodeListener<DATA, LINK> listener);
 
@@ -18,7 +25,7 @@ public interface INode<DATA, LINK> extends NBT, IDataChild<BlueprintData>
 
 	void setTree(NodeTree<DATA, LINK> tree);
 
-	void addChild(int nodeId, LINK link);
+	boolean addChild(int nodeId, LINK link);
 
 	boolean removeChild(int nodeId);
 
@@ -34,7 +41,7 @@ public interface INode<DATA, LINK> extends NBT, IDataChild<BlueprintData>
 
 	Collection<Integer> getParentsIds();
 
-	void addParent(int nodeId);
+	boolean addParent(int nodeId);
 
 	void removeParent(int nodeId);
 
@@ -51,5 +58,4 @@ public interface INode<DATA, LINK> extends NBT, IDataChild<BlueprintData>
 	boolean canLink();
 
 	INode<DATA, LINK> deepClone();
-
 }

@@ -9,9 +9,9 @@ public interface IPositionRecord<DATA> extends IShape, IDimensions
 
 	int getVolume();
 
-	void listen(IPositionRecordListener listener);
+	void listen(IPositionRecordListener<DATA> listener);
 
-	boolean unlisten(IPositionRecordListener listener);
+	boolean unlisten(IPositionRecordListener<DATA> listener);
 
 	boolean contains(int index);
 

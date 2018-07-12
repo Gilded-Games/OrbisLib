@@ -2,15 +2,16 @@ package com.gildedgames.orbis_api.core.variables.conditions;
 
 import com.gildedgames.orbis_api.client.gui.data.DropdownElementWithData;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.variables.GuiVarBlueprintVariable;
 import com.gildedgames.orbis_api.core.variables.GuiVarDropdown;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
 import com.gildedgames.orbis_api.core.variables.IGuiVarCompareExpression;
 import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
-import com.gildedgames.orbis_api.data.IDataChild;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
+import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.NBT;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -20,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class GuiConditionCheckBlueprintVariable implements IGuiCondition, IDataChild<BlueprintData>
+public class GuiConditionCheckBlueprintVariable implements IGuiCondition, IDataUser<NodeTree<BlueprintVariable, NBT>>
 {
 	private List<IGuiVar> variables = Lists.newArrayList();
 
@@ -31,8 +32,6 @@ public class GuiConditionCheckBlueprintVariable implements IGuiCondition, IDataC
 	private Pos2D guiPos = Pos2D.ORIGIN;
 
 	private GuiVarDisplay parentDisplay;
-
-	private BlueprintData dataParent;
 
 	private Consumer<IGuiVarCompareExpression<?>> onSetCompareDropdown = (e) ->
 	{
@@ -119,49 +118,6 @@ public class GuiConditionCheckBlueprintVariable implements IGuiCondition, IDataC
 	}
 
 	@Override
-	public Class<? extends BlueprintData> getDataClass()
-	{
-		return BlueprintData.class;
-	}
-
-	@Override
-	public BlueprintData getDataParent()
-	{
-		return this.dataParent;
-	}
-
-	@Override
-	public void setDataParent(BlueprintData blueprintData)
-	{
-		this.dataParent = blueprintData;
-
-		this.guiVarBlueprintVariable.setDataParent(blueprintData);
-
-		if (this.guiVarBlueprintVariable.getData() != null)
-		{
-			BlueprintVariable b = this.guiVarBlueprintVariable.getData().getData();
-
-			if (this.compareDropdown != null)
-			{
-				this.compareDropdown.setStringElements(this.createCompareDropdownStringElements(b));
-				this.compareDropdown.setStringToDataFactory(this.createCompareDropdownDataFactory(b));
-
-				if (this.compareDropdown.getData() != null)
-				{
-					for (IGuiVar var : this.compareDropdown.getData().getInputs())
-					{
-						this.variables.add(var);
-					}
-				}
-			}
-			else
-			{
-				this.onSetBlueprintVariable.accept(b);
-			}
-		}
-	}
-
-	@Override
 	public String getName()
 	{
 		return "orbis.gui.check_blueprint_variable";
@@ -227,5 +183,40 @@ public class GuiConditionCheckBlueprintVariable implements IGuiCondition, IDataC
 	public void setParentDisplay(GuiVarDisplay parentDisplay)
 	{
 		this.parentDisplay = parentDisplay;
+	}
+
+	@Override
+	public String getDataIdentifier()
+	{
+		return "blueprintVariables";
+	}
+
+	@Override
+	public void setUsedData(NodeTree<BlueprintVariable, NBT> data)
+	{
+		this.guiVarBlueprintVariable.setUsedData(data);
+
+		if (this.guiVarBlueprintVariable.getData() != null)
+		{
+			BlueprintVariable b = this.guiVarBlueprintVariable.getData().getData();
+
+			if (this.compareDropdown != null)
+			{
+				this.compareDropdown.setStringElements(this.createCompareDropdownStringElements(b));
+				this.compareDropdown.setStringToDataFactory(this.createCompareDropdownDataFactory(b));
+
+				if (this.compareDropdown.getData() != null)
+				{
+					for (IGuiVar var : this.compareDropdown.getData().getInputs())
+					{
+						this.variables.add(var);
+					}
+				}
+			}
+			else
+			{
+				this.onSetBlueprintVariable.accept(b);
+			}
+		}
 	}
 }

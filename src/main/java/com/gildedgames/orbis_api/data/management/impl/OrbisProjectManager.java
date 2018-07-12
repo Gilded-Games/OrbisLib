@@ -145,6 +145,8 @@ public class OrbisProjectManager implements IProjectManager
 
 				if (!this.idToProject.keySet().contains(project.getProjectIdentifier()))
 				{
+					project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+
 					project.setLocationAsFile(file);
 
 					project.loadAndCacheData();

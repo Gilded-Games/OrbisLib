@@ -17,7 +17,7 @@ import java.util.List;
 
 public class BlockStateRecord implements IPositionRecord<IBlockState>
 {
-	private final List<IPositionRecordListener> listeners = Lists.newArrayList();
+	private final List<IPositionRecordListener<IBlockState>> listeners = Lists.newArrayList();
 
 	private IBlockState[] states;
 
@@ -142,7 +142,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public void listen(final IPositionRecordListener listener)
+	public void listen(final IPositionRecordListener<IBlockState> listener)
 	{
 		if (!this.listeners.contains(listener))
 		{
@@ -151,7 +151,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public boolean unlisten(final IPositionRecordListener listener)
+	public boolean unlisten(final IPositionRecordListener<IBlockState> listener)
 	{
 		return this.listeners.remove(listener);
 	}

@@ -11,7 +11,7 @@ import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
-import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
@@ -121,13 +121,13 @@ public class BakedBlueprint implements IDimensions
 	{
 		IGuiCondition condition = parent.getData();
 
-		if (condition instanceof IDataChild)
+		if (condition instanceof IDataUser)
 		{
-			IDataChild user = (IDataChild) condition;
+			IDataUser user = (IDataUser) condition;
 
-			if (user.getDataClass().equals("blueprintVariables"))
+			if (user.getDataIdentifier().equals("blueprintVariables"))
 			{
-				user.setDataParent(this.bakedBlueprintVariables);
+				user.setUsedData(this.bakedBlueprintVariables);
 			}
 		}
 
@@ -153,79 +153,97 @@ public class BakedBlueprint implements IDimensions
 		return result;
 	}
 
+	private void fetchValidLayers(INode<IScheduleLayer, LayerLink> root, List<INode<IScheduleLayer, LayerLink>> addValidTo,
+			List<INode<IScheduleLayer, LayerLink>> visited)
+	{
+		if (root == null)
+		{
+			return;
+		}
+
+		if (visited.contains(root))
+		{
+			return;
+		}
+
+		visited.add(root);
+
+		for (INode<IScheduleLayer, LayerLink> parent : root.getTree().get(root.getParentsIds()))
+		{
+			if (!visited.contains(parent))
+			{
+				this.fetchValidLayers(parent, addValidTo, visited);
+			}
+
+			if (!addValidTo.contains(parent))
+			{
+				return;
+			}
+		}
+
+		IScheduleLayer layer = root.getData();
+
+		if (layer.getConditionNodeTree().isEmpty())
+		{
+			addValidTo.add(root);
+
+			for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
+			{
+				if (action.getData() instanceof IDataUser)
+				{
+					IDataUser user = (IDataUser) action.getData();
+
+					if (user.getDataIdentifier().equals("blueprintVariables"))
+					{
+						user.setUsedData(this.bakedBlueprintVariables);
+					}
+				}
+
+				action.getData().resolve(this.data.getRandom());
+			}
+		}
+		else if (layer.getConditionNodeTree().getRootNode() != null)
+		{
+			if (!this.resolveChildrenConditions(layer.getConditionNodeTree().getRootNode()))
+			{
+				return;
+			}
+
+			addValidTo.add(root);
+
+			for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
+			{
+				if (action.getData() instanceof IDataUser)
+				{
+					IDataUser user = (IDataUser) action.getData();
+
+					if (user.getDataIdentifier().equals("blueprintVariables"))
+					{
+						user.setUsedData(this.bakedBlueprintVariables);
+					}
+				}
+
+				action.getData().resolve(this.data.getRandom());
+			}
+		}
+
+		List<INode<IScheduleLayer, LayerLink>> children = Lists.newArrayList(root.getTree().get(root.getChildrenIds()));
+
+		Collections.shuffle(children, this.data.getRandom());
+
+		for (INode<IScheduleLayer, LayerLink> child : children)
+		{
+			this.fetchValidLayers(child, addValidTo, visited);
+		}
+	}
+
 	private void bakeScheduleLayers()
 	{
 		this.bakedBlueprintVariables = this.blueprintData.getVariableTree().deepClone();
 
-		List<INode<IScheduleLayer, LayerLink>> layers = Lists.newArrayList();
+		this.bakedScheduleLayerNodes.clear();
 
-		List<INode<IScheduleLayer, LayerLink>> nodes = Lists.newArrayList(this.blueprintData.getScheduleLayerTree().getNodes());
-
-		Collections.shuffle(nodes, this.data.getRandom());
-
-		for (INode<IScheduleLayer, LayerLink> node : nodes)
-		{
-			IScheduleLayer layer = node.getData();
-
-			if (layer.getConditionNodeTree().isEmpty())
-			{
-				layers.add(node);
-
-				for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
-				{
-					if (action.getData() instanceof IDataChild)
-					{
-						IDataChild user = (IDataChild) action.getData();
-
-						if (user.getDataClass().equals("blueprintVariables"))
-						{
-							user.setDataParent(this.bakedBlueprintVariables);
-						}
-					}
-
-					action.getData().resolve(this.data.getRandom());
-				}
-			}
-			else if (layer.getConditionNodeTree().getProminentRoot() != null)
-			{
-				if (!this.resolveChildrenConditions(layer.getConditionNodeTree().getProminentRoot()))
-				{
-					continue;
-				}
-
-				layers.add(node);
-
-				for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
-				{
-					if (action.getData() instanceof IDataChild)
-					{
-						IDataChild user = (IDataChild) action.getData();
-
-						if (user.getDataClass().equals("blueprintVariables"))
-						{
-							user.setDataParent(this.bakedBlueprintVariables);
-						}
-					}
-
-					action.getData().resolve(this.data.getRandom());
-				}
-			}
-		}
-
-		List<INode<IScheduleLayer, LayerLink>> finalLinkResolvedNodes = Lists.newArrayList();
-
-		for (INode<IScheduleLayer, LayerLink> node : layers)
-		{
-			// TODO: MAKE SURE PARENTS/LINKS BETWEEN NODES CANNOT CREATE A CLOSED LOOP/INFINITE LOOP
-			if (!this.areParentsResolved(node, layers))
-			{
-				continue;
-			}
-
-			finalLinkResolvedNodes.add(node);
-		}
-
-		this.bakedScheduleLayerNodes = finalLinkResolvedNodes;
+		this.fetchValidLayers(this.blueprintData.getScheduleLayerTree().getRootNode(), this.bakedScheduleLayerNodes, Lists.newArrayList());
 	}
 
 	private boolean areParentsResolved(INode<IScheduleLayer, LayerLink> node, List<INode<IScheduleLayer, LayerLink>> resolvedNodes)

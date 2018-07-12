@@ -1,12 +1,11 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
-import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.PlacedEntity;
 import com.gildedgames.orbis_api.core.tree.*;
-import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.IDataHolder;
+import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
@@ -22,6 +21,7 @@ import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlueprintData
-		implements IDimensions, IData, IPositionRecordListener<BlockFilter>, IDataHolder<BlueprintData>,
+		implements IDimensions, IData, IPositionRecordListener<IBlockState>, IDataHolder<BlueprintData>,
 		INodeTreeListener<IScheduleLayer, LayerLink>
 {
 	public static final String EXTENSION = "blueprint";
@@ -93,7 +93,7 @@ public class BlueprintData
 		this();
 
 		this.dataContainer = new BlockDataContainer(region);
-		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Default Layer", this), false));
+		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Root Layer", this), false));
 	}
 
 	public BlueprintData(final BlockDataContainer container)
@@ -101,7 +101,7 @@ public class BlueprintData
 		this();
 
 		this.dataContainer = container;
-		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Default Layer", this), false));
+		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Root Layer", this), false));
 	}
 
 	public static void spawnEntities(DataPrimer primer, BlueprintData data, BlockPos pos)
@@ -358,25 +358,25 @@ public class BlueprintData
 		this.scheduleLayerTree.getNodes().forEach(
 				(s) ->
 				{
-					s.getData().getConditionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataChild)
+					s.getData().getConditionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataUser)
 							.forEach((n) ->
 							{
-								IDataChild user = (IDataChild) n.getData();
+								IDataUser user = (IDataUser) n.getData();
 
-								if (user.getDataClass().equals("blueprintVariables"))
+								if (user.getDataIdentifier().equals("blueprintVariables"))
 								{
-									user.setDataParent(this.getVariableTree());
+									user.setUsedData(this.getVariableTree());
 								}
 							});
 
-					s.getData().getPostResolveActionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataChild)
+					s.getData().getPostResolveActionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataUser)
 							.forEach((n) ->
 							{
-								IDataChild user = (IDataChild) n.getData();
+								IDataUser user = (IDataUser) n.getData();
 
-								if (user.getDataClass().equals("blueprintVariables"))
+								if (user.getDataIdentifier().equals("blueprintVariables"))
 								{
-									user.setDataParent(this.getVariableTree());
+									user.setUsedData(this.getVariableTree());
 								}
 							});
 				});
@@ -425,7 +425,7 @@ public class BlueprintData
 	}
 
 	@Override
-	public void onMarkPos(final BlockFilter filter, final int x, final int y, final int z)
+	public void onMarkPos(final IBlockState state, final int x, final int y, final int z)
 	{
 		this.listeners.forEach(IBlueprintDataListener::onDataChanged);
 	}

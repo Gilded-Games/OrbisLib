@@ -14,7 +14,7 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 {
 	private LinkedHashMap<Integer, INode<DATA, LINK>> nodes = Maps.newLinkedHashMap();
 
-	private Integer prominentRoot = 0;
+	private Integer rootNode = 0;
 
 	private Set<INodeTreeListener<DATA, LINK>> listeners = Sets.newHashSet();
 
@@ -37,7 +37,7 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 			clone.nodes.put(id, node.deepClone());
 		}
 
-		clone.prominentRoot = this.prominentRoot;
+		clone.rootNode = this.rootNode;
 		clone.dataParent = this.dataParent;
 
 		clone.listeners = Sets.newHashSet(this.listeners);
@@ -70,14 +70,19 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 		return this.nodes.size();
 	}
 
-	public INode<DATA, LINK> getProminentRoot()
+	public int getRootNodeId()
 	{
-		return this.nodes.get(this.prominentRoot);
+		return this.rootNode;
 	}
 
-	public void setProminentRoot(Integer prominentRoot)
+	public INode<DATA, LINK> getRootNode()
 	{
-		this.prominentRoot = prominentRoot;
+		return this.nodes.get(this.rootNode);
+	}
+
+	public void setRootNode(Integer rootNode)
+	{
+		this.rootNode = rootNode;
 	}
 
 	public Collection<INode<DATA, LINK>> getNodes()
@@ -184,7 +189,7 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		funnel.setIntMap("nodes", this.nodes);
-		tag.setInteger("prominentRoot", this.prominentRoot);
+		tag.setInteger("rootNode", this.rootNode);
 	}
 
 	@Override
@@ -193,7 +198,7 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		this.nodes = Maps.newLinkedHashMap(funnel.getIntMap("nodes"));
-		this.prominentRoot = tag.getInteger("prominentRoot");
+		this.rootNode = tag.getInteger("rootNode");
 
 		this.nodes.values().forEach((n) -> n.setTree(this));
 		this.nodes.values().forEach((n) -> n.listen(this));

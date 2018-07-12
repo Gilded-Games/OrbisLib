@@ -310,7 +310,8 @@ public class BlockFilterLayer implements NBT
 			{
 				IBlockState posState = holder.getCurrentScheduleLayerNode().getData().getStateRecord().get(schedX, schedY, schedZ);
 
-				if (!this.getFilterType().filter(posState, this.requiredBlocks, world, creationData.getRandom()))
+				if (!this.getFilterType()
+						.filter(posState == null ? Blocks.AIR.getDefaultState() : posState, this.requiredBlocks, world, creationData.getRandom()))
 				{
 					return;
 				}
