@@ -1,14 +1,16 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
+import com.gildedgames.orbis_api.world.IWorldObject;
 
 import java.util.List;
 
 /**
  * An object to hold ISchedules. Used by IScheduleLayers.
  */
-public interface IScheduleRecord extends NBT, IWorldObjectChild
+public interface IScheduleRecord extends NBT, IDataChild<BlueprintData>
 {
 
 	void listen(IScheduleRecordListener listener);
@@ -22,7 +24,7 @@ public interface IScheduleRecord extends NBT, IWorldObjectChild
 	 * @param schedule
 	 * @return -1 if the schedule did not setUsedData
 	 */
-	int addSchedule(final ISchedule schedule);
+	int addSchedule(final ISchedule schedule, IWorldObject parentWorldObject);
 
 	/**
 	 *
@@ -30,7 +32,7 @@ public interface IScheduleRecord extends NBT, IWorldObjectChild
 	 * @param schedule
 	 * @return Whether the schedule successfully setUsedData or not
 	 */
-	boolean setSchedule(int id, ISchedule schedule);
+	boolean setSchedule(int id, ISchedule schedule, IWorldObject parentWorldObject);
 
 	/**
 	 * @param schedule

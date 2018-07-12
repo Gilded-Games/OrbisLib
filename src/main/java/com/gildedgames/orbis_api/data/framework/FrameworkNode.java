@@ -5,7 +5,6 @@ import com.gildedgames.orbis_api.data.framework.interfaces.IFrameworkNode;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
-import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Collection;
@@ -21,7 +20,7 @@ public class FrameworkNode implements IFrameworkNode
 
 	//	private final boolean isNullAllowed = false;
 
-	private IWorldObject worldObjectParent;
+	private FrameworkData dataParent;
 
 	private FrameworkNode()
 	{
@@ -82,19 +81,25 @@ public class FrameworkNode implements IFrameworkNode
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends FrameworkData> getDataClass()
 	{
-		return this.worldObjectParent;
+		return FrameworkData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public FrameworkData getDataParent()
 	{
-		this.worldObjectParent = parent;
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(FrameworkData frameworkData)
+	{
+		this.dataParent = frameworkData;
 
 		if (this.schedule != null)
 		{
-			this.schedule.setWorldObjectParent(this.worldObjectParent);
+			this.schedule.setDataParent(frameworkData);
 		}
 	}
 }

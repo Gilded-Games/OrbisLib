@@ -144,7 +144,7 @@ public class WorldObjectManager extends WorldSavedData
 		return this.idToObject.inverse().containsKey(object);
 	}
 
-	public <T extends IWorldObject> int getID(final T object)
+	public int getID(final IWorldObject object)
 	{
 		if (object == null)
 		{
@@ -153,7 +153,7 @@ public class WorldObjectManager extends WorldSavedData
 
 		BiMap<IWorldObject, Integer> inverse = this.idToObject.inverse();
 
-		return inverse.containsValue(object) ? inverse.get(object) : -1;
+		return inverse.getOrDefault(object, -1);
 	}
 
 	public <T extends IWorldObject> T getObject(final int id)

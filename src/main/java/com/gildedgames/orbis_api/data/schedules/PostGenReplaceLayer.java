@@ -1,20 +1,20 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class PostGenReplaceLayer implements NBT, IWorldObjectChild
+public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 {
 	private ItemStack required = ItemStack.EMPTY, replaced = ItemStack.EMPTY;
 
 	private int layerId;
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	private IFilterOptions options;
 
@@ -51,7 +51,7 @@ public class PostGenReplaceLayer implements NBT, IWorldObjectChild
 	{
 		this.required = stack;
 
-		this.worldObjectParent.markDirty();
+		this.dataParent.markDirty();
 	}
 
 	public ItemStack getReplaced()
@@ -63,7 +63,7 @@ public class PostGenReplaceLayer implements NBT, IWorldObjectChild
 	{
 		this.replaced = stack;
 
-		this.worldObjectParent.markDirty();
+		this.dataParent.markDirty();
 	}
 
 	public IFilterOptions getOptions()
@@ -104,14 +104,20 @@ public class PostGenReplaceLayer implements NBT, IWorldObjectChild
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends BlueprintData> getDataClass()
 	{
-		return this.worldObjectParent;
+		return BlueprintData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public BlueprintData getDataParent()
 	{
-		this.worldObjectParent = parent;
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
 	}
 }

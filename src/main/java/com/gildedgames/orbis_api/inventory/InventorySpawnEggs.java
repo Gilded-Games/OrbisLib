@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.inventory;
 
+import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,26 +16,16 @@ import net.minecraft.util.text.TextComponentTranslation;
 
 import javax.annotation.Nonnull;
 
-public class InventorySpawnEggs implements IInventory, NBT
+public class InventorySpawnEggs implements IInventory, NBT, IDataChild<BlueprintData>
 {
 
 	private final NonNullList<ItemStack> inventory = NonNullList.withSize(16, ItemStack.EMPTY);
 
-	private BlueprintData blueprintData;
+	private BlueprintData dataParent;
 
-	private InventorySpawnEggs()
+	public InventorySpawnEggs()
 	{
 
-	}
-
-	public InventorySpawnEggs(BlueprintData blueprintData)
-	{
-		this.blueprintData = blueprintData;
-	}
-
-	public void setBlueprintData(BlueprintData blueprintData)
-	{
-		this.blueprintData = blueprintData;
 	}
 
 	@Override
@@ -103,9 +94,9 @@ public class InventorySpawnEggs implements IInventory, NBT
 	@Override
 	public void markDirty()
 	{
-		if (this.blueprintData != null)
+		if (this.dataParent != null)
 		{
-			this.blueprintData.markDirty();
+			this.dataParent.markDirty();
 		}
 	}
 
@@ -210,4 +201,21 @@ public class InventorySpawnEggs implements IInventory, NBT
 		}
 	}
 
+	@Override
+	public Class<? extends BlueprintData> getDataClass()
+	{
+		return BlueprintData.class;
+	}
+
+	@Override
+	public BlueprintData getDataParent()
+	{
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
+	}
 }

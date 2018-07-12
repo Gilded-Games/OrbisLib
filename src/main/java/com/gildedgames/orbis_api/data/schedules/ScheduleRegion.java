@@ -8,7 +8,6 @@ import com.gildedgames.orbis_api.inventory.InventorySpawnEggs;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class ScheduleRegion implements NBT, IColored, ISchedule
@@ -19,7 +18,7 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 
 	private IMutableRegion bounds;
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	private IScheduleRecord parent;
 
@@ -32,7 +31,7 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	{
 		this.triggerId = uniqueName;
 		this.bounds = bounds;
-		this.spawnEggsInv = new InventorySpawnEggs(null);
+		this.spawnEggsInv = new InventorySpawnEggs();
 	}
 
 	public InventorySpawnEggs getSpawnEggsInventory()
@@ -103,21 +102,22 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends BlueprintData> getDataClass()
 	{
-		return this.worldObjectParent;
+		return BlueprintData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public BlueprintData getDataParent()
 	{
-		this.worldObjectParent = parent;
+		return this.dataParent;
+	}
 
-		if (parent.getData() instanceof BlueprintData)
-		{
-			BlueprintData data = (BlueprintData) parent.getData();
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
 
-			this.spawnEggsInv.setBlueprintData(data);
-		}
+		this.spawnEggsInv.setDataParent(this.dataParent);
 	}
 }

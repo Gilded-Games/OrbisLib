@@ -5,10 +5,10 @@ import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
@@ -21,7 +21,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 	private IScheduleRecord scheduleRecord = new ScheduleRecord();
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	private IFilterOptions options = new FilterOptions();
 
@@ -38,27 +38,27 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		@Override
 		public void onSetData(INode<IPostResolveAction, NBT> node, IPostResolveAction iPostResolveAction, int id)
 		{
-			if (ScheduleLayer.this.worldObjectParent != null)
+			if (ScheduleLayer.this.dataParent != null)
 			{
-				ScheduleLayer.this.worldObjectParent.markDirty();
+				ScheduleLayer.this.dataParent.markDirty();
 			}
 		}
 
 		@Override
 		public void onPut(INode<IPostResolveAction, NBT> node, int id)
 		{
-			if (ScheduleLayer.this.worldObjectParent != null)
+			if (ScheduleLayer.this.dataParent != null)
 			{
-				ScheduleLayer.this.worldObjectParent.markDirty();
+				ScheduleLayer.this.dataParent.markDirty();
 			}
 		}
 
 		@Override
 		public void onRemove(INode<IPostResolveAction, NBT> node, int id)
 		{
-			if (ScheduleLayer.this.worldObjectParent != null)
+			if (ScheduleLayer.this.dataParent != null)
 			{
-				ScheduleLayer.this.worldObjectParent.markDirty();
+				ScheduleLayer.this.dataParent.markDirty();
 			}
 		}
 	};
@@ -223,45 +223,51 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
-	{
-		return this.worldObjectParent;
-	}
-
-	@Override
-	public void setWorldObjectParent(IWorldObject parent)
-	{
-		this.worldObjectParent = parent;
-
-		this.scheduleRecord.setWorldObjectParent(parent);
-		this.conditionNodeTree.setWorldObjectParent(parent);
-		this.postResolveActionNodeTree.setWorldObjectParent(parent);
-	}
-
-	@Override
 	public void onSetData(INode<IGuiCondition, ConditionLink> node, IGuiCondition condition, int id)
 	{
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
 	}
 
 	@Override
 	public void onPut(INode<IGuiCondition, ConditionLink> node, int id)
 	{
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
 	}
 
 	@Override
 	public void onRemove(INode<IGuiCondition, ConditionLink> node, int id)
 	{
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
+	}
+
+	@Override
+	public Class<? extends BlueprintData> getDataClass()
+	{
+		return BlueprintData.class;
+	}
+
+	@Override
+	public BlueprintData getDataParent()
+	{
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
+
+		this.scheduleRecord.setDataParent(blueprintData);
+		this.conditionNodeTree.setDataParent(blueprintData);
+		this.postResolveActionNodeTree.setDataParent(blueprintData);
 	}
 }

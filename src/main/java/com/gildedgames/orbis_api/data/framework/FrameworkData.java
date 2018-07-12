@@ -100,8 +100,6 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 
 	private int nextId;
 
-	private IWorldObject worldObjectParent;
-
 	private FrameworkData()
 	{
 		this.metadata = new DataMetadata();
@@ -225,14 +223,14 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	 * @param data The data inside of this node. Right now, this can be
 	 * @return The created FrameworkNode
 	 */
-	public Pair<Integer, FrameworkNode> addNode(IFrameworkNode data)
+	public Pair<Integer, FrameworkNode> addNode(IFrameworkNode data, IWorldObject parentWorldObject)
 	{
 		if (this.nodeToPos.values().contains(data.getBounds().getMin()))
 		{
 			return null;
 		}
 
-		IRegion bb = this.worldObjectParent.getShape().getBoundingBox();
+		IRegion bb = parentWorldObject.getShape().getBoundingBox();
 
 		BlockPos min = data.getBounds().getMin().add(bb.getMin());
 		BlockPos max = data.getBounds().getMax().add(bb.getMin());
@@ -255,7 +253,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 
 		final FrameworkNode newNode = new FrameworkNode(data);
 
-		newNode.setWorldObjectParent(this.worldObjectParent);
+		newNode.setDataParent(this);
 
 		this.graph.addVertex(newNode);
 
@@ -478,6 +476,8 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 				this.graph.addVertex((FrameworkNode) p.getValue());
 			}
 		});
+
+		this.nodeToPos.keySet().forEach(p -> p.getValue().setDataParent(this));
 	}
 
 	public Graph<FrameworkNode, FrameworkEdge> getGraph()
@@ -512,16 +512,20 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends FrameworkData> getDataClass()
 	{
-		return this.worldObjectParent;
+		return FrameworkData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public FrameworkData getDataParent()
 	{
-		this.worldObjectParent = parent;
+		return this;
+	}
 
-		this.nodeToPos.keySet().forEach(p -> p.getValue().setWorldObjectParent(this.worldObjectParent));
+	@Override
+	public void setDataParent(FrameworkData frameworkData)
+	{
+
 	}
 }

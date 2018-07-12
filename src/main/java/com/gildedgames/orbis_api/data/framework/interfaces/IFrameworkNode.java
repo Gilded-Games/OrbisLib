@@ -1,10 +1,11 @@
 package com.gildedgames.orbis_api.data.framework.interfaces;
 
+import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
+import com.gildedgames.orbis_api.data.framework.FrameworkData;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,14 +13,14 @@ import java.util.Random;
 
 /**
  * Represents data that can be used to randomly choose other data.
- * This is used in {@link FrameworkNode Framework tree}.
+ * This is used in FrameworkNode Framework tree.
  * Some implementations are <tt>ScheduleData</tt> and <tt>
  * FrameworkData</tt>.
  * @see FrameworkData
  * @author Emile
  *
  */
-public interface IFrameworkNode extends NBT, IWorldObjectChild
+public interface IFrameworkNode extends NBT, IDataChild<FrameworkData>
 {
 
 	IMutableRegion getBounds();

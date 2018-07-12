@@ -1,15 +1,15 @@
 package com.gildedgames.orbis_api.data.pathway;
 
+import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IColored;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 
-public class Entrance implements NBT, IColored, IWorldObjectChild
+public class Entrance implements NBT, IColored, IDataChild<BlueprintData>
 {
 	private IMutableRegion bounds;
 
@@ -17,7 +17,7 @@ public class Entrance implements NBT, IColored, IWorldObjectChild
 
 	private EnumFacing[] facings;
 
-	private IWorldObject parent;
+	private BlueprintData dataParent;
 
 	private Entrance()
 	{
@@ -81,14 +81,20 @@ public class Entrance implements NBT, IColored, IWorldObjectChild
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends BlueprintData> getDataClass()
 	{
-		return this.parent;
+		return BlueprintData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public BlueprintData getDataParent()
 	{
-		this.parent = parent;
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
 	}
 }

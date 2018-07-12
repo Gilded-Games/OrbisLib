@@ -5,8 +5,8 @@ import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.PlacedEntity;
 import com.gildedgames.orbis_api.core.tree.*;
+import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.IDataHolder;
-import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
@@ -20,7 +20,6 @@ import com.gildedgames.orbis_api.util.BlueprintHelper;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.item.ItemMonsterPlacer;
@@ -40,7 +39,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlueprintData
-		implements IDimensions, IData, IPositionRecordListener<BlockFilter>, IWorldObjectChild, IDataHolder<BlueprintData>,
+		implements IDimensions, IData, IPositionRecordListener<BlockFilter>, IDataHolder<BlueprintData>,
 		INodeTreeListener<IScheduleLayer, LayerLink>
 {
 	public static final String EXTENSION = "blueprint";
@@ -61,8 +60,6 @@ public class BlueprintData
 
 	private List<Entrance> entrances = Lists.newArrayList();
 
-	private IWorldObject worldObjectParent;
-
 	private Pos2D scheduleTreeGuiPos, variableTreeGuiPos = Pos2D.ORIGIN;
 
 	private BlueprintData()
@@ -74,19 +71,19 @@ public class BlueprintData
 			@Override
 			public void onSetData(INode<BlueprintVariable, NBT> node, BlueprintVariable variable, int id)
 			{
-				node.getData().setWorldObjectParent(BlueprintData.this.worldObjectParent);
+				node.getData().setDataParent(BlueprintData.this);
 			}
 
 			@Override
 			public void onPut(INode<BlueprintVariable, NBT> node, int id)
 			{
-				node.getData().setWorldObjectParent(BlueprintData.this.worldObjectParent);
+				node.getData().setDataParent(BlueprintData.this);
 			}
 
 			@Override
 			public void onRemove(INode<BlueprintVariable, NBT> node, int id)
 			{
-				node.getData().setWorldObjectParent(null);
+				node.getData().setDataParent(null);
 			}
 		});
 	}
@@ -181,23 +178,6 @@ public class BlueprintData
 		}
 	}
 
-	@Override
-	public IWorldObject getWorldObjectParent()
-	{
-		return this.worldObjectParent;
-	}
-
-	@Override
-	public void setWorldObjectParent(IWorldObject parent)
-	{
-		this.worldObjectParent = parent;
-
-		this.entrances.forEach(e -> e.setWorldObjectParent(this.worldObjectParent));
-		this.postGenReplaceLayers.values().forEach(l -> l.setWorldObjectParent(this.worldObjectParent));
-		this.scheduleLayerTree.setWorldObjectParent(this.worldObjectParent);
-		this.variableTree.setWorldObjectParent(this.worldObjectParent);
-	}
-
 	public void addEntrance(Entrance entrance)
 	{
 		final Lock w = this.lock.writeLock();
@@ -214,8 +194,7 @@ public class BlueprintData
 				throw new IllegalArgumentException("Entrance can only be placed on the edges of blueprints");
 			}
 
-			entrance.setWorldObjectParent(this.worldObjectParent);
-
+			entrance.setDataParent(this);
 			this.entrances.add(entrance);
 
 			this.listeners.forEach(o -> o.onAddEntrance(entrance));
@@ -365,8 +344,11 @@ public class BlueprintData
 		this.variableTree = funnel.getWithDefault("variableTree", () -> this.variableTree);
 		this.postGenReplaceLayers = Maps.newLinkedHashMap(funnel.getIntMap("postGenReplaceLayers"));
 
+		this.scheduleLayerTree.listen(this);
+
 		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().setDimensions(this));
 		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().getFilterRecord().listen(this));
+		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().setNodeParent(l));
 
 		this.entrances = funnel.getList("entrances");
 
@@ -376,28 +358,33 @@ public class BlueprintData
 		this.scheduleLayerTree.getNodes().forEach(
 				(s) ->
 				{
-					s.getData().getConditionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataUser)
+					s.getData().getConditionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataChild)
 							.forEach((n) ->
 							{
-								IDataUser user = (IDataUser) n.getData();
+								IDataChild user = (IDataChild) n.getData();
 
-								if (user.getDataIdentifier().equals("blueprintVariables"))
+								if (user.getDataClass().equals("blueprintVariables"))
 								{
-									user.setUsedData(this.getVariableTree());
+									user.setDataParent(this.getVariableTree());
 								}
 							});
 
-					s.getData().getPostResolveActionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataUser)
+					s.getData().getPostResolveActionNodeTree().getNodes().stream().filter((n) -> n.getData() instanceof IDataChild)
 							.forEach((n) ->
 							{
-								IDataUser user = (IDataUser) n.getData();
+								IDataChild user = (IDataChild) n.getData();
 
-								if (user.getDataIdentifier().equals("blueprintVariables"))
+								if (user.getDataClass().equals("blueprintVariables"))
 								{
-									user.setUsedData(this.getVariableTree());
+									user.setDataParent(this.getVariableTree());
 								}
 							});
 				});
+
+		this.entrances.forEach(e -> e.setDataParent(this));
+		this.postGenReplaceLayers.values().forEach(l -> l.setDataParent(this));
+		this.scheduleLayerTree.setDataParent(this);
+		this.variableTree.setDataParent(this);
 	}
 
 	@Override
@@ -494,8 +481,8 @@ public class BlueprintData
 	public void setPostGenReplaceLayer(final int index, final PostGenReplaceLayer layer)
 	{
 		layer.setLayerId(index);
-		layer.setWorldObjectParent(this.worldObjectParent);
 
+		layer.setDataParent(this);
 		this.postGenReplaceLayers.put(index, layer);
 	}
 
@@ -555,7 +542,7 @@ public class BlueprintData
 	{
 		IScheduleLayer layer = node.getData();
 
-		layer.setWorldObjectParent(this.worldObjectParent);
+		layer.setDataParent(this);
 		layer.setNodeParent(node);
 	}
 
@@ -564,7 +551,7 @@ public class BlueprintData
 	{
 		IScheduleLayer layer = node.getData();
 
-		layer.setWorldObjectParent(this.worldObjectParent);
+		layer.setDataParent(this);
 		layer.setNodeParent(node);
 	}
 

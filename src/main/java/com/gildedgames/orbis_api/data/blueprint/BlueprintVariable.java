@@ -5,16 +5,15 @@ import com.gildedgames.orbis_api.core.variables.GuiVarString;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
 import com.gildedgames.orbis_api.core.variables.IGuiVarDisplayContents;
 import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
+import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.List;
 
-public class BlueprintVariable<DATA> implements NBT, IWorldObjectChild, IGuiVarDisplayContents
+public class BlueprintVariable<DATA> implements NBT, IGuiVarDisplayContents, IDataChild<BlueprintData>
 {
 	private IGuiVar<DATA, ?> variable;
 
@@ -24,7 +23,7 @@ public class BlueprintVariable<DATA> implements NBT, IWorldObjectChild, IGuiVarD
 
 	private List<IGuiVar> variables = Lists.newArrayList();
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	private BlueprintVariable()
 	{
@@ -67,9 +66,9 @@ public class BlueprintVariable<DATA> implements NBT, IWorldObjectChild, IGuiVarD
 	{
 		this.pos = pos;
 
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
 	}
 
@@ -97,20 +96,26 @@ public class BlueprintVariable<DATA> implements NBT, IWorldObjectChild, IGuiVarD
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
-	{
-		return this.worldObjectParent;
-	}
-
-	@Override
-	public void setWorldObjectParent(IWorldObject parent)
-	{
-		this.worldObjectParent = parent;
-	}
-
-	@Override
 	public void setParentDisplay(GuiVarDisplay parentDisplay)
 	{
 
+	}
+
+	@Override
+	public Class<? extends BlueprintData> getDataClass()
+	{
+		return BlueprintData.class;
+	}
+
+	@Override
+	public BlueprintData getDataParent()
+	{
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = this.dataParent;
 	}
 }

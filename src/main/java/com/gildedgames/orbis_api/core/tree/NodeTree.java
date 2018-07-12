@@ -1,16 +1,16 @@
 package com.gildedgames.orbis_api.core.tree;
 
+import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.*;
 
-public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListener<DATA, LINK>
+public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDataChild<BlueprintData>
 {
 	private LinkedHashMap<Integer, INode<DATA, LINK>> nodes = Maps.newLinkedHashMap();
 
@@ -18,7 +18,7 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListen
 
 	private Set<INodeTreeListener<DATA, LINK>> listeners = Sets.newHashSet();
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	public NodeTree()
 	{
@@ -38,7 +38,7 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListen
 		}
 
 		clone.prominentRoot = this.prominentRoot;
-		clone.worldObjectParent = this.worldObjectParent;
+		clone.dataParent = this.dataParent;
 
 		clone.listeners = Sets.newHashSet(this.listeners);
 
@@ -96,7 +96,7 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListen
 		node.listen(this);
 
 		node.setNodeId(id);
-		node.setWorldObjectParent(this.worldObjectParent);
+		node.setDataParent(this.dataParent);
 
 		this.nodes.put(id, node);
 
@@ -143,7 +143,7 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListen
 
 		this.listeners.forEach((l) -> l.onRemove(node, id));
 
-		node.setWorldObjectParent(null);
+		node.setDataParent(null);
 
 		return node;
 	}
@@ -201,23 +201,29 @@ public class NodeTree<DATA, LINK> implements NBT, IWorldObjectChild, INodeListen
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
-	{
-		return this.worldObjectParent;
-	}
-
-	@Override
-	public void setWorldObjectParent(IWorldObject parent)
-	{
-		this.worldObjectParent = parent;
-
-		this.nodes.values().forEach((n) -> n.setWorldObjectParent(parent));
-	}
-
-	@Override
 	public void onSetData(INode<DATA, LINK> node, DATA data)
 	{
 		this.listeners.forEach((l) -> l.onSetData(node, data, node.getNodeId()));
+	}
+
+	@Override
+	public Class<? extends BlueprintData> getDataClass()
+	{
+		return BlueprintData.class;
+	}
+
+	@Override
+	public BlueprintData getDataParent()
+	{
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
+
+		this.nodes.values().forEach((n) -> n.setDataParent(blueprintData));
 	}
 
 	public static class NodeIterable<DATA, LINK> implements Iterable<INode<DATA, LINK>>

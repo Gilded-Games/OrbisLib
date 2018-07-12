@@ -1,9 +1,9 @@
 package com.gildedgames.orbis_api.core.tree;
 
+import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -32,7 +32,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 	private NodeTree<DATA, LINK> tree;
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	private boolean canLink;
 
@@ -97,7 +97,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to add a child to an INode that doesn't have a NodeTree setUsedData to it.");
+			throw new RuntimeException("Tried to add a child to an INode that doesn't have a NodeTree setDataParent to it.");
 		}
 
 		INode<DATA, LINK> node = this.tree.get(nodeId);
@@ -123,9 +123,9 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 			this.children.put(nodeId, link);
 
-			if (this.worldObjectParent != null)
+			if (this.dataParent != null)
 			{
-				this.worldObjectParent.markDirty();
+				this.dataParent.markDirty();
 			}
 		}
 	}
@@ -140,7 +140,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to remove a child from an INode that doesn't have a NodeTree setUsedData to it.");
+			throw new RuntimeException("Tried to remove a child from an INode that doesn't have a NodeTree setDataParent to it.");
 		}
 
 		if (!this.children.containsKey(nodeId) || !this.tree.containsId(nodeId))
@@ -156,9 +156,9 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		this.children.remove(nodeId);
 
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
 
 		return removed;
@@ -187,14 +187,19 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		this.data = data;
 
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
 
-		if (this.data instanceof IWorldObjectChild)
+		if (this.data instanceof IDataChild)
 		{
-			((IWorldObjectChild) this.data).setWorldObjectParent(this.worldObjectParent);
+			IDataChild<BlueprintData> dataChild = (IDataChild<BlueprintData>) this.data;
+
+			if (dataChild.getDataClass() == BlueprintData.class)
+			{
+				dataChild.setDataParent(this.dataParent);
+			}
 		}
 
 		if (this.listeners != null)
@@ -225,7 +230,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to add a parent to an INode that doesn't have a NodeTree setUsedData to it.");
+			throw new RuntimeException("Tried to add a parent to an INode that doesn't have a NodeTree setDataParent to it.");
 		}
 
 		if (this.isDirectionless)
@@ -266,9 +271,9 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		this.parents.add(nodeId);
 
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
 	}
 
@@ -287,9 +292,9 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 		this.parents.remove(nodeId);
 
-		if (this.worldObjectParent != null)
+		if (this.dataParent != null)
 		{
-			this.worldObjectParent.markDirty();
+			this.dataParent.markDirty();
 		}
 	}
 
@@ -298,7 +303,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to fetch roots from a INode that doesn't have a NodeTree setUsedData to it.");
+			throw new RuntimeException("Tried to fetch roots from a INode that doesn't have a NodeTree setDataParent to it.");
 		}
 
 		visitedNodes.add(this);
@@ -326,7 +331,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		if (this.tree == null)
 		{
-			throw new RuntimeException("Tried to fetch all children from a INode that doesn't have a NodeTree setUsedData to it.");
+			throw new RuntimeException("Tried to fetch all children from a INode that doesn't have a NodeTree setDataParent to it.");
 		}
 
 		for (Integer childNodeId : this.children.keySet())
@@ -444,19 +449,30 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends BlueprintData> getDataClass()
 	{
-		return this.worldObjectParent;
+		return BlueprintData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public BlueprintData getDataParent()
 	{
-		this.worldObjectParent = parent;
+		return this.dataParent;
+	}
 
-		if (this.data instanceof IWorldObjectChild)
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
+
+		if (this.data instanceof IDataChild)
 		{
-			((IWorldObjectChild) this.data).setWorldObjectParent(parent);
+			IDataChild<BlueprintData> dataChild = (IDataChild<BlueprintData>) this.data;
+
+			if (dataChild.getDataClass() == BlueprintData.class)
+			{
+				dataChild.setDataParent(this.dataParent);
+			}
 		}
 	}
 }

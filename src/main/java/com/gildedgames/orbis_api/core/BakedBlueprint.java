@@ -11,7 +11,7 @@ import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
-import com.gildedgames.orbis_api.data.IDataUser;
+import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
@@ -121,13 +121,13 @@ public class BakedBlueprint implements IDimensions
 	{
 		IGuiCondition condition = parent.getData();
 
-		if (condition instanceof IDataUser)
+		if (condition instanceof IDataChild)
 		{
-			IDataUser user = (IDataUser) condition;
+			IDataChild user = (IDataChild) condition;
 
-			if (user.getDataIdentifier().equals("blueprintVariables"))
+			if (user.getDataClass().equals("blueprintVariables"))
 			{
-				user.setUsedData(this.bakedBlueprintVariables);
+				user.setDataParent(this.bakedBlueprintVariables);
 			}
 		}
 
@@ -173,13 +173,13 @@ public class BakedBlueprint implements IDimensions
 
 				for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
 				{
-					if (action.getData() instanceof IDataUser)
+					if (action.getData() instanceof IDataChild)
 					{
-						IDataUser user = (IDataUser) action.getData();
+						IDataChild user = (IDataChild) action.getData();
 
-						if (user.getDataIdentifier().equals("blueprintVariables"))
+						if (user.getDataClass().equals("blueprintVariables"))
 						{
-							user.setUsedData(this.bakedBlueprintVariables);
+							user.setDataParent(this.bakedBlueprintVariables);
 						}
 					}
 
@@ -197,13 +197,13 @@ public class BakedBlueprint implements IDimensions
 
 				for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
 				{
-					if (action.getData() instanceof IDataUser)
+					if (action.getData() instanceof IDataChild)
 					{
-						IDataUser user = (IDataUser) action.getData();
+						IDataChild user = (IDataChild) action.getData();
 
-						if (user.getDataIdentifier().equals("blueprintVariables"))
+						if (user.getDataClass().equals("blueprintVariables"))
 						{
-							user.setUsedData(this.bakedBlueprintVariables);
+							user.setDataParent(this.bakedBlueprintVariables);
 						}
 					}
 

@@ -8,13 +8,14 @@ import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
+import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 
 import javax.annotation.Nonnull;
 
-public interface IScheduleLayer extends NBT, IWorldObjectChild
+public interface IScheduleLayer extends NBT, IDataChild<BlueprintData>
 {
 	INode<IScheduleLayer, LayerLink> getNodeParent();
 

@@ -1,12 +1,13 @@
 package com.gildedgames.orbis_api.core.tree;
 
+import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObjectChild;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface INode<DATA, LINK> extends NBT, IWorldObjectChild
+public interface INode<DATA, LINK> extends NBT, IDataChild<BlueprintData>
 {
 
 	void listen(INodeListener<DATA, LINK> listener);

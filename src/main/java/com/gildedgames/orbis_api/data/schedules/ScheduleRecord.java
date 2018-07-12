@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.util.ObjectFilter;
 import com.gildedgames.orbis_api.util.RegionHelp;
@@ -20,7 +21,7 @@ public class ScheduleRecord implements IScheduleRecord
 
 	private Map<Integer, ISchedule> schedules = Maps.newHashMap();
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	private IScheduleLayer parent;
 
@@ -55,11 +56,11 @@ public class ScheduleRecord implements IScheduleRecord
 	}
 
 	@Override
-	public int addSchedule(ISchedule schedule)
+	public int addSchedule(ISchedule schedule, IWorldObject parentWorldObject)
 	{
 		int id = this.nextId++;
 
-		boolean success = this.setSchedule(id, schedule);
+		boolean success = this.setSchedule(id, schedule, parentWorldObject);
 
 		if (!success)
 		{
@@ -70,9 +71,9 @@ public class ScheduleRecord implements IScheduleRecord
 	}
 
 	@Override
-	public boolean setSchedule(int id, ISchedule schedule)
+	public boolean setSchedule(int id, ISchedule schedule, IWorldObject parentWorldObject)
 	{
-		IRegion bb = this.worldObjectParent.getShape().getBoundingBox();
+		IRegion bb = parentWorldObject.getShape().getBoundingBox();
 
 		BlockPos min = schedule.getBounds().getMin().add(bb.getMin());
 		BlockPos max = schedule.getBounds().getMax().add(bb.getMin());
@@ -91,7 +92,7 @@ public class ScheduleRecord implements IScheduleRecord
 			}
 		}
 
-		schedule.setWorldObjectParent(this.worldObjectParent);
+		schedule.setDataParent(this.dataParent);
 		schedule.setParent(this);
 
 		this.schedules.put(id, schedule);
@@ -181,16 +182,22 @@ public class ScheduleRecord implements IScheduleRecord
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends BlueprintData> getDataClass()
 	{
-		return this.worldObjectParent;
+		return BlueprintData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public BlueprintData getDataParent()
 	{
-		this.worldObjectParent = parent;
+		return this.dataParent;
+	}
 
-		this.schedules.values().forEach(s -> s.setWorldObjectParent(this.worldObjectParent));
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
+
+		this.schedules.values().forEach(s -> s.setDataParent(this.dataParent));
 	}
 }

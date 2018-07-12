@@ -1,13 +1,13 @@
 package com.gildedgames.orbis_api.data.schedules;
 
 import com.gildedgames.orbis_api.core.ICreationData;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintDataPalette;
 import com.gildedgames.orbis_api.data.region.IColored;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class ScheduleBlueprint implements NBT, IColored, ISchedule
@@ -16,7 +16,7 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 
 	private IMutableRegion bounds;
 
-	private IWorldObject worldObjectParent;
+	private BlueprintData dataParent;
 
 	private IScheduleRecord parent;
 
@@ -102,14 +102,20 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public IWorldObject getWorldObjectParent()
+	public Class<? extends BlueprintData> getDataClass()
 	{
-		return this.worldObjectParent;
+		return BlueprintData.class;
 	}
 
 	@Override
-	public void setWorldObjectParent(IWorldObject parent)
+	public BlueprintData getDataParent()
 	{
-		this.worldObjectParent = parent;
+		return this.dataParent;
+	}
+
+	@Override
+	public void setDataParent(BlueprintData blueprintData)
+	{
+		this.dataParent = blueprintData;
 	}
 }
