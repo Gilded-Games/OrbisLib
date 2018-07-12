@@ -301,9 +301,12 @@ public class BakedBlueprint implements IDimensions
 		{
 			IScheduleLayer layer = node.getData();
 
-			for (BlockFilter filter : layer.getFilterRecord().getData())
+			for (IBlockState state : layer.getStateRecord().getData())
 			{
-				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), this.rawDataContainer, this.data, layer.getOptions());
+				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+				{
+					this.rawDataContainer.setBlockState(state, pos);
+				}
 			}
 		}
 

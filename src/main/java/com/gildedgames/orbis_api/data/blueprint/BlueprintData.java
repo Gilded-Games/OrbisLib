@@ -347,7 +347,7 @@ public class BlueprintData
 		this.scheduleLayerTree.listen(this);
 
 		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().setDimensions(this));
-		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().getFilterRecord().listen(this));
+		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().getStateRecord().listen(this));
 		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().setNodeParent(l));
 
 		this.entrances = funnel.getList("entrances");

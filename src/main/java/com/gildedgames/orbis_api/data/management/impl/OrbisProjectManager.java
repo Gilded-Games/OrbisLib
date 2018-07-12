@@ -160,10 +160,7 @@ public class OrbisProjectManager implements IProjectManager
 
 		final List<IProjectIdentifier> projectsToRemove = Lists.newArrayList();
 
-		this.idToProject.entrySet().forEach(entry ->
-		{
-			IProjectIdentifier id = entry.getKey();
-			IProject p = entry.getValue();
+		this.idToProject.forEach((id, p) -> {
 
 			if (!foundProjects.contains(id))
 			{

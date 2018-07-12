@@ -1,8 +1,6 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
-import com.gildedgames.orbis_api.block.BlockFilter;
-import com.gildedgames.orbis_api.core.CreationData;
 import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.data.IDataHolder;
@@ -214,9 +212,12 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 		{
 			IScheduleLayer layer = node.getData();
 
-			for (BlockFilter filter : layer.getFilterRecord().getData())
+			for (IBlockState state : layer.getStateRecord().getData())
 			{
-				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), chosenBottomBlocks, new CreationData(world), layer.getOptions());
+				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+				{
+					chosenBottomBlocks.setBlockState(state, pos);
+				}
 			}
 		}
 
@@ -235,9 +236,12 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 			{
 				IScheduleLayer layer = node.getData();
 
-				for (BlockFilter filter : layer.getFilterRecord().getData())
+				for (IBlockState state : layer.getStateRecord().getData())
 				{
-					filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), blocks, new CreationData(world), layer.getOptions());
+					for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+					{
+						blocks.setBlockState(state, pos);
+					}
 				}
 			}
 
@@ -253,9 +257,12 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 		{
 			IScheduleLayer layer = node.getData();
 
-			for (BlockFilter filter : layer.getFilterRecord().getData())
+			for (IBlockState state : layer.getStateRecord().getData())
 			{
-				filter.apply(layer.getFilterRecord().getPositions(filter, BlockPos.ORIGIN), chosenTopBlocks, new CreationData(world), layer.getOptions());
+				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+				{
+					chosenTopBlocks.setBlockState(state, pos);
+				}
 			}
 		}
 

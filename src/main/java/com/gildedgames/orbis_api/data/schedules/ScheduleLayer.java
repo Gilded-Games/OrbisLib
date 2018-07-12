@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.data.schedules;
 
-import com.gildedgames.orbis_api.block.BlockFilter;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
@@ -9,6 +8,7 @@ import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
@@ -17,7 +17,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 {
 	private IDimensions dimensions;
 
-	private IPositionRecord<BlockFilter> positionRecord;
+	private IPositionRecord<IBlockState> stateRecord;
 
 	private IScheduleRecord scheduleRecord = new ScheduleRecord();
 
@@ -73,7 +73,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		this.getOptions().getDisplayNameVar().setData(displayName);
 		this.dimensions = dimensions;
 
-		this.positionRecord = new FilterRecord(this.dimensions.getWidth(), this.dimensions.getHeight(), this.dimensions.getLength());
+		this.stateRecord = new BlockStateRecord(this.dimensions.getWidth(), this.dimensions.getHeight(), this.dimensions.getLength());
 
 		this.scheduleRecord.setParent(this);
 		this.conditionNodeTree.listen(this);
@@ -99,9 +99,9 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	}
 
 	@Override
-	public IPositionRecord<BlockFilter> getFilterRecord()
+	public IPositionRecord<IBlockState> getStateRecord()
 	{
-		return this.positionRecord;
+		return this.stateRecord;
 	}
 
 	@Override
@@ -182,7 +182,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		funnel.set("positionRecord", this.positionRecord);
+		funnel.set("stateRecord", this.stateRecord);
 		funnel.set("scheduleRecord", this.scheduleRecord);
 
 		funnel.set("options", this.options);
@@ -200,7 +200,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.positionRecord = funnel.get("positionRecord");
+		this.stateRecord = funnel.get("stateRecord");
 
 		this.scheduleRecord = funnel.getWithDefault("scheduleRecord", this::getScheduleRecord);
 

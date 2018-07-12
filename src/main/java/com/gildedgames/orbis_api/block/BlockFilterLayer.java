@@ -304,49 +304,13 @@ public class BlockFilterLayer implements NBT
 
 		if (creationData.schedules() && holder != null)
 		{
-			IPositionRecord<BlockFilter> record = holder.getCurrentScheduleLayerNode().getData().getFilterRecord();
+			IPositionRecord<IBlockState> record = holder.getCurrentScheduleLayerNode().getData().getStateRecord();
 
 			if (schedX >= 0 && schedY >= 0 && schedZ >= 0 && schedX < record.getWidth() && schedY < record.getHeight() && schedZ < record.getLength())
 			{
-				BlockFilter posFilter = holder.getCurrentScheduleLayerNode().getData().getFilterRecord().get(schedX, schedY, schedZ);
+				IBlockState posState = holder.getCurrentScheduleLayerNode().getData().getStateRecord().get(schedX, schedY, schedZ);
 
-				boolean found = false;
-
-				if (posFilter != null)
-				{
-					for (BlockFilterLayer layer : parentFilter.getFilters())
-					{
-						if (layer.getFilterType() == BlockFilterType.ALL || layer.getRequiredBlocks()
-								.equals(posFilter.getFilters().get(0).getReplacementBlocks()))
-						{
-							found = true;
-							break;
-						}
-					}
-				}
-				else
-				{
-					outer:
-					for (BlockFilterLayer layer : parentFilter.getFilters())
-					{
-						for (BlockDataWithConditions data : layer.getRequiredBlocks())
-						{
-							if (data.isAir())
-							{
-								found = true;
-								break outer;
-							}
-						}
-
-						if (layer.getFilterType() == BlockFilterType.ALL || layer.getRequiredBlocks().equals(AIR_BLOCKS))
-						{
-							found = true;
-							break;
-						}
-					}
-				}
-
-				if (!found)
+				if (!this.getFilterType().filter(posState, this.requiredBlocks, world, creationData.getRandom()))
 				{
 					return;
 				}
@@ -355,11 +319,11 @@ public class BlockFilterLayer implements NBT
 				{
 					if (replacementBlock.isAir())
 					{
-						holder.getCurrentScheduleLayerNode().getData().getFilterRecord().unmarkPos(schedX, schedY, schedZ);
+						holder.getCurrentScheduleLayerNode().getData().getStateRecord().unmarkPos(schedX, schedY, schedZ);
 					}
 					else
 					{
-						holder.getCurrentScheduleLayerNode().getData().getFilterRecord().markPos(parentFilter, schedX, schedY, schedZ);
+						holder.getCurrentScheduleLayerNode().getData().getStateRecord().markPos(replacementBlock.getBlockState(), schedX, schedY, schedZ);
 					}
 				}
 			}

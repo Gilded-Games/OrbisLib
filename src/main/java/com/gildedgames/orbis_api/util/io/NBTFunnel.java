@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.util.io;
 
+import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
@@ -8,6 +9,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.util.ResourceLocation;
@@ -28,6 +31,33 @@ import java.util.function.Supplier;
 
 public class NBTFunnel
 {
+
+	public static Function<IBlockState, NBTTagCompound> BLOCKSTATE_SETTER = state ->
+	{
+		NBTTagCompound t = new NBTTagCompound();
+
+		final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(state.getBlock());
+		short meta = (short) (state.getBlock().getMetaFromState(state));
+
+		t.setString("mod", identifier.getResourceDomain());
+		t.setString("name", identifier.getResourcePath());
+		t.setShort("meta", meta);
+
+		return t;
+	};
+
+	public static Function<NBTTagCompound, IBlockState> BLOCKSTATE_GETTER = tag ->
+	{
+		String mod = tag.getString("mod");
+		String name = tag.getString("name");
+
+		final Block block = OrbisAPI.services().registrar().findBlock(new ResourceLocation(mod, name));
+
+		int meta = tag.getShort("meta");
+
+		return block.getStateFromMeta(meta);
+	};
+
 	public static Function<ItemStack, NBTTagCompound> STACK_SETTER = o ->
 	{
 		NBTTagCompound tag = new NBTTagCompound();
@@ -775,6 +805,52 @@ public class NBTFunnel
 		}
 
 		this.tag.setTag(key, writtenObjects);
+	}
+
+	public <NBT_OBJECT> void setArray(final String key, final NBT_OBJECT[] array, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	{
+		final boolean nul = array == null;
+
+		this.tag.setBoolean(key + "_null", nul);
+
+		if (nul)
+		{
+			return;
+		}
+
+		final NBTTagList writtenObjects = new NBTTagList();
+
+		for (final NBT_OBJECT obj : array)
+		{
+			if (setter != null)
+			{
+				writtenObjects.appendTag(setter.apply(obj));
+			}
+			else
+			{
+				writtenObjects.appendTag(NBTHelper.write((NBT) obj));
+			}
+		}
+
+		this.tag.setTag(key, writtenObjects);
+	}
+
+	public <NBT_OBJECT> NBT_OBJECT[] getArray(final String key, final Class<? extends NBT_OBJECT> clazz, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	{
+		if (this.tag.getBoolean(key + "_null"))
+		{
+			return null;
+		}
+
+		final NBTTagList nbtList = this.tag.getTagList(key, 10);
+		final NBT_OBJECT[] readObjects = (NBT_OBJECT[]) Array.newInstance(clazz, nbtList.tagCount());
+
+		for (int i = 0; i < nbtList.tagCount(); i++)
+		{
+			readObjects[i] = getter != null ? getter.apply(nbtList.getCompoundTagAt(i)) : NBTHelper.read(nbtList.getCompoundTagAt(i));
+		}
+
+		return readObjects;
 	}
 
 	public <NBT_OBJECT> List<NBT_OBJECT> getList(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)

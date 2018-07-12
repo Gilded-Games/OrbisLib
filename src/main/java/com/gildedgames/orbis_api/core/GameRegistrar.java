@@ -25,7 +25,7 @@ public class GameRegistrar
 		final String modId = identifier.getResourceDomain();
 		final String name = identifier.getResourcePath();
 
-		if (modId.equals("minecraft") || modId.equals("") || modId == null)
+		if (modId.equals("minecraft") || modId.equals(""))
 		{
 			return Block.getBlockFromName(name);
 		}
