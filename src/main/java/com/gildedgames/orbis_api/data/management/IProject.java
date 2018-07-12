@@ -17,6 +17,18 @@ public interface IProject extends NBT
 {
 
 	/**
+	 * Mod developer should set their project to be kept cached.
+	 * @return Whether or not the project is being used by a mod internally.
+	 */
+	boolean isModProject();
+
+	/**
+	 * Mod developer should set their project to be kept cached.
+	 * @param flag Whether or not the project is being used by a mod internally.
+	 */
+	void setIsModProject(boolean flag);
+
+	/**
 	 * Orbis client will always favour using the file location
 	 * instead of the URI. getJarLocation() is only used for loading
 	 * projects from a mod jar.

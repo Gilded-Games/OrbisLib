@@ -42,6 +42,8 @@ public class OrbisProject implements IProject
 
 	private String archiveBaseName;
 
+	private boolean isModProject;
+
 	private OrbisProject()
 	{
 		this.cache = new OrbisProjectCache(this);
@@ -110,6 +112,18 @@ public class OrbisProject implements IProject
 
 		this.identifier = funnel.get("identifier");
 		this.metadata = funnel.get("metadata");
+	}
+
+	@Override
+	public boolean isModProject()
+	{
+		return this.isModProject;
+	}
+
+	@Override
+	public void setIsModProject(boolean flag)
+	{
+		this.isModProject = flag;
 	}
 
 	@Nullable

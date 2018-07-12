@@ -86,7 +86,13 @@ public class OrbisProjectManager implements IProjectManager
 	@Override
 	public void flushProjects()
 	{
-		this.idToProject.values().forEach(this::saveProjectToDisk);
+		this.idToProject.values().forEach((project) ->
+		{
+			if (!project.isModProject())
+			{
+				this.saveProjectToDisk(project);
+			}
+		});
 	}
 
 	private void walkProjects(final BiConsumer<File, File> action)
@@ -154,11 +160,17 @@ public class OrbisProjectManager implements IProjectManager
 
 		final List<IProjectIdentifier> projectsToRemove = Lists.newArrayList();
 
-		this.idToProject.keySet().forEach(p ->
+		this.idToProject.entrySet().forEach(entry ->
 		{
-			if (!foundProjects.contains(p))
+			IProjectIdentifier id = entry.getKey();
+			IProject p = entry.getValue();
+
+			if (!foundProjects.contains(id))
 			{
-				projectsToRemove.add(p);
+				if (!p.isModProject())
+				{
+					projectsToRemove.add(id);
+				}
 			}
 		});
 

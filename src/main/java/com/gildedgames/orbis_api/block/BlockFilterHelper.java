@@ -11,6 +11,7 @@ import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemMultiTexture;
 import net.minecraft.item.ItemStack;
 
+import java.util.Collections;
 import java.util.List;
 
 public class BlockFilterHelper
@@ -32,6 +33,11 @@ public class BlockFilterHelper
 
 	public static List<BlockDataWithConditions> convertToBlockData(IBlockState[] states)
 	{
+		if (states == null)
+		{
+			return Collections.emptyList();
+		}
+
 		List<BlockDataWithConditions> blockData = Lists.newArrayList();
 
 		for (IBlockState state : states)
