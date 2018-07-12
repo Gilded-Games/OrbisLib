@@ -3,12 +3,12 @@ package com.gildedgames.orbis_api.util.mc;
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.util.io.IClassSerializer;
 import com.google.common.collect.AbstractIterator;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -120,7 +120,8 @@ public class NBTHelper
 			return ItemStack.EMPTY;
 		}
 
-		ItemStack itemstack = new ItemStack(Item.getItemById(tag.getShort("id")), tag.getByte("count"), tag.getShort("meta"));
+		ItemStack itemstack = new ItemStack(OrbisAPI.services().registrar().findItem(new ResourceLocation(tag.getString("id"))), tag.getByte("count"),
+				tag.getShort("meta"));
 
 		if (tag.hasKey("shareTag"))
 		{
@@ -143,9 +144,10 @@ public class NBTHelper
 
 		tag.setBoolean("_null", false);
 
-		tag.setShort("id", (short) Item.getIdFromItem(stack.getItem()));
+		tag.setString("id", OrbisAPI.services().registrar().getIdentifierFor(stack.getItem()).toString());
 		tag.setByte("count", (byte) stack.getCount());
 		tag.setShort("meta", (short) stack.getMetadata());
+
 		NBTTagCompound nbttagcompound = null;
 
 		if (stack.getItem().isDamageable() || stack.getItem().getShareTag())
