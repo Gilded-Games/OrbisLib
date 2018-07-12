@@ -38,6 +38,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class BakedBlueprint implements IDimensions
 
 	private List<ScheduleRegion> bakedScheduleRegions = Lists.newArrayList();
 
-	private List<INode<IScheduleLayer, LayerLink>> bakedScheduleLayerNodes = Lists.newArrayList();
+	private LinkedList<INode<IScheduleLayer, LayerLink>> bakedScheduleLayerNodes = Lists.newLinkedList();
 
 	private BlueprintData blueprintData;
 
@@ -731,7 +732,7 @@ public class BakedBlueprint implements IDimensions
 
 		this.chunks = funnel.getArray("chunks", BlockDataChunk.class);
 		this.bakedScheduleRegions = funnel.getList("bakedScheduleRegions");
-		this.bakedScheduleLayerNodes = funnel.getList("bakedScheduleLayerNodes");
+		this.bakedScheduleLayerNodes = Lists.newLinkedList(funnel.getList("bakedScheduleLayerNodes"));
 		this.placedEntities = funnel.getMap("placedEntities", NBTFunnel.CHUNK_POS_GETTER, NBTFunnel.listGetter());
 
 		this.data = funnel.get("data");
