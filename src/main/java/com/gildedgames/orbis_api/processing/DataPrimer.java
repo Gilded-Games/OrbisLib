@@ -30,7 +30,7 @@ public class DataPrimer
 	 *
 	 * Can be used to check/make sure that the checked area is the same as the generate area for a structure.
 	 */
-	public static final boolean CAN_GENERATE_DEBUG = false;
+	public static boolean CAN_GENERATE_DEBUG = true;
 
 	private final IBlockAccessExtended access;
 
@@ -62,6 +62,8 @@ public class DataPrimer
 
 	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos relocateTo, final boolean checkAreaLoaded)
 	{
+		CAN_GENERATE_DEBUG = false;
+
 		BlockPos bakedMin = baked.getBakedMin();
 		BlockPos bakedMax = bakedMin.add(baked.getWidth() - 1, baked.getHeight() - 1, baked.getLength() - 1);
 
@@ -88,6 +90,8 @@ public class DataPrimer
 			}
 		}
 
+		int yDif = -bakedMin.getY() + minReloc.getY();
+
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
 			BlockDataContainer container = chunk.getContainer();
@@ -95,7 +99,7 @@ public class DataPrimer
 			final Region region = new Region(new BlockPos(0, 0, 0),
 					new BlockPos(container.getWidth() - 1, container.getHeight() - 1, container.getLength() - 1));
 
-			BlockPos chunkMin = chunk.getPos().getBlock(0, minReloc.getY(), 0);
+			BlockPos chunkMin = chunk.getPos().getBlock(0, bakedMin.getY(), 0);
 
 			for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
 			{
@@ -121,7 +125,7 @@ public class DataPrimer
 					continue;
 				}
 
-				BlockPos newPos = new BlockPos(newX + relocateX, newY + relocateY, newZ + relocateZ);
+				BlockPos newPos = new BlockPos(newX + relocateX, newY + yDif, newZ + relocateZ);
 
 				for (final PlacementCondition condition : conditions)
 				{
@@ -142,7 +146,7 @@ public class DataPrimer
 				final Region region = new Region(new BlockPos(0, 0, 0),
 						new BlockPos(container.getWidth() - 1, container.getHeight() - 1, container.getLength() - 1));
 
-				BlockPos chunkMin = chunk.getPos().getBlock(0, 0, 0);
+				BlockPos chunkMin = chunk.getPos().getBlock(0, bakedMin.getY(), 0);
 
 				for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
 				{
@@ -165,14 +169,14 @@ public class DataPrimer
 
 					if (state == null || BlockUtil.isAir(state) || BlockUtil.isVoid(state))
 					{
-						BlockPos newPos = new BlockPos(newX + relocateX, newY + relocateY + baked.getHeight(), newZ + relocateZ);
+						BlockPos newPos = new BlockPos(newX + relocateX, newY + yDif + baked.getHeight(), newZ + relocateZ);
 
 						this.getWorld().setBlockState(newPos, Blocks.GLASS.getDefaultState());
 
 						continue;
 					}
 
-					BlockPos newPos = new BlockPos(newX + relocateX, newY + relocateY + baked.getHeight(), newZ + relocateZ);
+					BlockPos newPos = new BlockPos(newX + relocateX, newY + yDif + baked.getHeight(), newZ + relocateZ);
 
 					this.getWorld().setBlockState(newPos, Blocks.EMERALD_BLOCK.getDefaultState());
 				}
