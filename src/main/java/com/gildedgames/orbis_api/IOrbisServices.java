@@ -64,6 +64,8 @@ public interface IOrbisServices
 
 	void setProjectManagerInitSource(Object mod, String archiveBaseName);
 
+	void enableScanAndCacheProjectsOnStartup(boolean flag);
+
 	void startProjectManager();
 
 	void stopProjectManager();

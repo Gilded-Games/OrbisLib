@@ -97,6 +97,8 @@ public class OrbisServices implements IOrbisServices
 
 	private IPrepRegistry sectors = new PrepRegistry();
 
+	private boolean scanAndCacheProjectsOnStartup;
+
 	public OrbisServices()
 	{
 		this.network = new NetworkMultipleParts(OrbisAPI.MOD_ID);
@@ -414,6 +416,11 @@ public class OrbisServices implements IOrbisServices
 		}
 
 		this.listeners.forEach((l) -> l.onStartProjectManager(this.projectManager));
+
+		if (this.scanAndCacheProjectsOnStartup)
+		{
+			this.projectManager.scanAndCacheProjects();
+		}
 	}
 
 	@Override
@@ -460,6 +467,12 @@ public class OrbisServices implements IOrbisServices
 	{
 		this.mod = mod;
 		this.archiveBaseName = archiveBaseName;
+	}
+
+	@Override
+	public void enableScanAndCacheProjectsOnStartup(boolean flag)
+	{
+		this.scanAndCacheProjectsOnStartup = flag;
 	}
 
 }

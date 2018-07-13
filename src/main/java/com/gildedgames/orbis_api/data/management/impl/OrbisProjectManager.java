@@ -195,11 +195,6 @@ public class OrbisProjectManager implements IProjectManager
 	@Override
 	public void scanAndCacheProjects()
 	{
-		this.idToProject.clear();
-		this.nameToProject.clear();
-
-		this.listeners.forEach(IProjectManagerListener::onPreScanAndCacheProjects);
-
 		this.walkProjects((innerFile, file) ->
 		{
 			/** When found, load and cache the project into memory **/
