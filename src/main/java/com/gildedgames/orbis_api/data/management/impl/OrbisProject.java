@@ -170,6 +170,12 @@ public class OrbisProject implements IProject
 	}
 
 	@Override
+	public void setProjectIdentifier(IProjectIdentifier projectIdentifier)
+	{
+		this.identifier = projectIdentifier;
+	}
+
+	@Override
 	public IProjectMetadata getMetadata()
 	{
 		return this.metadata;

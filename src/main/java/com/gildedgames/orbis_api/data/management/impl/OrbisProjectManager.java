@@ -8,6 +8,7 @@ import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.FileHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 public class OrbisProjectManager implements IProjectManager
@@ -32,6 +34,8 @@ public class OrbisProjectManager implements IProjectManager
 	private Object mod;
 
 	private String archiveBaseName;
+
+	private Set<IProjectManagerListener> listeners = Sets.newHashSet();
 
 	public OrbisProjectManager(final File baseDirectory, Object mod, String archiveBaseName)
 	{
@@ -68,6 +72,18 @@ public class OrbisProjectManager implements IProjectManager
 		}
 
 		return false;
+	}
+
+	@Override
+	public void listen(IProjectManagerListener listener)
+	{
+		this.listeners.add(listener);
+	}
+
+	@Override
+	public boolean unlisten(IProjectManagerListener listener)
+	{
+		return this.listeners.remove(listener);
 	}
 
 	@Override
@@ -179,6 +195,11 @@ public class OrbisProjectManager implements IProjectManager
 	@Override
 	public void scanAndCacheProjects()
 	{
+		this.idToProject.clear();
+		this.nameToProject.clear();
+
+		this.listeners.forEach(IProjectManagerListener::onPreScanAndCacheProjects);
+
 		this.walkProjects((innerFile, file) ->
 		{
 			/** When found, load and cache the project into memory **/
@@ -191,6 +212,21 @@ public class OrbisProjectManager implements IProjectManager
 				final IProject project = funnel.get("project");
 
 				project.setLocationAsFile(file);
+
+				boolean needsToResave = false;
+
+				while (this.idToProject.containsKey(project.getProjectIdentifier()))
+				{
+					needsToResave = true;
+
+					project.setProjectIdentifier(
+							new ProjectIdentifier(project.getProjectIdentifier().getProjectId() + "-", project.getProjectIdentifier().getOriginalCreator()));
+				}
+
+				if (needsToResave)
+				{
+					this.saveProjectToDisk(project);
+				}
 
 				this.cacheProject(file.getName(), project);
 

@@ -80,6 +80,13 @@ public interface IProject extends NBT
 	IProjectIdentifier getProjectIdentifier();
 
 	/**
+	 * This unique identifier to distinguish it between other projects.
+	 * Includes a name and authors.
+	 * @param projectIdentifier
+	 */
+	void setProjectIdentifier(IProjectIdentifier projectIdentifier);
+
+	/**
 	 * Used for displaying information about this project to the user.
 	 * @return The project's metadata.
 	 */
