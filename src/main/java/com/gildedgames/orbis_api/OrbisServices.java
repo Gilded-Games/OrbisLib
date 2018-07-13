@@ -413,7 +413,7 @@ public class OrbisServices implements IOrbisServices
 					this.archiveBaseName);
 		}
 
-		this.listeners.forEach(IOrbisServicesListener::onStartProjectManager);
+		this.listeners.forEach((l) -> l.onStartProjectManager(this.projectManager));
 	}
 
 	@Override
