@@ -46,6 +46,8 @@ public interface IOrbisServices
 
 	/**
 	 * Loads a project with the provided resource location.
+	 *
+	 * Marks it as a "mod project" to prevent removal of caching and flushing to the disk
 	 * @param location The location of the project.
 	 * @return The loaded project.
 	 */
@@ -54,6 +56,11 @@ public interface IOrbisServices
 	IOHelper io();
 
 	IProjectManager getProjectManager();
+
+	/**
+	 * Makes sure the project manager is started before a mod uses projects loaded from it.
+	 */
+	void verifyProjectManagerStarted();
 
 	void setProjectManagerInitSource(Object mod, String archiveBaseName);
 

@@ -130,7 +130,14 @@ public class OrbisServices implements IOrbisServices
 	@Nullable
 	public IProject loadProject(final MinecraftServer server, final ResourceLocation location, Object mod, String archiveBaseName)
 	{
-		return this.get(server, location, mod, archiveBaseName);
+		IProject project = this.get(server, location, mod, archiveBaseName);
+
+		if (project != null)
+		{
+			project.setIsModProject(true);
+		}
+
+		return project;
 	}
 
 	@Override
@@ -434,12 +441,18 @@ public class OrbisServices implements IOrbisServices
 	@Override
 	public synchronized IProjectManager getProjectManager()
 	{
+		this.verifyProjectManagerStarted();
+
+		return this.projectManager;
+	}
+
+	@Override
+	public void verifyProjectManagerStarted()
+	{
 		if (this.projectManager == null)
 		{
 			this.startProjectManager();
 		}
-
-		return this.projectManager;
 	}
 
 	@Override
