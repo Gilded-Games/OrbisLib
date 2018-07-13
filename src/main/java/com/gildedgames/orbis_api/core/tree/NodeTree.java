@@ -135,12 +135,18 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 
 		for (INode<DATA, LINK> parent : this.get(node.getParentsIds()))
 		{
-			parent.removeChild(id);
+			if (parent != null)
+			{
+				parent.removeChild(id);
+			}
 		}
 
 		for (INode<DATA, LINK> child : this.get(node.getChildrenIds()))
 		{
-			child.removeParent(id);
+			if (child != null)
+			{
+				child.removeParent(id);
+			}
 		}
 
 		node.setTree(null);
