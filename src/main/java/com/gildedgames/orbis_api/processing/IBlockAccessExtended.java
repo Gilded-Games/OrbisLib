@@ -22,6 +22,8 @@ public interface IBlockAccessExtended extends IBlockAccess
 
 	boolean canAccess(final BlockPos pos);
 
+	boolean canAccess(final BlockPos pos, int radius);
+
 	boolean canAccess(final int x, final int z);
 
 	boolean canAccess(int minX, int minY, int minZ, int maxX, int maxY, int maxZ);

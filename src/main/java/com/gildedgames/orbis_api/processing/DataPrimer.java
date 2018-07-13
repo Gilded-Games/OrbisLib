@@ -30,7 +30,7 @@ public class DataPrimer
 	 *
 	 * Can be used to check/make sure that the checked area is the same as the generate area for a structure.
 	 */
-	public static boolean CAN_GENERATE_DEBUG = true;
+	public static boolean CAN_GENERATE_DEBUG = false;
 
 	private final IBlockAccessExtended access;
 
@@ -62,8 +62,6 @@ public class DataPrimer
 
 	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos relocateTo, final boolean checkAreaLoaded)
 	{
-		CAN_GENERATE_DEBUG = false;
-
 		BlockPos bakedMin = baked.getBakedMin();
 		BlockPos bakedMax = bakedMin.add(baked.getWidth() - 1, baked.getHeight() - 1, baked.getLength() - 1);
 
@@ -76,7 +74,9 @@ public class DataPrimer
 
 		if (checkAreaLoaded)
 		{
-			if (!this.access.canAccess(minReloc.getX(), minReloc.getY(), minReloc.getZ(), maxReloc.getX(), maxReloc.getY(), maxReloc.getZ()))
+			if (!this.access
+					.canAccess(minReloc.getX(), minReloc.getY(), minReloc.getZ(), maxReloc.getX(), maxReloc.getY(),
+							maxReloc.getZ()))
 			{
 				return false;
 			}
@@ -127,9 +127,14 @@ public class DataPrimer
 
 				BlockPos newPos = new BlockPos(newX + relocateX, newY + yDif, newZ + relocateZ);
 
+				if (!this.access.canAccess(newPos, 2))
+				{
+					return false;
+				}
+
 				for (final PlacementCondition condition : conditions)
 				{
-					if (!this.access.canAccess(newPos) || !condition.canPlace(this.access, minReloc, block, newPos))
+					if (!condition.canPlace(this.access, minReloc, block, newPos))
 					{
 						return false;
 					}
@@ -254,22 +259,22 @@ public class DataPrimer
 
 	public void create(BakedBlueprint baked)
 	{
+		BlockPos bakedMin = baked.getCreationData().getPos();
+		BlockPos bakedMax = bakedMin.add(baked.getWidth() - 1, baked.getHeight() - 1, baked.getLength() - 1);
+
+		IRegion region = new Region(bakedMin, bakedMax);
+
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
-			if (chunk == null)
-			{
-				continue;
-			}
-
 			this.create(null, chunk.getContainer(),
 					baked.getCreationData().clone().rotation(Rotation.NONE).pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
-					null);
+					region);
 		}
 
-		for (List<PlacedEntity> l : baked.getPlacedEntities().values())
+		/*for (List<PlacedEntity> l : baked.getPlacedEntities().values())
 		{
 			l.forEach(p -> p.spawn(this));
-		}
+		}*/
 	}
 
 	public void create(IRegion relocateTo, final BlockDataContainer container, final ICreationData<?> data, final IRegion insideRegion)
@@ -295,7 +300,7 @@ public class DataPrimer
 					final NBTTagCompound entity = container
 							.getTileEntity(beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(), beforeRot.getZ() - min.getZ());
 
-					this.create(toCreate, entity, rotated, data);
+					this.create(toCreate, entity, rotated.toImmutable(), data);
 				}
 			}
 		}

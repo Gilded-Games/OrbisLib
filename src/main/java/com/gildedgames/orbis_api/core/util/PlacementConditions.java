@@ -67,11 +67,6 @@ public class PlacementConditions
 			{
 				if (block.getBlock() != Blocks.STRUCTURE_VOID)
 				{
-					if (!world.canAccess(pos))
-					{
-						return false;
-					}
-
 					final IBlockState state = world.getBlockState(pos);
 
 					if ((BlockUtil.isSolid(block) || block.getMaterial() == Material.PORTAL
@@ -141,35 +136,23 @@ public class PlacementConditions
 
 	public static PlacementCondition ignoreBlock(final int floorHeight, final IBlockState s)
 	{
-		return new PlacementCondition()
-		{
-			@Override
-			public boolean canPlace(final IBlockAccessExtended world, final BlockPos placedAt, final IBlockState block,
-					final BlockPos pos)
+		return (world, placedAt, block, pos) -> {
+			if (pos.getY() == placedAt.getY() + floorHeight && block.getBlock() != Blocks.AIR
+					&& block.getBlock() != Blocks.STRUCTURE_VOID)
 			{
-				if (pos.getY() == placedAt.getY() + floorHeight && block.getBlock() != Blocks.AIR
-						&& block.getBlock() != Blocks.STRUCTURE_VOID)
+				final BlockPos down = pos.down();
+
+				if (!world.canAccess(down))
 				{
-					final BlockPos down = pos.down();
-
-					if (!world.canAccess(down))
-					{
-						return false;
-					}
-
-					final IBlockState state = world.getBlockState(down);
-
-					return s != state;
+					return false;
 				}
 
-				return true;
+				final IBlockState state = world.getBlockState(down);
+
+				return s != state;
 			}
 
-			@Override
-			public boolean prePlacementResolve(IBlockAccessExtended world, BlockPos placedAt)
-			{
-				return true;
-			}
+			return true;
 		};
 	}
 

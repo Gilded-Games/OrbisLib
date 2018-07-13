@@ -40,6 +40,13 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	}
 
 	@Override
+	public boolean canAccess(BlockPos pos, int radius)
+	{
+		//TODO:
+		return this.canAccess(pos);
+	}
+
+	@Override
 	public boolean canAccess(final int x, final int z)
 	{
 		return this.canAccess(new BlockPos(x, 0, z));

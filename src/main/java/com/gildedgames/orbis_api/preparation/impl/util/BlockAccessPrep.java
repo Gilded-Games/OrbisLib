@@ -50,6 +50,12 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	}
 
 	@Override
+	public boolean canAccess(BlockPos pos, int radius)
+	{
+		return true;
+	}
+
+	@Override
 	public boolean canAccess(int x, int z)
 	{
 		return true;

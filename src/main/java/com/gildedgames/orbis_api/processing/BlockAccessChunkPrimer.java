@@ -40,6 +40,13 @@ public class BlockAccessChunkPrimer implements IBlockAccessExtended
 	}
 
 	@Override
+	public boolean canAccess(BlockPos pos, int radius)
+	{
+		//TODO:
+		return true;
+	}
+
+	@Override
 	public boolean canAccess(final int x, final int z)
 	{
 		//TODO:
