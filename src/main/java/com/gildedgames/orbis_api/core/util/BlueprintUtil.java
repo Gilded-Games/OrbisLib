@@ -62,7 +62,7 @@ public class BlueprintUtil
 	{
 		final Material material = block.getDefaultState().getMaterial();
 
-		return material == Material.AIR || material == Material.LEAVES || material == Material.PLANTS;
+		return material == Material.AIR || material == Material.LEAVES || material == Material.PLANTS || material == Material.SNOW;
 	}
 
 	public static boolean isReplaceable(final IBlockAccessExtended world, final BlockPos pos)
