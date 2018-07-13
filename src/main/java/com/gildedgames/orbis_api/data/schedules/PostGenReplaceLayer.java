@@ -1,5 +1,9 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.block.BlockFilter;
+import com.gildedgames.orbis_api.block.BlockFilterHelper;
+import com.gildedgames.orbis_api.block.BlockFilterLayer;
+import com.gildedgames.orbis_api.block.BlockFilterType;
 import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
@@ -10,6 +14,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 {
+	private BlockFilterLayer layer;
+
+	private BlockFilter filter;
+
 	private ItemStack required = ItemStack.EMPTY, replaced = ItemStack.EMPTY;
 
 	private int layerId;
@@ -20,16 +28,35 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 
 	private PostGenReplaceLayer()
 	{
+		this.layer = new BlockFilterLayer();
 
+		this.layer.setFilterType(BlockFilterType.ONLY);
+
+		this.filter = new BlockFilter(this.layer);
 	}
 
 	public PostGenReplaceLayer(ItemStack required, ItemStack replaced)
 	{
+		this();
+
 		this.required = required;
 		this.replaced = replaced;
 		this.options = new FilterOptions();
 
 		this.options.getChoosesPerBlockVar().setData(false);
+
+		this.layer.setRequiredBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.required)));
+		this.layer.setReplacementBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.replaced)));
+	}
+
+	public BlockFilterLayer getFilterLayer()
+	{
+		return this.layer;
+	}
+
+	public BlockFilter getFilter()
+	{
+		return this.filter;
 	}
 
 	public int getLayerId()
@@ -52,6 +79,8 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 		this.required = stack;
 
 		this.dataParent.markDirty();
+
+		this.layer.setRequiredBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.required)));
 	}
 
 	public ItemStack getReplaced()
@@ -64,6 +93,8 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 		this.replaced = stack;
 
 		this.dataParent.markDirty();
+
+		this.layer.setReplacementBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.replaced)));
 	}
 
 	public IFilterOptions getOptions()
@@ -80,6 +111,7 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 		funnel.setStack("replaced", this.replaced);
 		tag.setInteger("layerId", this.layerId);
 		funnel.set("options", this.options);
+		funnel.set("filter", this.filter);
 	}
 
 	@Override
@@ -91,6 +123,9 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 		this.replaced = funnel.getStack("replaced");
 		this.layerId = tag.getInteger("layerId");
 		this.options = funnel.get("options");
+		this.filter = funnel.get("filter");
+
+		this.layer = this.filter.getByIndex(0);
 	}
 
 	@Override

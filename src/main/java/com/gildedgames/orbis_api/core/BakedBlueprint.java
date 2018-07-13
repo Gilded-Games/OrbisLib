@@ -1,7 +1,8 @@
 package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.block.*;
+import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.block.BlockDataContainerDefaultVoid;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
@@ -342,21 +343,13 @@ public class BakedBlueprint implements IDimensions
 
 		for (PostGenReplaceLayer postGenReplaceLayer : this.blueprintData.getPostGenReplaceLayers().values())
 		{
-			if (postGenReplaceLayer.getReplaced().isEmpty() || postGenReplaceLayer.getRequired().isEmpty())
+			if (postGenReplaceLayer.getFilterLayer().getRequiredBlocks().isEmpty() || postGenReplaceLayer.getFilterLayer().getReplacementBlocks().isEmpty())
 			{
 				continue;
 			}
 
-			final BlockFilterLayer layer = new BlockFilterLayer();
-
-			layer.setFilterType(BlockFilterType.ONLY);
-
-			layer.setRequiredBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(postGenReplaceLayer.getRequired())));
-			layer.setReplacementBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(postGenReplaceLayer.getReplaced())));
-
-			BlockFilter filter = new BlockFilter(layer);
-
-			filter.apply(boundsBeforeRotateAtOrigin.createShapeData(), this.rawDataContainer, this.data, postGenReplaceLayer.getOptions());
+			postGenReplaceLayer.getFilter()
+					.apply(boundsBeforeRotateAtOrigin.createShapeData(), this.rawDataContainer, this.data, postGenReplaceLayer.getOptions());
 		}
 
 		this.chunkUpBlocks(min, max, chunksOccupied, boundsBeforeRotateAtOrigin, this.data.getRotation());
