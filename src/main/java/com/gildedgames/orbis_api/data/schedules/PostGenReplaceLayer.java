@@ -123,9 +123,12 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 		this.replaced = funnel.getStack("replaced");
 		this.layerId = tag.getInteger("layerId");
 		this.options = funnel.get("options");
-		this.filter = funnel.get("filter");
+		this.filter = funnel.getWithDefault("filter", () -> this.filter);
 
-		this.layer = this.filter.getByIndex(0);
+		if (this.filter != null)
+		{
+			this.layer = this.filter.getByIndex(0);
+		}
 	}
 
 	@Override
