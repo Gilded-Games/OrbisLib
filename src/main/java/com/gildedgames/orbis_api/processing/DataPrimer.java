@@ -95,7 +95,7 @@ public class DataPrimer
 			final Region region = new Region(new BlockPos(0, 0, 0),
 					new BlockPos(container.getWidth() - 1, container.getHeight() - 1, container.getLength() - 1));
 
-			BlockPos chunkMin = chunk.getPos().getBlock(0, 0, 0);
+			BlockPos chunkMin = chunk.getPos().getBlock(0, minReloc.getY(), 0);
 
 			for (final BlockPos.MutableBlockPos iterPos : region.getMutableBlockPosInRegion())
 			{

@@ -17,6 +17,10 @@ public class BlueprintWorldGen implements IWorldGen
 
 	private final BlueprintDefinitionPool defPool;
 
+	private BakedBlueprint lastBake;
+
+	private BlueprintDefinition chosenDef;
+
 	public BlueprintWorldGen(final BlueprintDefinitionPool defPool)
 	{
 		this.def = null;
@@ -32,22 +36,36 @@ public class BlueprintWorldGen implements IWorldGen
 	@Override
 	public boolean generate(final IBlockAccessExtended blockAccess, final World world, final Random rand, final BlockPos position, final boolean centered)
 	{
-		final Rotation rotation = (this.def != null ? this.def.hasRandomRotation() : this.defPool.hasRandomRotation()) ?
-				BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)] :
-				BlueprintPlacer.ROTATIONS[0];
+		if (this.lastBake == null)
+		{
+			final Rotation rotation = (this.def != null ? this.def.hasRandomRotation() : this.defPool.hasRandomRotation()) ?
+					BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)] :
+					BlueprintPlacer.ROTATIONS[0];
 
-		final ICreationData<CreationData> data = new CreationData(world).pos(position);
+			final ICreationData<CreationData> data = new CreationData(world).pos(position);
 
-		data.rotation(rotation);
+			data.rotation(rotation);
 
-		BlueprintDefinition def = this.def == null ? this.defPool.getRandomDefinition(rand) : this.def;
+			this.chosenDef = this.def == null ? this.defPool.getRandomDefinition(rand) : this.def;
 
-		BakedBlueprint baked = new BakedBlueprint(def.getData(), data);
+			this.lastBake = new BakedBlueprint(this.chosenDef.getData(), data);
 
-		baked.bake();
+			this.lastBake.bake();
+		}
+		else
+		{
+			this.lastBake.rebake(position);
+		}
 
-		return BlueprintPlacer
-				.place(new DataPrimer(blockAccess), baked, def.getConditions(), true);
+		boolean generated = BlueprintPlacer
+				.place(new DataPrimer(blockAccess), this.lastBake, this.chosenDef.getConditions(), true);
+
+		if (generated)
+		{
+			this.lastBake = null;
+		}
+
+		return generated;
 	}
 
 	@Override
