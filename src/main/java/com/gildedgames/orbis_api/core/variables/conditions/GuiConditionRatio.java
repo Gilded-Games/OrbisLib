@@ -53,7 +53,7 @@ public class GuiConditionRatio implements IGuiCondition
 			return true;
 		}
 
-		return rand.nextInt(this.denominator.getData()) >= this.numerator.getData();
+		return this.numerator.getData() >= rand.nextInt(this.denominator.getData());
 	}
 
 	@Override

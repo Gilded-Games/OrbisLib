@@ -45,7 +45,7 @@ public class GuiConditionPercentage implements IGuiCondition
 	@Override
 	public boolean resolve(Random rand)
 	{
-		return rand.nextFloat() * 100.0F >= this.percent.getData();
+		return this.percent.getData() >= rand.nextFloat() * 100.0F;
 	}
 
 	@Override
