@@ -184,6 +184,11 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 		this.allParents.clear();
 
 		this.fetchAllParents(this.allParents);
+
+		for (IGuiFrame child : this.children)
+		{
+			child.refreshAllParents();
+		}
 	}
 
 	@Override

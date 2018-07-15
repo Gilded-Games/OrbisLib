@@ -17,6 +17,18 @@ import javax.annotation.Nonnull;
 
 public interface IScheduleLayer extends NBT, IDataChild<BlueprintData>
 {
+	void listen(IScheduleLayerListener listener);
+
+	boolean unlisten(IScheduleLayerListener listener);
+
+	/**
+	 * Should be true by default, when created.
+	 * @return Whether or not this layer renders.
+	 */
+	boolean isVisible();
+
+	void setVisible(boolean visible);
+
 	INode<IScheduleLayer, LayerLink> getNodeParent();
 
 	void setNodeParent(INode<IScheduleLayer, LayerLink> nodeParent);

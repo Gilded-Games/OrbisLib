@@ -8,10 +8,12 @@ import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
+import com.google.common.collect.Sets;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
+import java.util.Set;
 
 public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCondition, ConditionLink>
 {
@@ -32,6 +34,10 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	private Pos2D guiPos = Pos2D.ORIGIN, conditionGuiPos = Pos2D.ORIGIN, postResolveActionGuiPos = Pos2D.ORIGIN;
 
 	private INode<IScheduleLayer, LayerLink> nodeParent;
+
+	private boolean visible = true;
+
+	private Set<IScheduleLayerListener> listeners = Sets.newHashSet();
 
 	private INodeTreeListener<IPostResolveAction, NBT> postResolveListener = new INodeTreeListener<IPostResolveAction, NBT>()
 	{
@@ -78,6 +84,37 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		this.scheduleRecord.setParent(this);
 		this.conditionNodeTree.listen(this);
 		this.postResolveActionNodeTree.listen(this.postResolveListener);
+	}
+
+	@Override
+	public void listen(IScheduleLayerListener listener)
+	{
+		this.listeners.add(listener);
+	}
+
+	@Override
+	public boolean unlisten(IScheduleLayerListener listener)
+	{
+		return this.listeners.remove(listener);
+	}
+
+	@Override
+	public boolean isVisible()
+	{
+		return this.visible;
+	}
+
+	@Override
+	public void setVisible(boolean visible)
+	{
+		this.visible = visible;
+
+		if (this.dataParent != null)
+		{
+			this.dataParent.markDirty();
+		}
+
+		this.listeners.forEach((l) -> l.onSetVisible(visible));
 	}
 
 	@Override
@@ -198,6 +235,8 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 		funnel.set("conditionNodeTree", this.conditionNodeTree);
 		funnel.set("postResolveActionNodeTree", this.postResolveActionNodeTree);
+
+		tag.setBoolean("visible", this.visible);
 	}
 
 	@Override
@@ -225,6 +264,11 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 		this.conditionNodeTree.listen(this);
 		this.postResolveActionNodeTree.listen(this.postResolveListener);
+
+		if (tag.hasKey("visible"))
+		{
+			this.visible = tag.getBoolean("visible");
+		}
 	}
 
 	@Override
