@@ -234,6 +234,7 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 81, BakedBlueprint.class);
 			IOHelper.register(s, 82, PlacedEntity.class);
 			IOHelper.register(s, 83, BlockStateRecord.class);
+			IOHelper.register(s, 84, ScheduleLayerOptions.class);
 
 			this.io.register(s);
 		}

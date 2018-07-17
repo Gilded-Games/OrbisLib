@@ -26,6 +26,7 @@ import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RegionHelp;
 import com.gildedgames.orbis_api.util.RotationHelp;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.BlockUtil;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
@@ -325,7 +326,10 @@ public class BakedBlueprint implements IDimensions
 			{
 				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
 				{
-					this.rawDataContainer.setBlockState(state, pos);
+					if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(this.rawDataContainer.getBlockState(pos)))
+					{
+						this.rawDataContainer.setBlockState(state, pos);
+					}
 				}
 			}
 		}

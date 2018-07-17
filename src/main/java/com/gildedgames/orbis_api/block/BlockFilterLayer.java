@@ -4,9 +4,9 @@ import com.gildedgames.orbis_api.core.ICreationData;
 import com.gildedgames.orbis_api.data.DataCondition;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
+import com.gildedgames.orbis_api.data.schedules.IBlueprint;
 import com.gildedgames.orbis_api.data.schedules.IFilterOptions;
 import com.gildedgames.orbis_api.data.schedules.IPositionRecord;
-import com.gildedgames.orbis_api.data.schedules.IScheduleLayerHolder;
 import com.gildedgames.orbis_api.processing.BlockAccessBlockDataContainer;
 import com.gildedgames.orbis_api.processing.BlockAccessExtendedWrapper;
 import com.gildedgames.orbis_api.processing.DataPrimer;
@@ -205,15 +205,15 @@ public class BlockFilterLayer implements NBT
 		}
 
 		IShape intersect = null;
-		IScheduleLayerHolder holder = null;
+		IBlueprint holder = null;
 
 		if (creationData.schedules())
 		{
 			intersect = WorldObjectUtils.getIntersectingShape(world, shape);
 
-			if (intersect instanceof IScheduleLayerHolder)
+			if (intersect instanceof IBlueprint)
 			{
-				holder = (IScheduleLayerHolder) intersect;
+				holder = (IBlueprint) intersect;
 			}
 		}
 
@@ -257,7 +257,7 @@ public class BlockFilterLayer implements NBT
 		}
 	}
 
-	private void applyInner(DataPrimer primer, BlockPos p, BlockDataWithConditions replacementBlock, IShape intersect, IScheduleLayerHolder holder,
+	private void applyInner(DataPrimer primer, BlockPos p, BlockDataWithConditions replacementBlock, IShape intersect, IBlueprint holder,
 			final BlockFilter parentFilter, IShape shape, final ICreationData<?> creationData, IFilterOptions options)
 	{
 		World world = creationData.getWorld();

@@ -33,11 +33,11 @@ public interface IScheduleLayer extends NBT, IDataChild<BlueprintData>
 
 	void setNodeParent(INode<IScheduleLayer, LayerLink> nodeParent);
 
-	IFilterOptions getOptions();
-
 	IPositionRecord<IBlockState> getStateRecord();
 
 	IScheduleRecord getScheduleRecord();
+
+	IScheduleLayerOptions getOptions();
 
 	void setDimensions(IDimensions dimensions);
 

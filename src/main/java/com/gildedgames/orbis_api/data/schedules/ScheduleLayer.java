@@ -25,8 +25,6 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 	private BlueprintData dataParent;
 
-	private IFilterOptions options = new FilterOptions();
-
 	private NodeTree<IGuiCondition, ConditionLink> conditionNodeTree = new NodeTree<>();
 
 	private NodeTree<IPostResolveAction, NBT> postResolveActionNodeTree = new NodeTree<>();
@@ -38,6 +36,8 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	private boolean visible = true;
 
 	private Set<IScheduleLayerListener> listeners = Sets.newHashSet();
+
+	private IScheduleLayerOptions options;
 
 	private INodeTreeListener<IPostResolveAction, NBT> postResolveListener = new INodeTreeListener<IPostResolveAction, NBT>()
 	{
@@ -72,16 +72,20 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	private ScheduleLayer()
 	{
 		this.scheduleRecord.setParent(this);
+
+		this.options = new ScheduleLayerOptions();
 	}
 
 	public ScheduleLayer(final String displayName, final IDimensions dimensions)
 	{
-		this.getOptions().getDisplayNameVar().setData(displayName);
+		this();
+
+		this.options.getDisplayNameVar().setData(displayName);
+
 		this.dimensions = dimensions;
 
 		this.stateRecord = new BlockStateRecord(this.dimensions.getWidth(), this.dimensions.getHeight(), this.dimensions.getLength());
 
-		this.scheduleRecord.setParent(this);
 		this.conditionNodeTree.listen(this);
 		this.postResolveActionNodeTree.listen(this.postResolveListener);
 	}
@@ -130,12 +134,6 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	}
 
 	@Override
-	public IFilterOptions getOptions()
-	{
-		return this.options;
-	}
-
-	@Override
 	public IPositionRecord<IBlockState> getStateRecord()
 	{
 		return this.stateRecord;
@@ -145,6 +143,12 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	public IScheduleRecord getScheduleRecord()
 	{
 		return this.scheduleRecord;
+	}
+
+	@Override
+	public IScheduleLayerOptions getOptions()
+	{
+		return this.options;
 	}
 
 	@Override
@@ -227,8 +231,6 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		funnel.set("stateRecord", this.stateRecord);
 		funnel.set("scheduleRecord", this.scheduleRecord);
 
-		funnel.set("options", this.options);
-
 		funnel.set("guiPos", this.guiPos, NBTFunnel.POS2D_SETTER);
 		funnel.set("conditionGuiPos", this.conditionGuiPos, NBTFunnel.POS2D_SETTER);
 		funnel.set("postResolveActionGuiPos", this.postResolveActionGuiPos, NBTFunnel.POS2D_SETTER);
@@ -237,6 +239,8 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		funnel.set("postResolveActionNodeTree", this.postResolveActionNodeTree);
 
 		tag.setBoolean("visible", this.visible);
+
+		funnel.set("scheduleOptions", this.options);
 	}
 
 	@Override
@@ -247,8 +251,6 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		this.stateRecord = funnel.get("stateRecord");
 
 		this.scheduleRecord = funnel.getWithDefault("scheduleRecord", this::getScheduleRecord);
-
-		this.options = funnel.getWithDefault("options", FilterOptions::new);
 
 		if (this.scheduleRecord != null)
 		{
@@ -269,6 +271,8 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		{
 			this.visible = tag.getBoolean("visible");
 		}
+
+		this.options = funnel.getWithDefault("scheduleOptions", () -> this.options);
 	}
 
 	@Override
