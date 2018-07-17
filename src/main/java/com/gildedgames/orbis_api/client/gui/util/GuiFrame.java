@@ -416,7 +416,7 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 			preventInnerTyping = false;
 		}
 
-		this.isHoveredOnTop = InputHelper.isHoveredAndTopElement(this);
+		this.isHoveredOnTop = InputHelper.isHoveredAndTopElement(this, false);
 
 		if (!this.isVisible())
 		{
@@ -580,9 +580,12 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.publicMouseClicked(mouseX, mouseY, mouseButton);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.publicMouseClicked(mouseX, mouseY, mouseButton);
+			}
 		}
 	}
 
@@ -596,9 +599,12 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 		super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
 
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.publicMouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.publicMouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+			}
 		}
 	}
 
@@ -612,36 +618,48 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 		super.mouseReleased(mouseX, mouseY, state);
 
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.publicMouseReleased(mouseX, mouseY, state);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.publicMouseReleased(mouseX, mouseY, state);
+			}
 		}
 	}
 
 	@Override
 	public void mouseReleasedOutsideBounds(final int mouseX, final int mouseY, final int state)
 	{
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.mouseReleasedOutsideBounds(mouseX, mouseY, state);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.mouseReleasedOutsideBounds(mouseX, mouseY, state);
+			}
 		}
 	}
 
 	@Override
 	public void mouseClickMoveOutsideBounds(final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
 	{
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.mouseClickMoveOutsideBounds(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.mouseClickMoveOutsideBounds(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+			}
 		}
 	}
 
 	@Override
 	public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
 	{
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
+			}
 		}
 	}
 
@@ -693,9 +711,12 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 			return;
 		}
 
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.onMouseWheel(state);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.onMouseWheel(state);
+			}
 		}
 	}
 
@@ -712,9 +733,12 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 			this.keyTypedInner(typedChar, keyCode);
 		}
 
-		for (final IGuiFrame frame : this.children)
+		if (Minecraft.getMinecraft().currentScreen == this)
 		{
-			frame.publicKeyTyped(typedChar, keyCode);
+			for (final IGuiFrame frame : this.getAllChildrenSortedByZOrder())
+			{
+				frame.publicKeyTyped(typedChar, keyCode);
+			}
 		}
 	}
 

@@ -87,6 +87,11 @@ public class InputHelper
 
 	public static boolean isHoveredAndTopElement(IGuiFrame check)
 	{
+		return isHoveredAndTopElement(check, true);
+	}
+
+	public static boolean isHoveredAndTopElement(IGuiFrame check, boolean topElementsCanBeChildren)
+	{
 		if (check == null)
 		{
 			return false;
@@ -98,7 +103,8 @@ public class InputHelper
 
 			for (IGuiFrame child : frame.getAllChildrenSortedByZOrder())
 			{
-				if (child.isVisible() && child.isEnabled() && InputHelper.isHovered(child) && child.getZOrder() > check.getZOrder())
+				if (child.isVisible() && child.isEnabled() && InputHelper.isHovered(child) && child.getZOrder() > check.getZOrder() && (
+						topElementsCanBeChildren || !check.getAllChildrenSortedByZOrder().contains(child)))
 				{
 					return false;
 				}
