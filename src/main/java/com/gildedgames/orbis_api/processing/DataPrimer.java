@@ -259,22 +259,17 @@ public class DataPrimer
 
 	public void create(BakedBlueprint baked)
 	{
-		BlockPos bakedMin = baked.getCreationData().getPos();
-		BlockPos bakedMax = bakedMin.add(baked.getWidth() - 1, baked.getHeight() - 1, baked.getLength() - 1);
-
-		IRegion region = new Region(bakedMin, bakedMax);
-
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
 			this.create(null, chunk.getContainer(),
 					baked.getCreationData().clone().rotation(Rotation.NONE).pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)),
-					region);
+					null);
 		}
 
-		/*for (List<PlacedEntity> l : baked.getPlacedEntities().values())
+		for (List<PlacedEntity> l : baked.getPlacedEntities().values())
 		{
 			l.forEach(p -> p.spawn(this));
-		}*/
+		}
 	}
 
 	public void create(IRegion relocateTo, final BlockDataContainer container, final ICreationData<?> data, final IRegion insideRegion)
