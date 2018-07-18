@@ -65,6 +65,7 @@ public class ScheduleLayerOptions implements IScheduleLayerOptions
 
 		funnel.set("displayName", this.displayName);
 		funnel.set("replacesSolidBlocks", this.replacesSolidBlocks);
+
 	}
 
 	@Override

@@ -2,17 +2,16 @@ package com.gildedgames.orbis_api.data.schedules;
 
 import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
-import com.gildedgames.orbis_api.core.variables.GuiVarBoolean;
-import com.gildedgames.orbis_api.core.variables.IGuiVarDisplayContents;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 
-public interface IBlueprint extends IGuiVarDisplayContents
+public interface IBlueprint
 {
+
+	BlueprintData getData();
 
 	int getCurrentScheduleLayerIndex();
 
 	void setCurrentScheduleLayerIndex(final int index);
-
-	GuiVarBoolean getLayerTransparencyVar();
 
 	INode<IScheduleLayer, LayerLink> getCurrentScheduleLayerNode();
 

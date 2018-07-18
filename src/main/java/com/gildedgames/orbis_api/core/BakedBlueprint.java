@@ -352,8 +352,16 @@ public class BakedBlueprint implements IDimensions
 				continue;
 			}
 
+			boolean choosesPerBlockOld = postGenReplaceLayer.getOptions().getChoosesPerBlockVar().getData();
+
+			postGenReplaceLayer.getOptions().getChoosesPerBlockVar()
+					.setData(this.blueprintData.getBlueprintMetadata().getChoosePerBlockOnPostGenVar().getData());
+
 			postGenReplaceLayer.getFilter()
 					.apply(boundsBeforeRotateAtOrigin.createShapeData(), this.rawDataContainer, this.data, postGenReplaceLayer.getOptions());
+
+			postGenReplaceLayer.getOptions().getChoosesPerBlockVar()
+					.setData(choosesPerBlockOld);
 		}
 
 		this.chunkUpBlocks(min, max, chunksOccupied, boundsBeforeRotateAtOrigin, this.data.getRotation());

@@ -62,6 +62,8 @@ public class BlueprintData
 
 	private Pos2D scheduleTreeGuiPos, variableTreeGuiPos = Pos2D.ORIGIN;
 
+	private IBlueprintMetadata blueprintMetadata = new BlueprintMetadata();
+
 	private BlueprintData()
 	{
 		this.metadata = new DataMetadata();
@@ -128,6 +130,11 @@ public class BlueprintData
 				}
 			}
 		}
+	}
+
+	public IBlueprintMetadata getBlueprintMetadata()
+	{
+		return this.blueprintMetadata;
 	}
 
 	public Pos2D getScheduleTreeGuiPos()
@@ -331,6 +338,7 @@ public class BlueprintData
 		funnel.setList("entrances", this.entrances);
 		funnel.set("scheduleTreeGuiPos", this.scheduleTreeGuiPos, NBTFunnel.POS2D_SETTER);
 		funnel.set("variableTreeGuiPos", this.variableTreeGuiPos, NBTFunnel.POS2D_SETTER);
+		funnel.set("blueprintMetadata", this.blueprintMetadata);
 	}
 
 	@Override
@@ -385,6 +393,8 @@ public class BlueprintData
 		this.postGenReplaceLayers.values().forEach(l -> l.setDataParent(this));
 		this.scheduleLayerTree.setDataParent(this);
 		this.variableTree.setDataParent(this);
+
+		this.blueprintMetadata = funnel.getWithDefault("blueprintMetadata", () -> this.blueprintMetadata);
 	}
 
 	@Override

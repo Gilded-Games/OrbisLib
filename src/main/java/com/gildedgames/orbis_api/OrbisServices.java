@@ -16,10 +16,7 @@ import com.gildedgames.orbis_api.core.variables.var_comparators.*;
 import com.gildedgames.orbis_api.core.variables.var_mutators.*;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis_api.data.DataCondition;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintDataHolder;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintStackerData;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
+import com.gildedgames.orbis_api.data.blueprint.*;
 import com.gildedgames.orbis_api.data.framework.FrameworkData;
 import com.gildedgames.orbis_api.data.framework.FrameworkNode;
 import com.gildedgames.orbis_api.data.management.IProject;
@@ -235,6 +232,7 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 82, PlacedEntity.class);
 			IOHelper.register(s, 83, BlockStateRecord.class);
 			IOHelper.register(s, 84, ScheduleLayerOptions.class);
+			IOHelper.register(s, 85, BlueprintMetadata.class);
 
 			this.io.register(s);
 		}
