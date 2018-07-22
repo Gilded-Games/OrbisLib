@@ -6,10 +6,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemBucket;
-import net.minecraft.item.ItemMultiTexture;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +14,59 @@ import java.util.List;
 public class BlockFilterHelper
 {
 	private static List<IBlockRecognition> blockRecognitions = Lists.newArrayList();
+
+	static
+	{
+		blockRecognitions.add(new IBlockRecognition()
+		{
+			@Override
+			public IBlockState[] recognize(ItemStack stack)
+			{
+				IBlockState[] blocks = null;
+
+				if (stack.getItem() == Items.STRING)
+				{
+					blocks = new IBlockState[1];
+
+					blocks[0] = Blocks.AIR.getDefaultState();
+				}
+				else if (stack.getItem() instanceof ItemBlock || stack.getItem() instanceof ItemMultiTexture)
+				{
+					final IBlockState state = BlockUtil.getBlockState(stack);
+
+					if (state != null)
+					{
+						blocks = new IBlockState[1];
+
+						blocks[0] = state;
+					}
+				}
+				else if (stack.getItem() == Items.LAVA_BUCKET)
+				{
+					blocks = new IBlockState[2];
+
+					blocks[0] = Blocks.LAVA.getDefaultState();
+					blocks[1] = Blocks.FLOWING_LAVA.getDefaultState();
+				}
+				else if (stack.getItem() == Items.WATER_BUCKET)
+				{
+					blocks = new IBlockState[2];
+
+					blocks[0] = Blocks.WATER.getDefaultState();
+					blocks[1] = Blocks.FLOWING_WATER.getDefaultState();
+				}
+
+				return blocks;
+			}
+
+			@Override
+			public boolean isCompatible(Class<? extends Item> clazz)
+			{
+				return !(ItemBlock.class.isAssignableFrom(clazz)) && !(ItemBucket.class.isAssignableFrom(clazz)) && !(ItemMultiTexture.class
+						.isAssignableFrom(clazz));
+			}
+		});
+	}
 
 	public static void registerBlockRecognition(IBlockRecognition blockRecognition)
 	{
@@ -50,40 +100,6 @@ public class BlockFilterHelper
 
 	public static IBlockState[] getBlocksFromStack(final ItemStack stack)
 	{
-		IBlockState[] blocks = null;
-
-		if (stack.getItem() == Items.STRING)
-		{
-			blocks = new IBlockState[1];
-
-			blocks[0] = Blocks.AIR.getDefaultState();
-		}
-		else if (stack.getItem() instanceof ItemBlock || stack.getItem() instanceof ItemMultiTexture)
-		{
-			final IBlockState state = BlockUtil.getBlockState(stack);
-
-			if (state != null)
-			{
-				blocks = new IBlockState[1];
-
-				blocks[0] = state;
-			}
-		}
-		else if (stack.getItem() == Items.LAVA_BUCKET)
-		{
-			blocks = new IBlockState[2];
-
-			blocks[0] = Blocks.LAVA.getDefaultState();
-			blocks[1] = Blocks.FLOWING_LAVA.getDefaultState();
-		}
-		else if (stack.getItem() == Items.WATER_BUCKET)
-		{
-			blocks = new IBlockState[2];
-
-			blocks[0] = Blocks.WATER.getDefaultState();
-			blocks[1] = Blocks.FLOWING_WATER.getDefaultState();
-		}
-
 		for (IBlockRecognition recognition : blockRecognitions)
 		{
 			IBlockState[] found = recognition.recognize(stack);
@@ -94,13 +110,22 @@ public class BlockFilterHelper
 			}
 		}
 
-		return blocks;
+		return null;
 	}
 
 	public static BlockFilterLayer getNewDeleteLayer(final ItemStack stack)
 	{
-		if (!(ItemBlock.class.isAssignableFrom(stack.getItem().getClass())) && !(stack.getItem() instanceof ItemBucket) && !(ItemMultiTexture.class
-				.isAssignableFrom(stack.getItem().getClass())))
+		final boolean[] compatible = { false };
+
+		blockRecognitions.forEach((r) ->
+		{
+			if (r.isCompatible(stack.getItem().getClass()))
+			{
+				compatible[0] = true;
+			}
+		});
+
+		if (compatible[0])
 		{
 			final BlockFilterLayer layer = new BlockFilterLayer();
 
@@ -266,6 +291,8 @@ public class BlockFilterHelper
 	public interface IBlockRecognition
 	{
 		IBlockState[] recognize(ItemStack stack);
+
+		boolean isCompatible(Class<? extends Item> clazz);
 	}
 
 	/**

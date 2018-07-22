@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.network.instances;
 
 import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.network.NetworkUtils;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.gildedgames.orbis_api.world.instances.IInstance;
 import com.gildedgames.orbis_api.world.instances.IPlayerInstances;
@@ -28,7 +29,7 @@ public class PacketRegisterInstance implements IMessage
 	@Override
 	public void fromBytes(final ByteBuf buf)
 	{
-		final NBTTagCompound tag = ByteBufUtils.readTag(buf);
+		final NBTTagCompound tag = NetworkUtils.readTagLimitless(buf);
 
 		if (tag.getBoolean("isNull"))
 		{
