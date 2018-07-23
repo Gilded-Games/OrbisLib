@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
+import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.data.management.*;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.BiMap;
@@ -84,6 +85,8 @@ public class OrbisProjectCache implements IProjectCache
 	@Override
 	public void setData(final IData data, final String location)
 	{
+		OrbisAPI.LOGGER.info("Data is being cached: " + location);
+
 		if (data.getMetadata().getIdentifier() == null)
 		{
 			data.getMetadata().setIdentifier(this.createNextIdentifier());
