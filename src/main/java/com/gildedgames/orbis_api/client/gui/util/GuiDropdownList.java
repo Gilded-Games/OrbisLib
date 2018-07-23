@@ -7,20 +7,20 @@ import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectModifier;
 import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 {
 	private final List<ELEMENT> elements = Lists.newArrayList();
 
 	private Set<IDropdownListListener<ELEMENT>> listeners = Sets.newHashSet();
+
+	private Map<ELEMENT, GuiDropdownList> subLists = Maps.newHashMap();
 
 	public GuiDropdownList(Rect rect, final ELEMENT... elements)
 	{
@@ -48,7 +48,19 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 	{
 		this.setDropdownElements(elements);
 
-		this.dim().mod().pos(pos).flush();
+		int largestWidth = 0;
+
+		for (ELEMENT element : elements)
+		{
+			int width = this.fontRenderer.getStringWidth(element.text().getFormattedText());
+
+			if (width > largestWidth)
+			{
+				largestWidth = width;
+			}
+		}
+
+		this.dim().mod().width(largestWidth + 10).pos(pos).flush();
 
 		this.setVisible(true);
 		this.setEnabled(true);
@@ -62,6 +74,35 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 		this.elements.addAll(elements);
 
 		this.init();
+
+		for (ELEMENT element : elements)
+		{
+			if (element.getSubElements() != null)
+			{
+				GuiDropdownList<?> list = element.getSubElements().get();
+
+				int largestWidth = 0;
+
+				for (IDropdownElement e : list.getElements())
+				{
+					int width = this.fontRenderer.getStringWidth(e.text().getFormattedText());
+
+					if (width > largestWidth)
+					{
+						largestWidth = width;
+					}
+				}
+
+				list.dim().mod().width(largestWidth + 10).flush();
+
+				list.setVisible(false);
+				list.setEnabled(false);
+
+				this.addChildren(list);
+
+				this.subLists.put(element, list);
+			}
+		}
 	}
 
 	public void addDropdownElements(Collection<ELEMENT> elements)
@@ -83,6 +124,12 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 	}
 
 	@Override
+	public void draw()
+	{
+
+	}
+
+	@Override
 	public void init()
 	{
 		for (int i = 0; i < this.elements.size(); i++)
@@ -94,6 +141,40 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiFrame
 
 			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).height(18).flush(), element.text())
 			{
+				@Override
+				public void onHoverEnter()
+				{
+					if (GuiDropdownList.this.subLists.containsKey(element))
+					{
+						GuiDropdownList list = GuiDropdownList.this.subLists.get(element);
+
+						list.dim().mod().x(GuiDropdownList.this.dim().width()).y(y).flush();
+
+						if (list.dim().maxX() >= GuiDropdownList.this.width)
+						{
+							list.dim().mod().x(-list.dim().width()).y(y).flush();
+						}
+
+						list.setVisible(true);
+						list.setEnabled(true);
+					}
+				}
+
+				@Override
+				public void onHoverExit()
+				{
+					if (GuiDropdownList.this.subLists.containsKey(element))
+					{
+						GuiDropdownList list = GuiDropdownList.this.subLists.get(element);
+
+						if (!InputHelper.isHoveredAndTopElement(list))
+						{
+							list.setVisible(false);
+							list.setEnabled(false);
+						}
+					}
+				}
+
 				@Override
 				public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
 				{
