@@ -78,6 +78,12 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 	}
 
 	@Override
+	public void postDrawAllChildren()
+	{
+
+	}
+
+	@Override
 	public void setInputDisabledWhenNotHovered(boolean flag)
 	{
 		this.inputDisabledWhenNotHovered = flag;
@@ -263,15 +269,6 @@ public abstract class GuiFrameNoContainer extends GuiScreen implements IGuiFrame
 	public ModDim2D dim()
 	{
 		return this.dim;
-	}
-
-	@Override
-	public void updateState()
-	{
-		for (final IGuiFrame frame : this.children)
-		{
-			frame.updateState();
-		}
 	}
 
 	@Override

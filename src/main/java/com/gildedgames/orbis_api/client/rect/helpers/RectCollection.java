@@ -41,9 +41,4 @@ public class RectCollection implements RectHolder
 		return this.dim().toString();
 	}
 
-	@Override
-	public void updateState()
-	{
-	}
-
 }

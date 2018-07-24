@@ -202,12 +202,6 @@ public abstract class GuiDecorator<T extends GuiFrame> extends GuiFrame implemen
 	}
 
 	@Override
-	public void updateState()
-	{
-		this.element.updateState();
-	}
-
-	@Override
 	public void drawDefaultBackground()
 	{
 		this.element.drawDefaultBackground();

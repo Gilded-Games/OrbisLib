@@ -65,6 +65,12 @@ public class GuiFrameCreative extends GuiContainerCreativePublic implements IGui
 	}
 
 	@Override
+	public void postDrawAllChildren()
+	{
+
+	}
+
+	@Override
 	public GuiScreen getActualScreen()
 	{
 		return this;
@@ -248,15 +254,6 @@ public class GuiFrameCreative extends GuiContainerCreativePublic implements IGui
 	public ModDim2D dim()
 	{
 		return this.dim;
-	}
-
-	@Override
-	public void updateState()
-	{
-		for (final IGuiFrame frame : this.children)
-		{
-			frame.updateState();
-		}
 	}
 
 	@Override

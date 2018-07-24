@@ -26,10 +26,4 @@ public abstract class RectSeeker<S> implements RectHolder
 		return this.dim;
 	}
 
-	@Override
-	public void updateState()
-	{
-
-	}
-
 }

@@ -5,6 +5,4 @@ public interface RectHolder
 
 	ModDim2D dim();
 
-	void updateState();
-
 }

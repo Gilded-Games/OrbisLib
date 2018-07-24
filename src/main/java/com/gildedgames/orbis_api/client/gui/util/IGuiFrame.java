@@ -75,6 +75,8 @@ public interface IGuiFrame extends RectHolder
 
 	void preDraw();
 
+	void postDrawAllChildren();
+
 	void draw();
 
 	void preDrawChild(IGuiFrame child);

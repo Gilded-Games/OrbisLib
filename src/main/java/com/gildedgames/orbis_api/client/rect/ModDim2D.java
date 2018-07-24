@@ -90,10 +90,6 @@ public class ModDim2D implements Rect
 
 	private Rect modifiedState()
 	{
-		for (final RectModifier modifier : this.modifiers)
-		{
-			modifier.getSource().updateState();
-		}
 		return this.modifiedState;
 	}
 

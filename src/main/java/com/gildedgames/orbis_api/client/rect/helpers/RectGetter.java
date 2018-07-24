@@ -27,11 +27,12 @@ public abstract class RectGetter<S> extends RectSeeker<S>
 		return super.dim();
 	}
 
-	@Override
+	//TODO: thinking face?
+	/*@Override
 	public void updateState()
 	{
 		this.dim();
-	}
+	}*/
 
 	/**
 	 * Will only be called when dimHasChanged() returns true.

@@ -41,6 +41,12 @@ public class GuiAbstractButton extends GuiFrame
 	public void setSelected(boolean selected)
 	{
 		this.selected = selected;
+
+		if (selected)
+		{
+			this.defaultState.setVisible(false);
+			this.hoveredState.setVisible(true);
+		}
 	}
 
 	public void addClickEvent(final Runnable event)
@@ -104,6 +110,23 @@ public class GuiAbstractButton extends GuiFrame
 	}
 
 	@Override
+	public void onHoverEnter()
+	{
+		this.defaultState.setVisible(false);
+		this.hoveredState.setVisible(true);
+	}
+
+	@Override
+	public void onHoverExit()
+	{
+		if (!this.selected)
+		{
+			this.defaultState.setVisible(true);
+			this.hoveredState.setVisible(false);
+		}
+	}
+
+	@Override
 	public void draw()
 	{
 		if (this.disabledState != null)
@@ -116,17 +139,6 @@ public class GuiAbstractButton extends GuiFrame
 			{
 				this.disabledState.setVisible(false);
 			}
-		}
-
-		if (InputHelper.isHoveredAndTopElement(this) || this.selected)
-		{
-			this.defaultState.setVisible(false);
-			this.hoveredState.setVisible(true);
-		}
-		else
-		{
-			this.defaultState.setVisible(true);
-			this.hoveredState.setVisible(false);
 		}
 	}
 

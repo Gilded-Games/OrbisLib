@@ -57,6 +57,15 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 
 	private boolean isHoveredOnTop;
 
+	private List<IGuiFrame> drawn = Lists.newArrayList();
+
+	private List<IGuiFrame> hasBeenPostDrawn = Lists.newArrayList();
+
+	/**
+	 * Used to recursively fetch all children from a frame.
+	 */
+	private List<IGuiFrame> childrenCache = Lists.newArrayList();
+
 	public GuiFrame()
 	{
 		super(new ContainerGeneric());
@@ -85,6 +94,16 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	public static void preventInnerTyping()
 	{
 		preventInnerTyping = true;
+	}
+
+	public static void fetchAllChildren(List<IGuiFrame> allChildren, IGuiFrame frame)
+	{
+		if (frame.isVisible())
+		{
+			allChildren.addAll(frame.getChildren());
+
+			frame.getChildren().forEach((f) -> fetchAllChildren(allChildren, f));
+		}
 	}
 
 	@Override
@@ -245,6 +264,12 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	}
 
 	@Override
+	public void postDrawAllChildren()
+	{
+
+	}
+
+	@Override
 	public List<IGuiFrame> getChildren()
 	{
 		return this.children;
@@ -278,15 +303,6 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 	public ModDim2D dim()
 	{
 		return this.dim;
-	}
-
-	@Override
-	public void updateState()
-	{
-		for (final IGuiFrame frame : this.children)
-		{
-			frame.updateState();
-		}
 	}
 
 	@Override
@@ -486,9 +502,12 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 		{
 			this.allChildren.clear();
 
-			this.fetchAllChildren(this.allChildren, this);
+			GuiFrame.fetchAllChildren(this.allChildren, this);
 
 			this.allChildren.sort(Comparator.comparingInt(IGuiFrame::getZOrder));
+
+			this.drawn.clear();
+			this.hasBeenPostDrawn.clear();
 
 			this.allChildren.forEach((frame) ->
 			{
@@ -509,6 +528,26 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 					{
 						parent.postDrawChild(frame);
 					}
+
+					this.drawn.add(frame);
+
+					for (IGuiFrame drawnFrame : this.drawn)
+					{
+						if (this.hasBeenPostDrawn.contains(drawnFrame))
+						{
+							continue;
+						}
+
+						GuiFrame.fetchAllChildren(this.childrenCache, drawnFrame);
+
+						if (this.drawn.containsAll(this.childrenCache))
+						{
+							drawnFrame.postDrawAllChildren();
+							this.hasBeenPostDrawn.add(drawnFrame);
+						}
+
+						this.childrenCache.clear();
+					}
 				}
 			});
 		}
@@ -521,16 +560,6 @@ public abstract class GuiFrame extends GuiContainer implements IGuiFrame
 		if (Minecraft.getMinecraft().currentScreen == this)
 		{
 			super.drawScreen(mouseX, mouseY, partialTicks);
-		}
-	}
-
-	private void fetchAllChildren(List<IGuiFrame> allChildren, IGuiFrame frame)
-	{
-		if (frame.isVisible())
-		{
-			allChildren.addAll(frame.getChildren());
-
-			frame.getChildren().forEach((f) -> this.fetchAllChildren(allChildren, f));
 		}
 	}
 
