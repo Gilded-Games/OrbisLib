@@ -421,7 +421,7 @@ public class BakedBlueprint implements IDimensions
 					{
 						if (this.chunks[i] == null)
 						{
-							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainer(16, this.rawDataContainer.getHeight(), 16));
+							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainerDefaultVoid(16, this.rawDataContainer.getHeight(), 16));
 						}
 
 						index = i;
@@ -445,6 +445,7 @@ public class BakedBlueprint implements IDimensions
 										zIndex);
 
 						IBlockState original = chunk.getContainer().getBlockState(xIndex, rotated.getY() - m.getY(), zIndex);
+
 						chunk.getContainer().setBlockState(original.withRotation(this.data.getRotation()), xIndex, rotated.getY() - m.getY(), zIndex);
 					}
 					catch (ArrayIndexOutOfBoundsException e)
@@ -598,6 +599,8 @@ public class BakedBlueprint implements IDimensions
 				}
 
 				final IBlockState state = container.getBlockState(origX, origY, origZ);
+				final NBTTagCompound entity = container
+						.getTileEntity(origX, origY, origZ);
 
 				if (state == null)
 				{
@@ -606,6 +609,11 @@ public class BakedBlueprint implements IDimensions
 
 				try
 				{
+					if (entity != null)
+					{
+						this.rawDataContainer.setTileEntity(entity, newX - bakedMin.getX(), newY - bakedMin.getY(), newZ - bakedMin.getZ());
+					}
+
 					this.rawDataContainer.setBlockState(state, newX - bakedMin.getX(), newY - bakedMin.getY(), newZ - bakedMin.getZ());
 				}
 				catch (ArrayIndexOutOfBoundsException e)

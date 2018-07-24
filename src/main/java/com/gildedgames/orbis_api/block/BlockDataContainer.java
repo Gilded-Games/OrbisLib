@@ -463,14 +463,12 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		System.arraycopy(this.blocks, 0, data.blocks, 0, this.blocks.length);
 		System.arraycopy(this.blocksMeta, 0, data.blocksMeta, 0, this.blocksMeta.length);
 
-		{
-			NBTTagCompound tag;
+		NBTTagCompound tag;
 
-			this.metadata.write(tag = new NBTTagCompound());
+		this.metadata.write(tag = new NBTTagCompound());
 
-			data.metadata = new DataMetadata();
-			data.metadata.read(tag);
-		}
+		data.metadata = new DataMetadata();
+		data.metadata.read(tag);
 
 		data.entities.clear();
 
@@ -509,6 +507,18 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	public NBTTagCompound getTileEntity(int x, int y, int z)
 	{
 		return this.entities.get(this.getIndex(x, y, z));
+	}
+
+	public void setTileEntity(NBTTagCompound tileEntity, int x, int y, int z)
+	{
+		if (tileEntity == null)
+		{
+			this.entities.remove(this.getIndex(x, y, z));
+		}
+		else
+		{
+			this.entities.put(this.getIndex(x, y, z), tileEntity.copy());
+		}
 	}
 
 	public void setTileEntity(TileEntity entity, BlockPos translated)
