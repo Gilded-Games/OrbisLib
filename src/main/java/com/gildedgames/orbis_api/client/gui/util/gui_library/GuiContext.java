@@ -133,7 +133,10 @@ public class GuiContext implements IGuiContext, IGuiStateListener
 	@Override
 	public void onSetVisible(IGuiState state, boolean oldValue, boolean newValue)
 	{
-
+		if (oldValue != newValue)
+		{
+			this.viewer.requestRecacheAndReorderAllVisibleElements();
+		}
 	}
 
 	@Override

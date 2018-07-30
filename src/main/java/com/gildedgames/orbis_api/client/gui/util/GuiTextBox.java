@@ -35,9 +35,6 @@ public class GuiTextBox extends GuiElement
 	@Override
 	public void build()
 	{
-		//TODO ???
-		this.context().clearChildren();
-
 		int textHeight = 0;
 
 		final float halfWidth = this.dim().width() / 2;
