@@ -1,13 +1,12 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Rect;
-import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Lists;
 
-import java.io.IOException;
 import java.util.List;
 
-public class GuiAbstractButton extends GuiFrame
+public class GuiAbstractButton extends GuiElement
 {
 
 	protected final GuiTexture defaultState, hoveredState, clickedState, disabledState;
@@ -29,7 +28,7 @@ public class GuiAbstractButton extends GuiFrame
 	public GuiAbstractButton(final Rect dim, final GuiTexture defaultState, final GuiTexture hoveredState, final GuiTexture clickedState,
 			final GuiTexture disabledState)
 	{
-		super(dim);
+		super(dim, true);
 
 		this.defaultState = defaultState;
 		this.hoveredState = hoveredState;
@@ -44,8 +43,8 @@ public class GuiAbstractButton extends GuiFrame
 
 		if (selected)
 		{
-			this.defaultState.setVisible(false);
-			this.hoveredState.setVisible(true);
+			this.defaultState.state().setVisible(false);
+			this.hoveredState.state().setVisible(true);
 		}
 	}
 
@@ -55,89 +54,87 @@ public class GuiAbstractButton extends GuiFrame
 	}
 
 	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
+	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
-		if (this.isEnabled() && InputHelper.isHoveredAndTopElement(this.clickedState) && mouseButton == 0)
+		if (this.state().isEnabled() && this.clickedState.state().isHoveredAndTopElement() && mouseButton == 0)
 		{
-			this.clickedState.setVisible(true);
+			this.clickedState.state().setVisible(true);
 
 			this.onClickEvents.forEach(Runnable::run);
 		}
 	}
 
 	@Override
-	protected void mouseReleased(final int mouseX, final int mouseY, final int state)
+	public void onMouseReleased(GuiElement element, final int mouseX, final int mouseY, final int state)
 	{
-		super.mouseReleased(mouseX, mouseY, state);
-
-		this.clickedState.setVisible(false);
+		this.clickedState.state().setVisible(false);
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
-		this.defaultState.setVisible(false);
-		this.hoveredState.setVisible(false);
-		this.clickedState.setVisible(false);
+		this.defaultState.state().setVisible(false);
+		this.hoveredState.state().setVisible(false);
+		this.clickedState.state().setVisible(false);
 
 		this.defaultState.dim().mod().center(false).resetPos().flush();
 		this.hoveredState.dim().mod().center(false).resetPos().flush();
 		this.clickedState.dim().mod().center(false).resetPos().flush();
 
-		this.addChildren(this.hoveredState);
-		this.addChildren(this.clickedState);
-		this.addChildren(this.defaultState);
+		this.context().addChildren(this.hoveredState);
+		this.context().addChildren(this.clickedState);
+		this.context().addChildren(this.defaultState);
 
 		if (this.disabledState != null)
 		{
 			this.disabledState.dim().mod().center(false).resetPos().flush();
 
-			if (!this.isEnabled())
+			if (!this.state().isEnabled())
 			{
-				this.disabledState.setVisible(true);
+				this.disabledState.state().setVisible(true);
 			}
 			else
 			{
-				this.disabledState.setVisible(false);
+				this.disabledState.state().setVisible(false);
 			}
 
-			this.addChildren(this.disabledState);
+			this.context().addChildren(this.disabledState);
 		}
 
-		this.defaultState.setVisible(true);
+		this.defaultState.state().setVisible(true);
+
+		this.state().setCanBeTopHoverElement(true);
 	}
 
 	@Override
-	public void onHoverEnter()
+	public void onHoverEnter(GuiElement element)
 	{
-		this.defaultState.setVisible(false);
-		this.hoveredState.setVisible(true);
+		this.defaultState.state().setVisible(false);
+		this.hoveredState.state().setVisible(true);
 	}
 
 	@Override
-	public void onHoverExit()
+	public void onHoverExit(GuiElement element)
 	{
 		if (!this.selected)
 		{
-			this.defaultState.setVisible(true);
-			this.hoveredState.setVisible(false);
+			this.defaultState.state().setVisible(true);
+			this.hoveredState.state().setVisible(false);
 		}
 	}
 
 	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
 		if (this.disabledState != null)
 		{
-			if (!this.isEnabled())
+			if (!this.state().isEnabled())
 			{
-				this.disabledState.setVisible(true);
+				this.disabledState.state().setVisible(true);
 			}
 			else
 			{
-				this.disabledState.setVisible(false);
+				this.disabledState.state().setVisible(false);
 			}
 		}
 	}

@@ -1,13 +1,13 @@
 package com.gildedgames.orbis_api.core.variables;
 
 import com.gildedgames.orbis_api.client.gui.data.DropdownElementWithData;
-import com.gildedgames.orbis_api.client.gui.util.GuiFrame;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.util.mc.NBT;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public interface IGuiVar<T, DISPLAY extends GuiFrame> extends NBT, IGuiVarDisplayChild
+public interface IGuiVar<T, DISPLAY extends GuiElement> extends NBT, IGuiVarDisplayChild
 {
 	String getVariableName();
 

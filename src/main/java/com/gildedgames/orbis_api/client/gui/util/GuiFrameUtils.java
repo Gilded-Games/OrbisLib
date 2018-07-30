@@ -1,12 +1,13 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
+import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiState;
 import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
 
 public class GuiFrameUtils
 {
 
-	public static void applyAlpha(IGuiFrame frame)
+	public static void applyAlpha(IGuiState state)
 	{
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -18,7 +19,7 @@ public class GuiFrameUtils
 
 		GlStateManager.enableAlpha();
 
-		GlStateManager.color(1.0F, 1.0F, 1.0F, frame.getAlpha());
+		GlStateManager.color(1.0F, 1.0F, 1.0F, state.getAlpha());
 	}
 
 	public static int changeAlpha(int origColor, int userInputedAlpha)

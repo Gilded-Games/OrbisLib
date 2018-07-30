@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -7,16 +8,16 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 
-public class GuiTexture extends GuiFrame
+public class GuiTexture extends GuiElement
 {
 	private ResourceLocation texture;
 
 	public GuiTexture(final Rect rect, final ResourceLocation texture)
 	{
-		super(rect);
+		super(rect, true);
 
 		this.texture = texture;
-		this.setShouldScaleRender(false);
+		this.state().setShouldScaleRender(false);
 	}
 
 	public static void drawModalRectWithCustomSizedTexture(float x, float y, float u, float v, float width, float height, float textureWidth,
@@ -52,19 +53,13 @@ public class GuiTexture extends GuiFrame
 	}
 
 	@Override
-	public void init()
-	{
-
-	}
-
-	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
 		GlStateManager.pushMatrix();
 
-		GuiFrameUtils.applyAlpha(this);
+		GuiFrameUtils.applyAlpha(this.state());
 
-		this.mc.getTextureManager().bindTexture(this.texture);
+		this.viewer().mc().getTextureManager().bindTexture(this.texture);
 
 		drawModalRectWithCustomSizedTexture(this.dim().x(), this.dim().y(), 0, 0, this.dim().width(),
 				this.dim().height(),

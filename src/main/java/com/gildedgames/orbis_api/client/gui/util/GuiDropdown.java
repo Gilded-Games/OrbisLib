@@ -1,15 +1,16 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
 import com.gildedgames.orbis_api.client.gui.data.IDropdownElement;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiState;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiStateListener;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectModifier;
-import com.gildedgames.orbis_api.util.InputHelper;
 import net.minecraft.util.text.TextComponentTranslation;
 
-import java.io.IOException;
-
-public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiFrame implements IDropdownListListener<ELEMENT>
+public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiElement
+		implements IDropdownListListener<ELEMENT>, IGuiStateListener
 {
 	private GuiDropdownList<ELEMENT> list;
 
@@ -21,7 +22,7 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiFrame impl
 
 	public GuiDropdown(Rect rect, IDropdownListListener<ELEMENT> onClickListener, ELEMENT... elements)
 	{
-		super(rect.rebuild().height(18).flush());
+		super(rect.rebuild().height(18).flush(), true);
 
 		this.list = new GuiDropdownList<>(Dim2D.build().y(17).flush(), elements);
 		this.list.dim().add("dropdownWidth", this, RectModifier.ModifierType.WIDTH);
@@ -32,14 +33,12 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiFrame impl
 	}
 
 	@Override
-	public void setVisible(boolean flag)
+	public void onSetVisible(IGuiState state, boolean oldValue, boolean newValue)
 	{
-		super.setVisible(flag);
-
-		if (!flag)
+		if (!newValue)
 		{
-			this.list.setVisible(false);
-			this.list.setEnabled(false);
+			this.list.state().setVisible(false);
+			this.list.state().setEnabled(false);
 		}
 	}
 
@@ -64,7 +63,7 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiFrame impl
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
 		if (this.chosen == null)
 		{
@@ -76,43 +75,40 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiFrame impl
 
 		this.chosenLabel.dim().add("dropdownWidth", this, RectModifier.ModifierType.WIDTH);
 
-		this.list.setEnabled(false);
-		this.list.setVisible(false);
+		this.list.state().setEnabled(false);
+		this.list.state().setVisible(false);
 
-		this.list.setZOrder(5);
+		this.context().addChildren(this.list, this.chosenLabel);
 
-		this.addChildren(this.list, this.chosenLabel);
+		this.list.state().setZOrder(5);
+
+		this.state().listen(this);
+
+		this.chosenLabel.state().setCanBeTopHoverElement(true);
 	}
 
 	@Override
-	public void draw()
+	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 	{
-
-	}
-
-	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
-	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
 		if (mouseButton == 0)
 		{
-			if (InputHelper.isHoveredAndTopElement(this.chosenLabel) && this.chosenLabel.isVisible())
+			if (this.chosenLabel.state().isHoveredAndTopElement() && this.chosenLabel.state().isVisible())
 			{
-				this.list.setEnabled(true);
-				this.list.setVisible(true);
+				this.list.state().setEnabled(true);
+				this.list.state().setVisible(true);
 			}
 		}
 	}
 
-	@Override
+	//TODO:
+	/*@Override
 	public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
 	{
 		super.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
 
 		this.list.setEnabled(false);
 		this.list.setVisible(false);
-	}
+	}*/
 
 	@Override
 	public void onClick(ELEMENT element)

@@ -1,22 +1,22 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
 import com.gildedgames.orbis_api.client.gui.data.Text;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
-import com.gildedgames.orbis_api.util.InputHelper;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.text.ITextComponent;
 
-public class GuiTextLabel extends GuiFrame
+public class GuiTextLabel extends GuiElement
 {
 	private GuiText text;
 
 	public GuiTextLabel(final Rect rect, final ITextComponent component)
 	{
-		super(rect);
+		super(rect, true);
 
 		this.text = new GuiText(Dim2D.build().centerY(true).x(3).y(this.dim().height() / 2).addY(1).flush(), new Text(component, 1.0F));
 	}
@@ -25,26 +25,27 @@ public class GuiTextLabel extends GuiFrame
 	{
 		this.text = new GuiText(Dim2D.build().centerY(true).x(3).y(this.dim().height() / 2).addY(1).flush(), new Text(component, 1.0F));
 
-		this.clearChildren();
-		this.init();
+		this.rebuild();
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
-		this.addChildren(this.text);
+		this.context().addChildren(this.text);
+
+		this.state().setCanBeTopHoverElement(true);
 	}
 
 	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
 		GlStateManager.pushMatrix();
 
-		GuiFrameUtils.applyAlpha(this);
+		GuiFrameUtils.applyAlpha(this.state());
 
 		this.drawTextBackground(this.dim().x() + 4, this.dim().y() + 4, this.dim().width() - 8, this.dim().height() - 8,
-				InputHelper.isHoveredAndTopElement(this) ? -267486864 : -267386864,
-				InputHelper.isHoveredAndTopElement(this) ? 1547420415 : 1347420415);
+				this.state().isHoveredAndTopElement() ? -267486864 : -267386864,
+				this.state().isHoveredAndTopElement() ? 1547420415 : 1347420415);
 
 		GlStateManager.popMatrix();
 	}
@@ -85,10 +86,10 @@ public class GuiTextLabel extends GuiFrame
 		final Tessellator tessellator = Tessellator.getInstance();
 		final BufferBuilder buffer = tessellator.getBuffer();
 		buffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
-		buffer.pos((double) right, (double) top, (double) this.zLevel).color(f1, f2, f3, f).endVertex();
-		buffer.pos((double) left, (double) top, (double) this.zLevel).color(f1, f2, f3, f).endVertex();
-		buffer.pos((double) left, (double) bottom, (double) this.zLevel).color(f5, f6, f7, f4).endVertex();
-		buffer.pos((double) right, (double) bottom, (double) this.zLevel).color(f5, f6, f7, f4).endVertex();
+		buffer.pos((double) right, (double) top, (double) 0).color(f1, f2, f3, f).endVertex();
+		buffer.pos((double) left, (double) top, (double) 0).color(f1, f2, f3, f).endVertex();
+		buffer.pos((double) left, (double) bottom, (double) 0).color(f5, f6, f7, f4).endVertex();
+		buffer.pos((double) right, (double) bottom, (double) 0).color(f5, f6, f7, f4).endVertex();
 		tessellator.draw();
 		GlStateManager.shadeModel(7424);
 		GlStateManager.disableBlend();

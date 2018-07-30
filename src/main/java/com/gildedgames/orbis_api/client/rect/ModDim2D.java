@@ -139,7 +139,7 @@ public class ModDim2D implements Rect
 	/**
 	 * Calculate the values for the modified state of this Dim2D object, based on the provided pool of Modifiers.
 	 */
-	protected void refreshModifiedState()
+	public void refreshModifiedState()
 	{
 		final Rect oldModifiedState = this.modifiedState;
 

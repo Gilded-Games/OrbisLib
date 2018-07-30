@@ -1,6 +1,8 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
 import com.gildedgames.orbis_api.client.gui.data.Text;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.util.mc.IText;
@@ -10,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GuiTextBox extends GuiFrame
+public class GuiTextBox extends GuiElement
 {
 
 	private final boolean centerFormat;
@@ -19,7 +21,7 @@ public class GuiTextBox extends GuiFrame
 
 	public GuiTextBox(final Rect dim, final boolean centerFormat, final IText... text)
 	{
-		super(dim);
+		super(dim, true);
 
 		this.text = text;
 		this.centerFormat = centerFormat;
@@ -31,9 +33,10 @@ public class GuiTextBox extends GuiFrame
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
-		this.clearChildren();
+		//TODO ???
+		this.context().clearChildren();
 
 		int textHeight = 0;
 
@@ -53,7 +56,7 @@ public class GuiTextBox extends GuiFrame
 
 			for (final String string : stringList)
 			{
-				final List<String> newStrings = this.fontRenderer.listFormattedStringToWidth(string, (int) (this.dim().width() / t.scale()));
+				final List<String> newStrings = this.viewer().fontRenderer().listFormattedStringToWidth(string, (int) (this.dim().width() / t.scale()));
 
 				for (final String s : newStrings)
 				{
@@ -69,9 +72,9 @@ public class GuiTextBox extends GuiFrame
 						textElement = new GuiText(Dim2D.build().pos(0, textHeight).flush(), new Text(new TextComponentString(s), t.scale()));
 					}
 
-					textElement.setAlpha(this.getAlpha());
+					textElement.state().setAlpha(this.state().getAlpha());
 
-					this.addChildren(textElement);
+					this.context().addChildren(textElement);
 
 					textHeight += 1.2f * t.scaledHeight();
 				}
@@ -82,15 +85,15 @@ public class GuiTextBox extends GuiFrame
 	}
 
 	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
-		for (IGuiFrame c : this.getChildren())
+		for (IGuiElement c : this.context().getChildren())
 		{
 			if (c instanceof GuiText)
 			{
 				GuiText text = (GuiText) c;
 
-				text.setAlpha(this.getAlpha());
+				text.state().setAlpha(this.state().getAlpha());
 			}
 		}
 	}

@@ -1,19 +1,17 @@
 package com.gildedgames.orbis_api.core.variables.displays;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.client.gui.util.GuiFrame;
 import com.gildedgames.orbis_api.client.gui.util.GuiTexture;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
-import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Sets;
 import net.minecraft.util.ResourceLocation;
 
-import java.io.IOException;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public class GuiTickBox extends GuiFrame
+public class GuiTickBox extends GuiElement
 {
 	private static final ResourceLocation TICK_BOX = OrbisAPI.getResource("tick_box.png");
 
@@ -39,7 +37,7 @@ public class GuiTickBox extends GuiFrame
 
 	public GuiTickBox(Pos2D pos, boolean ticked, ResourceLocation untickedTexture, ResourceLocation tickedTexture)
 	{
-		super(Dim2D.build().width(14).height(14).pos(pos).flush());
+		super(Dim2D.build().width(14).height(14).pos(pos).flush(), true);
 
 		this.untickedTexture = untickedTexture;
 		this.tickedTexture = tickedTexture;
@@ -67,11 +65,9 @@ public class GuiTickBox extends GuiFrame
 	}
 
 	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
+	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
-		if (InputHelper.isHoveredAndTopElement(this) && mouseButton == 0)
+		if (this.state().isHoveredAndTopElement() && mouseButton == 0)
 		{
 			this.ticked = !this.ticked;
 
@@ -80,17 +76,19 @@ public class GuiTickBox extends GuiFrame
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
 		GuiTexture box = new GuiTexture(Dim2D.build().width(14).height(14).flush(), this.untickedTexture);
 		this.pressed = new GuiTexture(Dim2D.build().width(14).height(14).flush(), this.tickedTexture);
 
-		this.addChildren(box, this.pressed);
+		this.context().addChildren(box, this.pressed);
+
+		this.state().setCanBeTopHoverElement(true);
 	}
 
 	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
-		this.pressed.setVisible(this.ticked);
+		this.pressed.state().setVisible(this.ticked);
 	}
 }

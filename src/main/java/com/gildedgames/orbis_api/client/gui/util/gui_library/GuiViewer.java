@@ -1,10 +1,9 @@
-package com.gildedgames.orbis_api.client.gui.util.vanilla;
+package com.gildedgames.orbis_api.client.gui.util.gui_library;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrameUtils;
-import com.gildedgames.orbis_api.client.gui.util.gui_library.*;
-import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.util.InputHelper;
+import com.gildedgames.orbis_api.util.mc.ContainerGeneric;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
@@ -12,9 +11,10 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -22,7 +22,7 @@ import org.lwjgl.opengl.GL11;
 import java.io.IOException;
 import java.util.*;
 
-public abstract class GuiFrameCreative extends GuiContainerCreativePublic implements IGuiViewer
+public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 {
 	private static boolean preventInnerTyping = false;
 
@@ -36,39 +36,30 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 	private IGuiElement viewing;
 
-	private List<IGuiElement> drawn = Lists.newArrayList();
-
-	private List<IGuiElement> hasBeenPostDrawn = Lists.newArrayList();
-
-	/**
-	 * Used to recursively fetch all children from a frame.
-	 */
-	private List<IGuiElement> childrenCache = Lists.newArrayList();
-
 	private List<IGuiElement> elementsCurrentlyBuilding = Lists.newArrayList();
 
 	private boolean recacheRequested, contextChanged;
 
 	private Map<IGuiElement, List<IGuiElement>> subListCache = Maps.newHashMap();
 
-	public GuiFrameCreative(final EntityPlayer player)
+	public GuiViewer(IGuiElement viewing)
 	{
-		super(player);
+		super(new ContainerGeneric());
 
-		this.viewing = new GuiElement(Dim2D.flush(), false);
 		this.previousViewer = null;
+		this.viewing = viewing;
 	}
 
-	public GuiFrameCreative(IGuiElement viewing, final EntityPlayer player)
+	public GuiViewer(IGuiElement viewing, IGuiViewer prevViewer)
 	{
-		this(viewing, null, player);
+		this(viewing, prevViewer, new ContainerGeneric());
 	}
 
-	public GuiFrameCreative(IGuiElement viewing, IGuiViewer previousViewer, final EntityPlayer player)
+	public GuiViewer(IGuiElement viewing, IGuiViewer prevViewer, final Container inventorySlotsIn)
 	{
-		super(player);
+		super(inventorySlotsIn);
 
-		this.previousViewer = previousViewer;
+		this.previousViewer = prevViewer;
 		this.viewing = viewing;
 	}
 
@@ -84,16 +75,6 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 			allChildren.addAll(top.getChildren());
 
 			top.getChildren().forEach((element) -> fetchAllVisibleChildren(allChildren, element.context()));
-		}
-	}
-
-	public static void fetchAllParents(Set<IGuiElement> allParents, IGuiContext top)
-	{
-		for (IGuiElement parent : top.getParents())
-		{
-			allParents.add(parent);
-
-			fetchAllParents(allParents, parent.context());
 		}
 	}
 
@@ -308,6 +289,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 		{
 			event.onPreDraw(element);
 			event.onDraw(element);
+			event.onPostDraw(element);
 		}
 
 		GlStateManager.popMatrix();
@@ -315,30 +297,11 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 	protected void drawElements()
 	{
-		this.drawn.clear();
-		this.hasBeenPostDrawn.clear();
-
 		for (IGuiElement element : this.allVisibleElements)
 		{
 			element.state().updateState();
 
 			this.drawElement(element, false);
-
-			this.drawn.add(element);
-
-			for (IGuiElement drawnElement : this.drawn)
-			{
-				if (this.hasBeenPostDrawn.contains(drawnElement))
-				{
-					continue;
-				}
-
-				if (this.drawn.containsAll(this.getAllVisibleElementsBelow(drawnElement)))
-				{
-					drawnElement.state().getEvents().forEach((event) -> event.onPostDraw(drawnElement));
-					this.hasBeenPostDrawn.add(drawnElement);
-				}
-			}
 		}
 	}
 

@@ -1,8 +1,8 @@
 package com.gildedgames.orbis_api.client.gui.util.vanilla;
 
 import com.gildedgames.orbis_api.client.PartialTicks;
-import com.gildedgames.orbis_api.client.gui.util.GuiFrame;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrameUtils;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.util.InputHelper;
 import net.minecraft.client.Minecraft;
@@ -10,9 +10,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 
-import java.io.IOException;
-
-public class GuiButtonVanillaToggled extends GuiFrame
+public class GuiButtonVanillaToggled extends GuiElement
 {
 	public static int TOGGLED_BUTTON_ID = -1;
 
@@ -22,7 +20,7 @@ public class GuiButtonVanillaToggled extends GuiFrame
 
 	public GuiButtonVanillaToggled(final Rect rect, final int id)
 	{
-		super(rect);
+		super(rect, true);
 
 		this.id = id;
 
@@ -45,42 +43,29 @@ public class GuiButtonVanillaToggled extends GuiFrame
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
-
+		this.state().setCanBeTopHoverElement(true);
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(final int mouseX, final int mouseY)
+	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 	{
-		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-
-		if (this.button.isMouseOver())
+		if (this.button.mousePressed(this.viewer().mc(), mouseX, mouseY))
 		{
-			this.button.drawButtonForegroundLayer(mouseX - this.guiLeft, mouseY - this.guiTop);
-		}
-	}
-
-	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
-	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
-		if (this.button.mousePressed(this.mc, mouseX, mouseY))
-		{
-			this.button.playPressSound(this.mc.getSoundHandler());
-			this.actionPerformed(this.button);
+			this.button.playPressSound(this.viewer().mc().getSoundHandler());
+			this.viewer().pushActionPerformed(this.button);
 
 			TOGGLED_BUTTON_ID = this.id;
 		}
 	}
 
 	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
 		GlStateManager.pushMatrix();
 
-		GuiFrameUtils.applyAlpha(this);
+		GuiFrameUtils.applyAlpha(this.state());
 
 		this.button.x = (int) this.dim().x();
 		this.button.y = (int) this.dim().y();

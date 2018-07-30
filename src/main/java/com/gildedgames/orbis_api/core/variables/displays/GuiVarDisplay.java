@@ -1,24 +1,22 @@
 package com.gildedgames.orbis_api.core.variables.displays;
 
 import com.gildedgames.orbis_api.client.gui.data.Text;
-import com.gildedgames.orbis_api.client.gui.util.GuiFrame;
 import com.gildedgames.orbis_api.client.gui.util.GuiText;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.gui.util.vanilla.GuiButtonVanilla;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
 import com.gildedgames.orbis_api.core.variables.IGuiVarDisplayContents;
-import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Maps;
 import net.minecraft.util.text.TextComponentTranslation;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class GuiVarDisplay extends GuiFrame
+public class GuiVarDisplay extends GuiElement
 {
 	private Collection<IGuiVar> variables;
 
@@ -26,7 +24,7 @@ public class GuiVarDisplay extends GuiFrame
 
 	private String displayTitle;
 
-	private Map<IGuiVar, GuiFrame> varToDisplay = Maps.newHashMap();
+	private Map<IGuiVar, GuiElement> varToDisplay = Maps.newHashMap();
 
 	private GuiButtonVanilla apply, reset;
 
@@ -34,12 +32,12 @@ public class GuiVarDisplay extends GuiFrame
 
 	public GuiVarDisplay(Rect rect)
 	{
-		super(rect);
+		super(rect, true);
 	}
 
 	public void reset()
 	{
-		this.clearChildren();
+		this.context().clearChildren();
 		this.variables = Collections.emptyList();
 	}
 
@@ -70,7 +68,7 @@ public class GuiVarDisplay extends GuiFrame
 		this.contents = contents;
 		this.displayTitle = displayTitle;
 
-		this.clearChildren();
+		this.context().clearChildren();
 
 		this.variables = new CopyOnWriteArrayList<>(contents.getVariables());
 
@@ -88,7 +86,7 @@ public class GuiVarDisplay extends GuiFrame
 
 			currentY += 15;
 
-			this.addChildren(title);
+			this.context().addChildren(title);
 		}
 
 		for (IGuiVar var : this.variables)
@@ -97,7 +95,7 @@ public class GuiVarDisplay extends GuiFrame
 
 			currentY += 13;
 
-			GuiFrame display = var.createDisplay((int) this.dim().width());
+			GuiElement display = var.createDisplay((int) this.dim().width());
 
 			display.dim().mod().y(currentY).flush();
 
@@ -105,7 +103,7 @@ public class GuiVarDisplay extends GuiFrame
 
 			this.varToDisplay.put(var, display);
 
-			this.addChildren(text, display);
+			this.context().addChildren(text, display);
 		}
 
 		currentY += 5;
@@ -120,17 +118,14 @@ public class GuiVarDisplay extends GuiFrame
 
 		this.dim().mod().height(currentY).flush();
 
-		this.addChildren(this.apply, this.reset);
+		this.context().addChildren(this.apply, this.reset);
+
+		this.apply.state().setCanBeTopHoverElement(true);
+		this.reset.state().setCanBeTopHoverElement(true);
 	}
 
 	@Override
-	public void init()
-	{
-
-	}
-
-	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
 		if (this.refreshRequests > 0)
 		{
@@ -141,23 +136,16 @@ public class GuiVarDisplay extends GuiFrame
 	}
 
 	@Override
-	protected void mouseClicked(int mouseX, int mouseY, final int mouseButton) throws IOException
+	public void onMouseClicked(GuiElement element, int mouseX, int mouseY, final int mouseButton)
 	{
-		if (!this.isInputEnabled())
-		{
-			return;
-		}
-
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
 		if (this.variables != null)
 		{
-			if (InputHelper.isHoveredAndTopElement(this.apply) && mouseButton == 0)
+			if (this.apply.state().isHoveredAndTopElement() && mouseButton == 0)
 			{
 				this.updateVariableData();
 			}
 
-			if (InputHelper.isHoveredAndTopElement(this.reset) && mouseButton == 0)
+			if (this.reset.state().isHoveredAndTopElement() && mouseButton == 0)
 			{
 				this.resetVariableData();
 			}

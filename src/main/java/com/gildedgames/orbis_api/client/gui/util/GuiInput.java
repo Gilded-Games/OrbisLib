@@ -1,15 +1,16 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiViewer;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.google.common.collect.Sets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
 import org.lwjgl.input.Keyboard;
 
-import java.io.IOException;
 import java.util.Set;
 
-public class GuiInput extends GuiFrame
+public class GuiInput extends GuiElement
 {
 	private final GuiTextField field;
 
@@ -17,7 +18,7 @@ public class GuiInput extends GuiFrame
 
 	public GuiInput(final Rect rect)
 	{
-		super(rect);
+		super(rect, true);
 
 		this.field = new GuiTextField(0, Minecraft.getMinecraft().fontRenderer, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height());
 	}
@@ -38,20 +39,19 @@ public class GuiInput extends GuiFrame
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
 		Keyboard.enableRepeatEvents(true);
 	}
 
 	@Override
-	public void onGuiClosed()
+	public void onGuiClosed(GuiElement element)
 	{
-		super.onGuiClosed();
-
 		Keyboard.enableRepeatEvents(false);
 	}
 
-	@Override
+	//TODO
+	/*@Override
 	public void mouseClickedOutsideBounds(int mouseX, int mouseY, int mouseButton)
 	{
 		super.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
@@ -60,13 +60,11 @@ public class GuiInput extends GuiFrame
 		{
 			this.field.mouseClicked(mouseX, mouseY, mouseButton);
 		}
-	}
+	}*/
 
 	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
+	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
 		if (this.field.getVisible())
 		{
 			this.field.mouseClicked(mouseX, mouseY, mouseButton);
@@ -74,14 +72,12 @@ public class GuiInput extends GuiFrame
 	}
 
 	@Override
-	protected void keyTyped(final char typedChar, final int keyCode) throws IOException
+	public void onKeyTyped(GuiElement element, final char typedChar, final int keyCode)
 	{
 		if (keyCode == Keyboard.KEY_ESCAPE)
 		{
 			this.getInner().setFocused(false);
 		}
-
-		super.keyTyped(typedChar, keyCode);
 
 		if (this.field.getVisible())
 		{
@@ -95,11 +91,11 @@ public class GuiInput extends GuiFrame
 	}
 
 	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
 		if (this.getInner().isFocused())
 		{
-			GuiFrame.preventInnerTyping();
+			GuiViewer.preventInnerTyping();
 		}
 
 		this.field.x = (int) this.dim().x();
@@ -115,7 +111,7 @@ public class GuiInput extends GuiFrame
 	}
 
 	@Override
-	public void updateScreen()
+	public void onUpdateScreen(GuiElement element)
 	{
 		this.field.updateCursorCounter();
 	}

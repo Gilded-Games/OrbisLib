@@ -1,9 +1,11 @@
 package com.gildedgames.orbis_api.util;
 
-import com.gildedgames.orbis_api.client.gui.util.IGuiFrame;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiElement;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiViewer;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectHolder;
+import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Mouse;
@@ -57,16 +59,16 @@ public class InputHelper
 		return resolution.getScaledHeight();
 	}
 
-	private static boolean isHovered(final List<IGuiFrame> frames, IGuiFrame ignore)
+	private static boolean isHovered(final List<IGuiElement> elements, IGuiElement ignore)
 	{
-		if (frames == null)
+		if (elements == null)
 		{
 			return false;
 		}
 
-		for (IGuiFrame frame : frames)
+		for (IGuiElement element : elements)
 		{
-			if (frame != ignore && isHovered(frame))
+			if (element != ignore && isHovered(element.state()))
 			{
 				return true;
 			}
@@ -85,33 +87,76 @@ public class InputHelper
 		return isHovered(holder.dim());
 	}
 
-	public static boolean isHoveredAndTopElement(IGuiFrame check)
+	private static boolean isHoveredAndTopElement(IGuiElement check)
 	{
 		return isHoveredAndTopElement(check, true);
 	}
 
-	public static boolean isHoveredAndTopElement(IGuiFrame check, boolean topElementsCanBeChildren)
+	private static boolean isHoveredAndTopElement(IGuiElement check, boolean topElementsCanBeChildren)
 	{
 		if (check == null)
 		{
 			return false;
 		}
 
-		if (Minecraft.getMinecraft().currentScreen instanceof IGuiFrame)
+		if (Minecraft.getMinecraft().currentScreen instanceof IGuiViewer)
 		{
-			IGuiFrame frame = (IGuiFrame) Minecraft.getMinecraft().currentScreen;
+			IGuiViewer viewer = (IGuiViewer) Minecraft.getMinecraft().currentScreen;
 
-			for (IGuiFrame child : frame.getAllChildrenSortedByZOrder())
+			for (IGuiElement child : viewer.getAllVisibleElements())
 			{
-				if (child.isVisible() && child.isEnabled() && InputHelper.isHovered(child) && child.getZOrder() > check.getZOrder() && (
-						topElementsCanBeChildren || !check.getAllChildrenSortedByZOrder().contains(child)))
+				return false;
+			}
+		}
+
+		return isHovered(check.state().dim());
+	}
+
+	private static boolean isViable(IGuiViewer viewer, IGuiElement element, boolean topElementsCanBeChildren)
+	{
+		return topElementsCanBeChildren || !viewer.getAllVisibleElementsBelow(element).contains(element);
+	}
+
+	public static void markHoveredAndTopElements(IGuiViewer viewer, boolean topElementsCanBeChildren)
+	{
+		int highestZOrder = Integer.MIN_VALUE;
+		List<IGuiElement> topHovered = Lists.newArrayList();
+
+		for (IGuiElement element : viewer.getAllVisibleElements())
+		{
+			element.state().setHoveredAndTopElement(false);
+			element.state().setHovered(isHovered(element));
+
+			if (element.state().isHovered())
+			{
+				if (element.state().canBeTopHoverElement())
 				{
-					return false;
+					if (element.state().isEnabled() && (element.state().getZOrder() >= highestZOrder))
+					{
+						topHovered.add(element);
+						highestZOrder = element.state().getZOrder();
+					}
 				}
 			}
 		}
 
-		return isHovered(check.dim());
+		for (IGuiElement element : topHovered)
+		{
+			recursiveSetHoverAndParents(element);
+		}
+	}
+
+	private static void recursiveSetHoverAndParents(IGuiElement element)
+	{
+		element.state().setHoveredAndTopElement(true);
+
+		for (IGuiElement parent : element.context().getParents())
+		{
+			if (parent.state().canBeTopHoverElement())
+			{
+				recursiveSetHoverAndParents(parent);
+			}
+		}
 	}
 
 	public static float getScaleFactor()

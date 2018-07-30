@@ -1,18 +1,19 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.util.mc.IText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.text.TextComponentTranslation;
 
-public class GuiText extends GuiFrame
+public class GuiText extends GuiElement
 {
 	private IText text;
 
 	public GuiText(final Rect rect, final IText text)
 	{
-		super(rect);
+		super(rect, true);
 		this.setText(text);
 	}
 
@@ -46,20 +47,21 @@ public class GuiText extends GuiFrame
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
 
 	}
 
 	@Override
-	public void draw()
+	public void onDraw(GuiElement element)
 	{
 		if (this.text != null)
 		{
 			int color = GuiFrameUtils.changeAlpha(16777215,
-					(int) (this.getAlpha() * 255));
+					(int) (this.state().getAlpha() * 255));
 
-			this.drawString(this.fontRenderer, this.text.component().getUnformattedText(), (int) this.dim().x(), (int) this.dim().y(), color);
+			this.viewer().getActualScreen()
+					.drawString(this.viewer().fontRenderer(), this.text.component().getUnformattedText(), (int) this.dim().x(), (int) this.dim().y(), color);
 		}
 	}
 }

@@ -4,17 +4,16 @@ import com.gildedgames.orbis_api.client.gui.data.list.IListNavigator;
 import com.gildedgames.orbis_api.client.gui.data.list.IListNavigatorListener;
 import com.gildedgames.orbis_api.client.gui.util.GuiAbstractButton;
 import com.gildedgames.orbis_api.client.gui.util.GuiFactoryGeneric;
-import com.gildedgames.orbis_api.client.gui.util.GuiFrame;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
-import com.gildedgames.orbis_api.util.InputHelper;
 import com.google.common.collect.Lists;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
-public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame implements IListNavigatorListener<NODE>
+public class GuiListViewer<NODE, NODE_GUI extends GuiElement> extends GuiElement
+		implements IListNavigatorListener<NODE>
 {
 	private final IListNavigator<NODE> navigator;
 
@@ -41,7 +40,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 	public GuiListViewer(final Rect dim, Function<IListNavigator<NODE>, Integer> newNodeIndex, final IListNavigator<NODE> navigator,
 			final NodeFactory<NODE, NODE_GUI> guiFactory, final Function<Integer, NODE> nodeFactory, int nodeHeight)
 	{
-		super(dim);
+		super(dim, true);
 
 		this.navigator = navigator;
 		this.navigator.addListener(this);
@@ -157,11 +156,11 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 	}
 
 	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
+	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 	{
-		if (this.isEnabled() && mouseButton == 0)
+		if (this.state().isEnabled() && mouseButton == 0)
 		{
-			if (InputHelper.isHoveredAndTopElement(this.addButton) && this.addButton.isEnabled())
+			if (this.addButton.state().isHoveredAndTopElement() && this.addButton.state().isEnabled())
 			{
 				int index = this.newNodeIndex.apply(this.getNavigator());
 
@@ -172,31 +171,29 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 			for (int i = 0; i < this.visibleGuiNodes.size(); i++)
 			{
 				final GuiAbstractButton button = this.allowModifications ? this.visibleDeletes.get(i) : null;
-				final GuiFrame nodeGui = this.visibleGuiNodes.get(i);
+				final GuiElement nodeGui = this.visibleGuiNodes.get(i);
 
 				final NODE node = this.visibleNodes.get(i);
 
-				if (InputHelper.isHoveredAndTopElement(button) && button.isEnabled())
+				if (button.state().isHoveredAndTopElement() && button.state().isEnabled())
 				{
 					this.getNavigator().remove(node, this.navigator.getNodes().inverse().get(node));
 
 					return;
 				}
-				else if (InputHelper.isHoveredAndTopElement(nodeGui) && nodeGui.isEnabled())
+				else if (nodeGui.state().isHoveredAndTopElement() && nodeGui.state().isEnabled())
 				{
 					this.getNavigator().click(node, this.navigator.getNodes().inverse().get(node));
 				}
 			}
 		}
-
-		super.mouseClicked(mouseX, mouseY, mouseButton);
 	}
 
 	private void refreshNodes()
 	{
 		if (this.addButton != null)
 		{
-			this.removeChild(this.addButton);
+			this.context().removeChild(this.addButton);
 		}
 
 		this.visibleNodes.clear();
@@ -205,14 +202,14 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 				.listVisibleNodes(Lists.newArrayList(this.navigator.getNodes().values()), this.currentScroll, (int) this.dim().height(),
 						(int) (this.dim().width()));
 
-		this.visibleDeletes.forEach(this::removeChild);
-		this.visibleGuiNodes.forEach(this::removeChild);
+		this.visibleDeletes.forEach(this.context()::removeChild);
+		this.visibleGuiNodes.forEach(this.context()::removeChild);
 
 		this.visibleGuiNodes.clear();
 		this.visibleDeletes.clear();
 
 		this.visibleGuiNodes.addAll(guiNodes);
-		this.visibleGuiNodes.forEach(this::addChildren);
+		this.visibleGuiNodes.forEach(this.context()::addChildren);
 
 		if (this.allowModifications)
 		{
@@ -222,21 +219,21 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 				deleteButton.dim().mod().pos(Pos2D.flush(g.dim().originalState().x(), g.dim().originalState().y())).addX(g.dim().width()).flush();
 
 				this.visibleDeletes.add(deleteButton);
-				this.addChildren(deleteButton);
+				this.context().addChildren(deleteButton);
 			});
 		}
 
 		if (this.addButton != null)
 		{
-			this.addChildren(this.addButton);
+			this.context().addChildren(this.addButton);
 		}
+
+		this.addButton.state().setCanBeTopHoverElement(true);
 	}
 
 	@Override
-	public void onMouseWheel(final int state)
+	public void onMouseWheel(GuiElement element, final int state)
 	{
-		super.onMouseWheel(state);
-
 		int oldScroll = this.currentScroll;
 
 		this.currentScroll = Math.max(0, Math.min(this.maxScroll, this.currentScroll - (state / 120)));
@@ -247,7 +244,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiFrame> extends GuiFrame imp
 	}
 
 	@Override
-	public void init()
+	public void build()
 	{
 		this.refreshNodes();
 	}
