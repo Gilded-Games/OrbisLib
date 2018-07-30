@@ -82,16 +82,19 @@ public class GuiElement implements IGuiElement, IGuiEvent<GuiElement>
 		return this.state.dim();
 	}
 
-	public void rebuild()
+	public void tryRebuild()
 	{
-		this.context().clearChildren();
+		if (this.state().hasBuilt())
+		{
+			this.context().clearChildren();
 
-		this.state.setIsBuilding(true);
+			this.state.setIsBuilding(true);
 
-		this.build(this.viewer);
+			this.build(this.viewer);
 
-		this.state.setIsBuilding(false);
+			this.state.setIsBuilding(false);
 
-		this.viewer.requestRecacheAndReorderAllVisibleElements();
+			this.viewer.requestRecacheAndReorderAllVisibleElements();
+		}
 	}
 }

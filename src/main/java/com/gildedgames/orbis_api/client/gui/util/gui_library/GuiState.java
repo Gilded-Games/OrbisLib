@@ -14,7 +14,7 @@ public class GuiState implements IGuiState
 
 	private boolean hoveredAndTopElement = false;
 
-	private boolean enabled = true, visible = true, hovered = false, hoverEntered = false, inputDisabledWhenNotHovered = false;
+	private boolean enabled = true, visible = true, hovered = false, hoverEntered = false;
 
 	private float alpha = 1.0F;
 
@@ -41,12 +41,6 @@ public class GuiState implements IGuiState
 	}
 
 	@Override
-	public boolean isInputEnabled()
-	{
-		return this.isEnabled() && (!this.inputDisabledWhenNotHovered || this.hoveredAndTopElement);
-	}
-
-	@Override
 	public boolean getShouldScaleRender()
 	{
 		return this.shouldScaleRender;
@@ -56,18 +50,6 @@ public class GuiState implements IGuiState
 	public void setShouldScaleRender(boolean flag)
 	{
 		this.shouldScaleRender = flag;
-	}
-
-	@Override
-	public boolean isInputDisabledWhenNotHovered()
-	{
-		return this.inputDisabledWhenNotHovered;
-	}
-
-	@Override
-	public void setInputDisabledWhenNotHovered(boolean flag)
-	{
-		this.inputDisabledWhenNotHovered = flag;
 	}
 
 	@Override
@@ -254,7 +236,9 @@ public class GuiState implements IGuiState
 	@Override
 	public int getZOrder()
 	{
-		return this.zOrder;
+		int zOrderDif = this.owner.context().getParents().stream().mapToInt((element) -> element.state().getZOrder()).sum();
+
+		return this.zOrder + zOrderDif;
 	}
 
 	@Override
@@ -262,9 +246,7 @@ public class GuiState implements IGuiState
 	{
 		int oldValue = this.zOrder;
 
-		int zOrderDif = this.owner.context().getParents().stream().mapToInt((element) -> element.state().getZOrder()).sum();
-
-		this.zOrder = zOrder + zOrderDif;
+		this.zOrder = zOrder;
 
 		this.listeners.forEach((listener) -> listener.onSetZOrder(this, oldValue, this.zOrder));
 	}

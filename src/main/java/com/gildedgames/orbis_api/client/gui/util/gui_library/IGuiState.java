@@ -50,13 +50,7 @@ public interface IGuiState extends RectHolder
 
 	void setEnabled(boolean flag);
 
-	boolean isInputEnabled();
-
 	boolean getShouldScaleRender();
 
 	void setShouldScaleRender(boolean flag);
-
-	boolean isInputDisabledWhenNotHovered();
-
-	void setInputDisabledWhenNotHovered(boolean flag);
 }

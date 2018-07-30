@@ -85,6 +85,8 @@ public class GuiAbstractButton extends GuiElement
 		this.context().addChildren(this.clickedState);
 		this.context().addChildren(this.defaultState);
 
+		this.clickedState.state().setCanBeTopHoverElement(true);
+
 		if (this.disabledState != null)
 		{
 			this.disabledState.dim().mod().center(false).resetPos().flush();

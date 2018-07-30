@@ -1,8 +1,8 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
 import com.gildedgames.orbis_api.client.gui.data.IDropdownElement;
+import com.gildedgames.orbis_api.client.gui.util.decorators.GuiScrollable;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
-import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiEvent;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
@@ -71,7 +71,7 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 		this.elements.clear();
 		this.elements.addAll(elements);
 
-		this.rebuild();
+		this.tryRebuild();
 
 		for (ELEMENT element : elements)
 		{
@@ -109,14 +109,14 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 	{
 		this.elements.addAll(elements);
 
-		this.rebuild();
+		this.tryRebuild();
 	}
 
 	public void addDropdownElements(ELEMENT... elements)
 	{
 		this.elements.addAll(Arrays.asList(elements));
 
-		this.rebuild();
+		this.tryRebuild();
 	}
 
 	@Override
@@ -131,8 +131,14 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 
 			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).height(18).flush(), element.text());
 
-			label.state().addEvent(new IGuiEvent<GuiTextLabel>()
+			label.state().addEvent(new GuiScrollable.InputEnabledOutsideBounds<GuiTextLabel>()
 			{
+				@Override
+				public boolean shouldHoverOutsideBounds(GuiTextLabel gui)
+				{
+					return true;
+				}
+
 				@Override
 				public void onHoverEnter(GuiTextLabel gui)
 				{
@@ -167,21 +173,11 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 					}
 				}
 
-				//TODO
-				/*@Override
-				public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
+				@Override
+				public void onMouseClickedOutsideBounds(GuiTextLabel gui, final int mouseX, final int mouseY, final int mouseButton)
 				{
-					super.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
-
-					try
-					{
-						this.mouseClicked(mouseX, mouseY, mouseButton);
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-				}*/
+					this.onMouseClicked(gui, mouseX, mouseY, mouseButton);
+				}
 
 				@Override
 				public void onMouseClicked(GuiTextLabel gui, final int mouseX, final int mouseY, final int mouseButton)

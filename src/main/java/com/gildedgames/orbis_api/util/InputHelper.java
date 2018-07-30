@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.util;
 
 import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiElement;
+import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiEvent;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiViewer;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
@@ -122,9 +123,21 @@ public class InputHelper
 		int highestZOrder = Integer.MIN_VALUE;
 		List<IGuiElement> topHovered = Lists.newArrayList();
 
+		outer:
 		for (IGuiElement element : viewer.getAllVisibleElements())
 		{
 			element.state().setHoveredAndTopElement(false);
+
+			for (IGuiEvent event : element.state().getEvents())
+			{
+				if (!event.canBeHovered(element))
+				{
+					element.state().setHovered(false);
+
+					continue outer;
+				}
+			}
+
 			element.state().setHovered(isHovered(element));
 
 			if (element.state().isHovered())

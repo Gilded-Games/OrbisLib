@@ -10,6 +10,8 @@ import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectModifier;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
@@ -51,17 +53,154 @@ public class GuiScrollable extends GuiElement
 		{
 			GL11.glDisable(GL11.GL_SCISSOR_TEST);
 		}
+
+		@Override
+		public void onMouseClicked(IGuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+		{
+
+		}
+
+		@Override
+		public boolean isMouseClickedEnabled(IGuiElement element, int mouseX, int mouseY, int mouseButton)
+		{
+			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+
+			if (!enabled)
+			{
+				for (IGuiEvent event : element.state().getEvents())
+				{
+					if (event instanceof IInputEnabledOutsideBounds)
+					{
+						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+
+						input.onMouseClickedOutsideBounds(element, mouseX, mouseY, mouseButton);
+
+						return false;
+					}
+				}
+			}
+
+			return enabled;
+		}
+
+		@Override
+		public boolean isMouseClickMoveEnabled(IGuiElement element, final int mouseX, final int mouseY, final int clickedMouseButton,
+				final long timeSinceLastClick)
+		{
+			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+
+			if (!enabled)
+			{
+				for (IGuiEvent event : element.state().getEvents())
+				{
+					if (event instanceof IInputEnabledOutsideBounds)
+					{
+						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+
+						input.onMouseClickMoveOutsideBounds(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+
+						return false;
+					}
+				}
+			}
+
+			return enabled;
+		}
+
+		@Override
+		public boolean isMouseReleasedEnabled(IGuiElement element, final int mouseX, final int mouseY, final int state)
+		{
+			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+
+			if (!enabled)
+			{
+				for (IGuiEvent event : element.state().getEvents())
+				{
+					if (event instanceof IInputEnabledOutsideBounds)
+					{
+						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+
+						input.onMouseReleasedOutsideBounds(element, mouseX, mouseY, state);
+
+						return false;
+					}
+				}
+			}
+
+			return enabled;
+		}
+
+		@Override
+		public boolean isMouseWheelEnabled(IGuiElement element, final int state)
+		{
+			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+
+			if (!enabled)
+			{
+				for (IGuiEvent event : element.state().getEvents())
+				{
+					if (event instanceof IInputEnabledOutsideBounds)
+					{
+						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+
+						input.onMouseWheelOutsideBounds(element, state);
+					}
+				}
+			}
+
+			return enabled;
+		}
+
+		@Override
+		public boolean isHandleMouseClickEnabled(IGuiElement element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
+		{
+			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+
+			if (!enabled)
+			{
+				for (IGuiEvent event : element.state().getEvents())
+				{
+					if (event instanceof IInputEnabledOutsideBounds)
+					{
+						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+
+						input.onHandleMouseClickOutsideBounds(element, slotIn, slotId, mouseButton, type);
+
+						return false;
+					}
+				}
+			}
+
+			return enabled;
+		}
+
+		@Override
+		public boolean canBeHovered(IGuiElement element)
+		{
+			for (IGuiEvent event : element.state().getEvents())
+			{
+				if (event instanceof IInputEnabledOutsideBounds)
+				{
+					if (((IInputEnabledOutsideBounds) event).shouldHoverOutsideBounds(element))
+					{
+						return true;
+					}
+				}
+			}
+
+			return element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+		}
 	};
 
 	public GuiScrollable(IGuiElement decorated, Rect pane)
 	{
 		super(pane, true);
 
-		this.dim().mod().addWidth(16).x(decorated.dim().x()).y(decorated.dim().y()).flush();
+		this.dim().mod().x(decorated.dim().x()).y(decorated.dim().y()).flush();
 
 		this.decorated = decorated;
 
-		this.window = new GuiElement(Dim2D.build().width(16).x(0).y(0).flush(), false);
+		this.window = new GuiElement(Dim2D.build().width(0).x(0).y(0).flush(), false);
 		this.pane = new GuiElement(Dim2D.build().x(16).y(0).flush(), false);
 
 		this.window.dim().add("scrollableArea", this, RectModifier.ModifierType.AREA);
@@ -138,5 +277,43 @@ public class GuiScrollable extends GuiElement
 		this.scrollKnob.dim().mod().y(1).flush();
 
 		this.scroll = 0.0F;
+	}
+
+	public interface IInputEnabledOutsideBounds<T extends IGuiElement>
+	{
+		default void onMouseClickedOutsideBounds(T element, final int mouseX, final int mouseY, final int mouseButton)
+		{
+
+		}
+
+		default void onMouseClickMoveOutsideBounds(T element, final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+		{
+
+		}
+
+		default void onMouseReleasedOutsideBounds(T element, final int mouseX, final int mouseY, final int state)
+		{
+
+		}
+
+		default void onMouseWheelOutsideBounds(T element, final int state)
+		{
+
+		}
+
+		default void onHandleMouseClickOutsideBounds(T element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
+		{
+
+		}
+
+		default boolean shouldHoverOutsideBounds(T element)
+		{
+			return false;
+		}
+	}
+
+	public static class InputEnabledOutsideBounds<T extends IGuiElement> implements IGuiEvent<T>, IInputEnabledOutsideBounds<T>
+	{
+
 	}
 }

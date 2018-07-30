@@ -25,7 +25,7 @@ public class GuiTextLabel extends GuiElement
 	{
 		this.text = new GuiText(Dim2D.build().centerY(true).x(3).y(this.dim().height() / 2).addY(1).flush(), new Text(component, 1.0F));
 
-		this.rebuild();
+		this.tryRebuild();
 	}
 
 	@Override

@@ -288,7 +288,15 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 		for (IGuiEvent event : state.getEvents())
 		{
 			event.onPreDraw(element);
+		}
+
+		for (IGuiEvent event : state.getEvents())
+		{
 			event.onDraw(element);
+		}
+
+		for (IGuiEvent event : state.getEvents())
+		{
 			event.onPostDraw(element);
 		}
 
@@ -355,10 +363,15 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseClicked(element, mouseX, mouseY, mouseButton));
+				if (!event.isMouseClickedEnabled(element, mouseX, mouseY, mouseButton))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseClicked(element, mouseX, mouseY, mouseButton));
 		});
 	}
 
@@ -369,10 +382,15 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseClickMove(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick));
+				if (!event.isMouseClickMoveEnabled(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseClickMove(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick));
 		});
 	}
 
@@ -383,10 +401,15 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseReleased(element, mouseX, mouseY, state));
+				if (!event.isMouseReleasedEnabled(element, mouseX, mouseY, state))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseReleased(element, mouseX, mouseY, state));
 		});
 	}
 
@@ -397,10 +420,15 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onHandleMouseClick(element, slotIn, slotId, mouseButton, type));
+				if (!event.isHandleMouseClickEnabled(element, slotIn, slotId, mouseButton, type))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onHandleMouseClick(element, slotIn, slotId, mouseButton, type));
 		});
 	}
 
@@ -421,10 +449,15 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 	{
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseWheel(element, state));
+				if (!event.isMouseWheelEnabled(element, state))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseWheel(element, state));
 		});
 	}
 
@@ -443,10 +476,15 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onKeyTyped(element, typedChar, keyCode));
+				if (!event.isKeyboardEnabled(element))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onKeyTyped(element, typedChar, keyCode));
 		});
 	}
 
@@ -457,10 +495,7 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
-			{
-				element.state().getEvents().forEach((event) -> event.onGuiClosed(element));
-			}
+			element.state().getEvents().forEach((event) -> event.onGuiClosed(element));
 		});
 	}
 
@@ -485,10 +520,7 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
-			{
-				element.state().getEvents().forEach((event) -> event.onActionPerformed(element, button));
-			}
+			element.state().getEvents().forEach((event) -> event.onActionPerformed(element, button));
 		});
 	}
 

@@ -87,16 +87,6 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 		}
 	}
 
-	public static void fetchAllParents(Set<IGuiElement> allParents, IGuiContext top)
-	{
-		for (IGuiElement parent : top.getParents())
-		{
-			allParents.add(parent);
-
-			fetchAllParents(allParents, parent.context());
-		}
-	}
-
 	@Override
 	public void notifyGlobalContextChange()
 	{
@@ -224,13 +214,13 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 	@Override
 	public void drawDefaultBackground()
 	{
-
+		super.drawDefaultBackground();
 	}
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY)
 	{
-
+		super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 	}
 
 	@Override
@@ -257,12 +247,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 	public void initContainerSize()
 	{
-		//TODO: Dimensions are currnetly width and height of screen
-		this.guiLeft = 0;
-		this.guiTop = 0;
 
-		this.xSize = this.width;
-		this.ySize = this.height;
 	}
 
 	private void drawElement(IGuiElement element, boolean debugDimRendering)
@@ -307,7 +292,16 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 		for (IGuiEvent event : state.getEvents())
 		{
 			event.onPreDraw(element);
+		}
+
+		for (IGuiEvent event : state.getEvents())
+		{
 			event.onDraw(element);
+		}
+
+		for (IGuiEvent event : state.getEvents())
+		{
+			event.onPostDraw(element);
 		}
 
 		GlStateManager.popMatrix();
@@ -315,30 +309,11 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 	protected void drawElements()
 	{
-		this.drawn.clear();
-		this.hasBeenPostDrawn.clear();
-
 		for (IGuiElement element : this.allVisibleElements)
 		{
 			element.state().updateState();
 
 			this.drawElement(element, false);
-
-			this.drawn.add(element);
-
-			for (IGuiElement drawnElement : this.drawn)
-			{
-				if (this.hasBeenPostDrawn.contains(drawnElement))
-				{
-					continue;
-				}
-
-				if (this.drawn.containsAll(this.getAllVisibleElementsBelow(drawnElement)))
-				{
-					drawnElement.state().getEvents().forEach((event) -> event.onPostDraw(drawnElement));
-					this.hasBeenPostDrawn.add(drawnElement);
-				}
-			}
 		}
 	}
 
@@ -366,10 +341,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		preventInnerTyping = false;
 
-		if (this.drawDefaultBackground)
-		{
-			super.drawDefaultBackground();
-		}
+		super.drawScreen(mouseX, mouseY, partialTicks);
 
 		GlStateManager.pushMatrix();
 
@@ -381,8 +353,6 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 		GlStateManager.disableAlpha();
 
 		GlStateManager.popMatrix();
-
-		super.drawScreen(mouseX, mouseY, partialTicks);
 	}
 
 	@Override
@@ -392,10 +362,15 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseClicked(element, mouseX, mouseY, mouseButton));
+				if (!event.isMouseClickedEnabled(element, mouseX, mouseY, mouseButton))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseClicked(element, mouseX, mouseY, mouseButton));
 		});
 	}
 
@@ -406,10 +381,15 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseClickMove(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick));
+				if (!event.isMouseClickMoveEnabled(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseClickMove(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick));
 		});
 	}
 
@@ -420,10 +400,15 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseReleased(element, mouseX, mouseY, state));
+				if (!event.isMouseReleasedEnabled(element, mouseX, mouseY, state))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseReleased(element, mouseX, mouseY, state));
 		});
 	}
 
@@ -434,10 +419,15 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onHandleMouseClick(element, slotIn, slotId, mouseButton, type));
+				if (!event.isHandleMouseClickEnabled(element, slotIn, slotId, mouseButton, type))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onHandleMouseClick(element, slotIn, slotId, mouseButton, type));
 		});
 	}
 
@@ -458,10 +448,15 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 	{
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onMouseWheel(element, state));
+				if (!event.isMouseWheelEnabled(element, state))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onMouseWheel(element, state));
 		});
 	}
 
@@ -480,10 +475,15 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
+			for (IGuiEvent event : element.state().getEvents())
 			{
-				element.state().getEvents().forEach((event) -> event.onKeyTyped(element, typedChar, keyCode));
+				if (!event.isKeyboardEnabled(element))
+				{
+					return;
+				}
 			}
+
+			element.state().getEvents().forEach((event) -> event.onKeyTyped(element, typedChar, keyCode));
 		});
 	}
 
@@ -494,10 +494,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
-			{
-				element.state().getEvents().forEach((event) -> event.onGuiClosed(element));
-			}
+			element.state().getEvents().forEach((event) -> event.onGuiClosed(element));
 		});
 	}
 
@@ -522,10 +519,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		this.allVisibleElements.forEach((element) ->
 		{
-			if (element.state().isInputEnabled())
-			{
-				element.state().getEvents().forEach((event) -> event.onActionPerformed(element, button));
-			}
+			element.state().getEvents().forEach((event) -> event.onActionPerformed(element, button));
 		});
 	}
 

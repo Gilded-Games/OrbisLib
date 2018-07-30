@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
 import com.gildedgames.orbis_api.client.gui.data.IDropdownElement;
+import com.gildedgames.orbis_api.client.gui.util.decorators.GuiScrollable;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiState;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.IGuiStateListener;
@@ -10,7 +11,7 @@ import com.gildedgames.orbis_api.client.rect.RectModifier;
 import net.minecraft.util.text.TextComponentTranslation;
 
 public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiElement
-		implements IDropdownListListener<ELEMENT>, IGuiStateListener
+		implements IDropdownListListener<ELEMENT>, IGuiStateListener, GuiScrollable.IInputEnabledOutsideBounds<GuiElement>
 {
 	private GuiDropdownList<ELEMENT> list;
 
@@ -100,15 +101,14 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiElement
 		}
 	}
 
-	//TODO:
-	/*@Override
-	public void mouseClickedOutsideBounds(final int mouseX, final int mouseY, final int mouseButton)
+	@Override
+	public void onMouseClickedOutsideBounds(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 	{
-		super.mouseClickedOutsideBounds(mouseX, mouseY, mouseButton);
+		this.onMouseClicked(element, mouseX, mouseY, mouseButton);
 
-		this.list.setEnabled(false);
-		this.list.setVisible(false);
-	}*/
+		this.list.state().setEnabled(false);
+		this.list.state().setVisible(false);
+	}
 
 	@Override
 	public void onClick(ELEMENT element)
