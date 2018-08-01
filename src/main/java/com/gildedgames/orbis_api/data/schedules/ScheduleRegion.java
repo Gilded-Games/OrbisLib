@@ -1,18 +1,17 @@
 package com.gildedgames.orbis_api.data.schedules;
 
-import com.gildedgames.orbis_api.core.ICreationData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IColored;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
-import com.gildedgames.orbis_api.inventory.InventorySpawnEggs;
-import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.List;
+
 public class ScheduleRegion implements NBT, IColored, ISchedule
 {
-	private InventorySpawnEggs spawnEggsInv;
+	private List<IScheduleProcessor> processors;
 
 	private String triggerId;
 
@@ -21,6 +20,8 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	private BlueprintData dataParent;
 
 	private IScheduleRecord parent;
+
+	private int color = 0xd19044;
 
 	private ScheduleRegion()
 	{
@@ -31,12 +32,6 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	{
 		this.triggerId = uniqueName;
 		this.bounds = bounds;
-		this.spawnEggsInv = new InventorySpawnEggs();
-	}
-
-	public InventorySpawnEggs getSpawnEggsInventory()
-	{
-		return this.spawnEggsInv;
 	}
 
 	@Override
@@ -70,9 +65,24 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public void onGenerateLayer(DataPrimer primer, ICreationData<?> data)
+	public List<IScheduleProcessor> getProcessors()
 	{
+		return this.processors;
+	}
 
+	@Override
+	public void addProcessor(IScheduleProcessor processor)
+	{
+		if (!this.processors.contains(processor))
+		{
+			this.processors.add(processor);
+		}
+	}
+
+	@Override
+	public boolean removeProcessor(IScheduleProcessor processor)
+	{
+		return this.processors.removeAll(this.processors);
 	}
 
 	@Override
@@ -82,7 +92,8 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 
 		tag.setString("triggerId", this.triggerId);
 		funnel.set("bounds", this.bounds);
-		funnel.set("spawnEggsInv", this.spawnEggsInv);
+		funnel.setList("processors", this.processors);
+		tag.setInteger("color", this.color);
 	}
 
 	@Override
@@ -92,13 +103,14 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 
 		this.triggerId = tag.getString("triggerId");
 		this.bounds = funnel.get("bounds");
-		this.spawnEggsInv = funnel.get("spawnEggsInv");
+		this.processors = funnel.getList("processors");
+		this.color = tag.getInteger("color");
 	}
 
 	@Override
 	public int getColor()
 	{
-		return 0xd19044;
+		return this.color;
 	}
 
 	@Override
@@ -118,6 +130,6 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	{
 		this.dataParent = blueprintData;
 
-		this.spawnEggsInv.setDataParent(this.dataParent);
+		this.processors.forEach((processor) -> processor.setDataParent(this.dataParent));
 	}
 }

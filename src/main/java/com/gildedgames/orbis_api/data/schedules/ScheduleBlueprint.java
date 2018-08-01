@@ -1,15 +1,16 @@
 package com.gildedgames.orbis_api.data.schedules;
 
-import com.gildedgames.orbis_api.core.ICreationData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintDataPalette;
 import com.gildedgames.orbis_api.data.region.IColored;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
-import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.List;
+
+//TODO: Convert into schedule processor
 public class ScheduleBlueprint implements NBT, IColored, ISchedule
 {
 	private String triggerId;
@@ -70,10 +71,28 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public void onGenerateLayer(DataPrimer primer, ICreationData<?> data)
+	public List<IScheduleProcessor> getProcessors()
+	{
+		return null;
+	}
+
+	@Override
+	public void addProcessor(IScheduleProcessor processor)
+	{
+
+	}
+
+	@Override
+	public boolean removeProcessor(IScheduleProcessor processor)
+	{
+		return false;
+	}
+
+	/*@Override
+	public void onGenerateSchedule(DataPrimer primer, ICreationData<?> data)
 	{
 		primer.create(this.palette, data.clone().pos(data.getPos().add(this.bounds.getMin().add(this.bounds.getWidth() / 2, 0, this.bounds.getLength() / 2))));
-	}
+	}*/
 
 	@Override
 	public void write(NBTTagCompound tag)

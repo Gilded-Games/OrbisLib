@@ -1,8 +1,10 @@
-package com.gildedgames.orbis_api.core;
+package com.gildedgames.orbis_api.core.baking;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockDataContainerDefaultVoid;
+import com.gildedgames.orbis_api.core.BlockDataChunk;
+import com.gildedgames.orbis_api.core.ICreationData;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
@@ -17,8 +19,10 @@ import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
 import com.gildedgames.orbis_api.data.region.IDimensions;
+import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
+import com.gildedgames.orbis_api.data.schedules.IScheduleProcessor;
 import com.gildedgames.orbis_api.data.schedules.PostGenReplaceLayer;
 import com.gildedgames.orbis_api.data.schedules.ScheduleRegion;
 import com.gildedgames.orbis_api.processing.DataPrimer;
@@ -32,8 +36,6 @@ import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.ItemMonsterPlacer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -48,7 +50,7 @@ public class BakedBlueprint implements IDimensions
 {
 	private BlockDataChunk[] chunks;
 
-	private Map<ChunkPos, List<PlacedEntity>> placedEntities = Maps.newHashMap();
+	private Map<ChunkPos, List<IBakedPosAction>> bakedPosActions = Maps.newHashMap();
 
 	private List<ScheduleRegion> bakedScheduleRegions = Lists.newArrayList();
 
@@ -280,7 +282,7 @@ public class BakedBlueprint implements IDimensions
 		}
 	}
 
-	private void bakeEntities()
+	private void bakePosActions()
 	{
 		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
@@ -288,26 +290,22 @@ public class BakedBlueprint implements IDimensions
 
 			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
 			{
-				for (int i = 0; i < s.getSpawnEggsInventory().getSizeInventory(); i++)
+				IRegion bounds = new Region(this.data.getPos().add(s.getBounds().getMin()), this.data.getPos().add(s.getBounds().getMax()));
+
+				for (IScheduleProcessor processor : s.getProcessors())
 				{
-					ItemStack stack = s.getSpawnEggsInventory().getStackInSlot(i);
+					List<IBakedPosAction> actions = processor.bakeActions(bounds, this.data.getRandom());
 
-					if (stack.getItem() instanceof ItemMonsterPlacer)
+					for (IBakedPosAction action : actions)
 					{
-						BlockPos pos = this.data.getPos().add(s.getBounds().getMin());
-						pos.add(this.data.getRandom().nextInt(s.getBounds().getWidth()), 0,
-								this.data.getRandom().nextInt(s.getBounds().getHeight()));
+						ChunkPos p = new ChunkPos(action.getPos().getX() >> 4, action.getPos().getZ() >> 4);
 
-						PlacedEntity placedEntity = new PlacedEntity(stack, pos);
-
-						ChunkPos p = new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4);
-
-						if (!this.placedEntities.containsKey(p))
+						if (!this.bakedPosActions.containsKey(p))
 						{
-							this.placedEntities.put(p, Lists.newArrayList());
+							this.bakedPosActions.put(p, Lists.newArrayList());
 						}
 
-						this.placedEntities.get(p).add(placedEntity);
+						this.bakedPosActions.get(p).add(action);
 					}
 				}
 			}
@@ -334,7 +332,7 @@ public class BakedBlueprint implements IDimensions
 			}
 		}
 
-		final ChunkPos[] chunksOccupied = BlueprintUtil.getChunksInsideTemplate(this.rawDataContainer, this.data);
+		final ChunkPos[] chunksOccupied = BlueprintUtil.getChunksInsideTemplate(this.rawDataContainer, this.data.getPos(), this.data.getRotation());
 
 		this.chunks = new BlockDataChunk[chunksOccupied.length];
 
@@ -523,18 +521,18 @@ public class BakedBlueprint implements IDimensions
 		}
 	}
 
-	public void spawnEntitiesInChunk(DataPrimer primer, ChunkPos chunkPos)
+	public void callBakedPosActionsInChunk(DataPrimer primer, ChunkPos chunkPos)
 	{
-		if (this.getPlacedEntities().containsKey(chunkPos))
+		if (this.getBakedPosActions().containsKey(chunkPos))
 		{
-			List<PlacedEntity> placed = this.getPlacedEntities().get(chunkPos);
+			List<IBakedPosAction> placed = this.getBakedPosActions().get(chunkPos);
 
-			for (final PlacedEntity e : placed)
+			for (final IBakedPosAction e : placed)
 			{
-				e.spawn(primer);
+				e.call(primer);
 			}
 
-			this.getPlacedEntities().remove(chunkPos);
+			this.getBakedPosActions().remove(chunkPos);
 		}
 	}
 
@@ -544,7 +542,7 @@ public class BakedBlueprint implements IDimensions
 		{
 			this.bakeScheduleLayers();
 			this.bakeChunks();
-			this.bakeEntities();
+			this.bakePosActions();
 			this.bakeScheduleRegions();
 
 			this.hasBaked = true;
@@ -632,7 +630,7 @@ public class BakedBlueprint implements IDimensions
 		BlockPos bakedMinRelocated = bakedMin.add(relocateX, relocateY, relocateZ);
 
 		final ChunkPos[] chunksOccupied = BlueprintUtil
-				.getChunksInsideTemplate(this.rawDataContainer, new CreationData().pos(bakedMinRelocated).rotation(Rotation.NONE));
+				.getChunksInsideTemplate(this.rawDataContainer, bakedMinRelocated, Rotation.NONE);
 
 		this.chunks = new BlockDataChunk[chunksOccupied.length];
 
@@ -643,28 +641,28 @@ public class BakedBlueprint implements IDimensions
 				boundsBeforeRotateAtOrigin, Rotation.NONE);
 
 		// RELOCATE PLACED ENTITIES
-		Map<ChunkPos, List<PlacedEntity>> rebakedPlacedEntities = Maps.newHashMap();
+		Map<ChunkPos, List<IBakedPosAction>> rebakedPosActions = Maps.newHashMap();
 
-		for (Map.Entry<ChunkPos, List<PlacedEntity>> entry : this.placedEntities.entrySet())
+		for (Map.Entry<ChunkPos, List<IBakedPosAction>> entry : this.bakedPosActions.entrySet())
 		{
 			ChunkPos chunkPos = entry.getKey();
-			List<PlacedEntity> entities = entry.getValue();
+			List<IBakedPosAction> actions = entry.getValue();
 
 			int newPosX = (chunkPos.x * 16) + relocateX;
 			int newPosZ = (chunkPos.z * 16) + relocateZ;
 
 			chunkPos = new ChunkPos(newPosX >> 4, newPosZ >> 4);
 
-			for (PlacedEntity entity : entities)
+			for (IBakedPosAction action : actions)
 			{
-				entity.setPos(entity.getPos().add(relocateX, relocateY, relocateZ));
+				action.setPos(action.getPos().add(relocateX, relocateY, relocateZ));
 			}
 
-			rebakedPlacedEntities.put(chunkPos, entities);
+			rebakedPosActions.put(chunkPos, actions);
 		}
 
-		this.placedEntities.clear();
-		this.placedEntities.putAll(rebakedPlacedEntities);
+		this.bakedPosActions.clear();
+		this.bakedPosActions.putAll(rebakedPosActions);
 
 		List<Runnable> relocates = Lists.newArrayList();
 
@@ -681,9 +679,9 @@ public class BakedBlueprint implements IDimensions
 		relocates.forEach(Runnable::run);
 	}
 
-	public Map<ChunkPos, List<PlacedEntity>> getPlacedEntities()
+	public Map<ChunkPos, List<IBakedPosAction>> getBakedPosActions()
 	{
-		return this.placedEntities;
+		return this.bakedPosActions;
 	}
 
 	public BlockDataChunk[] getDataChunks()
@@ -721,7 +719,7 @@ public class BakedBlueprint implements IDimensions
 		funnel.setArray("chunks", this.chunks);
 		funnel.setList("bakedScheduleRegions", this.bakedScheduleRegions);
 		funnel.setList("bakedScheduleLayerNodes", this.bakedScheduleLayerNodes);
-		funnel.setMap("placedEntities", this.placedEntities, NBTFunnel.CHUNK_POS_SETTER, NBTFunnel.listSetter());
+		funnel.setMap("bakedPosActions", this.bakedPosActions, NBTFunnel.CHUNK_POS_SETTER, NBTFunnel.listSetter());
 
 		funnel.set("data", this.getCreationData());
 		funnel.set("bakedBlueprintVariables", this.bakedBlueprintVariables);
@@ -746,7 +744,7 @@ public class BakedBlueprint implements IDimensions
 		this.chunks = funnel.getArray("chunks", BlockDataChunk.class);
 		this.bakedScheduleRegions = funnel.getList("bakedScheduleRegions");
 		this.bakedScheduleLayerNodes = Lists.newLinkedList(funnel.getList("bakedScheduleLayerNodes"));
-		this.placedEntities = funnel.getMap("placedEntities", NBTFunnel.CHUNK_POS_GETTER, NBTFunnel.listGetter());
+		this.bakedPosActions = funnel.getMap("bakedPosActions", NBTFunnel.CHUNK_POS_GETTER, NBTFunnel.listGetter());
 
 		this.data = funnel.get("data");
 		this.bakedBlueprintVariables = funnel.get("bakedBlueprintVariables");

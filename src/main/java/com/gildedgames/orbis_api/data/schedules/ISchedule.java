@@ -1,11 +1,11 @@
 package com.gildedgames.orbis_api.data.schedules;
 
-import com.gildedgames.orbis_api.core.ICreationData;
 import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IRegion;
-import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.mc.NBT;
+
+import java.util.List;
 
 public interface ISchedule extends NBT, IDataChild<BlueprintData>
 {
@@ -20,6 +20,10 @@ public interface ISchedule extends NBT, IDataChild<BlueprintData>
 
 	IRegion getBounds();
 
-	void onGenerateLayer(DataPrimer primer, ICreationData<?> data);
+	List<IScheduleProcessor> getProcessors();
+
+	void addProcessor(IScheduleProcessor processor);
+
+	boolean removeProcessor(IScheduleProcessor processor);
 
 }

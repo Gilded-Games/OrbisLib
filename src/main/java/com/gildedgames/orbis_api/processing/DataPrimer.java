@@ -2,7 +2,12 @@ package com.gildedgames.orbis_api.processing;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockInstance;
-import com.gildedgames.orbis_api.core.*;
+import com.gildedgames.orbis_api.core.BlockDataChunk;
+import com.gildedgames.orbis_api.core.ICreationData;
+import com.gildedgames.orbis_api.core.PlacedBlueprint;
+import com.gildedgames.orbis_api.core.PlacementCondition;
+import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
+import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintDataPalette;
 import com.gildedgames.orbis_api.data.region.IRegion;
@@ -18,6 +23,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -266,9 +272,33 @@ public class DataPrimer
 					null);
 		}
 
-		for (List<PlacedEntity> l : baked.getPlacedEntities().values())
+		for (List<IBakedPosAction> l : baked.getBakedPosActions().values())
 		{
-			l.forEach(p -> p.spawn(this));
+			l.forEach(p -> p.call(this));
+		}
+	}
+
+	public void create(BakedBlueprint baked, ChunkPos pos)
+	{
+		for (BlockDataChunk chunk : baked.getDataChunks())
+		{
+			if (chunk.getPos().x == pos.x && chunk.getPos().z == pos.z)
+			{
+				this.create(chunk.getContainer(),
+						baked.getCreationData().clone().rotation(Rotation.NONE).pos(chunk.getPos().getBlock(0, baked.getCreationData().getPos().getY(), 0)));
+			}
+		}
+
+		if (baked.getBakedPosActions().containsKey(pos))
+		{
+			List<IBakedPosAction> actions = baked.getBakedPosActions().get(pos);
+
+			for (final IBakedPosAction action : actions)
+			{
+				action.call(this);
+			}
+
+			baked.getBakedPosActions().remove(pos);
 		}
 	}
 

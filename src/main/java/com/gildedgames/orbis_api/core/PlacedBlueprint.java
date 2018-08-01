@@ -1,16 +1,13 @@
 package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.processing.DataPrimer;
+import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import java.util.List;
 
 public class PlacedBlueprint implements NBT
 {
@@ -61,21 +58,6 @@ public class PlacedBlueprint implements NBT
 	public BakedBlueprint getBaked()
 	{
 		return this.baked;
-	}
-
-	public void spawnEntitiesInChunk(DataPrimer primer, ChunkPos chunkPos)
-	{
-		if (this.baked.getPlacedEntities().containsKey(chunkPos))
-		{
-			List<PlacedEntity> placed = this.baked.getPlacedEntities().get(chunkPos);
-
-			for (final PlacedEntity e : placed)
-			{
-				e.spawn(primer);
-			}
-
-			this.baked.getPlacedEntities().remove(chunkPos);
-		}
 	}
 
 	public BlueprintDefinition getDef()

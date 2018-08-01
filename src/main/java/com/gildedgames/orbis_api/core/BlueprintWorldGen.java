@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.core;
 
+import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.util.BlueprintPlacer;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;

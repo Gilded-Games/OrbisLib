@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.core.util;
 
-import com.gildedgames.orbis_api.core.ICreationData;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
@@ -16,19 +15,17 @@ import net.minecraft.util.math.ChunkPos;
 public class BlueprintUtil
 {
 
-	public static IRegion getRegionFromDefinition(final IDimensions data, final ICreationData<?> creationData)
+	public static IRegion getRegionFromDefinition(final IDimensions data, BlockPos pos, Rotation rotation)
 	{
 		final IRegion region =
-				creationData.getRotation() == Rotation.NONE ? new Region(data) : RotationHelp.rotate(new Region(data), creationData.getRotation());
-
-		final BlockPos pos = creationData.getPos();
+				rotation == Rotation.NONE ? new Region(data) : RotationHelp.rotate(new Region(data), rotation);
 
 		return (IRegion) region.translate(pos);
 	}
 
-	public static ChunkPos[] getChunksInsideTemplate(final IDimensions data, final ICreationData<?> loc)
+	public static ChunkPos[] getChunksInsideTemplate(final IDimensions data, BlockPos pos, Rotation rotation)
 	{
-		final IRegion bb = BlueprintUtil.getRegionFromDefinition(data, loc);
+		final IRegion bb = BlueprintUtil.getRegionFromDefinition(data, pos, rotation);
 
 		final int minX = Math.min(bb.getMin().getX(), bb.getMax().getX());
 		final int minZ = Math.min(bb.getMin().getZ(), bb.getMax().getZ());

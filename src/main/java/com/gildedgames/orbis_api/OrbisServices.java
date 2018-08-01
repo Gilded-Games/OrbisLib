@@ -2,6 +2,7 @@ package com.gildedgames.orbis_api;
 
 import com.gildedgames.orbis_api.block.*;
 import com.gildedgames.orbis_api.core.*;
+import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.registry.IOrbisDefinitionRegistry;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
@@ -26,6 +27,7 @@ import com.gildedgames.orbis_api.data.pathway.Entrance;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.*;
+import com.gildedgames.orbis_api.data.schedules.processors.ScheduleProcessorSpawnEntities;
 import com.gildedgames.orbis_api.data.shapes.*;
 import com.gildedgames.orbis_api.inventory.InventorySpawnEggs;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
@@ -233,6 +235,7 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 83, BlockStateRecord.class);
 			IOHelper.register(s, 84, ScheduleLayerOptions.class);
 			IOHelper.register(s, 85, BlueprintMetadata.class);
+			IOHelper.register(s, 86, ScheduleProcessorSpawnEntities.class);
 
 			this.io.register(s);
 		}

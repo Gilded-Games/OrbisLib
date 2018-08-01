@@ -1,8 +1,8 @@
 package com.gildedgames.orbis_api.core;
 
+import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
-import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
@@ -19,7 +19,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class PlacedEntity implements NBT
+public class PlacedEntity implements IBakedPosAction
 {
 	private ItemStack egg;
 
@@ -65,11 +65,7 @@ public class PlacedEntity implements NBT
 		}
 	}
 
-	public ItemStack getEgg()
-	{
-		return this.egg;
-	}
-
+	@Override
 	public BlockPos getPos()
 	{
 		return this.pos;
@@ -80,7 +76,8 @@ public class PlacedEntity implements NBT
 		this.pos = pos;
 	}
 
-	public void spawn(DataPrimer primer)
+	@Override
+	public void call(DataPrimer primer)
 	{
 		World world = primer.getWorld();
 		Entity entity = spawnCreature(primer, world, ItemMonsterPlacer.getNamedIdFrom(this.egg), (double) this.pos.getX() + 0.5D, (double) this.pos.getY(),

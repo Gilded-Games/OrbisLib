@@ -2,7 +2,6 @@ package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
-import com.gildedgames.orbis_api.core.PlacedEntity;
 import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.data.IDataHolder;
 import com.gildedgames.orbis_api.data.IDataUser;
@@ -13,8 +12,10 @@ import com.gildedgames.orbis_api.data.pathway.Entrance;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
-import com.gildedgames.orbis_api.data.schedules.*;
-import com.gildedgames.orbis_api.processing.DataPrimer;
+import com.gildedgames.orbis_api.data.schedules.IPositionRecordListener;
+import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
+import com.gildedgames.orbis_api.data.schedules.PostGenReplaceLayer;
+import com.gildedgames.orbis_api.data.schedules.ScheduleLayer;
 import com.gildedgames.orbis_api.util.BlueprintHelper;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
@@ -22,8 +23,6 @@ import com.gildedgames.orbis_api.world.IWorldObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.ItemMonsterPlacer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -106,7 +105,7 @@ public class BlueprintData
 		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Root Layer", this), false));
 	}
 
-	public static void spawnEntities(DataPrimer primer, BlueprintData data, BlockPos pos)
+	/*public static void spawnEntities(DataPrimer primer, BlueprintData data, BlockPos pos)
 	{
 		for (INode<IScheduleLayer, LayerLink> node : data.getScheduleLayerTree().getNodes())
 		{
@@ -130,7 +129,7 @@ public class BlueprintData
 				}
 			}
 		}
-	}
+	}*/
 
 	public IBlueprintMetadata getBlueprintMetadata()
 	{

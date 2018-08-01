@@ -1,7 +1,7 @@
 package com.gildedgames.orbis_api.core.util;
 
-import com.gildedgames.orbis_api.core.BakedBlueprint;
 import com.gildedgames.orbis_api.core.PlacementCondition;
+import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.processing.BlockAccessExtendedWrapper;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.google.common.collect.Lists;
