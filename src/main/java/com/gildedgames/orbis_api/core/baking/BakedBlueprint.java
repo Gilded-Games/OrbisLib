@@ -25,7 +25,6 @@ import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.data.schedules.IScheduleProcessor;
 import com.gildedgames.orbis_api.data.schedules.PostGenReplaceLayer;
 import com.gildedgames.orbis_api.data.schedules.ScheduleRegion;
-import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RegionHelp;
 import com.gildedgames.orbis_api.util.RotationHelp;
@@ -518,21 +517,6 @@ public class BakedBlueprint implements IDimensions
 					}
 				}
 			}
-		}
-	}
-
-	public void callBakedPosActionsInChunk(DataPrimer primer, ChunkPos chunkPos)
-	{
-		if (this.getBakedPosActions().containsKey(chunkPos))
-		{
-			List<IBakedPosAction> placed = this.getBakedPosActions().get(chunkPos);
-
-			for (final IBakedPosAction e : placed)
-			{
-				e.call(primer);
-			}
-
-			this.getBakedPosActions().remove(chunkPos);
 		}
 	}
 

@@ -1,6 +1,5 @@
-package com.gildedgames.orbis_api.core;
+package com.gildedgames.orbis_api.core.baking;
 
-import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import net.minecraft.entity.Entity;
@@ -19,18 +18,18 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class PlacedEntity implements IBakedPosAction
+public class BakedEntitySpawn implements IBakedPosAction
 {
 	private ItemStack egg;
 
 	private BlockPos pos;
 
-	private PlacedEntity()
+	private BakedEntitySpawn()
 	{
 
 	}
 
-	public PlacedEntity(ItemStack egg, BlockPos pos)
+	public BakedEntitySpawn(ItemStack egg, BlockPos pos)
 	{
 		this.egg = egg;
 		this.pos = pos;
@@ -71,6 +70,7 @@ public class PlacedEntity implements IBakedPosAction
 		return this.pos;
 	}
 
+	@Override
 	public void setPos(BlockPos pos)
 	{
 		this.pos = pos;

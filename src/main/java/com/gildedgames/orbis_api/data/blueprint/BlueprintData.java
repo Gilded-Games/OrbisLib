@@ -122,7 +122,7 @@ public class BlueprintData
 						BlockPos p = pos.add(s.getBounds().getMin())
 								.add(primer.getWorld().rand.nextInt(s.getBounds().getWidth()), 0, primer.getWorld().rand.nextInt(s.getBounds().getHeight()));
 
-						PlacedEntity placedEntity = new PlacedEntity(stack, p);
+						BakedEntitySpawn placedEntity = new BakedEntitySpawn(stack, p);
 
 						placedEntity.spawn(primer);
 					}

@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.schedules.processors;
 
-import com.gildedgames.orbis_api.core.PlacedEntity;
+import com.gildedgames.orbis_api.core.baking.BakedEntitySpawn;
 import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IRegion;
@@ -84,7 +84,7 @@ public class ScheduleProcessorSpawnEntities implements IScheduleProcessor
 				pos.add(rand.nextInt(bounds.getWidth()), 0,
 						rand.nextInt(bounds.getHeight()));
 
-				PlacedEntity placedEntity = new PlacedEntity(stack, pos);
+				BakedEntitySpawn placedEntity = new BakedEntitySpawn(stack, pos);
 
 				actions.add(placedEntity);
 			}

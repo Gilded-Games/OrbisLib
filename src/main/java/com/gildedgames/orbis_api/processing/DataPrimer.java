@@ -278,7 +278,7 @@ public class DataPrimer
 		}
 	}
 
-	public void create(BakedBlueprint baked, ChunkPos pos)
+	public void create(BakedBlueprint baked, ChunkPos pos, boolean createsEntities)
 	{
 		for (BlockDataChunk chunk : baked.getDataChunks())
 		{
@@ -289,7 +289,7 @@ public class DataPrimer
 			}
 		}
 
-		if (baked.getBakedPosActions().containsKey(pos))
+		if (createsEntities && baked.getBakedPosActions().containsKey(pos))
 		{
 			List<IBakedPosAction> actions = baked.getBakedPosActions().get(pos);
 

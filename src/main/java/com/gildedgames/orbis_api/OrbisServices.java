@@ -1,8 +1,12 @@
 package com.gildedgames.orbis_api;
 
 import com.gildedgames.orbis_api.block.*;
-import com.gildedgames.orbis_api.core.*;
+import com.gildedgames.orbis_api.core.BlockDataChunk;
+import com.gildedgames.orbis_api.core.CreationData;
+import com.gildedgames.orbis_api.core.GameRegistrar;
+import com.gildedgames.orbis_api.core.PlacedBlueprint;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
+import com.gildedgames.orbis_api.core.baking.BakedEntitySpawn;
 import com.gildedgames.orbis_api.core.registry.IOrbisDefinitionRegistry;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
@@ -231,7 +235,7 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 79, PostResolveActionMutateBlueprintVariable.class);
 			IOHelper.register(s, 80, BlockDataChunk.class);
 			IOHelper.register(s, 81, BakedBlueprint.class);
-			IOHelper.register(s, 82, PlacedEntity.class);
+			IOHelper.register(s, 82, BakedEntitySpawn.class);
 			IOHelper.register(s, 83, BlockStateRecord.class);
 			IOHelper.register(s, 84, ScheduleLayerOptions.class);
 			IOHelper.register(s, 85, BlueprintMetadata.class);
