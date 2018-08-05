@@ -129,7 +129,7 @@ public class OrbisLootTableLoader
 
 		if (object.has("functions"))
 		{
-			alootfunction = (LootFunction[]) JsonUtils.deserializeClass(object, "functions", deserializationContext, LootFunction[].class);
+			alootfunction = JsonUtils.deserializeClass(object, "functions", deserializationContext, LootFunction[].class);
 		}
 		else
 		{
@@ -251,7 +251,7 @@ public class OrbisLootTableLoader
 
 			if (jsonobject.has("conditions"))
 			{
-				alootcondition = (LootCondition[]) JsonUtils.deserializeClass(jsonobject, "conditions", context, LootCondition[].class);
+				alootcondition = JsonUtils.deserializeClass(jsonobject, "conditions", context, LootCondition[].class);
 			}
 			else
 			{

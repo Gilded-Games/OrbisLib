@@ -96,7 +96,7 @@ public class OrbisLootTableCache
 		}
 
 		@Override
-		public LootTable load(IDataIdentifier id) throws Exception
+		public LootTable load(IDataIdentifier id)
 		{
 			LootTable loottable = this.loadLootTable(id);
 

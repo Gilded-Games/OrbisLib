@@ -560,7 +560,7 @@ public class OrbisProject implements IProject
 		}
 	}
 
-	private String getLocationFromFile(String filePath) throws IOException
+	private String getLocationFromFile(String filePath)
 	{
 		String projectsLoc = filePath.substring(
 				filePath.lastIndexOf("projects") + 9);
