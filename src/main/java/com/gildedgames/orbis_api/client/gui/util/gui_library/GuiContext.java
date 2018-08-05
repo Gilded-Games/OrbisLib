@@ -95,6 +95,8 @@ public class GuiContext implements IGuiContext, IGuiStateListener
 	@Override
 	public void clearChildren()
 	{
+		this.children.forEach((element) -> element.dim().clearRectModifiers());
+
 		this.children.clear();
 	}
 

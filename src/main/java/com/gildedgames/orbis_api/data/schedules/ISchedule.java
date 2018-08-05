@@ -1,11 +1,14 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.core.tree.ConditionLink;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
+import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
+import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.util.mc.NBT;
-
-import java.util.List;
 
 public interface ISchedule extends NBT, IDataChild<BlueprintData>
 {
@@ -20,10 +23,16 @@ public interface ISchedule extends NBT, IDataChild<BlueprintData>
 
 	IRegion getBounds();
 
-	List<IScheduleProcessor> getProcessors();
+	NodeTree<IGuiCondition, ConditionLink> getConditionNodeTree();
 
-	void addProcessor(IScheduleProcessor processor);
+	NodeTree<IPostResolveAction, NBT> getPostResolveActionNodeTree();
 
-	boolean removeProcessor(IScheduleProcessor processor);
+	Pos2D getConditionGuiPos();
+
+	void setConditionGuiPos(Pos2D pos);
+
+	Pos2D getPostResolveActionGuiPos();
+
+	void setPostResolveActionGuiPos(Pos2D pos);
 
 }

@@ -1,5 +1,10 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.core.tree.ConditionLink;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
+import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
+import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IColored;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
@@ -7,11 +12,11 @@ import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
 
-import java.util.List;
-
 public class ScheduleRegion implements NBT, IColored, ISchedule
 {
-	private List<IScheduleProcessor> processors;
+	private NodeTree<IGuiCondition, ConditionLink> conditionNodeTree = new NodeTree<>();
+
+	private NodeTree<IPostResolveAction, NBT> postResolveActionNodeTree = new NodeTree<>();
 
 	private String triggerId;
 
@@ -22,6 +27,8 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	private IScheduleRecord parent;
 
 	private int color = 0xd19044;
+
+	private Pos2D conditionGuiPos = Pos2D.ORIGIN, postResolveActionGuiPos = Pos2D.ORIGIN;
 
 	private ScheduleRegion()
 	{
@@ -65,24 +72,39 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public List<IScheduleProcessor> getProcessors()
+	public NodeTree<IGuiCondition, ConditionLink> getConditionNodeTree()
 	{
-		return this.processors;
+		return this.conditionNodeTree;
 	}
 
 	@Override
-	public void addProcessor(IScheduleProcessor processor)
+	public NodeTree<IPostResolveAction, NBT> getPostResolveActionNodeTree()
 	{
-		if (!this.processors.contains(processor))
-		{
-			this.processors.add(processor);
-		}
+		return this.postResolveActionNodeTree;
 	}
 
 	@Override
-	public boolean removeProcessor(IScheduleProcessor processor)
+	public Pos2D getConditionGuiPos()
 	{
-		return this.processors.removeAll(this.processors);
+		return this.conditionGuiPos;
+	}
+
+	@Override
+	public void setConditionGuiPos(Pos2D pos)
+	{
+		this.conditionGuiPos = pos;
+	}
+
+	@Override
+	public Pos2D getPostResolveActionGuiPos()
+	{
+		return this.postResolveActionGuiPos;
+	}
+
+	@Override
+	public void setPostResolveActionGuiPos(Pos2D pos)
+	{
+		this.postResolveActionGuiPos = pos;
 	}
 
 	@Override
@@ -92,8 +114,12 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 
 		tag.setString("triggerId", this.triggerId);
 		funnel.set("bounds", this.bounds);
-		funnel.setList("processors", this.processors);
 		tag.setInteger("color", this.color);
+		funnel.set("conditionNodeTree", this.conditionNodeTree);
+		funnel.set("postResolveActionNodeTree", this.postResolveActionNodeTree);
+
+		funnel.set("conditionGuiPos", this.conditionGuiPos, NBTFunnel.POS2D_SETTER);
+		funnel.set("postResolveActionGuiPos", this.postResolveActionGuiPos, NBTFunnel.POS2D_SETTER);
 	}
 
 	@Override
@@ -103,8 +129,12 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 
 		this.triggerId = tag.getString("triggerId");
 		this.bounds = funnel.get("bounds");
-		this.processors = funnel.getList("processors");
 		this.color = tag.getInteger("color");
+		this.conditionNodeTree = funnel.getWithDefault("conditionNodeTree", this::getConditionNodeTree);
+		this.postResolveActionNodeTree = funnel.getWithDefault("postResolveActionNodeTree", this::getPostResolveActionNodeTree);
+
+		this.conditionGuiPos = funnel.getWithDefault("conditionGuiPos", NBTFunnel.POS2D_GETTER, () -> this.conditionGuiPos);
+		this.postResolveActionGuiPos = funnel.getWithDefault("postResolveActionGuiPos", NBTFunnel.POS2D_GETTER, () -> this.postResolveActionGuiPos);
 	}
 
 	@Override
@@ -129,7 +159,5 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	public void setDataParent(BlueprintData blueprintData)
 	{
 		this.dataParent = blueprintData;
-
-		this.processors.forEach((processor) -> processor.setDataParent(this.dataParent));
 	}
 }

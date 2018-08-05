@@ -1,7 +1,10 @@
 package com.gildedgames.orbis_api;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.IChunkGenerator;
+import net.minecraft.world.storage.loot.LootEntry;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -13,10 +16,38 @@ public class ReflectionOrbis
 
 	public static final Method GENERATE_HEIGHT_MAP;
 
+	// LootPool.class
+
+	public static final ReflectionEntry LOOT_ENTRIES = new ReflectionEntry("lootEntries", "field_186453_a");
+
+	public static final ReflectionEntry POOL_CONDITIONS = new ReflectionEntry("poolConditions", "field_186454_b");
+
+	public static final ReflectionEntry ROLLS = new ReflectionEntry("rolls", "field_186455_c");
+
+	public static final ReflectionEntry BONUS_ROLLS = new ReflectionEntry("bonusRolls", "field_186456_d");
+
+	//TODO: Can't find obfuscated name?
+	public static final ReflectionEntry NAME = new ReflectionEntry("name");
+
+	// LootEntry.class
+
+	public static final Method SERIALIZE;
+
+	//TODO: Can't find obfuscated name?
+	public static final ReflectionEntry ENTRY_NAME = new ReflectionEntry("entryName");
+
+	public static final ReflectionEntry WEIGHT = new ReflectionEntry("weight", "field_186364_c");
+
+	public static final ReflectionEntry QUALITY = new ReflectionEntry("quality", "field_186365_d");
+
+	public static final ReflectionEntry CONDITIONS = new ReflectionEntry("conditions", "field_186366_e");
+
 	static
 	{
 		POPULATE = ReflectionOrbis.getMethod(Chunk.class, new Class<?>[] { IChunkGenerator.class }, "populate", "func_185931_b");
 		GENERATE_HEIGHT_MAP = ReflectionOrbis.getMethod(Chunk.class, new Class<?>[] {}, "generateHeightMap", "func_185978_a");
+		SERIALIZE = ReflectionOrbis
+				.getMethod(LootEntry.class, new Class<?>[] { JsonObject.class, JsonSerializationContext.class }, "serialize", "func_186362_a");
 	}
 
 	public static Field getField(final Class clazz, final String... names)

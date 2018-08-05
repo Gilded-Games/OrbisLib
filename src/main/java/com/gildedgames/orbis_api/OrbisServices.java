@@ -17,6 +17,7 @@ import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionCheckBlue
 import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionPercentage;
 import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionRatio;
 import com.gildedgames.orbis_api.core.variables.post_resolve_actions.PostResolveActionMutateBlueprintVariable;
+import com.gildedgames.orbis_api.core.variables.post_resolve_actions.PostResolveActionSpawnEntities;
 import com.gildedgames.orbis_api.core.variables.var_comparators.*;
 import com.gildedgames.orbis_api.core.variables.var_mutators.*;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
@@ -24,6 +25,7 @@ import com.gildedgames.orbis_api.data.DataCondition;
 import com.gildedgames.orbis_api.data.blueprint.*;
 import com.gildedgames.orbis_api.data.framework.FrameworkData;
 import com.gildedgames.orbis_api.data.framework.FrameworkNode;
+import com.gildedgames.orbis_api.data.json.JsonData;
 import com.gildedgames.orbis_api.data.management.IProject;
 import com.gildedgames.orbis_api.data.management.IProjectManager;
 import com.gildedgames.orbis_api.data.management.impl.*;
@@ -31,7 +33,6 @@ import com.gildedgames.orbis_api.data.pathway.Entrance;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.*;
-import com.gildedgames.orbis_api.data.schedules.processors.ScheduleProcessorSpawnEntities;
 import com.gildedgames.orbis_api.data.shapes.*;
 import com.gildedgames.orbis_api.inventory.InventorySpawnEggs;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
@@ -99,6 +100,8 @@ public class OrbisServices implements IOrbisServices
 	private String archiveBaseName;
 
 	private IPrepRegistry sectors = new PrepRegistry();
+
+	private OrbisLootTableCache lootTableCache = new OrbisLootTableCache();
 
 	private boolean scanAndCacheProjectsOnStartup;
 
@@ -239,7 +242,9 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 83, BlockStateRecord.class);
 			IOHelper.register(s, 84, ScheduleLayerOptions.class);
 			IOHelper.register(s, 85, BlueprintMetadata.class);
-			IOHelper.register(s, 86, ScheduleProcessorSpawnEntities.class);
+			IOHelper.register(s, 87, PostResolveActionSpawnEntities.class);
+			IOHelper.register(s, 88, GuiVarItemStack.class);
+			IOHelper.register(s, 89, JsonData.class);
 
 			this.io.register(s);
 		}
@@ -355,6 +360,12 @@ public class OrbisServices implements IOrbisServices
 		project.loadAndCacheData();
 
 		this.loadedProjects.put(id, project);
+	}
+
+	@Override
+	public OrbisLootTableCache lootTableCache()
+	{
+		return this.lootTableCache;
 	}
 
 	@Override

@@ -15,6 +15,9 @@ import java.net.URI;
  */
 public interface IProject extends NBT
 {
+	String getResourceLocationForId(IDataIdentifier id);
+
+	File getFileForId(IDataIdentifier id);
 
 	/**
 	 * Mod developer should set their project to be kept cached.

@@ -2,6 +2,8 @@ package com.gildedgames.orbis_api.client.rect;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import javax.annotation.Nullable;
+
 public class RectModifier
 {
 	private final RectHolder source;
@@ -11,6 +13,11 @@ public class RectModifier
 	private final RectModification modification;
 
 	private String identifier;
+
+	public RectModifier(String identifier, final RectModification modification, final ModifierType modifying)
+	{
+		this(identifier, null, modification, modifying);
+	}
 
 	public RectModifier(String identifier, final RectHolder source, final RectModification modification, final ModifierType modifying)
 	{
@@ -25,6 +32,7 @@ public class RectModifier
 		return this.identifier;
 	}
 
+	@Nullable
 	public RectHolder getSource()
 	{
 		return this.source;

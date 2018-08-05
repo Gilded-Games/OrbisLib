@@ -162,7 +162,7 @@ public class ModDim2D implements Rect
 
 			final RectHolder source = modifier.getSource();
 
-			if (source.dim() == null || source.dim() == this)
+			if (source != null && (source.dim() == null || source.dim() == this))
 			{
 				continue;
 			}
@@ -171,9 +171,9 @@ public class ModDim2D implements Rect
 			{
 				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.ROTATION);
 
-				if (modifyingWithValue instanceof Float)
+				if (modifyingWithValue instanceof Number)
 				{
-					degrees += (Float) modifyingWithValue;
+					degrees += ((Number) modifyingWithValue).floatValue();
 				}
 			}
 
@@ -181,9 +181,9 @@ public class ModDim2D implements Rect
 			{
 				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.SCALE);
 
-				if (modifyingWithValue instanceof Float)
+				if (modifyingWithValue instanceof Number)
 				{
-					scale *= (Float) modifyingWithValue;
+					scale *= ((Number) modifyingWithValue).floatValue();
 				}
 			}
 
@@ -191,9 +191,9 @@ public class ModDim2D implements Rect
 			{
 				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.X);
 
-				if (modifyingWithValue instanceof Float)
+				if (modifyingWithValue instanceof Number)
 				{
-					posX += (Float) modifyingWithValue;
+					posX += ((Number) modifyingWithValue).floatValue();
 				}
 			}
 
@@ -201,9 +201,9 @@ public class ModDim2D implements Rect
 			{
 				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.Y);
 
-				if (modifyingWithValue instanceof Float)
+				if (modifyingWithValue instanceof Number)
 				{
-					posY += (Float) modifyingWithValue;
+					posY += ((Number) modifyingWithValue).floatValue();
 				}
 			}
 
@@ -211,9 +211,9 @@ public class ModDim2D implements Rect
 			{
 				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.WIDTH);
 
-				if (modifyingWithValue instanceof Float)
+				if (modifyingWithValue instanceof Number)
 				{
-					width += (Float) modifyingWithValue;
+					width += ((Number) modifyingWithValue).floatValue();
 				}
 			}
 
@@ -221,9 +221,9 @@ public class ModDim2D implements Rect
 			{
 				Object modifyingWithValue = modifier.getModification().getValue(source, RectModifier.ModifierType.HEIGHT);
 
-				if (modifyingWithValue instanceof Float)
+				if (modifyingWithValue instanceof Number)
 				{
-					height += (Float) modifyingWithValue;
+					height += ((Number) modifyingWithValue).floatValue();
 				}
 			}
 		}
@@ -287,6 +287,13 @@ public class ModDim2D implements Rect
 		return false;
 	}
 
+	public ModDim2D clearRectModifiers()
+	{
+		this.clear();
+
+		return this;
+	}
+
 	/**
 	 * Clears the modifiers that you pass along to the method
 	 */
@@ -296,10 +303,15 @@ public class ModDim2D implements Rect
 		{
 			for (final RectModifier modifier : this.modifiers)
 			{
-				modifier.getSource().dim().removeListener(this.ourListener);
+				if (modifier.getSource() != null)
+				{
+					modifier.getSource().dim().removeListener(this.ourListener);
+				}
 			}
+
 			this.modifiers.clear();
 			this.refreshModifiedState();
+
 			return this;
 		}
 
@@ -333,7 +345,10 @@ public class ModDim2D implements Rect
 		{
 			this.modifiers.add(rectModifier);
 
-			rectModifier.getSource().dim().addListener(this.ourListener);
+			if (rectModifier.getSource() != null)
+			{
+				rectModifier.getSource().dim().addListener(this.ourListener);
+			}
 
 			this.refreshModifiedState();
 		}
@@ -425,7 +440,7 @@ public class ModDim2D implements Rect
 			{
 				iter.remove();
 
-				if (!this.hasModifiersFor(modifier.getSource()))
+				if (modifier.getSource() != null && !this.hasModifiersFor(modifier.getSource()))
 				{
 					modifier.getSource().dim().removeListener(this.ourListener);
 				}
@@ -443,7 +458,7 @@ public class ModDim2D implements Rect
 	{
 		for (final RectModifier rModifier : this.modifiers)
 		{
-			if (rModifier.getSource().equals(holder))
+			if (rModifier.getSource() != null && rModifier.getSource().equals(holder))
 			{
 				return true;
 			}

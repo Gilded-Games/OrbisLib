@@ -21,8 +21,8 @@ import com.gildedgames.orbis_api.data.management.IDataIdentifier;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
+import com.gildedgames.orbis_api.data.schedules.IPosActionBaker;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
-import com.gildedgames.orbis_api.data.schedules.IScheduleProcessor;
 import com.gildedgames.orbis_api.data.schedules.PostGenReplaceLayer;
 import com.gildedgames.orbis_api.data.schedules.ScheduleRegion;
 import com.gildedgames.orbis_api.util.OrbisTuple;
@@ -289,22 +289,44 @@ public class BakedBlueprint implements IDimensions
 
 			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
 			{
+				if (!s.getConditionNodeTree().isEmpty() && !this.resolveChildrenConditions(s.getConditionNodeTree().getRootNode()))
+				{
+					continue;
+				}
+
 				IRegion bounds = new Region(this.data.getPos().add(s.getBounds().getMin()), this.data.getPos().add(s.getBounds().getMax()));
 
-				for (IScheduleProcessor processor : s.getProcessors())
+				for (INode<IPostResolveAction, NBT> actionNode : s.getPostResolveActionNodeTree().getNodes())
 				{
-					List<IBakedPosAction> actions = processor.bakeActions(bounds, this.data.getRandom());
-
-					for (IBakedPosAction action : actions)
+					if (actionNode.getData() instanceof IDataUser)
 					{
-						ChunkPos p = new ChunkPos(action.getPos().getX() >> 4, action.getPos().getZ() >> 4);
+						IDataUser dataUser = (IDataUser) actionNode.getData();
 
-						if (!this.bakedPosActions.containsKey(p))
+						if (dataUser.getDataIdentifier().equals("scheduleRegion"))
 						{
-							this.bakedPosActions.put(p, Lists.newArrayList());
+							dataUser.setUsedData(s);
 						}
+					}
 
-						this.bakedPosActions.get(p).add(action);
+					actionNode.getData().resolve(this.data.getRandom());
+
+					if (actionNode.getData() instanceof IPosActionBaker)
+					{
+						IPosActionBaker baker = (IPosActionBaker) actionNode.getData();
+
+						List<IBakedPosAction> actions = baker.bakeActions(bounds, this.data.getRandom());
+
+						for (IBakedPosAction action : actions)
+						{
+							ChunkPos p = new ChunkPos(action.getPos().getX() >> 4, action.getPos().getZ() >> 4);
+
+							if (!this.bakedPosActions.containsKey(p))
+							{
+								this.bakedPosActions.put(p, Lists.newArrayList());
+							}
+
+							this.bakedPosActions.get(p).add(action);
+						}
 					}
 				}
 			}

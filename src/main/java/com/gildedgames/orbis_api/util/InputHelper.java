@@ -144,8 +144,13 @@ public class InputHelper
 			{
 				if (element.state().canBeTopHoverElement())
 				{
-					if (element.state().isEnabled() && (element.state().getZOrder() >= highestZOrder))
+					if (element.state().isEnabled())
 					{
+						if (element.state().getZOrder() > highestZOrder)
+						{
+							topHovered.clear();
+						}
+
 						topHovered.add(element);
 						highestZOrder = element.state().getZOrder();
 					}

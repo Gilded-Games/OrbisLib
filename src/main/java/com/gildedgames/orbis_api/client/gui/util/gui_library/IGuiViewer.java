@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface IGuiViewer
 {
+	void setHoveredDescription(List<String> desc);
+
 	void notifyGlobalContextChange();
 
 	void notifyBuildingStarted(IGuiElement element);

@@ -105,32 +105,6 @@ public class BlueprintData
 		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Root Layer", this), false));
 	}
 
-	/*public static void spawnEntities(DataPrimer primer, BlueprintData data, BlockPos pos)
-	{
-		for (INode<IScheduleLayer, LayerLink> node : data.getScheduleLayerTree().getNodes())
-		{
-			IScheduleLayer layer = node.getData();
-
-			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
-			{
-				for (int i = 0; i < s.getSpawnEggsInventory().getSizeInventory(); i++)
-				{
-					ItemStack stack = s.getSpawnEggsInventory().getStackInSlot(i);
-
-					if (stack.getItem() instanceof ItemMonsterPlacer)
-					{
-						BlockPos p = pos.add(s.getBounds().getMin())
-								.add(primer.getWorld().rand.nextInt(s.getBounds().getWidth()), 0, primer.getWorld().rand.nextInt(s.getBounds().getHeight()));
-
-						BakedEntitySpawn placedEntity = new BakedEntitySpawn(stack, p);
-
-						placedEntity.spawn(primer);
-					}
-				}
-			}
-		}
-	}*/
-
 	public IBlueprintMetadata getBlueprintMetadata()
 	{
 		return this.blueprintMetadata;

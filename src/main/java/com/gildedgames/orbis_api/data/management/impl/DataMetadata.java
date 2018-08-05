@@ -88,4 +88,10 @@ public class DataMetadata implements IDataMetadata
 	{
 		this.identifier = identifier;
 	}
+
+	@Override
+	public String toString()
+	{
+		return this.name + (this.identifier != null ? " - " + this.identifier.toString() : "");
+	}
 }

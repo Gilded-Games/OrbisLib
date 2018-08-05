@@ -1,5 +1,10 @@
 package com.gildedgames.orbis_api.data.schedules;
 
+import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.core.tree.ConditionLink;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
+import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
+import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintDataPalette;
 import com.gildedgames.orbis_api.data.region.IColored;
@@ -7,8 +12,6 @@ import com.gildedgames.orbis_api.data.region.IMutableRegion;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
-
-import java.util.List;
 
 //TODO: Convert into schedule processor
 public class ScheduleBlueprint implements NBT, IColored, ISchedule
@@ -71,21 +74,39 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public List<IScheduleProcessor> getProcessors()
+	public NodeTree<IGuiCondition, ConditionLink> getConditionNodeTree()
 	{
 		return null;
 	}
 
 	@Override
-	public void addProcessor(IScheduleProcessor processor)
+	public NodeTree<IPostResolveAction, NBT> getPostResolveActionNodeTree()
+	{
+		return null;
+	}
+
+	@Override
+	public Pos2D getConditionGuiPos()
+	{
+		return null;
+	}
+
+	@Override
+	public void setConditionGuiPos(Pos2D pos)
 	{
 
 	}
 
 	@Override
-	public boolean removeProcessor(IScheduleProcessor processor)
+	public Pos2D getPostResolveActionGuiPos()
 	{
-		return false;
+		return null;
+	}
+
+	@Override
+	public void setPostResolveActionGuiPos(Pos2D pos)
+	{
+
 	}
 
 	/*@Override

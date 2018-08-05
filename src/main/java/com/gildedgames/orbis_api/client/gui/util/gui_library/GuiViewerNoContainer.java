@@ -4,6 +4,7 @@ import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis_api.util.InputHelper;
 import com.gildedgames.orbis_api.util.mc.ContainerGeneric;
+import com.gildedgames.orbis_api.util.mc.GuiUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
@@ -39,6 +40,8 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 	private Map<IGuiElement, List<IGuiElement>> subListCache = Maps.newHashMap();
 
+	private List<String> hoverDescription;
+
 	public GuiViewerNoContainer(IGuiElement viewing)
 	{
 		super();
@@ -73,6 +76,12 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 			top.getChildren().forEach((element) -> fetchAllVisibleChildren(allChildren, element.context()));
 		}
+	}
+
+	@Override
+	public void setHoveredDescription(List<String> desc)
+	{
+		this.hoverDescription = desc;
 	}
 
 	@Override
@@ -333,6 +342,13 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 		GlStateManager.popMatrix();
 
 		super.drawScreen(mouseX, mouseY, partialTicks);
+
+		if (this.hoverDescription != null && this.hoverDescription.size() > 0)
+		{
+			GuiUtils.drawHoveringText(this.hoverDescription, mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);
+		}
+
+		this.hoverDescription = null;
 	}
 
 	@Override

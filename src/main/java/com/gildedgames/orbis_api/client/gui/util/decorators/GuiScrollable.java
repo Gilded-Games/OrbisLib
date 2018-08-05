@@ -42,10 +42,14 @@ public class GuiScrollable extends GuiElement
 			double scaleH = GuiScrollable.this.viewer().mc().displayHeight / res.getScaledHeight_double();
 
 			GL11.glEnable(GL11.GL_SCISSOR_TEST);
-			GL11.glScissor((int) ((GuiScrollable.this.window.dim().x()) * scaleW),
-					(int) (GuiScrollable.this.viewer().mc().displayHeight - (
-							(GuiScrollable.this.window.dim().y() + GuiScrollable.this.window.dim().height()) * scaleH)),
-					(int) (GuiScrollable.this.window.dim().width() * scaleW), (int) (GuiScrollable.this.window.dim().height() * scaleH));
+
+			if (!(GuiScrollable.this.window.dim().width() < 0 || GuiScrollable.this.window.dim().height() < 0))
+			{
+				GL11.glScissor((int) ((GuiScrollable.this.window.dim().x()) * scaleW),
+						(int) (GuiScrollable.this.viewer().mc().displayHeight - (
+								(GuiScrollable.this.window.dim().y() + GuiScrollable.this.window.dim().height()) * scaleH)),
+						(int) (GuiScrollable.this.window.dim().width() * scaleW), (int) (GuiScrollable.this.window.dim().height() * scaleH));
+			}
 		}
 
 		@Override

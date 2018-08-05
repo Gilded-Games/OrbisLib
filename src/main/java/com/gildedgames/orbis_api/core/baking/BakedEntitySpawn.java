@@ -9,14 +9,12 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
 
 public class BakedEntitySpawn implements IBakedPosAction
 {
@@ -92,26 +90,7 @@ public class BakedEntitySpawn implements IBakedPosAction
 
 			if (world != null)
 			{
-				MinecraftServer minecraftserver = world.getMinecraftServer();
-
-				if (minecraftserver != null)
-				{
-					NBTTagCompound nbttagcompound = this.egg.getTagCompound();
-
-					if (nbttagcompound != null && nbttagcompound.hasKey("EntityTag", 10))
-					{
-						if (!entity.ignoreItemEntityData())
-						{
-							return;
-						}
-
-						NBTTagCompound nbttagcompound1 = entity.writeToNBT(new NBTTagCompound());
-						UUID uuid = entity.getUniqueID();
-						nbttagcompound1.merge(nbttagcompound.getCompoundTag("EntityTag"));
-						entity.setUniqueId(uuid);
-						entity.readFromNBT(nbttagcompound1);
-					}
-				}
+				ItemMonsterPlacer.applyItemEntityDataToEntity(world, null, this.egg, entity);
 			}
 		}
 	}

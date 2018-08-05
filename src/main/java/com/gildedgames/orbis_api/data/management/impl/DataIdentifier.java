@@ -3,9 +3,13 @@ package com.gildedgames.orbis_api.data.management.impl;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
 import com.gildedgames.orbis_api.data.management.IProjectIdentifier;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.google.gson.*;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.JsonUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.lang.reflect.Type;
 
 public class DataIdentifier implements IDataIdentifier
 {
@@ -17,6 +21,11 @@ public class DataIdentifier implements IDataIdentifier
 	private DataIdentifier()
 	{
 
+	}
+
+	private DataIdentifier(int dataId)
+	{
+		this.dataId = dataId;
 	}
 
 	public DataIdentifier(final IProjectIdentifier identifier, final int dataId)
@@ -92,6 +101,41 @@ public class DataIdentifier implements IDataIdentifier
 	public String toString()
 	{
 		return this.dataId + (this.projectIdentifier != null ? ":" + this.projectIdentifier.toString() : "");
+	}
+
+	public static class Serializer implements JsonDeserializer<IDataIdentifier>, JsonSerializer<IDataIdentifier>
+	{
+		@Override
+		public IDataIdentifier deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws
+				JsonParseException
+		{
+			String[] values = JsonUtils.getString(element, "location").split(":");
+
+			if (values.length <= 1)
+			{
+				int dataId = Integer.valueOf(values[0]);
+
+				return new DataIdentifier(dataId);
+			}
+
+			if (values.length >= 3)
+			{
+				int dataId = Integer.valueOf(values[0]);
+
+				String projectId = values[1];
+				String creator = values[2];
+
+				return new DataIdentifier(new ProjectIdentifier(projectId, creator), dataId);
+			}
+
+			return null;
+		}
+
+		@Override
+		public JsonElement serialize(IDataIdentifier id, Type type, JsonSerializationContext context)
+		{
+			return new JsonPrimitive(id.toString());
+		}
 	}
 
 }

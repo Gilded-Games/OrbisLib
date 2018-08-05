@@ -4,6 +4,7 @@ import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis_api.util.InputHelper;
 import com.gildedgames.orbis_api.util.mc.ContainerGeneric;
+import com.gildedgames.orbis_api.util.mc.GuiUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
@@ -32,7 +33,7 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 	private List<IGuiElement> allVisibleElements = Lists.newArrayList();
 
-	private boolean drawDefaultBackground;
+	private boolean drawDefaultBackground = true;
 
 	private IGuiElement viewing;
 
@@ -41,6 +42,8 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 	private boolean recacheRequested, contextChanged;
 
 	private Map<IGuiElement, List<IGuiElement>> subListCache = Maps.newHashMap();
+
+	private List<String> hoverDescription;
 
 	public GuiViewer(IGuiElement viewing)
 	{
@@ -76,6 +79,12 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 
 			top.getChildren().forEach((element) -> fetchAllVisibleChildren(allChildren, element.context()));
 		}
+	}
+
+	@Override
+	public void setHoveredDescription(List<String> desc)
+	{
+		this.hoverDescription = desc;
 	}
 
 	@Override
@@ -354,6 +363,13 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 		GlStateManager.popMatrix();
 
 		super.drawScreen(mouseX, mouseY, partialTicks);
+
+		if (this.hoverDescription != null && this.hoverDescription.size() > 0)
+		{
+			GuiUtils.drawHoveringText(this.hoverDescription, mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);
+		}
+
+		this.hoverDescription = null;
 	}
 
 	@Override

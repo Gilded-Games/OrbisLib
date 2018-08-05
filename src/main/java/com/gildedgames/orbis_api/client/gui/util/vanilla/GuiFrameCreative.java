@@ -5,6 +5,7 @@ import com.gildedgames.orbis_api.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.*;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.util.InputHelper;
+import com.gildedgames.orbis_api.util.mc.GuiUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
@@ -51,6 +52,8 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 	private Map<IGuiElement, List<IGuiElement>> subListCache = Maps.newHashMap();
 
+	private List<String> hoverDescription;
+
 	public GuiFrameCreative(final EntityPlayer player)
 	{
 		super(player);
@@ -85,6 +88,12 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 			top.getChildren().forEach((element) -> fetchAllVisibleChildren(allChildren, element.context()));
 		}
+	}
+
+	@Override
+	public void setHoveredDescription(List<String> desc)
+	{
+		this.hoverDescription = desc;
 	}
 
 	@Override
@@ -353,6 +362,13 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 		GlStateManager.disableAlpha();
 
 		GlStateManager.popMatrix();
+
+		if (this.hoverDescription != null && this.hoverDescription.size() > 0)
+		{
+			GuiUtils.drawHoveringText(this.hoverDescription, mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);
+		}
+
+		this.hoverDescription = null;
 	}
 
 	@Override

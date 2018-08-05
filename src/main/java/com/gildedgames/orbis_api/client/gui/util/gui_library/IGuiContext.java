@@ -14,6 +14,9 @@ public interface IGuiContext
 
 	void removeChild(IGuiElement child);
 
+	/**
+	 * Should also remove all RectModifiers off children
+	 */
 	void clearChildren();
 
 	List<IGuiElement> getChildren();

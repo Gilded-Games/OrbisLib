@@ -15,7 +15,6 @@ import java.util.Collection;
  */
 public interface IProjectManager
 {
-
 	void listen(IProjectManagerListener listener);
 
 	boolean unlisten(IProjectManagerListener listener);
