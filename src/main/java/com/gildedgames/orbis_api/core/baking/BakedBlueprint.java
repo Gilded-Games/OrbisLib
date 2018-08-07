@@ -283,18 +283,23 @@ public class BakedBlueprint implements IDimensions
 
 	private void bakePosActions()
 	{
+		Region boundsBeforeRotateAtOrigin = new Region(new BlockPos(0, 0, 0), new BlockPos(this.rawDataContainer.getWidth() - 1,
+				this.rawDataContainer.getHeight() - 1, this.rawDataContainer.getLength() - 1));
+
 		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
 			IScheduleLayer layer = node.getData();
 
 			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
 			{
+				IRegion rotatedBounds = RotationHelp.rotate(s.getBounds(), boundsBeforeRotateAtOrigin, this.data.getRotation());
+
 				if (!s.getConditionNodeTree().isEmpty() && !this.resolveChildrenConditions(s.getConditionNodeTree().getRootNode()))
 				{
 					continue;
 				}
 
-				IRegion bounds = new Region(this.data.getPos().add(s.getBounds().getMin()), this.data.getPos().add(s.getBounds().getMax()));
+				IRegion bounds = new Region(this.data.getPos().add(rotatedBounds.getMin()), this.data.getPos().add(rotatedBounds.getMax()));
 
 				for (INode<IPostResolveAction, NBT> actionNode : s.getPostResolveActionNodeTree().getNodes())
 				{
