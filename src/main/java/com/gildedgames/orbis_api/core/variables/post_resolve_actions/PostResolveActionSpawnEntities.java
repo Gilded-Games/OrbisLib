@@ -100,9 +100,9 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.itemStackVariable = funnel.get("itemStackVariable");
-		this.customRotation = funnel.get("customRotation");
-		this.rotationDegrees = funnel.get("rotationDegrees");
+		this.itemStackVariable = funnel.getWithDefault("itemStackVariable", () -> this.itemStackVariable);
+		this.customRotation = funnel.getWithDefault("customRotation", () -> this.customRotation);
+		this.rotationDegrees = funnel.getWithDefault("rotationDegrees", () -> this.rotationDegrees);
 
 		this.guiPos = funnel.getWithDefault("guiPos", NBTFunnel.POS2D_GETTER, () -> this.guiPos);
 
