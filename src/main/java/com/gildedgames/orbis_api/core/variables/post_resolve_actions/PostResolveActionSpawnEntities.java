@@ -3,6 +3,8 @@ package com.gildedgames.orbis_api.core.variables.post_resolve_actions;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.baking.BakedEntitySpawn;
 import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
+import com.gildedgames.orbis_api.core.variables.GuiVarBoolean;
+import com.gildedgames.orbis_api.core.variables.GuiVarFloat;
 import com.gildedgames.orbis_api.core.variables.GuiVarItemStack;
 import com.gildedgames.orbis_api.core.variables.IGuiVar;
 import com.gildedgames.orbis_api.core.variables.displays.GuiVarDisplay;
@@ -15,6 +17,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
@@ -29,6 +32,10 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 
 	private GuiVarItemStack itemStackVariable;
 
+	private GuiVarBoolean customRotation;
+
+	private GuiVarFloat rotationDegrees;
+
 	private Pos2D guiPos = Pos2D.ORIGIN;
 
 	private GuiVarDisplay parentDisplay;
@@ -38,8 +45,12 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 	public PostResolveActionSpawnEntities()
 	{
 		this.itemStackVariable = new GuiVarItemStack("orbis.gui.spawn_egg", SPAWN_EGG_VALIDATOR);
+		this.customRotation = new GuiVarBoolean("orbis.gui.custom_rotation");
+		this.rotationDegrees = new GuiVarFloat("orbis.gui.rotation_degrees");
 
 		this.variables.add(this.itemStackVariable);
+		this.variables.add(this.customRotation);
+		this.variables.add(this.rotationDegrees);
 	}
 
 	@Override
@@ -78,6 +89,9 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		funnel.set("itemStackVariable", this.itemStackVariable);
+		funnel.set("customRotation", this.customRotation);
+		funnel.set("rotationDegrees", this.rotationDegrees);
+
 		funnel.set("guiPos", this.guiPos, NBTFunnel.POS2D_SETTER);
 	}
 
@@ -87,6 +101,9 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		this.itemStackVariable = funnel.get("itemStackVariable");
+		this.customRotation = funnel.get("customRotation");
+		this.rotationDegrees = funnel.get("rotationDegrees");
+
 		this.guiPos = funnel.getWithDefault("guiPos", NBTFunnel.POS2D_GETTER, () -> this.guiPos);
 
 		this.itemStackVariable.setStackValidator(SPAWN_EGG_VALIDATOR);
@@ -94,6 +111,8 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 		this.variables.clear();
 
 		this.variables.add(this.itemStackVariable);
+		this.variables.add(this.customRotation);
+		this.variables.add(this.rotationDegrees);
 	}
 
 	@Override
@@ -115,9 +134,10 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 	}
 
 	@Override
-	public List<IBakedPosAction> bakeActions(IRegion bounds, Random rand)
+	public List<IBakedPosAction> bakeActions(IRegion bounds, Random rand, Rotation rotation)
 	{
 		List<IBakedPosAction> actions = Lists.newArrayList();
+		float rotationOffset = (rotation.compareTo(Rotation.NONE) * 90.0F);
 
 		if (this.itemStackVariable.getData().getItem() instanceof ItemMonsterPlacer)
 		{
@@ -126,7 +146,7 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 				BlockPos pos = bounds.getMin();
 
 				BakedEntitySpawn placedEntity = new BakedEntitySpawn(this.itemStackVariable.getData(), pos.add(rand.nextInt(bounds.getWidth()), 0,
-						rand.nextInt(bounds.getLength())));
+						rand.nextInt(bounds.getLength())), this.customRotation.getData(), this.rotationDegrees.getData() + rotationOffset);
 
 				actions.add(placedEntity);
 			}

@@ -314,7 +314,7 @@ public class BakedBlueprint implements IDimensions
 					{
 						IPosActionBaker baker = (IPosActionBaker) actionNode.getData();
 
-						List<IBakedPosAction> actions = baker.bakeActions(bounds, this.data.getRandom());
+						List<IBakedPosAction> actions = baker.bakeActions(bounds, this.data.getRandom(), this.data.getRotation());
 
 						for (IBakedPosAction action : actions)
 						{

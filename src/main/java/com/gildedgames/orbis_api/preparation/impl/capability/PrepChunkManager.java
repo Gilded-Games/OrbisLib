@@ -29,7 +29,6 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	private ThreadLocal<IPrepSectorData> currentSectorData = new ThreadLocal<>();
 
-	//TODO: Need to save these, since they often get modified by prep registry sources
 	private final LoadingCache<Long, ChunkMask> chunkCache = CacheBuilder.newBuilder()
 			.maximumSize(512)
 			.expireAfterWrite(10, TimeUnit.MINUTES)

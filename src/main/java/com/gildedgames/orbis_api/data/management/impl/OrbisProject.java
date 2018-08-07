@@ -263,6 +263,7 @@ public class OrbisProject implements IProject
 		{
 			try
 			{
+				//TODO SHOULD NOT ALWAYS BE FILE PATH, CAN BE RESOURCE LOCATION
 				String location = this.getLocationFromFile(file.getCanonicalPath());
 
 				this.extensionsToLoadManually.get(data.getFileExtension()).saveMetadata(this, data, file, location);
