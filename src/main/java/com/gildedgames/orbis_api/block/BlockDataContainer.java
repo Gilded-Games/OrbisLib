@@ -175,7 +175,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		if (id < 0)
 		{
-			return null;
+			return Blocks.AIR.getDefaultState();
 		}
 
 		return this.localIdToBlock.get(id).getStateFromMeta(this.blocksMeta[index]);
