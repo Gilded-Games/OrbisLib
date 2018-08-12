@@ -7,10 +7,10 @@ import com.gildedgames.orbis_api.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
-import com.gildedgames.orbis_api.data.region.IRegion;
+import com.gildedgames.orbis_api.data.region.IRegionHolder;
 import com.gildedgames.orbis_api.util.mc.NBT;
 
-public interface ISchedule extends NBT, IDataChild<BlueprintData>
+public interface ISchedule extends NBT, IDataChild<BlueprintData>, IRegionHolder
 {
 
 	String getTriggerId();
@@ -20,8 +20,6 @@ public interface ISchedule extends NBT, IDataChild<BlueprintData>
 	IScheduleRecord getParent();
 
 	void setParent(IScheduleRecord parent);
-
-	IRegion getBounds();
 
 	NodeTree<IGuiCondition, ConditionLink> getConditionNodeTree();
 

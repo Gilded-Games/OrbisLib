@@ -4,7 +4,7 @@ import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.framework.FrameworkData;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
-import com.gildedgames.orbis_api.data.region.IMutableRegion;
+import com.gildedgames.orbis_api.data.region.IRegionHolder;
 import com.gildedgames.orbis_api.util.mc.NBT;
 
 import java.util.Collection;
@@ -20,10 +20,8 @@ import java.util.Random;
  * @author Emile
  *
  */
-public interface IFrameworkNode extends NBT, IDataChild<FrameworkData>
+public interface IFrameworkNode extends NBT, IDataChild<FrameworkData>, IRegionHolder
 {
-
-	IMutableRegion getBounds();
 
 	/**
 	 * Returns the possible values this data can take. The data

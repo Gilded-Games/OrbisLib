@@ -7,10 +7,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.List;
+import java.util.Optional;
 
 public class WorldObjectUtils
 {
-	public static IShape getIntersectingShape(World world, final BlockPos pos)
+	public static Optional<IShape> getIntersectingShape(World world, final BlockPos pos)
 	{
 		WorldObjectManager manager = WorldObjectManager.get(world);
 
@@ -22,12 +23,12 @@ public class WorldObjectUtils
 
 				if (area.contains(pos))
 				{
-					return area;
+					return Optional.of(area);
 				}
 			}
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	public static <T extends IShape> T getIntersectingShape(World world, final Class<T> shapeType, final BlockPos pos)

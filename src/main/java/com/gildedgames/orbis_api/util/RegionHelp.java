@@ -2,8 +2,10 @@ package com.gildedgames.orbis_api.util;
 
 import com.gildedgames.orbis_api.data.region.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public class RegionHelp
 {
@@ -23,6 +25,26 @@ public class RegionHelp
 		}
 
 		return false;
+	}
+
+	public static <T extends IRegionHolder> Optional<T> findIntersecting(Iterable<T> holders, Vec3i origin, Vec3i pos)
+	{
+		for (T e : holders)
+		{
+			int minX = e.getBounds().getMin().getX() + origin.getX();
+			int minY = e.getBounds().getMin().getY() + origin.getY();
+			int minZ = e.getBounds().getMin().getZ() + origin.getZ();
+
+			int maxX = minX + e.getBounds().getWidth() - 1;
+			int maxY = minY + e.getBounds().getHeight() - 1;
+			int maxZ = minZ + e.getBounds().getLength() - 1;
+
+			if (pos.getX() >= minX && pos.getX() <= maxX && pos.getX() >= minY && pos.getY() <= maxY && pos.getZ() >= minZ && pos.getZ() <= maxZ)
+			{
+				return Optional.of(e);
+			}
+		}
+		return Optional.empty();
 	}
 
 	public static boolean contains(final IShape shape1, final IShape shape2)
