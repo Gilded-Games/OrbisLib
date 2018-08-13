@@ -11,15 +11,15 @@ import java.util.Optional;
 
 public class WorldObjectUtils
 {
-	public static Optional<IShape> getIntersectingShape(World world, final BlockPos pos)
+	public static <T extends IShape> Optional<T> getIntersectingShape(World world, final BlockPos pos, Class<T> tClass)
 	{
 		WorldObjectManager manager = WorldObjectManager.get(world);
 
 		for (final IWorldObject obj : manager.getObjects())
 		{
-			if (obj instanceof IShape)
+			if (tClass.isInstance(obj))
 			{
-				final IShape area = (IShape) obj;
+				final T area = tClass.cast(obj);
 
 				if (area.contains(pos))
 				{
@@ -29,6 +29,11 @@ public class WorldObjectUtils
 		}
 
 		return Optional.empty();
+	}
+
+	public static Optional<IShape> getIntersectingShape(World world, final BlockPos pos)
+	{
+		return getIntersectingShape(world, pos, IShape.class);
 	}
 
 	public static <T extends IShape> T getIntersectingShape(World world, final Class<T> shapeType, final BlockPos pos)
