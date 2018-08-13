@@ -23,7 +23,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class BlockDataContainer implements NBT, IDimensions, IData
 {
@@ -164,18 +167,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.getBlockState(this.getIndex(x, y, z));
 	}
 
-	public Optional<IBlockState> getBaseState(int index) {
+	public IBlockState getBlockState(final int index)
+	{
 		int id = this.blocks[index];
 		if (id < 0)
 		{
-			return Optional.empty();
+			return getDefaultBlock();
 		}
-		return Optional.of(this.localIdToBlock.get(id).getStateFromMeta(this.blocksMeta[index]));
-	}
-
-	public IBlockState getBlockState(final int index)
-	{
-		return getBaseState(index).orElseGet(this::getDefaultBlock);
+		return this.localIdToBlock.get(id).getStateFromMeta(this.blocksMeta[index]);
 	}
 
 	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
