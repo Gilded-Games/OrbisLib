@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.util;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.block.BlockDataContainerDefault;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
@@ -28,7 +29,7 @@ public class BlueprintHelper
 			RegionHelp.translate((IMutableRegion) bb, overridePos);
 		}
 
-		final BlockDataContainer container = new BlockDataContainer(bb);
+		final BlockDataContainer container = new BlockDataContainerDefault(bb);
 
 		final BlockPos min = shape.getBoundingBox().getMin();
 

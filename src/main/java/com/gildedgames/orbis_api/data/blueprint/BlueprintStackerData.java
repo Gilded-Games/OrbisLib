@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.block.BlockDataContainerDefault;
 import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.data.IDataHolder;
@@ -221,7 +222,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 			}
 		}
 
-		BlockDataContainer result = new BlockDataContainer(this.getLargestWidth(), height, this.getLargestLength());
+		BlockDataContainer result = new BlockDataContainerDefault(this.getLargestWidth(), height, this.getLargestLength());
 
 		this.funnelInto(result, chosenBottomBlocks, (this.getLargestWidth() - chosenBottom.getWidth()) / 2, 0,
 				(this.getLargestLength() - chosenBottom.getLength()) / 2);

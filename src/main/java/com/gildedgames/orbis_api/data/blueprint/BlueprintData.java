@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.block.BlockDataContainerDefault;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.data.IDataHolder;
@@ -93,7 +94,7 @@ public class BlueprintData
 	{
 		this();
 
-		this.dataContainer = new BlockDataContainer(region);
+		this.dataContainer = new BlockDataContainerDefault(region);
 		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Root Layer", this), false));
 	}
 

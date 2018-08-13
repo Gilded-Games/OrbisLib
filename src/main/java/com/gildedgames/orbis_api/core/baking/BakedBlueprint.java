@@ -2,6 +2,7 @@ package com.gildedgames.orbis_api.core.baking;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.block.BlockDataContainerDefault;
 import com.gildedgames.orbis_api.block.BlockDataContainerDefaultVoid;
 import com.gildedgames.orbis_api.core.BlockDataChunk;
 import com.gildedgames.orbis_api.core.ICreationData;
@@ -576,7 +577,7 @@ public class BakedBlueprint implements IDimensions
 		int relocateZ = -(this.getBakedMin().getZ() - pos.getZ());
 
 		// REBAKE CHUNKS
-		this.rawDataContainer = new BlockDataContainer(this.width, this.height, this.length);
+		this.rawDataContainer = new BlockDataContainerDefault(this.width, this.height, this.length);
 
 		BlockPos bakedMin = this.bakedMin;
 		BlockPos bakedMax = bakedMin.add(this.width - 1, this.height - 1, this.length - 1);
