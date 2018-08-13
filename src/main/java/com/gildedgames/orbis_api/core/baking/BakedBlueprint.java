@@ -577,7 +577,7 @@ public class BakedBlueprint implements IDimensions
 		int relocateZ = -(this.getBakedMin().getZ() - pos.getZ());
 
 		// REBAKE CHUNKS
-		this.rawDataContainer = new BlockDataContainerDefault(this.width, this.height, this.length);
+		this.rawDataContainer = new BlockDataContainer(this.width, this.height, this.length);
 
 		BlockPos bakedMin = this.bakedMin;
 		BlockPos bakedMax = bakedMin.add(this.width - 1, this.height - 1, this.length - 1);

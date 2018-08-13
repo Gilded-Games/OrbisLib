@@ -31,7 +31,7 @@ public class BlockDataContainerDefault extends BlockDataContainer
 	}
 
 	@Override
-	public IBlockState defaultBlock()
+	public IBlockState getDefaultBlock()
 	{
 		return this.DEFAULT_STATE;
 	}

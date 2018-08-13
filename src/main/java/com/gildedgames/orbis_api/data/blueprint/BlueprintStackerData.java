@@ -222,7 +222,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 			}
 		}
 
-		BlockDataContainer result = new BlockDataContainerDefault(this.getLargestWidth(), height, this.getLargestLength());
+		BlockDataContainer result = new BlockDataContainer(this.getLargestWidth(), height, this.getLargestLength());
 
 		this.funnelInto(result, chosenBottomBlocks, (this.getLargestWidth() - chosenBottom.getWidth()) / 2, 0,
 				(this.getLargestLength() - chosenBottom.getLength()) / 2);

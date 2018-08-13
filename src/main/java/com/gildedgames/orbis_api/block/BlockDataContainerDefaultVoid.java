@@ -18,7 +18,7 @@ public class BlockDataContainerDefaultVoid extends BlockDataContainer
 	}
 
 	@Override
-	public IBlockState defaultBlock()
+	public IBlockState getDefaultBlock()
 	{
 		return VOID_BLOCK;
 	}

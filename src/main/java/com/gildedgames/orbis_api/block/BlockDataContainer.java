@@ -15,6 +15,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
@@ -24,7 +25,7 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-public abstract class BlockDataContainer implements NBT, IDimensions, IData
+public class BlockDataContainer implements NBT, IDimensions, IData
 {
 
 	private Int2ObjectOpenHashMap<Block> localIdToBlock;
@@ -48,8 +49,8 @@ public abstract class BlockDataContainer implements NBT, IDimensions, IData
 		this.localIdToBlock = new Int2ObjectOpenHashMap<>();
 		this.blockToLocalId = new Object2IntOpenHashMap<>();
 
-		this.localIdToBlock.put(-1, this.defaultBlock().getBlock());
-		this.blockToLocalId.put(this.defaultBlock().getBlock(), -1);
+		this.localIdToBlock.put(-1, this.getDefaultBlock().getBlock());
+		this.blockToLocalId.put(this.getDefaultBlock().getBlock(), -1);
 
 		this.metadata = new DataMetadata();
 	}
@@ -174,7 +175,7 @@ public abstract class BlockDataContainer implements NBT, IDimensions, IData
 
 	public IBlockState getBlockState(final int index)
 	{
-		return getBaseState(index).orElseGet(this::defaultBlock);
+		return getBaseState(index).orElseGet(this::getDefaultBlock);
 	}
 
 	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
@@ -216,7 +217,9 @@ public abstract class BlockDataContainer implements NBT, IDimensions, IData
 		return this.length;
 	}
 
-	protected abstract IBlockState defaultBlock();
+	protected IBlockState getDefaultBlock() {
+		return Blocks.AIR.getDefaultState();
+	}
 
 	@Override
 	public void write(final NBTTagCompound tag)
@@ -254,7 +257,7 @@ public abstract class BlockDataContainer implements NBT, IDimensions, IData
 			else
 			{
 				blockId = -1;
-				meta = this.defaultBlock().getBlock().getMetaFromState(this.defaultBlock());
+				meta = this.getDefaultBlock().getBlock().getMetaFromState(this.getDefaultBlock());
 			}
 
 			final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(this.localIdToBlock.get(blockId));
@@ -489,12 +492,14 @@ public abstract class BlockDataContainer implements NBT, IDimensions, IData
 
 	}
 
-	public abstract BlockDataContainer createNewContainer();
+	public BlockDataContainer createNewContainer() {
+		return new BlockDataContainer();
+	}
 
 	@Override
 	public BlockDataContainer clone()
 	{
-		final BlockDataContainer data = createNewContainer();
+		final BlockDataContainer data = new BlockDataContainer();
 		data.blocks = new short[this.blocks.length];
 		data.blocksMeta = new byte[this.blocksMeta.length];
 

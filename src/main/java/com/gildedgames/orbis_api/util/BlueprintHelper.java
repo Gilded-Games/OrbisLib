@@ -29,7 +29,7 @@ public class BlueprintHelper
 			RegionHelp.translate((IMutableRegion) bb, overridePos);
 		}
 
-		final BlockDataContainer container = new BlockDataContainerDefault(bb);
+		final BlockDataContainer container = new BlockDataContainer(bb);
 
 		final BlockPos min = shape.getBoundingBox().getMin();
 

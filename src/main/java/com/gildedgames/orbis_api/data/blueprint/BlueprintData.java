@@ -94,7 +94,7 @@ public class BlueprintData
 	{
 		this();
 
-		this.dataContainer = new BlockDataContainerDefault(region);
+		this.dataContainer = new BlockDataContainer(region);
 		this.getScheduleLayerTree().add(new NodeMultiParented<>(new ScheduleLayer("Root Layer", this), false));
 	}
 
