@@ -45,6 +45,11 @@ public class GuiTickBox extends GuiElement
 		this.setTicked(ticked);
 	}
 
+	public void setTickedTexture(ResourceLocation location)
+	{
+		this.pressed.setResourceLocation(location);
+	}
+
 	/**
 	 * Boolean == value of whether or not this tick box is ticked.
 	 * @param listener The object that listens for a tick box press.
