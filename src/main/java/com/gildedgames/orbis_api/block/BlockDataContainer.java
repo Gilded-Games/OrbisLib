@@ -15,7 +15,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
@@ -23,15 +22,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class BlockDataContainer implements NBT, IDimensions, IData
+public abstract class BlockDataContainer implements NBT, IDimensions, IData
 {
-
-	private final static IBlockState _air = Blocks.AIR.getDefaultState();
 
 	private Int2ObjectOpenHashMap<Block> localIdToBlock;
 
@@ -169,16 +163,18 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.getBlockState(this.getIndex(x, y, z));
 	}
 
-	public IBlockState getBlockState(final int index)
-	{
+	public Optional<IBlockState> getBaseState(int index) {
 		int id = this.blocks[index];
-
 		if (id < 0)
 		{
-			return Blocks.AIR.getDefaultState();
+			return Optional.empty();
 		}
+		return Optional.of(this.localIdToBlock.get(id).getStateFromMeta(this.blocksMeta[index]));
+	}
 
-		return this.localIdToBlock.get(id).getStateFromMeta(this.blocksMeta[index]);
+	public IBlockState getBlockState(final int index)
+	{
+		return getBaseState(index).orElseGet(this::defaultBlock);
 	}
 
 	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
@@ -220,10 +216,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.length;
 	}
 
-	protected IBlockState defaultBlock()
-	{
-		return _air;
-	}
+	protected abstract IBlockState defaultBlock();
 
 	@Override
 	public void write(final NBTTagCompound tag)
@@ -496,10 +489,12 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	}
 
+	public abstract BlockDataContainer createNewContainer();
+
 	@Override
 	public BlockDataContainer clone()
 	{
-		final BlockDataContainer data = new BlockDataContainer();
+		final BlockDataContainer data = createNewContainer();
 		data.blocks = new short[this.blocks.length];
 		data.blocksMeta = new byte[this.blocksMeta.length];
 

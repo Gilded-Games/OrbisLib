@@ -18,21 +18,14 @@ public class BlockDataContainerDefaultVoid extends BlockDataContainer
 	}
 
 	@Override
-	public IBlockState getBlockState(int i)
-	{
-		final IBlockState block = super.getBlockState(i);
-
-		if (block == null)
-		{
-			return VOID_BLOCK;
-		}
-
-		return block;
-	}
-
-	@Override
 	public IBlockState defaultBlock()
 	{
 		return VOID_BLOCK;
+	}
+
+	@Override
+	public BlockDataContainer createNewContainer()
+	{
+		return new BlockDataContainerDefaultVoid();
 	}
 }
