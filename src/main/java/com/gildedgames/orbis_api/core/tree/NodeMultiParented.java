@@ -157,14 +157,17 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 			throw new RuntimeException("Tried to remove a child from an INode that doesn't have a NodeTree setDataParent to it.");
 		}
 
-		if (!this.children.containsKey(nodeId) || !this.tree.containsId(nodeId))
+		if (!this.children.containsKey(nodeId))
 		{
 			return false;
 		}
 
 		INode<DATA, LINK> node = this.tree.get(nodeId);
 
-		node.removeParent(this.nodeId);
+		if (node != null)
+		{
+			node.removeParent(this.nodeId);
+		}
 
 		boolean removed = this.children.containsKey(nodeId);
 
