@@ -53,7 +53,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 		{
 			final IBlockState f = this.states[i];
 
-			if (f != null && state.hashCode() == f.hashCode())
+			if (f != null && state == f)
 			{
 				id = i;
 				break;
