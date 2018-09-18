@@ -1,19 +1,26 @@
 package com.gildedgames.orbis_api.data.framework.generation.searching;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.core.tree.ConditionLink;
+import com.gildedgames.orbis_api.core.tree.INode;
+import com.gildedgames.orbis_api.core.variables.conditions.IGuiConditionEntrance;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
-import com.gildedgames.orbis_api.data.pathway.Entrance;
+import com.gildedgames.orbis_api.data.framework.interfaces.EnumFacingMultiple;
+import com.gildedgames.orbis_api.data.pathway.IEntrance;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.util.RegionHelp;
 import com.gildedgames.orbis_api.util.RotationHelp;
+import com.google.common.collect.Lists;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class PathwayProblem implements ISearchProblem<PathwayNode>
 {
@@ -34,10 +41,14 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 
 	private boolean hasVerticalEntrances, checkedForVertical;
 
-	private Random rand;
+	//private Random rand;
 
-	public PathwayProblem(BlockPos start, BlueprintRegion startFragment, BlockPos end, List<BlueprintData> pieces, Collection<BlueprintRegion> fragments)
+	private World world;
+
+	public PathwayProblem(World world, BlockPos start, BlueprintRegion startFragment, BlockPos end, List<BlueprintData> pieces,
+			Collection<BlueprintRegion> fragments)
 	{
+		this.world = world;
 		this.start = start;
 		this.end = end;
 		this.pieces = pieces;
@@ -51,7 +62,7 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 
 		this.fragments = fragments;
 
-		int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = 0, maxY = 0, maxZ = 0;
+		int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
 
 		for (BlueprintRegion fragment : fragments)
 		{
@@ -80,15 +91,8 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 		this.boundingBox = RegionHelp
 				.expand(new Region(new BlockPos(minX, minY, minZ), new BlockPos(maxX, maxY, maxZ)), (int) (this.maxLength * pathwaysBoundingBox));
 
-		this.rand = new Random();
-		this.rand.setSeed((long) start.getX() * 341873128712L + (long) start.getY() * 23289687541L + (long) start.getZ() * 132897987541L);
-	}
-
-	<T> List<T> shuffle(List<T> l)
-	{
-		List<T> ln = new ArrayList<>(l);
-		Collections.shuffle(ln, this.rand);
-		return ln;
+		//this.rand = new Random();
+		//this.rand.setSeed((long) viableStarts.getX() * 341873128712L + (long) viableStarts.getY() * 23289687541L + (long) viableStarts.getZ() * 132897987541L);
 	}
 
 	public IRegion getBoundingBox()
@@ -104,102 +108,79 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 		IRegion end = parentState.endConnection;
 
 		//TODO: FIND ENTRANCE/SIDE CLOSEST TO END POSITION
-		EnumFacing[] lastSides = parentState.sidesOfConnection();
+		EnumFacingMultiple lastSide = parentState.sideOfConnection();
 
-		for (EnumFacing lastSide : lastSides)
+		EnumFacingMultiple toConnect = lastSide.getOpposite();
+
+		IRegion adjacentEntrance = PathwayUtil.adjacent(end, lastSide);
+
+		IEntrance lastEntrance = parentState.getNonRotatedEntrance();
+
+		for (BlueprintData blueprint : this.pieces)
 		{
-			EnumFacing toConnect = lastSide.getOpposite();
+			Region rect = new Region(new BlockPos(0, 0, 0),
+					new BlockPos(blueprint.getWidth() - 1, blueprint.getHeight() - 1, blueprint.getLength() - 1));
 
-			IRegion currentPosition = PathwayUtil.adjacent(end, lastSide);
-
-			for (BlueprintData blueprint : this.shuffle(this.pieces))
+			entrances:
+			for (IEntrance entrance : blueprint.entrances())
 			{
-				Region rect = new Region(new BlockPos(0, 0, 0),
-						new BlockPos(blueprint.getWidth() - 1, blueprint.getHeight() - 1, blueprint.getLength() - 1));
-
-				for (Entrance entrance : this.shuffle(blueprint.entrances()))
+				for (INode<IGuiConditionEntrance, ConditionLink> node : lastEntrance.getConditionNodeTree().getNodes())
 				{
-					for (Entrance exit : this.shuffle(blueprint.entrances()))
+					if (!node.getData().canConnectTo(entrance))
 					{
-						if (entrance == exit)
-						{
-							continue;
-						}
+						break entrances;
+					}
+				}
 
-						EnumFacing[] sidesOn = entrance.getFacings();
+				EnumFacingMultiple sideOn = entrance.getFacing();
 
-						for (EnumFacing sideOn : sidesOn)
-						{
-							Rotation rotation = Rotation.NONE;
+				Rotation rotation = Rotation.NONE;
 
-							// TODO: Technically, all rotations are valid. Maybe randomize it? Add all possibilities?
-							if (toConnect == EnumFacing.DOWN || toConnect == EnumFacing.UP
-									|| sideOn == EnumFacing.DOWN || sideOn == EnumFacing.UP)
-							{
-								if (sideOn != toConnect)
-								{
-									continue;
-								}
-							}
-							else
-							{
-								rotation = RotationHelp.getRotationDifference(RotationHelp.fromFacing(toConnect), RotationHelp.fromFacing(sideOn));
-							}
+				if (toConnect.canRotateToFaceEachother(sideOn))
+				{
+					rotation = RotationHelp.getRotationDifference(RotationHelp.fromFacing(toConnect), RotationHelp.fromFacing(sideOn));
+				}
+				else if (sideOn != toConnect)
+				{
+					continue;
+				}
 
-							IRegion trEntrance = RotationHelp.rotate(entrance.getBounds(), rect, rotation);
+				IRegion trEntrance = RotationHelp.rotate(entrance.getBounds(), rect, rotation);
 
-							if (!RegionHelp.sameDim(trEntrance, parentState.endConnection) && parentState.parent != null)
-							{
-								continue;
-							}
+				if (!RegionHelp.sameDim(trEntrance, parentState.endConnection) && parentState.parent != null)
+				{
+					continue;
+				}
 
-							IRegion trRect = RotationHelp.rotate(rect, rotation);
-							EnumFacing[] actualConns = PathwayUtil.sidesOfConnection(trRect, trEntrance);
+				int dx = adjacentEntrance.getMin().getX() - trEntrance.getMin().getX();
+				int dy = adjacentEntrance.getMin().getY() - trEntrance.getMin().getY();
+				int dz = adjacentEntrance.getMin().getZ() - trEntrance.getMin().getZ();
 
-							boolean wrong = true;
+				for (IEntrance exit : blueprint.entrances())
+				{
+					if (entrance == exit)
+					{
+						continue;
+					}
 
-							for (EnumFacing actualConn : actualConns)
-							{
-								if (actualConn == toConnect)
-								{
-									wrong = false;
-								}
-							}
+					IRegion trExit = RotationHelp.rotate(exit.getBounds(), rect, rotation);
 
-							if (wrong)
-							{
-								OrbisAPI.LOGGER.info("THIS IS NOT RIGHT :(*");
-							}
+					IMutableRegion endConnection = new Region(trExit);
 
-							int dx = currentPosition.getMin().getX() - trEntrance.getMin().getX();
-							int dy = currentPosition.getMin().getY() - trEntrance.getMin().getY();
-							int dz = currentPosition.getMin().getZ() - trEntrance.getMin().getZ();
+					RegionHelp.translate(endConnection, dx, dy, dz);
 
-							IRegion trExit = RotationHelp.rotate(exit.getBounds(), rect, rotation);
+					int fx = dx;
+					int fy = dy;
+					int fz = dz;
 
-							IMutableRegion endConnection = new Region(trExit);
+					BlockPos fragmentMin = new BlockPos(fx, fy, fz);
+					BlueprintRegion fragment = new BlueprintRegion(fragmentMin, rotation, blueprint);
 
-							RegionHelp.translate(endConnection, dx, dy, dz);
+					PathwayNode node = new PathwayNode(parentState, fragment, endConnection, PathwayUtil.getRotated(exit.getFacing(), rotation), exit);
 
-							int fx = dx + trRect.getMin().getX();
-							int fy = dy + trRect.getMin().getY();
-							int fz = dz + trRect.getMin().getZ();
-
-							BlockPos fragmentMin = new BlockPos(fx, fy, fz);
-							BlueprintRegion fragment = new BlueprintRegion(fragmentMin, rotation, blueprint);
-
-							PathwayNode node = new PathwayNode(parentState, fragment, endConnection, PathwayUtil.getRotated(exit.getFacings(), rotation));
-
-							if (!RegionHelp.contains(node, currentPosition))
-							{
-								OrbisAPI.LOGGER.info("ASDDF");
-							}
-
-							if (this.isSuccessor(node, parentState))
-							{
-								successors.add(node);
-							}
-						}
+					if (this.isSuccessor(node, parentState))
+					{
+						successors.add(node);
 					}
 				}
 			}
@@ -209,16 +190,24 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 	}
 
 	@Override
-	public PathwayNode start()
+	public List<PathwayNode> viableStarts()
 	{
+		List<PathwayNode> viable = Lists.newArrayList();
+
 		BlueprintData d = this.startFragment.getData();
-		Entrance e = d.entrances().get(this.rand.nextInt(d.entrances().size()));
 
-		Region r = new Region(e.getBounds());
+		for (int i = 0; i < d.entrances().size(); i++)
+		{
+			IEntrance e = d.entrances().get(i);
 
-		r.add(this.start.getX(), this.start.getY(), this.start.getZ());
+			Region r = new Region(e.getBounds());
 
-		return new PathwayNode(null, this.startFragment, r, e.getFacings());
+			r.add(this.start.getX(), this.start.getY(), this.start.getZ());
+
+			viable.add(new PathwayNode(null, this.startFragment, r, e.getFacing(), e));
+		}
+
+		return viable;
 	}
 
 	protected boolean isSuccessor(PathwayNode node, PathwayNode parent)
@@ -228,7 +217,16 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 			return true;
 		}
 
-		for (BlueprintRegion fragment : this.fragments)
+		for (BlockPos.MutableBlockPos pos : node.getShapeData())
+		{
+			if (!this.world.isAirBlock(pos))
+			{
+				return false;
+			}
+		}
+
+		// Can improve performance (I think?) by chunking up fragment references into chunk coords, then finding fragments in the chunk of the node we're checking against
+		/*for (BlueprintRegion fragment : this.fragments)
 		{
 			if (RegionHelp.intersects(fragment, node))
 			{
@@ -242,7 +240,7 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 			{
 				return false;
 			}
-		}
+		}*/
 
 		return true;
 	}
@@ -257,11 +255,9 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 
 			for (BlueprintData d : this.pieces)
 			{
-				for (Entrance e : d.entrances())
+				for (IEntrance e : d.entrances())
 				{
-					EnumFacing[] sides = e.getFacings();
-
-					for (EnumFacing side : sides)
+					for (EnumFacing side : e.getFacing().getFacings())
 					{
 						if (side == EnumFacing.DOWN)
 						{
@@ -293,20 +289,44 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 	{
 		if (this.isGoal(state))
 		{
-			return 0;
+			//return 0;
 		}
-		//		BlockPos exit = PathwayUtil.outside(state, state.endConnection);
+
 		IRegion exit = state.endConnection;
-		float h = Math.abs(this.end.getX() - exit.getMin().getX()) +
-				Math.abs(this.end.getZ() - exit.getMin().getZ());
-		//		OrbisAPI.LOGGER.info(h);
-		//		if(state.parent != null)
-		//			OrbisAPI.LOGGER.info(state.parent.getH());
+
+		double h = Math.abs(exit.getMin().getX() - this.end.getX()) + Math.abs(exit.getMin().getY() - this.end.getY()) + Math
+				.abs(exit.getMin().getZ() - this.end.getZ());
+
+		double ax = exit.getMin().getX() - this.end.getX();
+		double az = exit.getMin().getZ() - this.end.getZ();
+		double bx = this.start.getX() - this.end.getX();
+		double bz = this.start.getZ() - this.end.getZ();
+		double cross = Math.abs(ax * bz - bx * az);
 
 		if (this.hasVerticalEntrances())
 		{
-			h += Math.abs(this.end.getY() - exit.getMin().getY());
+			double ay = exit.getMin().getY() - this.end.getY();
+			double by = this.start.getY() - this.end.getY();
+
+			//cross = Math.abs((ay * bz - az * by) + (ax * bz - az * bx) + (ax * bx - ay * bx));
 		}
+
+		h += cross * 0.001;
+
+		h += state.getData().entrances().size() * 2.5;
+
+		/*if (state.parent != null && state.parent.getData() == state.getData())
+		{
+			//h -= 2.5;
+		}
+
+		for (IEntrance e : state.getData().entrances())
+		{
+			if (e.getFacing().hasPlane(EnumFacingMultiple.Plane.HORIZONTAL))
+			{
+				h += 250;
+			}
+		}*/
 
 		return h;
 	}
@@ -315,13 +335,8 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 	public double costBetween(PathwayNode parent, PathwayNode child)
 	{
 		IRegion exit = child.endConnection;
-		//		OrbisAPI.LOGGER.info("-----------");
-		//		OrbisAPI.LOGGER.info(parent);
-		//		OrbisAPI.LOGGER.info(parent.endConnection);
-		//		OrbisAPI.LOGGER.info(child);
-		//		OrbisAPI.LOGGER.info(child.endConnection);
-		//		OrbisAPI.LOGGER.info(this.end);
-		if (this.isGoal(child))
+
+		/*if (this.isGoal(child))
 		{
 			double c = Math.abs(this.end.getX() - exit.getMin().getX()) + Math
 					.abs(this.end.getZ() - exit.getMin().getZ());
@@ -332,21 +347,23 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 			}
 
 			return c;
-		}
+		}*/
 
 		IRegion entrance = parent.endConnection;
 
-		float g = Math.abs(entrance.getMin().getX() - exit.getMin().getX()) +
-				Math.abs(entrance.getMin().getZ() - exit.getMin().getZ());
+		double dx = entrance.getMin().getX() - exit.getMin().getX();
+		double dz = entrance.getMin().getZ() - exit.getMin().getZ();
+
+		double g = Math.abs(dx) + Math.abs(dz);
 
 		if (this.hasVerticalEntrances())
 		{
-			g += Math.abs(entrance.getMin().getY() - exit.getMin().getY());
+			double dy = entrance.getMin().getY() - exit.getMin().getY();
+
+			g += Math.abs(dy);
 		}
 
-		//		OrbisAPI.LOGGER.info(g);
 		return g;
-		//		return child.getWidth() + child.getHeight() + child.getLength();//TODO: Why was this not using the exit again, lol?
 	}
 
 	@Override
@@ -358,15 +375,14 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 	@Override
 	public boolean contains(Collection<PathwayNode> visitedStates, PathwayNode currentState)
 	{
-		//TODO: Kinda forgot what this did
 		for (PathwayNode visitedState : visitedStates)
 		{
-			// Returns true if we have visited the  of the current state contains
-			if (visitedState.parent != currentState.parent && RegionHelp.contains(visitedState, currentState.endConnection)
-					|| visitedState.endConnection.equals(currentState.endConnection))
-			//			if (visitedState.endConnection.equals(currentState.endConnection))
+			if (visitedState.parent != currentState.parent)
 			{
-				return true;
+				if (visitedState.endConnection.equals(currentState.endConnection))
+				{
+					return true;
+				}
 			}
 		}
 		return false;

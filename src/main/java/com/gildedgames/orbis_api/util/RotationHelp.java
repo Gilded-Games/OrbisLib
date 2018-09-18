@@ -2,7 +2,9 @@ package com.gildedgames.orbis_api.util;
 
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.framework.generation.searching.PathwayUtil;
+import com.gildedgames.orbis_api.data.framework.interfaces.EnumFacingMultiple;
 import com.gildedgames.orbis_api.data.pathway.Entrance;
+import com.gildedgames.orbis_api.data.pathway.IEntrance;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
@@ -18,16 +20,16 @@ import java.util.List;
 
 public class RotationHelp
 {
-	public static List<Entrance> getEntrances(BlueprintData data, Rotation rotation, BlockPos center)
+	public static List<IEntrance> getEntrances(BlueprintData data, Rotation rotation, BlockPos center)
 	{
-		final List<Entrance> newList = new ArrayList<>();
-		for (final Entrance beforeTrans : data.entrances())
+		final List<IEntrance> newList = new ArrayList<>();
+		for (final IEntrance beforeTrans : data.entrances())
 		{
 			// TODO: Incorrect y coordinate
 			final BlockPos finalBP = beforeTrans.getBounds().getMin()
 					.add(center.getX() - data.getWidth() / 2, center.getY(), center.getZ() - data.getLength() / 2);
 			final BlockPos trans = RotationHelp.rotate(finalBP, center, rotation, data.getWidth(), data.getLength());
-			newList.add(new Entrance(new Region(trans), beforeTrans.toConnectTo(), PathwayUtil.getRotated(beforeTrans.getFacings(), rotation)));
+			newList.add(new Entrance(new Region(trans), beforeTrans.toConnectTo(), PathwayUtil.getRotated(beforeTrans.getFacing(), rotation)));
 		}
 		return newList;
 	}
@@ -286,6 +288,45 @@ public class RotationHelp
 	public static IRegion regionFromCenter(final BlockPos center, final IDimensions dimensions, final Rotation rotation)
 	{
 		return regionFromCenter(center.getX(), center.getY(), center.getZ(), dimensions, rotation);
+	}
+
+	public static Rotation fromFacing(final EnumFacingMultiple facing)
+	{
+		Rotation result = Rotation.NONE;
+
+		if (facing.hasPlane(EnumFacingMultiple.Plane.DIAGONAL))
+		{
+			if (facing.getFacings().contains(EnumFacing.NORTH) && facing.getFacings().contains(EnumFacing.EAST))
+			{
+				result = result.add(Rotation.CLOCKWISE_180);
+			}
+			else if (facing.getFacings().contains(EnumFacing.NORTH) && facing.getFacings().contains(EnumFacing.WEST))
+			{
+				result = result.add(Rotation.COUNTERCLOCKWISE_90);
+			}
+			else if (facing.getFacings().contains(EnumFacing.SOUTH) && facing.getFacings().contains(EnumFacing.EAST))
+			{
+				result = result.add(Rotation.CLOCKWISE_90);
+			}
+		}
+		else if (facing.getFacings().contains(EnumFacing.NORTH))
+		{
+			result = result.add(Rotation.CLOCKWISE_180);
+		}
+		else if (facing.getFacings().contains(EnumFacing.SOUTH))
+		{
+			result = result.add(Rotation.NONE);
+		}
+		else if (facing.getFacings().contains(EnumFacing.EAST))
+		{
+			result = result.add(Rotation.CLOCKWISE_90);
+		}
+		else if (facing.getFacings().contains(EnumFacing.WEST))
+		{
+			result = result.add(Rotation.COUNTERCLOCKWISE_90);
+		}
+
+		return result;
 	}
 
 	public static Rotation fromFacing(final EnumFacing facing)

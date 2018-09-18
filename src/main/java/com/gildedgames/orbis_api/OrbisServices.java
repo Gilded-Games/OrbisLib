@@ -14,6 +14,7 @@ import com.gildedgames.orbis_api.core.tree.NodeMultiParented;
 import com.gildedgames.orbis_api.core.tree.NodeTree;
 import com.gildedgames.orbis_api.core.variables.*;
 import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionCheckBlueprintVariable;
+import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionCheckEntranceTriggerId;
 import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionPercentage;
 import com.gildedgames.orbis_api.core.variables.conditions.GuiConditionRatio;
 import com.gildedgames.orbis_api.core.variables.post_resolve_actions.PostResolveActionMutateBlueprintVariable;
@@ -245,6 +246,7 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 87, PostResolveActionSpawnEntities.class);
 			IOHelper.register(s, 88, GuiVarItemStack.class);
 			IOHelper.register(s, 89, JsonData.class);
+			IOHelper.register(s, 90, GuiConditionCheckEntranceTriggerId.class);
 
 			this.io.register(s);
 		}

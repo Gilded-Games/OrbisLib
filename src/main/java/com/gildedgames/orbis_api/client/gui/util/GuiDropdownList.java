@@ -131,6 +131,34 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 
 			final GuiTextLabel label = new GuiTextLabel(Dim2D.build().y(y).height(18).flush(), element.text());
 
+			if (element.getSubElements() != null)
+			{
+				GuiDropdownList<?> list = element.getSubElements().get();
+
+				int largestWidth = 0;
+
+				for (IDropdownElement e : list.getElements())
+				{
+					int width = this.viewer().fontRenderer().getStringWidth(e.text().getFormattedText());
+
+					if (width > largestWidth)
+					{
+						largestWidth = width;
+					}
+				}
+
+				list.dim().mod().width(largestWidth + 10).flush();
+
+				list.state().setVisible(false);
+				list.state().setEnabled(false);
+
+				list.state().setCanBeTopHoverElement(true);
+
+				this.context().addChildren(list);
+
+				this.subLists.put(element, list);
+			}
+
 			label.state().addEvent(new GuiScrollable.InputEnabledOutsideBounds<GuiTextLabel>()
 			{
 				@Override

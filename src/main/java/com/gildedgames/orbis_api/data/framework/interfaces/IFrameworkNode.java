@@ -8,8 +8,6 @@ import com.gildedgames.orbis_api.data.region.IRegionHolder;
 import com.gildedgames.orbis_api.util.mc.NBT;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Random;
 
 /**
  * Represents data that can be used to randomly choose other data.
@@ -23,17 +21,9 @@ import java.util.Random;
 public interface IFrameworkNode extends NBT, IDataChild<FrameworkData>, IRegionHolder
 {
 
-	/**
-	 * Returns the possible values this data can take. The data
-	 * is ordered in a random way using the Random object given.
-	 */
-	List<BlueprintData> possibleValues(Random random);
+	BlueprintData getBlueprintData();
 
-	/**
-	 * Returns the maximum amount of edges that can connect to 
-	 * this node. 
-	 */
-	int maxEdges();
+	int getMaxEdges();
 
 	/**
 	 * Returns all different kinds of pathways that are used in

@@ -278,7 +278,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 		{
 			return false;
 		}
-		if (this.graph.edgesOf(node1).size() >= node1.schedule().maxEdges() || this.graph.edgesOf(node2).size() >= node2.schedule().maxEdges())
+		if (this.graph.edgesOf(node1).size() >= node1.schedule().getMaxEdges() || this.graph.edgesOf(node2).size() >= node2.schedule().getMaxEdges())
 		{
 			return false;
 		}
@@ -316,7 +316,13 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	}
 
 	@Override
-	public int maxEdges()
+	public BlueprintData getBlueprintData()
+	{
+		return null;
+	}
+
+	@Override
+	public int getMaxEdges()
 	{
 		// TODO Auto-generated method stub
 		return 100;
@@ -339,13 +345,6 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	public IMutableRegion getBounds()
 	{
 		return null;
-	}
-
-	@Override
-	public List<BlueprintData> possibleValues(Random random)
-	{
-		//TODO
-		return new ArrayList<>();
 	}
 
 	@Override

@@ -52,7 +52,7 @@ public class LineShape implements IShape
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		funnel.setPos("start", this.start);
+		funnel.setPos("viableStarts", this.start);
 		funnel.setPos("end", this.end);
 
 		tag.setInteger("lineRadius", this.lineRadius);
@@ -63,7 +63,7 @@ public class LineShape implements IShape
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.start = funnel.getPos("start");
+		this.start = funnel.getPos("viableStarts");
 		this.end = funnel.getPos("end");
 
 		this.lineRadius = tag.getInteger("lineRadius");

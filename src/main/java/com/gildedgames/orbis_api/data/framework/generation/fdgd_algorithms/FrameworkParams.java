@@ -114,7 +114,7 @@ public class FrameworkParams
 		builder.append(" Collision Escape ");
 		builder.append(this.collisionEscape);
 		builder.append(System.lineSeparator());
-		builder.append("Node Distance ");
+		builder.append("AStarNode Distance ");
 		builder.append(this.nodeDistance);
 		builder.append(" C ");
 		builder.append(this.c);

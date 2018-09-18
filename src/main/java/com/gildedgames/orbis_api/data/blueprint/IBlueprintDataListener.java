@@ -1,15 +1,12 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
-import com.gildedgames.orbis_api.core.tree.INode;
-import com.gildedgames.orbis_api.core.tree.LayerLink;
-import com.gildedgames.orbis_api.data.pathway.Entrance;
-import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
+import com.gildedgames.orbis_api.data.pathway.IEntrance;
 
 public interface IBlueprintDataListener
 {
 	void onDataChanged();
 
-	void onAddEntrance(Entrance entrance);
+	void onAddEntrance(IEntrance entrance);
 
-	void onRemoveEntrance(Entrance entrance);
+	void onRemoveEntrance(IEntrance entrance);
 }

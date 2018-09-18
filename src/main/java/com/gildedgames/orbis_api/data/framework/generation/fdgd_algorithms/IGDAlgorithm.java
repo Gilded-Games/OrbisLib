@@ -1,10 +1,10 @@
 package com.gildedgames.orbis_api.data.framework.generation.fdgd_algorithms;
 
-import com.gildedgames.orbis_api.data.framework.FrameworkAlgorithm;
 import com.gildedgames.orbis_api.data.framework.FrameworkType;
 import com.gildedgames.orbis_api.data.framework.Graph;
 import com.gildedgames.orbis_api.data.framework.generation.FDGDEdge;
 import com.gildedgames.orbis_api.data.framework.generation.FDGDNode;
+import com.gildedgames.orbis_api.data.framework_new.IFrameworkAlgorithm;
 
 import java.util.Random;
 
@@ -29,7 +29,7 @@ public interface IGDAlgorithm
 	 * @param type
 	 * @return
 	 */
-	FrameworkAlgorithm.Phase inEquilibrium(Graph<FDGDNode, FDGDEdge> graph, FrameworkType type, int fdgdIterations);
+	IFrameworkAlgorithm.Phase inEquilibrium(Graph<FDGDNode, FDGDEdge> graph, FrameworkType type, int fdgdIterations);
 
 	void resetOnSpiderweb(Graph<FDGDNode, FDGDEdge> graph, FrameworkType type, int fdgdIterations);
 }

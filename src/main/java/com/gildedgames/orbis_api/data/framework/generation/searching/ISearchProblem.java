@@ -3,9 +3,9 @@ package com.gildedgames.orbis_api.data.framework.generation.searching;
 import java.util.Collection;
 import java.util.List;
 
-public interface ISearchProblem<T extends Node>
+public interface ISearchProblem<T extends AStarNode>
 {
-	T start();
+	List<T> viableStarts();
 
 	List<T> successors(T parentState);
 

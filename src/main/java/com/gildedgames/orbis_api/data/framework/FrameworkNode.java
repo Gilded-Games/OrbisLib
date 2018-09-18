@@ -8,8 +8,6 @@ import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Random;
 
 public class FrameworkNode implements IFrameworkNode
 {
@@ -38,26 +36,21 @@ public class FrameworkNode implements IFrameworkNode
 	}
 
 	@Override
-	public int maxEdges()
+	public BlueprintData getBlueprintData()
 	{
-		return this.schedule.maxEdges();
+		return null;
+	}
+
+	@Override
+	public int getMaxEdges()
+	{
+		return this.schedule.getMaxEdges();
 	}
 
 	@Override
 	public IMutableRegion getBounds()
 	{
 		return this.schedule.getBounds();
-	}
-
-	@Override
-	public List<BlueprintData> possibleValues(Random random)
-	{
-		final List<BlueprintData> superPossibleValues = this.schedule.possibleValues(random);
-		if (isNullAllowed && !superPossibleValues.contains(null))
-		{
-			superPossibleValues.add(null);
-		}
-		return superPossibleValues;
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -960,6 +961,27 @@ public class NBTFunnel
 		return readObjects;
 	}
 
+	public <T extends IStringSerializable> void setStringSerializeArray(final String key, final T[] array)
+	{
+		final boolean nul = array == null;
+
+		this.tag.setBoolean(key + "_null", nul);
+
+		if (nul)
+		{
+			return;
+		}
+
+		final NBTTagList writtenObjects = new NBTTagList();
+
+		for (final T obj : array)
+		{
+			writtenObjects.appendTag(new NBTTagString(obj.getName()));
+		}
+
+		this.tag.setTag(key, writtenObjects);
+	}
+
 	public <T extends Enum> void setEnumArray(final String key, final T[] array)
 	{
 		final boolean nul = array == null;
@@ -1000,6 +1022,24 @@ public class NBTFunnel
 		}
 
 		this.tag.setTag(key, writtenObjects);
+	}
+
+	public String[] getStringSerializeArrayNames(final String key)
+	{
+		if (this.tag.getBoolean(key + "_null"))
+		{
+			return null;
+		}
+
+		final NBTTagList nbtList = this.tag.getTagList(key, 8);
+		final String[] readObjects = new String[nbtList.tagCount()];
+
+		for (int i = 0; i < nbtList.tagCount(); i++)
+		{
+			readObjects[i] = nbtList.getStringTagAt(i);
+		}
+
+		return readObjects;
 	}
 
 	public String[] getEnumArrayNames(final String key)

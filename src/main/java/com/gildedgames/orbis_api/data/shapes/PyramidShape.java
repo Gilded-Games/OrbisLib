@@ -51,7 +51,7 @@ public class PyramidShape extends AbstractShape
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		funnel.setPos("start", this.start);
+		funnel.setPos("viableStarts", this.start);
 		funnel.setPos("end", this.end);
 
 		tag.setBoolean("centered", this.centered);
@@ -62,7 +62,7 @@ public class PyramidShape extends AbstractShape
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.start = funnel.getPos("start");
+		this.start = funnel.getPos("viableStarts");
 		this.end = funnel.getPos("end");
 
 		this.centered = tag.getBoolean("centered");

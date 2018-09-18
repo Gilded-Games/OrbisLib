@@ -1,35 +1,41 @@
 package com.gildedgames.orbis_api.data.pathway;
 
-import com.gildedgames.orbis_api.data.IDataChild;
+import com.gildedgames.orbis_api.client.rect.Pos2D;
+import com.gildedgames.orbis_api.core.tree.ConditionLink;
+import com.gildedgames.orbis_api.core.tree.NodeTree;
+import com.gildedgames.orbis_api.core.variables.conditions.IGuiConditionEntrance;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
-import com.gildedgames.orbis_api.data.region.IColored;
+import com.gildedgames.orbis_api.data.framework.interfaces.EnumFacingMultiple;
 import com.gildedgames.orbis_api.data.region.IMutableRegion;
-import com.gildedgames.orbis_api.data.region.IRegionHolder;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
-import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
 
-public class Entrance implements NBT, IColored, IDataChild<BlueprintData>, IRegionHolder
+public class Entrance implements IEntrance
 {
+	private NodeTree<IGuiConditionEntrance, ConditionLink> conditionNodeTree = new NodeTree<>();
+
 	private IMutableRegion bounds;
 
 	private PathwayData toConnectTo;
 
-	private EnumFacing[] facings;
+	private EnumFacingMultiple facing;
 
 	private BlueprintData dataParent;
+
+	private String triggerId = "";
+
+	private Pos2D conditionGuiPos = Pos2D.ORIGIN;
 
 	private Entrance()
 	{
 
 	}
 
-	public Entrance(IMutableRegion bounds, PathwayData toConnectTo, EnumFacing[] facings)
+	public Entrance(IMutableRegion bounds, PathwayData toConnectTo, EnumFacingMultiple facing)
 	{
 		this.bounds = bounds;
 		this.toConnectTo = toConnectTo;
-		this.facings = facings;
+		this.facing = facing;
 	}
 
 	@Override
@@ -38,14 +44,22 @@ public class Entrance implements NBT, IColored, IDataChild<BlueprintData>, IRegi
 		return this.bounds;
 	}
 
+	@Override
 	public PathwayData toConnectTo()
 	{
 		return this.toConnectTo;
 	}
 
-	public EnumFacing[] getFacings()
+	@Override
+	public EnumFacingMultiple getFacing()
 	{
-		return this.facings;
+		return this.facing;
+	}
+
+	@Override
+	public void setFacing(EnumFacingMultiple facing)
+	{
+		this.facing = facing;
 	}
 
 	@Override
@@ -55,7 +69,12 @@ public class Entrance implements NBT, IColored, IDataChild<BlueprintData>, IRegi
 
 		funnel.set("bounds", this.bounds);
 		funnel.set("pathway", this.toConnectTo);
-		funnel.setEnumArray("facings", this.facings);
+		tag.setString("facing", this.facing.getName());
+
+		tag.setString("triggerId", this.triggerId);
+
+		funnel.set("conditionNodeTree", this.conditionNodeTree);
+		funnel.set("conditionGuiPos", this.conditionGuiPos, NBTFunnel.POS2D_SETTER);
 	}
 
 	@Override
@@ -65,15 +84,12 @@ public class Entrance implements NBT, IColored, IDataChild<BlueprintData>, IRegi
 
 		this.bounds = funnel.get("bounds");
 		this.toConnectTo = funnel.get("pathway");
+		this.facing = EnumFacingMultiple.byName(tag.getString("facing"));
 
-		String[] names = funnel.getEnumArrayNames("facings");
-		this.facings = new EnumFacing[names.length];
+		this.triggerId = tag.getString("triggerId");
 
-		for (int i = 0; i < names.length; i++)
-		{
-			String name = names[i];
-			this.facings[i] = EnumFacing.valueOf(name);
-		}
+		this.conditionNodeTree = funnel.getWithDefault("conditionNodeTree", this::getConditionNodeTree);
+		this.conditionGuiPos = funnel.getWithDefault("conditionGuiPos", NBTFunnel.POS2D_GETTER, () -> this.conditionGuiPos);
 	}
 
 	@Override
@@ -98,5 +114,35 @@ public class Entrance implements NBT, IColored, IDataChild<BlueprintData>, IRegi
 	public void setDataParent(BlueprintData blueprintData)
 	{
 		this.dataParent = blueprintData;
+	}
+
+	@Override
+	public String getTriggerId()
+	{
+		return this.triggerId;
+	}
+
+	@Override
+	public void setTriggerId(String triggerId)
+	{
+		this.triggerId = triggerId;
+	}
+
+	@Override
+	public NodeTree<IGuiConditionEntrance, ConditionLink> getConditionNodeTree()
+	{
+		return this.conditionNodeTree;
+	}
+
+	@Override
+	public Pos2D getConditionGuiPos()
+	{
+		return this.conditionGuiPos;
+	}
+
+	@Override
+	public void setConditionGuiPos(Pos2D pos)
+	{
+		this.conditionGuiPos = pos;
 	}
 }

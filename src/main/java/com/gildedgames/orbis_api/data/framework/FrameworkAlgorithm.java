@@ -12,15 +12,18 @@ import com.gildedgames.orbis_api.data.framework.generation.fdgd_algorithms.IGDAl
 import com.gildedgames.orbis_api.data.framework.generation.searching.PathwayNode;
 import com.gildedgames.orbis_api.data.framework.generation.searching.PathwayProblem;
 import com.gildedgames.orbis_api.data.framework.generation.searching.StepAStar;
+import com.gildedgames.orbis_api.data.framework_new.IFramework;
+import com.gildedgames.orbis_api.data.framework_new.IFrameworkAlgorithm;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
 import com.gildedgames.orbis_api.data.region.Region;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FrameworkAlgorithm
+public class FrameworkAlgorithm implements IFrameworkAlgorithm
 {
 	// How quickly the algorithm adds tree on intersections of edges
 	private final static float spiderwebGrowth = 0.5f, graphDestroy = 0.3f;
@@ -86,6 +89,7 @@ public class FrameworkAlgorithm
 	/**
 	 * Step the algorithm. Returns true if it has finished
 	 */
+	@Override
 	public boolean step() throws FailedToGenerateException
 	{
 		if (this.phase == Phase.CSP)
@@ -123,7 +127,8 @@ public class FrameworkAlgorithm
 					this.edgeIterator = this.fdgdGraph.edgeSet().iterator();
 
 					FDGDEdge edge = this.edgeIterator.next();
-					PathwayProblem problem = new PathwayProblem(edge.entrance1(), edge.node1(), edge.entrance2(), edge.pathway().pieces(), this.fragments);
+					PathwayProblem problem = new PathwayProblem(this.world, edge.entrance1(), edge.node1(), edge.entrance2(), edge.pathway().pieces(),
+							this.fragments);
 					this.pathfindingSolver = new StepAStar<>(problem, heuristicWeight);
 					this.pathfindingSolver.step();
 					return true;
@@ -177,7 +182,8 @@ public class FrameworkAlgorithm
 					}
 				}
 				FDGDEdge edge = this.edgeIterator.next();
-				PathwayProblem problem = new PathwayProblem(edge.entrance1(), edge.node1(), edge.entrance2(), edge.pathway().pieces(), this.fragments);
+				PathwayProblem problem = new PathwayProblem(this.world, edge.entrance1(), edge.node1(), edge.entrance2(), edge.pathway().pieces(),
+						this.fragments);
 				this.pathfindingSolver = new StepAStar<>(problem, heuristicWeight);
 			}
 			else
@@ -191,6 +197,13 @@ public class FrameworkAlgorithm
 		return false;
 	}
 
+	@Nullable
+	@Override
+	public IFramework getCompletedFramework()
+	{
+		return null;
+	}
+
 	private void initialGraph() throws FailedToGenerateException
 	{
 		this.fdgdGraph = new Graph<>();
@@ -201,7 +214,7 @@ public class FrameworkAlgorithm
 		//Create all tree, which are now fixed size
 		for (FrameworkNode node : this.framework.graph.vertexSet())
 		{
-			BlueprintData data = node.possibleValues(this.random).get(0);
+			BlueprintData data = node.getBlueprintData();
 			if (data != null)
 			{
 				//TODO: Proper tolerance dist
@@ -247,7 +260,7 @@ public class FrameworkAlgorithm
 	//		}
 	//
 	//		//From the solution of the conditions, generate a new graph with the chosen
-	//		//objects in place so we can start shaping it
+	//		//objects in place so we can viableStarts shaping it
 	//		this.fdgdGraph = new SimpleGraph<FDGDNode, FDGDEdge>(FDGDEdge.class);
 	//		final Map<FrameworkNode, FDGDNode> nodeLookup = new HashMap<FrameworkNode, FDGDNode>(this.framework.graph.vertexSet().size());
 	//
@@ -639,13 +652,9 @@ public class FrameworkAlgorithm
 		return currentState.fullPath();
 	}
 
+	@Override
 	public Phase getPhase()
 	{
 		return this.phase;
-	}
-
-	public enum Phase
-	{
-		CSP, FDGD, PATHWAYS, REBUILD1, REBUILD2, REBUILD3
 	}
 }

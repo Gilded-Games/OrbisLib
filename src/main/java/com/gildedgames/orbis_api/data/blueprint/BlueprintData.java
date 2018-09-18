@@ -1,7 +1,6 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
-import com.gildedgames.orbis_api.block.BlockDataContainerDefault;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.core.tree.*;
 import com.gildedgames.orbis_api.data.IDataHolder;
@@ -9,7 +8,7 @@ import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
-import com.gildedgames.orbis_api.data.pathway.Entrance;
+import com.gildedgames.orbis_api.data.pathway.IEntrance;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
@@ -25,7 +24,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -58,7 +56,7 @@ public class BlueprintData
 
 	private LinkedHashMap<Integer, PostGenReplaceLayer> postGenReplaceLayers = Maps.newLinkedHashMap();
 
-	private List<Entrance> entrances = Lists.newArrayList();
+	private List<IEntrance> entrances = Lists.newArrayList();
 
 	private Pos2D scheduleTreeGuiPos, variableTreeGuiPos = Pos2D.ORIGIN;
 
@@ -135,10 +133,10 @@ public class BlueprintData
 		this.markDirty();
 	}
 
-	public int getEntranceId(Entrance entrance)
+	public int getEntranceId(IEntrance entrance)
 	{
 		int i = 0;
-		for (Entrance e : this.entrances)
+		for (IEntrance e : this.entrances)
 		{
 			if (e == entrance)
 			{
@@ -159,21 +157,14 @@ public class BlueprintData
 		}
 	}
 
-	public void addEntrance(Entrance entrance)
+	public void addEntrance(IEntrance entrance)
 	{
 		final Lock w = this.lock.writeLock();
 		w.lock();
 
 		try
 		{
-			BlockPos ePos = entrance.getBounds().getMin();
-			boolean properEntrance = ePos.getX() == 0 || ePos.getX() == this.getWidth() - 1 ||
-					ePos.getY() == 0 || ePos.getY() == this.getHeight() - 1 ||
-					ePos.getZ() == 0 || ePos.getZ() == this.getLength() - 1;
-			if (!properEntrance)
-			{
-				throw new IllegalArgumentException("Entrance can only be placed on the edges of blueprints");
-			}
+			//TODO: Check that there are no entrances intersecting first, throw exception if so
 
 			entrance.setDataParent(this);
 			this.entrances.add(entrance);
@@ -193,7 +184,7 @@ public class BlueprintData
 
 		try
 		{
-			Entrance entrance = this.entrances.remove(id);
+			IEntrance entrance = this.entrances.remove(id);
 
 			if (entrance != null)
 			{
@@ -208,7 +199,12 @@ public class BlueprintData
 		}
 	}
 
-	public boolean removeEntrance(Entrance entrance)
+	public IEntrance getEntrance(int id)
+	{
+		return this.entrances.get(id);
+	}
+
+	public boolean removeEntrance(IEntrance entrance)
 	{
 		final Lock w = this.lock.writeLock();
 		w.lock();
@@ -245,7 +241,7 @@ public class BlueprintData
 		return this.variableTree;
 	}
 
-	public List<Entrance> entrances()
+	public List<IEntrance> entrances()
 	{
 		return this.entrances;
 	}

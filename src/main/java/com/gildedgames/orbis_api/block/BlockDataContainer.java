@@ -172,7 +172,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		int id = this.blocks[index];
 		if (id < 0)
 		{
-			return getDefaultBlock();
+			return this.getDefaultBlock();
 		}
 		return this.localIdToBlock.get(id).getStateFromMeta(this.blocksMeta[index]);
 	}
@@ -216,7 +216,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.length;
 	}
 
-	protected IBlockState getDefaultBlock() {
+	protected IBlockState getDefaultBlock()
+	{
 		return Blocks.AIR.getDefaultState();
 	}
 
@@ -491,7 +492,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	}
 
-	public BlockDataContainer createNewContainer() {
+	public BlockDataContainer createNewContainer()
+	{
 		return new BlockDataContainer();
 	}
 
@@ -499,6 +501,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	public BlockDataContainer clone()
 	{
 		final BlockDataContainer data = new BlockDataContainer();
+
+		data.nextLocalId = this.nextLocalId;
+
 		data.blocks = new short[this.blocks.length];
 		data.blocksMeta = new byte[this.blocksMeta.length];
 

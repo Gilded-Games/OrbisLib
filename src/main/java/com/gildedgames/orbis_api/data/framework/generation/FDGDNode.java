@@ -3,7 +3,7 @@ package com.gildedgames.orbis_api.data.framework.generation;
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
-import com.gildedgames.orbis_api.data.pathway.Entrance;
+import com.gildedgames.orbis_api.data.pathway.IEntrance;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.util.RotationHelp;
 import net.minecraft.util.Rotation;
@@ -155,17 +155,17 @@ public class FDGDNode extends BlueprintRegion
 	public void assignConnections(Collection<FDGDEdge> edges)
 	{
 		int best = Integer.MAX_VALUE;
-		Map<FDGDEdge, Entrance> bestResult = null;
+		Map<FDGDEdge, IEntrance> bestResult = null;
 		Rotation bestRotation = Rotation.NONE;
 		final List<FDGDEdge> edgesL = new ArrayList<>(edges);
 		for (final Rotation rotation : Rotation.values())
 		{
-			final List<Entrance> entrances = this.getEntrances(rotation);
+			final List<IEntrance> entrances = this.getEntrances(rotation);
 			if (entrances.size() < edges.size())
 			{
 				throw new IllegalStateException();
 			}
-			final Tuple<Map<FDGDEdge, Entrance>, Integer> result = this.bestEntrances(edgesL, entrances, 0, 0, best);
+			final Tuple<Map<FDGDEdge, IEntrance>, Integer> result = this.bestEntrances(edgesL, entrances, 0, 0, best);
 			if (result != null)
 			{
 				bestResult = result.getFirst();
@@ -180,7 +180,7 @@ public class FDGDNode extends BlueprintRegion
 		}
 		else
 		{
-			for (final Entry<FDGDEdge, Entrance> edge : bestResult.entrySet())
+			for (final Entry<FDGDEdge, IEntrance> edge : bestResult.entrySet())
 			{
 				edge.getKey().setConnection(this, edge.getValue());
 			}
@@ -196,13 +196,13 @@ public class FDGDNode extends BlueprintRegion
 	 */
 	public void assignConnectionsFixRot(Collection<FDGDEdge> edges)
 	{
-		final List<Entrance> entrances = this.getEntrances(this.rotation);
+		final List<IEntrance> entrances = this.getEntrances(this.rotation);
 		final List<FDGDEdge> edgesL = new ArrayList<>(edges);
 		if (entrances.size() < edges.size())
 		{
 			throw new IllegalStateException();
 		}
-		final Tuple<Map<FDGDEdge, Entrance>, Integer> result = this.bestEntrances(edgesL, entrances, 0, 0, Integer.MAX_VALUE);
+		final Tuple<Map<FDGDEdge, IEntrance>, Integer> result = this.bestEntrances(edgesL, entrances, 0, 0, Integer.MAX_VALUE);
 		if (result == null)
 		{
 			OrbisAPI.LOGGER.info("Was unable to find a valid assignment of entrances to edges. This should not happen.");
@@ -210,7 +210,7 @@ public class FDGDNode extends BlueprintRegion
 		//			throw new FailedToGenerateException("Was not able to find a suitable connection assignment.");
 		else
 		{
-			for (final Entry<FDGDEdge, Entrance> edge : result.getFirst().entrySet())
+			for (final Entry<FDGDEdge, IEntrance> edge : result.getFirst().entrySet())
 			{
 				edge.getKey().setConnection(this, edge.getValue());
 			}
@@ -225,16 +225,16 @@ public class FDGDNode extends BlueprintRegion
 	 * @param solution
 	 * @return
 	 */
-	private boolean isValidConnectionAssignment(Tuple<Map<FDGDEdge, Entrance>, Integer> solution)
+	private boolean isValidConnectionAssignment(Tuple<Map<FDGDEdge, IEntrance>, Integer> solution)
 	{
-		Map<FDGDEdge, Entrance> assignment = solution.getFirst();
+		Map<FDGDEdge, IEntrance> assignment = solution.getFirst();
 		for (FDGDEdge edge : assignment.keySet())
 		{
 			FDGDNode n = edge.getOpposite(this);
-			Entrance e = assignment.get(edge);
-			for (Entrance e1 : assignment.values())
+			IEntrance e = assignment.get(edge);
+			for (IEntrance e1 : assignment.values())
 			{
-				for (Entrance e2 : assignment.values())
+				for (IEntrance e2 : assignment.values())
 				{
 					if (e != e1 && e2 != e && e1 != e2)
 					{
@@ -259,7 +259,7 @@ public class FDGDNode extends BlueprintRegion
 			for (FDGDEdge edge2 : assignment.keySet())
 			{
 				FDGDNode n2 = edge2.getOpposite(this);
-				Entrance e2 = assignment.get(edge2);
+				IEntrance e2 = assignment.get(edge2);
 				if (edge != edge2 && FDGenUtil.isIntersecting(n.getX(), n.getZ(), e.getBounds().getMin().getX(), e.getBounds().getMin().getZ(),
 						n2.getX(), n2.getZ(), e2.getBounds().getMin().getX(), e2.getBounds().getMin().getZ(), false))
 				{
@@ -278,17 +278,17 @@ public class FDGDNode extends BlueprintRegion
 	 * for each edge, and an integer representing the total distance between 
 	 * the connections and the tree they're connected to.
 	 */
-	private Tuple<Map<FDGDEdge, Entrance>, Integer> bestEntrances(List<FDGDEdge> edges, List<Entrance> entrancesLeft, int edgeIndex, int cost, int best)
+	private Tuple<Map<FDGDEdge, IEntrance>, Integer> bestEntrances(List<FDGDEdge> edges, List<IEntrance> entrancesLeft, int edgeIndex, int cost, int best)
 	{
 		if (edgeIndex >= edges.size())
 		{
 			return new Tuple<>(new HashMap<>(edges.size()), cost);
 		}
 		final FDGDEdge edge = edges.get(edgeIndex);
-		Tuple<Map<FDGDEdge, Entrance>, Integer> bestInDepth = null;
+		Tuple<Map<FDGDEdge, IEntrance>, Integer> bestInDepth = null;
 		final FDGDNode opposite = edge.getOpposite(this);
-		final Map<Entrance, Integer> costMap = new HashMap<>(entrancesLeft.size());
-		for (final Entrance entrance : entrancesLeft)
+		final Map<IEntrance, Integer> costMap = new HashMap<>(entrancesLeft.size());
+		for (final IEntrance entrance : entrancesLeft)
 		{
 			costMap.put(entrance,
 					cost + FDGenUtil.euclidian(entrance.getBounds().getMin(), (int) opposite.getX(), (int) opposite.getY(), (int) opposite.getZ()));
@@ -296,7 +296,7 @@ public class FDGDNode extends BlueprintRegion
 
 		//TODO: See if the heuristic has noticeable performance improvements
 		entrancesLeft.sort(Comparator.comparing(costMap::get));
-		for (final Entrance entrance : entrancesLeft)
+		for (final IEntrance entrance : entrancesLeft)
 		{
 			if (!edge.pathway().equals(entrance.toConnectTo()))
 			{
@@ -308,11 +308,11 @@ public class FDGDNode extends BlueprintRegion
 			{
 				continue;
 			}
-			final List<Entrance> copy = new ArrayList<>(entrancesLeft);
+			final List<IEntrance> copy = new ArrayList<>(entrancesLeft);
 			copy.remove(entrance);
 
 			//Go into recursion
-			final Tuple<Map<FDGDEdge, Entrance>, Integer> result = this.bestEntrances(edges, copy, edgeIndex + 1, newCost, best);
+			final Tuple<Map<FDGDEdge, IEntrance>, Integer> result = this.bestEntrances(edges, copy, edgeIndex + 1, newCost, best);
 			if (result != null)
 			{
 				result.getFirst().put(edge, entrance);
@@ -330,7 +330,7 @@ public class FDGDNode extends BlueprintRegion
 		return bestInDepth;
 	}
 
-	public List<Entrance> getEntrances(Rotation rotation)
+	public List<IEntrance> getEntrances(Rotation rotation)
 	{
 		return RotationHelp.getEntrances(this.getData(), rotation, this.centerAsBP());
 	}

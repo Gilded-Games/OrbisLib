@@ -39,7 +39,7 @@ public class RegionHelp
 			int maxY = minY + e.getBounds().getHeight() - 1;
 			int maxZ = minZ + e.getBounds().getLength() - 1;
 
-			if (pos.getX() >= minX && pos.getX() <= maxX && pos.getX() >= minY && pos.getY() <= maxY && pos.getZ() >= minZ && pos.getZ() <= maxZ)
+			if (pos.getX() >= minX && pos.getX() <= maxX && pos.getY() >= minY && pos.getY() <= maxY && pos.getZ() >= minZ && pos.getZ() <= maxZ)
 			{
 				return Optional.of(e);
 			}

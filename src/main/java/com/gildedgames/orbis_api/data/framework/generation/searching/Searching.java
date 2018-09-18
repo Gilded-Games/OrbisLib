@@ -1,52 +1,63 @@
 package com.gildedgames.orbis_api.data.framework.generation.searching;
 
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.PriorityQueue;
 
 public class Searching
 {
 
-	public static <T extends Node> T aStar(ISearchProblem<T> problem)
+	public static <T extends AStarNode> T aStar(ISearchProblem<T> problem)
 	{
 		return weightedAStar(problem, 1.0);
 	}
 
-	public static <T extends Node> T weightedAStar(ISearchProblem<T> problem, double weight)
+	public static <T extends AStarNode> T weightedAStar(ISearchProblem<T> problem, double weight)
 	{
-		T initialState = problem.start();
-		PriorityQueue<T> priorityQueue = new PriorityQueue<>();
-		HashSet<T> visitedStates = new HashSet<>();
+		List<T> potentialStarts = problem.viableStarts();
 
-		priorityQueue.add(initialState);
+		potentialStarts.sort(Comparator.comparingDouble(problem::heuristic).reversed());
 
-		while (!priorityQueue.isEmpty())
+		initialStates:
+		for (T initialState : potentialStarts)
 		{
-			T state = priorityQueue.poll();
-			if (problem.isGoal(state))
+			PriorityQueue<T> priorityQueue = new PriorityQueue<>();
+			HashSet<T> visitedStates = new HashSet<>();
+
+			priorityQueue.add(initialState);
+
+			while (!priorityQueue.isEmpty())
 			{
-				return state;
-			}
+				T state = priorityQueue.poll();
 
-			if (problem.shouldTerminate(state))
-			{
-				return null;
-			}
+				if (problem.isGoal(state))
+				{
+					return state;
+				}
 
-			if (problem.contains(visitedStates, state))
-			{
-				continue;
-			}
+				if (problem.shouldTerminate(state))
+				{
+					continue initialStates;
+				}
 
-			visitedStates.add(state);
+				if (problem.contains(visitedStates, state))
+				{
+					continue;
+				}
 
-			for (T newState : problem.successors(state))
-			{
-				newState.setG(problem.costBetween(state, newState) + state.getG());
-				newState.setH(weight * problem.heuristic(newState));
+				visitedStates.add(state);
 
-				priorityQueue.add(newState);
+				for (T newState : problem.successors(state))
+				{
+					newState.setG(problem.costBetween(state, newState) + state.getG());
+					newState.setH(weight * problem.heuristic(newState));
+
+					priorityQueue.add(newState);
+				}
 			}
 		}
+
 		return null;
 	}
 

@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.framework.generation;
 
-import com.gildedgames.orbis_api.data.pathway.Entrance;
+import com.gildedgames.orbis_api.data.pathway.IEntrance;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
 import net.minecraft.util.math.BlockPos;
 
@@ -10,7 +10,7 @@ public class FDGDEdge
 
 	private final PathwayData pathway;
 
-	private Entrance connection1, connection2;
+	private IEntrance connection1, connection2;
 
 	private float ent1X, ent1Y, ent1Z, ent2X, ent2Y, ent2Z;
 
@@ -21,7 +21,7 @@ public class FDGDEdge
 		this.pathway = pathway;
 	}
 
-	public Entrance getConnection(FDGDNode node)
+	public IEntrance getConnection(FDGDNode node)
 	{
 		if (node.equals(this.node1))
 		{
@@ -34,7 +34,7 @@ public class FDGDEdge
 		throw new IllegalArgumentException();
 	}
 
-	public void setConnection(FDGDNode node, Entrance connection)
+	public void setConnection(FDGDNode node, IEntrance connection)
 	{
 		if (node.equals(this.node1))
 		{
@@ -78,12 +78,12 @@ public class FDGDEdge
 		return this.node2;
 	}
 
-	public Entrance connectionOf1()
+	public IEntrance connectionOf1()
 	{
 		return this.connection1;
 	}
 
-	public Entrance connectionOf2()
+	public IEntrance connectionOf2()
 	{
 		return this.connection2;
 	}

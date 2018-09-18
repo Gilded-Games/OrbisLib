@@ -1,11 +1,11 @@
 package com.gildedgames.orbis_api.data.framework.generation.searching;
 
-import com.gildedgames.orbis_api.OrbisAPI;
-
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.PriorityQueue;
 
-public class StepAStar<T extends Node>
+public class StepAStar<T extends AStarNode>
 {
 	private final ISearchProblem<T> problem;
 
@@ -21,11 +21,41 @@ public class StepAStar<T extends Node>
 
 	private int statesExpanded = 0;
 
+	private List<T> potentialStarts;
+
+	private int currentStartIndex = -1;
+
 	public StepAStar(ISearchProblem<T> problem, double hWeight)
 	{
-		this.queue.add(problem.start());
 		this.problem = problem;
 		this.hWeight = hWeight;
+
+		this.potentialStarts = this.problem.viableStarts();
+
+		this.potentialStarts.sort(Comparator.comparingDouble(this.problem::heuristic));
+	}
+
+	/**
+	 *
+	 * @return Should terminate
+	 */
+	private boolean tryDifferentInitialStart()
+	{
+		if (this.currentStartIndex < this.potentialStarts.size() - 1)
+		{
+			this.statesExpanded = 0;
+			this.currentStartIndex++;
+
+			this.queue.clear();
+
+			this.queue.add(this.potentialStarts.get(this.currentStartIndex));
+
+			return false;
+		}
+
+		this.terminated = true;
+
+		return true;
 	}
 
 	public void step()
@@ -34,13 +64,19 @@ public class StepAStar<T extends Node>
 		{
 			return;
 		}
-		if (this.queue.isEmpty() || this.statesExpanded > 5000) // NOTE: This is temporary
+
+		if (this.queue.isEmpty() || this.statesExpanded > 5000)
 		{
 			this.currentState = null;
-			this.terminated = true;
-			return;
+
+			if (this.tryDifferentInitialStart())
+			{
+				return;
+			}
 		}
+
 		this.currentState = this.queue.poll();
+
 		if (this.problem.isGoal(this.currentState))
 		{
 			this.terminated = true;
@@ -49,18 +85,16 @@ public class StepAStar<T extends Node>
 
 		if (this.problem.shouldTerminate(this.currentState))
 		{
-			this.terminated = true;
-			//this.currentState = null;
+			this.tryDifferentInitialStart();
+
 			return;
 		}
+
 		if (this.problem.contains(this.visitedStates, this.currentState))
 		{
 			this.step();
 			return;
 		}
-		//		OrbisAPI.LOGGER.info(this.currentState.getG());
-		//		OrbisAPI.LOGGER.info(this.currentState.getH());
-		//		OrbisAPI.LOGGER.info(this.currentState.getF());
 
 		this.visitedStates.add(this.currentState);
 		this.statesExpanded += 1;
@@ -82,8 +116,9 @@ public class StepAStar<T extends Node>
 	{
 		if (this.currentState == null)
 		{
-			OrbisAPI.LOGGER.info("?");
+			//OrbisAPI.LOGGER.info("Current state in StepAStar is null.");
 		}
+
 		return this.currentState;
 	}
 }
