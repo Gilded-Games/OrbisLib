@@ -37,6 +37,11 @@ public class GuiTextBox extends GuiElement
 	{
 		int textHeight = 0;
 
+		if (this.dim().width() == 0)
+		{
+			throw new IllegalArgumentException("A GuiTextBox is attempting to build with 0 width. This cannot work. Please fix: " + this);
+		}
+
 		final float halfWidth = this.dim().width() / 2;
 
 		for (final IText t : this.text)

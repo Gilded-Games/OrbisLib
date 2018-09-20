@@ -223,7 +223,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 	@Override
 	public void drawDefaultBackground()
 	{
-		super.drawDefaultBackground();
+
 	}
 
 	@Override
@@ -350,7 +350,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 
 		preventInnerTyping = false;
 
-		super.drawScreen(mouseX, mouseY, partialTicks);
+		super.drawDefaultBackground();
 
 		GlStateManager.pushMatrix();
 
@@ -362,6 +362,8 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 		GlStateManager.disableAlpha();
 
 		GlStateManager.popMatrix();
+
+		super.drawScreen(mouseX, mouseY, partialTicks);
 
 		if (this.hoverDescription != null && this.hoverDescription.size() > 0)
 		{

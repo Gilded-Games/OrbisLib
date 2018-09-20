@@ -14,6 +14,7 @@ public class GuiText extends GuiElement
 	public GuiText(final Rect rect, final IText text)
 	{
 		super(rect, true);
+
 		this.setText(text);
 	}
 
@@ -41,7 +42,7 @@ public class GuiText extends GuiElement
 
 			String text = this.text.component().getFormattedText();
 
-			this.dim().mod().scale(this.text.scale()).width(r.getStringWidth(text)).height(r.FONT_HEIGHT)
+			this.dim().mod().scale(this.text.scale()).width(r.getStringWidth(text) * this.text.scale()).height(r.FONT_HEIGHT)
 					.flush();
 		}
 	}

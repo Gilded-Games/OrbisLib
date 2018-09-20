@@ -41,4 +41,6 @@ public interface Rect
 
 	boolean intersects(Rect dim);
 
+	boolean snapToIntegers();
+
 }

@@ -564,6 +564,12 @@ public class ModDim2D implements Rect
 	}
 
 	@Override
+	public boolean snapToIntegers()
+	{
+		return this.modifiedState().snapToIntegers();
+	}
+
+	@Override
 	public RectBuilder rebuild()
 	{
 		return this.modifiedState().rebuild();

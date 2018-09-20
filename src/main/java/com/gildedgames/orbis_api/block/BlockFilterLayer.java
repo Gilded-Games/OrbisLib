@@ -69,17 +69,17 @@ public class BlockFilterLayer implements NBT
 	/**
 	 * Sets the list of blocks that trigger the filter
 	 */
-	public void setRequiredBlocks(final BlockDataWithConditions... requiredBlocks)
+	public void setRequiredBlocks(final List<BlockDataWithConditions> requiredBlocks)
 	{
-		this.requiredBlocks = Lists.newArrayList(Arrays.asList(requiredBlocks));
+		this.requiredBlocks = Lists.newArrayList(requiredBlocks);
 	}
 
 	/**
 	 * Sets the list of blocks that trigger the filter
 	 */
-	public void setRequiredBlocks(final List<BlockDataWithConditions> requiredBlocks)
+	public void setRequiredBlocks(final BlockDataWithConditions... requiredBlocks)
 	{
-		this.requiredBlocks = Lists.newArrayList(requiredBlocks);
+		this.requiredBlocks = Lists.newArrayList(Arrays.asList(requiredBlocks));
 	}
 
 	public List<BlockDataWithConditions> getReplacementBlocks()
@@ -87,14 +87,14 @@ public class BlockFilterLayer implements NBT
 		return this.replacementBlocks;
 	}
 
-	public void setReplacementBlocks(final BlockDataWithConditions... newBlocks)
-	{
-		this.replacementBlocks = Lists.newArrayList(Arrays.asList(newBlocks));
-	}
-
 	public void setReplacementBlocks(final List<BlockDataWithConditions> newBlocks)
 	{
 		this.replacementBlocks = newBlocks;
+	}
+
+	public void setReplacementBlocks(final BlockDataWithConditions... newBlocks)
+	{
+		this.replacementBlocks = Lists.newArrayList(Arrays.asList(newBlocks));
 	}
 
 	public BlockFilterType getFilterType()
@@ -316,7 +316,7 @@ public class BlockFilterLayer implements NBT
 					return;
 				}
 
-				if (creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())
+				//if (creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())
 				{
 					if (replacementBlock.isAir())
 					{
@@ -335,12 +335,12 @@ public class BlockFilterLayer implements NBT
 					p.getY() - shape.getBoundingBox().getMin().getY() + creationData.getPos().getY(),
 					p.getZ() - shape.getBoundingBox().getMin().getZ() + creationData.getPos().getZ());
 
-			boolean edge = !shape.contains(c.getX(), c.getY() + 1, c.getZ()) || !shape.contains(c.getX(), c.getY() - 1, c.getZ())
+			/*boolean edge = !shape.contains(c.getX(), c.getY() + 1, c.getZ()) || !shape.contains(c.getX(), c.getY() - 1, c.getZ())
 					|| !shape
 					.contains(c.getX() + 1, c.getY(), c.getZ()) || !shape.contains(c.getX() - 1, c.getY(), c.getZ()) || !shape
 					.contains(c.getX(), c.getY(), c.getZ() + 1) || !shape.contains(c.getX(), c.getY(), c.getZ() - 1);
 
-			if (!edge || creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())
+			if (!edge || creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())*/
 			{
 				primer.create(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), c, creationData);
 			}

@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.client.rect;
 
 import com.gildedgames.orbis_api.client.rect.helpers.RectCollection;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,8 @@ public class Dim2D implements Rect
 
 	private final float scale;
 
+	private final boolean snapToIntegers;
+
 	private Dim2D()
 	{
 		this(new RectBuilder());
@@ -29,8 +32,10 @@ public class Dim2D implements Rect
 
 	Dim2D(final RectBuilder builder)
 	{
-		this.width = builder.width;
-		this.height = builder.height;
+		this.snapToIntegers = builder.snapToIntegers;
+
+		this.width = this.snapToIntegers ? MathHelper.floor(builder.width) : builder.width;
+		this.height = this.snapToIntegers ? MathHelper.floor(builder.height) : builder.height;
 
 		this.scale = builder.scale;
 
@@ -39,13 +44,17 @@ public class Dim2D implements Rect
 
 		this.degrees = builder.degrees;
 
-		this.originX = builder.originX;
-		this.originY = builder.originY;
+		this.originX = this.snapToIntegers ? MathHelper.floor(builder.originX) : builder.originX;
+		this.originY = this.snapToIntegers ? MathHelper.floor(builder.originY) : builder.originY;
 
-		this.min = Pos2D.flush(builder.posX, builder.posY);
-		this.max = Pos2D.flush(this.min.x() + this.width, this.min.y() + this.height);
+		this.min = Pos2D.flush(this.snapToIntegers ? MathHelper.floor(builder.posX) : builder.posX,
+				this.snapToIntegers ? MathHelper.floor(builder.posY) : builder.posY);
+		this.max = Pos2D.flush(this.snapToIntegers ? MathHelper.floor(this.min.x() + this.width) : this.min.x() + this.width,
+				this.snapToIntegers ? MathHelper.floor(this.min.y() + this.height) : this.min.y() + this.height);
 
-		this.center = Pos2D.flush(this.min.x() + (this.width / 2), this.min.y() + (this.height / 2));
+		this.center = Pos2D.flush(this.snapToIntegers ? MathHelper.floor(this.min.x() + (this.width / 2)) : this.min.x() + (this.width / 2),
+				this.snapToIntegers ? MathHelper.floor(this.min.y() + (this.height / 2)) : this.min.y() + (this.height / 2));
+
 	}
 
 	/**
@@ -212,6 +221,12 @@ public class Dim2D implements Rect
 	public boolean intersects(final Rect dim)
 	{
 		return dim.maxX() >= this.x() && dim.maxY() >= this.y() && dim.x() < this.maxX() && dim.y() < this.maxY();
+	}
+
+	@Override
+	public boolean snapToIntegers()
+	{
+		return this.snapToIntegers;
 	}
 
 	@Override

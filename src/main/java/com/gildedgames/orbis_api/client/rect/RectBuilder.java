@@ -17,6 +17,8 @@ public class RectBuilder
 
 	protected float originX, originY;
 
+	protected boolean snapToIntegers;
+
 	public RectBuilder()
 	{
 
@@ -58,6 +60,16 @@ public class RectBuilder
 		this.degrees = rect.degrees();
 		this.originX = rect.originX();
 		this.originY = rect.originY();
+
+		this.snapToIntegers = rect.snapToIntegers();
+
+		return this;
+	}
+
+	public RectBuilder snapToIntegers(final boolean flag)
+	{
+		this.snapToIntegers = flag;
+
 		return this;
 	}
 
