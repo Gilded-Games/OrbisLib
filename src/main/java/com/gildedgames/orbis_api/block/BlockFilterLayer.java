@@ -163,7 +163,7 @@ public class BlockFilterLayer implements NBT
 
 			state = access.getBlockState(pos);
 
-			if (!this.getFilterType().filter(state, this.requiredBlocks, world, creationData.getRandom()))
+			if (!this.getFilterType().filter(creationData.getCreator(), pos, state, this.requiredBlocks, world, creationData.getRandom()))
 			{
 				continue;
 			}
@@ -281,7 +281,7 @@ public class BlockFilterLayer implements NBT
 		{
 			state = world.getBlockState(without);
 
-			if (!this.getFilterType().filter(state, this.requiredBlocks, world, creationData.getRandom()))
+			if (!this.getFilterType().filter(creationData.getCreator(), p, state, this.requiredBlocks, world, creationData.getRandom()))
 			{
 				return;
 			}
@@ -311,7 +311,8 @@ public class BlockFilterLayer implements NBT
 				IBlockState posState = holder.getCurrentScheduleLayerNode().getData().getStateRecord().get(schedX, schedY, schedZ);
 
 				if (!this.getFilterType()
-						.filter(posState == null ? Blocks.AIR.getDefaultState() : posState, this.requiredBlocks, world, creationData.getRandom()))
+						.filter(creationData.getCreator(), BlockPos.ORIGIN, posState == null ? Blocks.AIR.getDefaultState() : posState,
+								this.requiredBlocks, world, creationData.getRandom()))
 				{
 					return;
 				}

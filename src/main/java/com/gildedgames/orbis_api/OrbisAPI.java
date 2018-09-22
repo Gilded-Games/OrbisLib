@@ -35,7 +35,7 @@ public class OrbisAPI
 
 	public static final String MOD_ID = "orbis_api";
 
-	public static final String MOD_VERSION = "1.12.2-1.1.8";
+	public static final String MOD_VERSION = "1.12.2-1.1.9";
 
 	public static final String MOD_FINGERPRINT = "db341c083b1b8ce9160a769b569ef6737b3f4cdf";
 
