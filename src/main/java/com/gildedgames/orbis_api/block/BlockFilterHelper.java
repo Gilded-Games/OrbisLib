@@ -198,12 +198,9 @@ public class BlockFilterHelper
 
 		layer.setFilterType(BlockFilterType.ALL_EXCEPT);
 
-		if (offStates == null)
+		if (offStates.isEmpty())
 		{
-			if (mainStates != null)
-			{
-				layer.getReplacementBlocks().addAll(mainStates);
-			}
+			layer.getReplacementBlocks().addAll(mainStates);
 
 			layer.getRequiredBlocks().add(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), 1.0f));
 		}
@@ -211,10 +208,7 @@ public class BlockFilterHelper
 		{
 			layer.setFilterType(BlockFilterType.ONLY);
 
-			if (mainStates != null)
-			{
-				layer.getReplacementBlocks().addAll(mainStates);
-			}
+			layer.getReplacementBlocks().addAll(mainStates);
 
 			layer.getRequiredBlocks().addAll(offStates);
 		}
