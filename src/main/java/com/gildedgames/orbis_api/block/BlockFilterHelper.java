@@ -20,15 +20,13 @@ public class BlockFilterHelper
 		blockRecognitions.add(new IBlockRecognition()
 		{
 			@Override
-			public IBlockState[] recognize(ItemStack stack)
+			public List<BlockDataWithConditions> recognize(ItemStack stack)
 			{
-				IBlockState[] blocks = null;
+				List<BlockDataWithConditions> blocks = Lists.newArrayList();
 
 				if (stack.getItem() == Items.STRING)
 				{
-					blocks = new IBlockState[1];
-
-					blocks[0] = Blocks.AIR.getDefaultState();
+					blocks.add(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), stack.getCount()));
 				}
 				else if (stack.getItem() instanceof ItemBlock || stack.getItem() instanceof ItemMultiTexture)
 				{
@@ -36,24 +34,18 @@ public class BlockFilterHelper
 
 					if (state != null)
 					{
-						blocks = new IBlockState[1];
-
-						blocks[0] = state;
+						blocks.add(new BlockDataWithConditions(state, stack.getCount()));
 					}
 				}
 				else if (stack.getItem() == Items.LAVA_BUCKET)
 				{
-					blocks = new IBlockState[2];
-
-					blocks[0] = Blocks.LAVA.getDefaultState();
-					blocks[1] = Blocks.FLOWING_LAVA.getDefaultState();
+					blocks.add(new BlockDataWithConditions(Blocks.LAVA.getDefaultState(), stack.getCount()));
+					blocks.add(new BlockDataWithConditions(Blocks.FLOWING_LAVA.getDefaultState(), stack.getCount()));
 				}
 				else if (stack.getItem() == Items.WATER_BUCKET)
 				{
-					blocks = new IBlockState[2];
-
-					blocks[0] = Blocks.WATER.getDefaultState();
-					blocks[1] = Blocks.FLOWING_WATER.getDefaultState();
+					blocks.add(new BlockDataWithConditions(Blocks.WATER.getDefaultState(), stack.getCount()));
+					blocks.add(new BlockDataWithConditions(Blocks.FLOWING_WATER.getDefaultState(), stack.getCount()));
 				}
 
 				return blocks;
@@ -81,51 +73,26 @@ public class BlockFilterHelper
 		}
 	}
 
-	public static List<BlockDataWithConditions> convertToBlockData(IBlockState[] states)
-	{
-		if (states == null)
-		{
-			return Collections.emptyList();
-		}
-
-		List<BlockDataWithConditions> blockData = Lists.newArrayList();
-
-		for (IBlockState state : states)
-		{
-			blockData.add(new BlockDataWithConditions(state, 1.0F));
-		}
-
-		return blockData;
-	}
-
-	public static IBlockState[] getBlocksFromStack(final ItemStack stack)
+	public static List<BlockDataWithConditions> getBlocksFromStack(final ItemStack stack)
 	{
 		for (IBlockRecognition recognition : blockRecognitions)
 		{
-			IBlockState[] found = recognition.recognize(stack);
+			List<BlockDataWithConditions> found = recognition.recognize(stack);
 
-			if (found != null)
+			if (found != null && !found.isEmpty())
 			{
 				return found;
 			}
 		}
 
-		return null;
+		return Collections.emptyList();
 	}
 
 	public static BlockFilterLayer getNewDeleteLayer(final ItemStack stack)
 	{
-		final boolean[] compatible = { false };
+		final List<BlockDataWithConditions> blocks = getBlocksFromStack(stack);
 
-		blockRecognitions.forEach((r) ->
-		{
-			if (r.isCompatible(stack.getItem().getClass()))
-			{
-				compatible[0] = true;
-			}
-		});
-
-		if (compatible[0])
+		if (blocks.isEmpty())
 		{
 			final BlockFilterLayer layer = new BlockFilterLayer();
 
@@ -140,12 +107,7 @@ public class BlockFilterHelper
 
 		layer.setFilterType(BlockFilterType.ONLY);
 
-		final IBlockState[] blocks = getBlocksFromStack(stack);
-
-		for (final IBlockState s : blocks)
-		{
-			layer.getRequiredBlocks().add(new BlockDataWithConditions(s, 1.0f));
-		}
+		layer.getRequiredBlocks().addAll(blocks);
 
 		layer.getReplacementBlocks().add(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), 1.0f));
 
@@ -213,21 +175,15 @@ public class BlockFilterHelper
 
 	public static BlockFilterLayer getNewFillLayer(final ItemStack stack)
 	{
-		if (!(ItemBlock.class.isAssignableFrom(stack.getItem().getClass())) && !(stack.getItem() instanceof ItemBucket) && !(ItemMultiTexture.class
-				.isAssignableFrom(stack.getItem().getClass())))
-		{
-			throw new NullPointerException("ItemStack given to getNewFillLayer() is not a Block. Aborting." + stack.getItem());
-		}
-
 		final BlockFilterLayer layer = new BlockFilterLayer();
 
 		layer.setFilterType(BlockFilterType.ALL);
 
-		final IBlockState[] blocks = getBlocksFromStack(stack);
+		final List<BlockDataWithConditions> blocks = getBlocksFromStack(stack);
 
-		for (final IBlockState s : blocks)
+		if (blocks != null)
 		{
-			layer.getReplacementBlocks().add(new BlockDataWithConditions(s, 1.0f));
+			layer.getReplacementBlocks().addAll(blocks);
 		}
 
 		return layer;
@@ -235,23 +191,18 @@ public class BlockFilterHelper
 
 	public static BlockFilterLayer getNewReplaceLayer(final ItemStack mainHand, final ItemStack offHand)
 	{
-		if (!(mainHand.getItem() instanceof ItemBlock) && !(mainHand.getItem() instanceof ItemBucket)
-				&& !(offHand.getItem() instanceof ItemBlock) && !(offHand.getItem() instanceof ItemBucket))
-		{
-			throw new NullPointerException("ItemStack given to getNewFillLayer() is not a Block. Aborting.");
-		}
 		final BlockFilterLayer layer = new BlockFilterLayer();
 
-		final IBlockState[] mainStates = getBlocksFromStack(mainHand);
-		final IBlockState[] offStates = getBlocksFromStack(offHand);
+		final List<BlockDataWithConditions> mainStates = getBlocksFromStack(mainHand);
+		final List<BlockDataWithConditions> offStates = getBlocksFromStack(offHand);
 
 		layer.setFilterType(BlockFilterType.ALL_EXCEPT);
 
 		if (offStates == null)
 		{
-			for (final IBlockState s : mainStates)
+			if (mainStates != null)
 			{
-				layer.getReplacementBlocks().add(new BlockDataWithConditions(s, 1.0f));
+				layer.getReplacementBlocks().addAll(mainStates);
 			}
 
 			layer.getRequiredBlocks().add(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), 1.0f));
@@ -260,15 +211,12 @@ public class BlockFilterHelper
 		{
 			layer.setFilterType(BlockFilterType.ONLY);
 
-			for (final IBlockState s : mainStates)
+			if (mainStates != null)
 			{
-				layer.getReplacementBlocks().add(new BlockDataWithConditions(s, 1.0f));
+				layer.getReplacementBlocks().addAll(mainStates);
 			}
 
-			for (final IBlockState s : offStates)
-			{
-				layer.getRequiredBlocks().add(new BlockDataWithConditions(s, 1.0f));
-			}
+			layer.getRequiredBlocks().addAll(offStates);
 		}
 
 		return layer;
@@ -290,7 +238,7 @@ public class BlockFilterHelper
 
 	public interface IBlockRecognition
 	{
-		IBlockState[] recognize(ItemStack stack);
+		List<BlockDataWithConditions> recognize(ItemStack stack);
 
 		boolean isCompatible(Class<? extends Item> clazz);
 	}

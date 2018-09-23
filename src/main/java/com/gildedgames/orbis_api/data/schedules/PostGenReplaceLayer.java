@@ -45,8 +45,8 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 
 		this.options.getChoosesPerBlockVar().setData(false);
 
-		this.layer.setRequiredBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.required)));
-		this.layer.setReplacementBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.replaced)));
+		this.layer.setRequiredBlocks(BlockFilterHelper.getBlocksFromStack(this.required));
+		this.layer.setReplacementBlocks(BlockFilterHelper.getBlocksFromStack(this.replaced));
 	}
 
 	public BlockFilterLayer getFilterLayer()
@@ -80,7 +80,7 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 
 		this.dataParent.markDirty();
 
-		this.layer.setRequiredBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.required)));
+		this.layer.setRequiredBlocks(BlockFilterHelper.getBlocksFromStack(this.required));
 	}
 
 	public ItemStack getReplaced()
@@ -94,7 +94,7 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 
 		this.dataParent.markDirty();
 
-		this.layer.setReplacementBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.replaced)));
+		this.layer.setReplacementBlocks(BlockFilterHelper.getBlocksFromStack(this.replaced));
 	}
 
 	public IFilterOptions getOptions()
@@ -112,8 +112,8 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 		tag.setInteger("layerId", this.layerId);
 		funnel.set("options", this.options);
 
-		this.layer.setRequiredBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.required)));
-		this.layer.setReplacementBlocks(BlockFilterHelper.convertToBlockData(BlockFilterHelper.getBlocksFromStack(this.replaced)));
+		this.layer.setRequiredBlocks(BlockFilterHelper.getBlocksFromStack(this.required));
+		this.layer.setReplacementBlocks(BlockFilterHelper.getBlocksFromStack(this.replaced));
 
 		this.filter.clear();
 
