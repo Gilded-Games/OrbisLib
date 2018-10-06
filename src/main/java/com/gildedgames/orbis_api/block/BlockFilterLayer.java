@@ -173,7 +173,7 @@ public class BlockFilterLayer implements NBT
 				replacementBlock = this.getRandom(creationData.getRandom(), world);
 			}
 
-			if (pos.getY() >= 256 || replacementBlock == null || !replacementBlock.getReplaceCondition().isMet(creationData.getRandom(), world))
+			if (replacementBlock == null || !replacementBlock.getReplaceCondition().isMet(creationData.getRandom(), world))
 			{
 				continue;
 			}
@@ -292,7 +292,8 @@ public class BlockFilterLayer implements NBT
 			replacementBlock = this.getRandom(creationData.getRandom(), world);
 		}
 
-		if (without.getY() >= 256 || replacementBlock == null || !replacementBlock.getReplaceCondition().isMet(creationData.getRandom(), world))
+		if (replacementBlock == null || !replacementBlock.getReplaceCondition()
+				.isMet(creationData.getRandom(), world))
 		{
 			return;
 		}

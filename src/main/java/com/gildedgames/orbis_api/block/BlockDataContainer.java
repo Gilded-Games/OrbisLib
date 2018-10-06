@@ -267,10 +267,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				identifiers.put(blockId, identifier);
 			}
 
-			/**
-			 * Stuff I don't quite understand - looks like some sort of compression
-			 * method when block ids surpass 255
-			 */
 			if (blockId > 255)
 			{
 				if (addBlocks == null)
@@ -434,9 +430,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.blocksMeta = new byte[blockComp.length];
 		this.entities = new Int2ObjectOpenHashMap<>();
 
-		/**
-		 * Weird decompression stuff for ids beyond 255
-		 */
 		for (int i = 0; i < blockComp.length; i++)
 		{
 			final int finalId;
