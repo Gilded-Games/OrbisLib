@@ -9,16 +9,18 @@ import com.gildedgames.orbis_api.client.rect.Rect;
 import com.gildedgames.orbis_api.client.rect.RectModifier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import net.minecraft.client.Minecraft;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElement
 {
 	private final List<ELEMENT> elements = Lists.newArrayList();
 
-	private Set<IDropdownListListener<ELEMENT>> listeners = Sets.newHashSet();
+	private List<IDropdownListListener<ELEMENT>> listeners = Lists.newArrayList();
 
 	private Map<ELEMENT, GuiDropdownList> subLists = Maps.newHashMap();
 
@@ -31,7 +33,10 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 
 	public void listen(IDropdownListListener<ELEMENT> listener)
 	{
-		this.listeners.add(listener);
+		if (!this.listeners.contains(listener))
+		{
+			this.listeners.add(listener);
+		}
 	}
 
 	public boolean unlisten(IDropdownListListener<ELEMENT> listener)

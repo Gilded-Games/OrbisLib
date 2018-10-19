@@ -5,10 +5,10 @@ import com.gildedgames.orbis_api.client.gui.util.GuiTexture;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.Set;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class GuiTickBox extends GuiElement
@@ -23,7 +23,7 @@ public class GuiTickBox extends GuiElement
 
 	private GuiTexture pressed;
 
-	private Set<Consumer<Boolean>> listeners = Sets.newHashSet();
+	private List<Consumer<Boolean>> listeners = Lists.newArrayList();
 
 	public GuiTickBox(Pos2D pos, boolean ticked)
 	{
@@ -56,7 +56,10 @@ public class GuiTickBox extends GuiElement
 	 */
 	public void listenOnPress(Consumer<Boolean> listener)
 	{
-		this.listeners.add(listener);
+		if (!this.listeners.contains(listener))
+		{
+			this.listeners.add(listener);
+		}
 	}
 
 	public boolean isTicked()

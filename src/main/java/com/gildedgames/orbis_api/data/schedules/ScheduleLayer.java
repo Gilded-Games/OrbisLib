@@ -8,12 +8,12 @@ import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
-import java.util.Set;
+import java.util.List;
 
 public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCondition, ConditionLink>
 {
@@ -35,7 +35,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 
 	private boolean visible = true;
 
-	private Set<IScheduleLayerListener> listeners = Sets.newHashSet();
+	private List<IScheduleLayerListener> listeners = Lists.newArrayList();
 
 	private IScheduleLayerOptions options;
 
@@ -93,7 +93,10 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	@Override
 	public void listen(IScheduleLayerListener listener)
 	{
-		this.listeners.add(listener);
+		if (!this.listeners.contains(listener))
+		{
+			this.listeners.add(listener);
+		}
 	}
 
 	@Override

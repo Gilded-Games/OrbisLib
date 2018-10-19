@@ -22,7 +22,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 
 	private Set<Integer> parents = Sets.newHashSet();
 
-	private Set<INodeListener<DATA, LINK>> listeners;
+	private List<INodeListener<DATA, LINK>> listeners;
 
 	private int nodeId;
 
@@ -65,10 +65,13 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		if (this.listeners == null)
 		{
-			this.listeners = Sets.newHashSet();
+			this.listeners = Lists.newArrayList();
 		}
 
-		this.listeners.add(listener);
+		if (!this.listeners.contains(listener))
+		{
+			this.listeners.add(listener);
+		}
 	}
 
 	@Override

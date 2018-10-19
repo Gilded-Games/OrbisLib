@@ -3,18 +3,18 @@ package com.gildedgames.orbis_api.client.gui.util;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiViewer;
 import com.gildedgames.orbis_api.client.rect.Rect;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
 import org.lwjgl.input.Keyboard;
 
-import java.util.Set;
+import java.util.List;
 
 public class GuiInput extends GuiElement
 {
 	private final GuiTextField field;
 
-	private Set<IGuiInputListener> listeners = Sets.newHashSet();
+	private List<IGuiInputListener> listeners = Lists.newArrayList();
 
 	public GuiInput(final Rect rect)
 	{
@@ -25,7 +25,10 @@ public class GuiInput extends GuiElement
 
 	public void listen(IGuiInputListener listener)
 	{
-		this.listeners.add(listener);
+		if (!this.listeners.contains(listener))
+		{
+			this.listeners.add(listener);
+		}
 	}
 
 	public boolean unlisten(IGuiInputListener listener)

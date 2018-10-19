@@ -4,8 +4,8 @@ import com.gildedgames.orbis_api.data.IDataChild;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.*;
@@ -16,7 +16,7 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 
 	private Integer rootNode = 0;
 
-	private Set<INodeTreeListener<DATA, LINK>> listeners = Sets.newHashSet();
+	private List<INodeTreeListener<DATA, LINK>> listeners = Lists.newArrayList();
 
 	private BlueprintData dataParent;
 
@@ -40,14 +40,17 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 		clone.rootNode = this.rootNode;
 		clone.dataParent = this.dataParent;
 
-		clone.listeners = Sets.newHashSet(this.listeners);
+		clone.listeners = Lists.newArrayList(this.listeners);
 
 		return clone;
 	}
 
 	public void listen(INodeTreeListener<DATA, LINK> listener)
 	{
-		this.listeners.add(listener);
+		if (!this.listeners.contains(listener))
+		{
+			this.listeners.add(listener);
+		}
 	}
 
 	public boolean unlisten(INodeTreeListener<DATA, LINK> listener)
