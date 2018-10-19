@@ -74,12 +74,12 @@ public class NBTFunnel
 	{
 		NBTTagCompound tag = new NBTTagCompound();
 
-		tag.setString("u", o.toString());
+		tag.setUniqueId("u", o);
 
 		return tag;
 	};
 
-	public static Function<NBTTagCompound, UUID> UUID_GETTER = n -> UUID.fromString(n.getString("u"));
+	public static Function<NBTTagCompound, UUID> UUID_GETTER = n -> n.getUniqueId("u");
 
 	public static Function<String, NBTTagCompound> STRING_SETTER = o ->
 	{
@@ -355,11 +355,6 @@ public class NBTFunnel
 		final NBTTagCompound data = tag.getCompoundTag("data");
 
 		return getter != null ? getter.apply(data) : NBTHelper.read(data);
-	}
-
-	public <T extends NBTMeta> T loadWithoutReading(final String key)
-	{
-		return NBTHelper.loadWithoutReading(this.tag.getCompoundTag(key));
 	}
 
 	public <T extends NBT> T get(final String key)

@@ -9,12 +9,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class DataCache implements IDataCache
 {
 	private String cacheId;
 
-	private Map<Integer, IData> idToData = Maps.newHashMap();
+	private Map<UUID, IData> idToData = Maps.newHashMap();
 
 	private int nextId;
 
@@ -36,7 +38,7 @@ public class DataCache implements IDataCache
 		tag.setString("cacheId", this.cacheId);
 		tag.setInteger("nextId", this.nextId);
 
-		funnel.setIntMap("idToData", this.idToData);
+		funnel.setMap("idToData", this.idToData, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
 	}
 
 	@Override
@@ -47,11 +49,11 @@ public class DataCache implements IDataCache
 		this.cacheId = tag.getString("cacheId");
 		this.nextId = tag.getInteger("nextId");
 
-		this.idToData = funnel.getIntMap("idToData");
+		this.idToData = funnel.getMap("idToData", NBTFunnel.UUID_GETTER, NBTFunnel.getter());
 	}
 
 	@Override
-	public boolean hasData(final int dataId)
+	public boolean hasData(final UUID dataId)
 	{
 		return this.idToData.containsKey(dataId);
 	}
@@ -70,21 +72,26 @@ public class DataCache implements IDataCache
 
 	@Nullable
 	@Override
-	public <T extends IData> T getData(final int dataId)
+	public <T extends IData> Optional<T> getData(final UUID dataId)
 	{
-		return (T) this.idToData.get(dataId);
+		return Optional.of((T) this.idToData.get(dataId));
 	}
 
 	@Override
-	public void removeData(final int dataId)
+	public void removeData(final UUID dataId)
 	{
 		this.idToData.remove(dataId);
 	}
 
 	@Override
-	public int addData(final IData data)
+	public UUID addData(final IData data)
 	{
-		final int id = this.nextId++;
+		UUID id = UUID.randomUUID();
+
+		while (this.idToData.containsKey(id))
+		{
+			id = UUID.randomUUID();
+		}
 
 		if (data.getMetadata().getIdentifier() == null)
 		{
@@ -97,7 +104,7 @@ public class DataCache implements IDataCache
 	}
 
 	@Override
-	public void setData(final int dataId, final IData data)
+	public void setData(final UUID dataId, final IData data)
 	{
 		this.idToData.put(dataId, data);
 	}

@@ -422,6 +422,12 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	}
 
 	@Override
+	public void setMetadata(IDataMetadata metadata)
+	{
+		this.metadata = metadata;
+	}
+
+	@Override
 	public void write(NBTTagCompound tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
@@ -503,14 +509,6 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	}
 
 	@Override
-	public void readMetadataOnly(NBTTagCompound tag)
-	{
-		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("metadata");
-	}
-
-	@Override
 	public Class<? extends FrameworkData> getDataClass()
 	{
 		return FrameworkData.class;
@@ -526,5 +524,13 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	public void setDataParent(FrameworkData frameworkData)
 	{
 
+	}
+
+	@Override
+	public void readMetadataOnly(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		this.metadata = funnel.get("metadata");
 	}
 }

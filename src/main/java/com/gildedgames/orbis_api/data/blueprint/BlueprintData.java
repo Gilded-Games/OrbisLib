@@ -226,6 +226,14 @@ public class BlueprintData
 		}
 	}
 
+	@Override
+	public void readMetadataOnly(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		this.metadata = funnel.get("metadata");
+	}
+
 	public BlockDataContainer getBlockDataContainer()
 	{
 		return this.dataContainer;
@@ -391,6 +399,12 @@ public class BlueprintData
 	}
 
 	@Override
+	public void setMetadata(IDataMetadata metadata)
+	{
+		this.metadata = metadata;
+	}
+
+	@Override
 	public IData clone()
 	{
 		final BlueprintData data = new BlueprintData();
@@ -419,14 +433,6 @@ public class BlueprintData
 	public void markDirty()
 	{
 		this.listeners.forEach(IBlueprintDataListener::onDataChanged);
-	}
-
-	@Override
-	public void readMetadataOnly(NBTTagCompound tag)
-	{
-		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("metadata");
 	}
 
 	@Override

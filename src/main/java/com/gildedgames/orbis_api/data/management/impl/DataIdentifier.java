@@ -10,11 +10,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.lang.reflect.Type;
+import java.util.UUID;
 
 public class DataIdentifier implements IDataIdentifier
 {
 
-	private int dataId;
+	private UUID dataId;
 
 	private IProjectIdentifier projectIdentifier;
 
@@ -23,12 +24,12 @@ public class DataIdentifier implements IDataIdentifier
 
 	}
 
-	private DataIdentifier(int dataId)
+	private DataIdentifier(UUID dataId)
 	{
 		this.dataId = dataId;
 	}
 
-	public DataIdentifier(final IProjectIdentifier identifier, final int dataId)
+	public DataIdentifier(final IProjectIdentifier identifier, final UUID dataId)
 	{
 		this.projectIdentifier = identifier;
 		this.dataId = dataId;
@@ -39,7 +40,11 @@ public class DataIdentifier implements IDataIdentifier
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setInteger("dataId", this.dataId);
+		if (this.dataId != null)
+		{
+			tag.setUniqueId("dataId", this.dataId);
+		}
+
 		funnel.set("projectIdentifier", this.projectIdentifier);
 	}
 
@@ -48,12 +53,12 @@ public class DataIdentifier implements IDataIdentifier
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.dataId = tag.getInteger("dataId");
+		this.dataId = tag.hasUniqueId("dataId") ? tag.getUniqueId("dataId") : null;
 		this.projectIdentifier = funnel.get("projectIdentifier");
 	}
 
 	@Override
-	public int getDataId()
+	public UUID getDataId()
 	{
 		return this.dataId;
 	}
@@ -113,14 +118,14 @@ public class DataIdentifier implements IDataIdentifier
 
 			if (values.length <= 1)
 			{
-				int dataId = Integer.valueOf(values[0]);
+				UUID dataId = UUID.fromString(values[0]);
 
 				return new DataIdentifier(dataId);
 			}
 
 			if (values.length >= 3)
 			{
-				int dataId = Integer.valueOf(values[0]);
+				UUID dataId = UUID.fromString(values[0]);
 
 				String projectId = values[1];
 				String creator = values[2];

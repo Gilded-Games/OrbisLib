@@ -6,6 +6,7 @@ import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * A management object for managing the projects within a specific directory.
@@ -58,8 +59,7 @@ public interface IProjectManager
 	 * @param folderName The name of the folder that the project is in.
 	 * @return The found project.
 	 */
-	@Nullable
-	<T extends IProject> T findProject(String folderName) throws OrbisMissingProjectException;
+	<T extends IProject> Optional<T> findProject(String folderName) throws OrbisMissingProjectException;
 
 	/**
 	 * Attempts to find a project with the provided identifier.
@@ -67,8 +67,7 @@ public interface IProjectManager
 	 * @param identifier The identifier for the project.
 	 * @return The found project.
 	 */
-	@Nullable
-	<T extends IProject> T findProject(IProjectIdentifier identifier) throws OrbisMissingProjectException;
+	<T extends IProject> Optional<T> findProject(IProjectIdentifier identifier) throws OrbisMissingProjectException;
 
 	/**
 	 * Attempts to find a data with the provided location.
@@ -79,8 +78,7 @@ public interface IProjectManager
 	 * @param location The location of the data.
 	 * @return The found project.
 	 */
-	@Nullable
-	<T extends IData> T findData(IProject project, File location) throws OrbisMissingDataException, OrbisMissingProjectException;
+	<T extends IData> Optional<T> findData(IProject project, File location) throws OrbisMissingDataException, OrbisMissingProjectException;
 
 	/**
 	 * Same as findProject(), but instead attempts to find
@@ -92,8 +90,7 @@ public interface IProjectManager
 	 * @param identifier The identifier for the data.
 	 * @return The found data.
 	 */
-	@Nullable
-	<T extends IData> T findData(IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException;
+	<T extends IData> Optional<T> findData(IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException;
 
 	/**
 	 * Same as findData(), but instead attempts to find
@@ -105,8 +102,7 @@ public interface IProjectManager
 	 * @param identifier The identifier for the data.
 	 * @return The found data.
 	 */
-	@Nullable
-	<T extends IDataMetadata> T findMetadata(IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException;
+	<T extends IDataMetadata> Optional<T> findMetadata(IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException;
 
 	/**
 	 * Creates a new project with the provided name and identfier.

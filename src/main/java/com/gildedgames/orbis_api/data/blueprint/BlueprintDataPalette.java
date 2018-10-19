@@ -16,10 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * TODO: MOVE THIS INTO API PACKAGE AND HAVE A UNIVERSAL PROJECT MANAGER. VERY IMPORTANT.
@@ -198,9 +195,9 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 			try
 			{
 				final IDataIdentifier id = pair.getKey();
-				final BlueprintData data = OrbisAPI.services().getProjectManager().findData(id);
+				final Optional<BlueprintData> data = OrbisAPI.services().getProjectManager().findData(id);
 
-				this.data.put(id, data);
+				data.ifPresent(blueprintData -> this.data.put(id, blueprintData));
 			}
 			catch (final OrbisMissingDataException | OrbisMissingProjectException e)
 			{

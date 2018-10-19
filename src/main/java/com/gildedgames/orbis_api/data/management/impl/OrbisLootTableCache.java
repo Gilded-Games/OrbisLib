@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class OrbisLootTableCache
 {
@@ -112,13 +113,15 @@ public class OrbisLootTableCache
 		@Nullable
 		private LootTable loadLootTable(IDataIdentifier id)
 		{
-			IProject project = OrbisAPI.services().getProjectManager().findProject(id.getProjectIdentifier());
+			Optional<IProject> projectOp = OrbisAPI.services().getProjectManager().findProject(id.getProjectIdentifier());
 
-			if (project == null)
+			if (!projectOp.isPresent())
 			{
 				OrbisLootTableCache.LOGGER.warn("Couldn't load loot table {} from {}", id);
 				return LootTable.EMPTY_LOOT_TABLE;
 			}
+
+			IProject project = projectOp.get();
 
 			File file = project.getFileForId(id);
 

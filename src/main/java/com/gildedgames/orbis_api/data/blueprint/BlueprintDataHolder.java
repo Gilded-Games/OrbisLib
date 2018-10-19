@@ -65,7 +65,8 @@ public class BlueprintDataHolder implements IDataHolder<BlueprintData>
 		try
 		{
 			final IDataIdentifier id = funnel.get("id");
-			this.data = OrbisAPI.services().getProjectManager().findData(id);
+
+			OrbisAPI.services().getProjectManager().findData(id).ifPresent(data -> this.data = (BlueprintData) data);
 		}
 		catch (final OrbisMissingDataException | OrbisMissingProjectException e)
 		{

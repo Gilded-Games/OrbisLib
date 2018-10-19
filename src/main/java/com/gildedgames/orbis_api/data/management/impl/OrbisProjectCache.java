@@ -9,22 +9,18 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class OrbisProjectCache implements IProjectCache
 {
 
-	private final Map<Integer, IDataMetadata> idToMetadata = Maps.newHashMap();
+	private final Map<UUID, IDataMetadata> idToMetadata = Maps.newHashMap();
 
 	private IProject project;
 
-	private BiMap<Integer, IData> idToData = HashBiMap.create();
+	private BiMap<UUID, IData> idToData = HashBiMap.create();
 
-	private BiMap<Integer, String> idToLocation = HashBiMap.create();
-
-	private int nextDataId;
+	private BiMap<UUID, String> idToLocation = HashBiMap.create();
 
 	private OrbisProjectCache()
 	{
@@ -37,7 +33,7 @@ public class OrbisProjectCache implements IProjectCache
 	}
 
 	@Override
-	public boolean hasData(final int dataId)
+	public boolean hasData(final UUID dataId)
 	{
 		return this.idToData.containsKey(dataId);
 	}
@@ -63,19 +59,29 @@ public class OrbisProjectCache implements IProjectCache
 	}
 
 	@Override
-	public <T extends IData> T getData(final int dataId)
+	public <T extends IData> Optional<T> getData(final UUID dataId)
 	{
-		return (T) this.idToData.get(dataId);
+		if (!this.idToData.containsKey(dataId))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of((T) this.idToData.get(dataId));
 	}
 
 	@Override
-	public IDataMetadata getMetadata(final int dataId)
+	public Optional<IDataMetadata> getMetadata(final UUID dataId)
 	{
-		return this.idToMetadata.get(dataId);
+		if (!this.idToMetadata.containsKey(dataId))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(this.idToMetadata.get(dataId));
 	}
 
 	@Override
-	public void removeData(final int dataId)
+	public void removeData(final UUID dataId)
 	{
 		this.idToData.remove(dataId);
 		this.idToLocation.remove(dataId);
@@ -86,19 +92,31 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		location = location.replace("/", "\\");
 
-		if (data.getMetadata().getIdentifier() == null)
+		if (data.getMetadata().getIdentifier() == null || data.getMetadata().getIdentifier().getDataId() == null)
 		{
 			data.getMetadata().setIdentifier(this.createNextIdentifier());
 		}
 
-		int id = data.getMetadata().getIdentifier().getDataId();
+		UUID id = data.getMetadata().getIdentifier().getDataId();
 
-		if (this.idToData.containsKey(id) || Objects.equals(this.idToData.get(id), data))
+		final boolean fromOtherProject =
+				data.getMetadata().getIdentifier() != null && !this.project.getProjectIdentifier()
+						.equals(data.getMetadata().getIdentifier().getProjectIdentifier());
+
+		/* If the data file seems to be moved from another project, it'll reassign a new data id for it **/
+		if (fromOtherProject)
 		{
 			data.getMetadata().setIdentifier(this.createNextIdentifier());
 
 			id = data.getMetadata().getIdentifier().getDataId();
 		}
+
+		/*if (this.idToData.containsKey(id))
+		{
+			data.getMetadata().setIdentifier(this.createNextIdentifier());
+
+			id = data.getMetadata().getIdentifier().getDataId();
+		}*/
 
 		this.idToData.put(id, data);
 
@@ -117,7 +135,7 @@ public class OrbisProjectCache implements IProjectCache
 	}
 
 	@Override
-	public void setDataLocation(final int dataId, final String location)
+	public void setDataLocation(final UUID dataId, final String location)
 	{
 		if (!this.idToLocation.containsKey(dataId) || !Objects.equals(this.idToLocation.get(dataId), location))
 		{
@@ -133,40 +151,40 @@ public class OrbisProjectCache implements IProjectCache
 	}
 
 	@Override
-	public String getDataLocation(final int dataId)
+	public Optional<String> getDataLocation(final UUID dataId)
 	{
-		return this.idToLocation.get(dataId);
+		if (!this.idToLocation.containsKey(dataId))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(this.idToLocation.get(dataId));
 	}
 
 	@Override
-	public int getDataId(String location)
+	public Optional<UUID> getDataId(String location)
 	{
 		location = location.replace("/", "\\");
 
 		if (this.idToLocation.inverse().containsKey(location))
 		{
-			return this.idToLocation.inverse().get(location);
+			return Optional.of(this.idToLocation.inverse().get(location));
 		}
 
-		return -1;
-	}
-
-	@Override
-	public int getNextDataId()
-	{
-		return this.nextDataId;
-	}
-
-	@Override
-	public void setNextDataId(final int nextDataId)
-	{
-		this.nextDataId = nextDataId;
+		return Optional.empty();
 	}
 
 	@Override
 	public IDataIdentifier createNextIdentifier()
 	{
-		return new DataIdentifier(this.project.getProjectIdentifier(), this.nextDataId++);
+		UUID dataId = UUID.randomUUID();
+
+		while (this.idToData.containsKey(dataId))
+		{
+			dataId = UUID.randomUUID();
+		}
+
+		return new DataIdentifier(this.project.getProjectIdentifier(), dataId);
 	}
 
 	@Override
@@ -174,10 +192,8 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		funnel.setIntMap("idToData", this.idToData);
-		funnel.setIntToStringMap("idToLocation", this.idToLocation);
-
-		tag.setInteger("nextDataId", this.nextDataId);
+		funnel.setMap("idToData", this.idToData, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
+		funnel.setMap("idToLocation", this.idToLocation, NBTFunnel.UUID_SETTER, NBTFunnel.STRING_SETTER);
 	}
 
 	@Override
@@ -185,17 +201,15 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.idToData = HashBiMap.create(funnel.getIntMap("idToData"));
-		this.idToLocation = HashBiMap.create(funnel.getIntToStringMap("idToLocation"));
+		this.idToData = HashBiMap.create(funnel.getMap("idToData", NBTFunnel.UUID_GETTER, NBTFunnel.getter()));
+		this.idToLocation = HashBiMap.create(funnel.getMap("idToLocation", NBTFunnel.UUID_GETTER, NBTFunnel.STRING_GETTER));
 
-		for (final Map.Entry<Integer, IData> entry : this.idToData.entrySet())
+		for (final Map.Entry<UUID, IData> entry : this.idToData.entrySet())
 		{
-			final int id = entry.getKey();
+			final UUID id = entry.getKey();
 			final IData data = entry.getValue();
 
 			this.idToMetadata.put(id, data.getMetadata());
 		}
-
-		this.nextDataId = tag.getInteger("nextDataId");
 	}
 }

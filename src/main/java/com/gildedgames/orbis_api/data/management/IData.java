@@ -9,7 +9,7 @@ import com.gildedgames.orbis_api.world.IWorldObject;
  * It has a unique identifier to signify which project
  * it is attached to and where inside of the project.
  *
- * It also stores metadata and a file extension.
+ * It should NEVER serialise the IMetadata passed to it.
  */
 public interface IData extends NBT, NBTMeta
 {
@@ -36,8 +36,16 @@ public interface IData extends NBT, NBTMeta
 	 * information about the file to the user in a GUI, plus
 	 * also used to identify the project its associated with and
 	 * its internal id.
+	 *
+	 * It should NEVER serialise the IMetadata passed to it.
 	 * @return
 	 */
 	IDataMetadata getMetadata();
+
+	/**
+	 * It should NEVER serialise the IMetadata passed to it.
+	 * @param metadata
+	 */
+	void setMetadata(IDataMetadata metadata);
 
 }

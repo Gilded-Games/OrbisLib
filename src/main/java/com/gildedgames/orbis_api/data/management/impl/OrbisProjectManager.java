@@ -17,10 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class OrbisProjectManager implements IProjectManager
@@ -318,7 +315,7 @@ public class OrbisProjectManager implements IProjectManager
 
 	@Nullable
 	@Override
-	public <T extends IProject> T findProject(final String folderName) throws OrbisMissingProjectException
+	public <T extends IProject> Optional<T> findProject(final String folderName) throws OrbisMissingProjectException
 	{
 		final IProject project = this.nameToProject.get(folderName);
 
@@ -327,18 +324,18 @@ public class OrbisProjectManager implements IProjectManager
 			// Try to find and load project if not loaded yet
 			if (this.findAndLoadProject(folderName))
 			{
-				return (T) this.nameToProject.get(folderName);
+				return Optional.of((T) this.nameToProject.get(folderName));
 			}
 
 			throw new OrbisMissingProjectException(folderName);
 		}
 
-		return (T) project;
+		return Optional.of((T) project);
 	}
 
 	@Nullable
 	@Override
-	public <T extends IProject> T findProject(final IProjectIdentifier identifier) throws OrbisMissingProjectException
+	public <T extends IProject> Optional<T> findProject(final IProjectIdentifier identifier) throws OrbisMissingProjectException
 	{
 		final IProject project = this.idToProject.get(identifier);
 
@@ -347,18 +344,18 @@ public class OrbisProjectManager implements IProjectManager
 			// Try to find and load project if not loaded yet
 			if (this.findAndLoadProject(identifier))
 			{
-				return (T) this.idToProject.get(identifier);
+				return Optional.of((T) this.idToProject.get(identifier));
 			}
 
 			throw new OrbisMissingProjectException(identifier);
 		}
 
-		return (T) project;
+		return Optional.of((T) project);
 	}
 
 	@Nullable
 	@Override
-	public <T extends IData> T findData(final IProject project, final File file) throws OrbisMissingDataException, OrbisMissingProjectException
+	public <T extends IData> Optional<T> findData(final IProject project, final File file) throws OrbisMissingDataException, OrbisMissingProjectException
 	{
 		try
 		{
@@ -368,11 +365,12 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				final String dataLocation = file.getCanonicalPath().replace(project.getLocationAsFile().getCanonicalPath() + File.separator, "");
 
-				final int dataId = project.getCache().getDataId(dataLocation);
+				final Optional<UUID> dataId = project.getCache().getDataId(dataLocation);
 
-				final IData data = project.getCache().getData(dataId);
-
-				return (T) data;
+				if (dataId.isPresent())
+				{
+					return project.getCache().getData(dataId.get());
+				}
 			}
 		}
 		catch (final IOException e)
@@ -380,23 +378,25 @@ public class OrbisProjectManager implements IProjectManager
 			OrbisAPI.LOGGER.error(e);
 		}
 
-		return null;
+		return Optional.empty();
 	}
 
 	@Nullable
 	@Override
-	public <T extends IData> T findData(final IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException
+	public <T extends IData> Optional<T> findData(final IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException
 	{
-		final IProject project = this.findProject(identifier.getProjectIdentifier());
+		final Optional<IProject> projectOp = this.findProject(identifier.getProjectIdentifier());
 
-		if (project == null)
+		if (!projectOp.isPresent())
 		{
 			throw new NullPointerException("Project is null when trying to find data!");
 		}
 
-		final IData data = project.getCache().getData(identifier.getDataId());
+		IProject project = projectOp.get();
 
-		if (data == null)
+		Optional<IData> data = project.getCache().getData(identifier.getDataId());
+
+		if (!data.isPresent())
 		{
 			// Try to find and load data if not loaded yet
 			if (project.findAndLoadData(identifier))
@@ -407,28 +407,30 @@ public class OrbisProjectManager implements IProjectManager
 			throw new OrbisMissingDataException(identifier);
 		}
 
-		return (T) data;
+		return (Optional<T>) data;
 	}
 
 	@Nullable
 	@Override
-	public <T extends IDataMetadata> T findMetadata(final IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException
+	public <T extends IDataMetadata> Optional<T> findMetadata(final IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException
 	{
-		final IProject project = this.findProject(identifier.getProjectIdentifier());
+		final Optional<IProject> projectOp = this.findProject(identifier.getProjectIdentifier());
 
-		if (project == null)
+		if (!projectOp.isPresent())
 		{
 			throw new NullPointerException("Project is null when trying to find data!");
 		}
 
-		final IDataMetadata data = project.getCache().getMetadata(identifier.getDataId());
+		IProject project = projectOp.get();
 
-		if (data == null)
+		final Optional<IDataMetadata> metadata = project.getCache().getMetadata(identifier.getDataId());
+
+		if (!metadata.isPresent())
 		{
 			throw new OrbisMissingDataException(identifier);
 		}
 
-		return (T) data;
+		return (Optional<T>) metadata;
 	}
 
 	@Override

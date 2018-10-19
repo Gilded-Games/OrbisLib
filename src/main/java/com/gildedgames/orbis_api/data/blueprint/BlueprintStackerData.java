@@ -1,7 +1,6 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.block.BlockDataContainer;
-import com.gildedgames.orbis_api.block.BlockDataContainerDefault;
 import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
 import com.gildedgames.orbis_api.data.IDataHolder;
@@ -90,6 +89,14 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 	}
 
 	@Override
+	public void readMetadataOnly(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		this.metadata = funnel.get("metadata");
+	}
+
+	@Override
 	public void preSaveToDisk(IWorldObject object)
 	{
 
@@ -114,11 +121,9 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 	}
 
 	@Override
-	public void readMetadataOnly(NBTTagCompound tag)
+	public void setMetadata(IDataMetadata metadata)
 	{
-		NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("metadata");
+		this.metadata = metadata;
 	}
 
 	@Override

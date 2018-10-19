@@ -2,8 +2,9 @@ package com.gildedgames.orbis_api.data.management;
 
 import com.gildedgames.orbis_api.util.mc.NBT;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface IProjectCache extends NBT
 {
@@ -13,7 +14,7 @@ public interface IProjectCache extends NBT
 	 * @return Whether or not the cache has a
 	 * piece of data stored with that data id.
 	 */
-	boolean hasData(int dataId);
+	boolean hasData(UUID dataId);
 
 	/**
 	 * @param project The project that is using this cache.
@@ -40,8 +41,7 @@ public interface IProjectCache extends NBT
 	 * @param dataId
 	 * @return
 	 */
-	@Nullable
-	<T extends IData> T getData(int dataId);
+	<T extends IData> Optional<T> getData(UUID dataId);
 
 	/**
 	 * Fetched the cached IDataMetadata reference that is attached to the
@@ -49,8 +49,7 @@ public interface IProjectCache extends NBT
 	 * @param dataId
 	 * @return
 	 */
-	@Nullable
-	IDataMetadata getMetadata(int dataId);
+	Optional<IDataMetadata> getMetadata(UUID dataId);
 
 	/**
 	 * Removes the data associated with this id.
@@ -58,7 +57,7 @@ public interface IProjectCache extends NBT
 	 * This only removes it in the cache, not on disk.
 	 * @param dataId The id for the data.
 	 */
-	void removeData(int dataId);
+	void removeData(UUID dataId);
 
 	/**
 	 * Internal method to placesAir data and its metadata to the cache,
@@ -79,33 +78,21 @@ public interface IProjectCache extends NBT
 	 * @param dataId
 	 * @param location
 	 */
-	void setDataLocation(int dataId, String location);
+	void setDataLocation(UUID dataId, String location);
 
 	/**
 	 * A way to get the location of data from its id alone.
 	 * @param dataId The data id.
 	 * @return The location of that data.
 	 */
-	@Nullable
-	String getDataLocation(int dataId);
+	Optional<String> getDataLocation(UUID dataId);
 
 	/**
 	 * A way to get the data id from its location.
 	 * @param location The location of the data.
 	 * @return The data id. Returns -1 if not present.
 	 */
-	int getDataId(String location);
-
-	/**
-	 * @return The next data id used by the cache.
-	 */
-	int getNextDataId();
-
-	/**
-	 * Should ONLY BE USED by the project that this cache belongs to.
-	 * @param nextDataId The next data id that will be used by this cache.
-	 */
-	void setNextDataId(int nextDataId);
+	Optional<UUID> getDataId(String location);
 
 	/**
 	 * @return The next available data identifier.

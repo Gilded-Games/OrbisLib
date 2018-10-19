@@ -2,7 +2,6 @@ package com.gildedgames.orbis_api.core.baking;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
-import com.gildedgames.orbis_api.block.BlockDataContainerDefault;
 import com.gildedgames.orbis_api.block.BlockDataContainerDefaultVoid;
 import com.gildedgames.orbis_api.core.BlockDataChunk;
 import com.gildedgames.orbis_api.core.ICreationData;
@@ -770,7 +769,7 @@ public class BakedBlueprint implements IDimensions
 		{
 			final IDataIdentifier id = funnel.get("blueprintId");
 
-			this.blueprintData = OrbisAPI.services().getProjectManager().findData(id);
+			OrbisAPI.services().getProjectManager().findData(id).ifPresent(data -> this.blueprintData = (BlueprintData) data);
 		}
 		catch (final OrbisMissingDataException | OrbisMissingProjectException e)
 		{

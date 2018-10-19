@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class DataCachePool implements IDataCachePool
@@ -125,16 +126,18 @@ public class DataCachePool implements IDataCachePool
 
 	@Nullable
 	@Override
-	public <T extends IDataCache> T findCache(final String cacheID)
+	public <T extends IDataCache> Optional<T> findCache(final String cacheID)
 	{
 		final IDataCache cache = this.idToCache.get(cacheID);
 
 		if (cache == null)
 		{
-			OrbisAPI.LOGGER.warn("The cache you attempted to find could not be found. Something might be wrong.");
+			OrbisAPI.LOGGER.warn("The cache you attempted to find (" + cacheID + ") could not be found. Something might be wrong.");
+
+			return Optional.empty();
 		}
 
-		return (T) cache;
+		return Optional.of((T) cache);
 	}
 
 	@Override

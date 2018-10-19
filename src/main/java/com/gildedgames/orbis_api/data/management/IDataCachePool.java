@@ -2,7 +2,7 @@ package com.gildedgames.orbis_api.data.management;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Simple interface used to group
@@ -46,8 +46,7 @@ public interface IDataCachePool
 	 * @return The found cache. Null if nothing
 	 * is found.
 	 */
-	@Nullable
-	<T extends IDataCache> T findCache(String cacheID);
+	<T extends IDataCache> Optional<T> findCache(String cacheID);
 
 	/**
 	 * Writes the data inside this cache to a

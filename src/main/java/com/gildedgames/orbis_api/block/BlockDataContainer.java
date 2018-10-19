@@ -540,11 +540,17 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	}
 
 	@Override
+	public void setMetadata(IDataMetadata metadata)
+	{
+		this.metadata = metadata;
+	}
+
+	@Override
 	public void readMetadataOnly(NBTTagCompound tag)
 	{
-		final NBTFunnel funnel = new NBTFunnel(tag);
+		NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.metadata = funnel.get("actual_metadata");
+		this.metadata = funnel.get("metadata");
 	}
 
 	public NBTTagCompound getTileEntity(int x, int y, int z)

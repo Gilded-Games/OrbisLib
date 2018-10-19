@@ -144,8 +144,6 @@ public class OrbisProject implements IProject
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setInteger("nextDataId", this.cache.getNextDataId());
-
 		funnel.set("identifier", this.identifier);
 		funnel.set("metadata", this.metadata);
 		funnel.setMap("manualMetaCache", this.manualMetaCache, NBTFunnel.STRING_SETTER, NBTFunnel.setter());
@@ -155,8 +153,6 @@ public class OrbisProject implements IProject
 	public void read(final NBTTagCompound tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.cache.setNextDataId(tag.getInteger("nextDataId"));
 
 		this.identifier = funnel.get("identifier");
 		this.metadata = funnel.get("metadata");
@@ -336,7 +332,7 @@ public class OrbisProject implements IProject
 
 		this.walkDataLoading((input, file, location, resourceLocation, manual) -> {
 			// If already loaded, continue to next file
-			if (this.cache.getDataId(location) != -1)
+			if (!this.cache.getDataId(location).isPresent())
 			{
 				return;
 			}
@@ -368,7 +364,7 @@ public class OrbisProject implements IProject
 					// Nested data tags because of the way NBTHelper writes NBT files
 					tag = funnel.getTag().getCompoundTag("data").getCompoundTag("data");
 
-					data.readMetadataOnly(tag);
+					//data.readMetadataOnly(tag);
 				}
 
 				if (id.equals(data.getMetadata().getIdentifier()))
@@ -591,7 +587,7 @@ public class OrbisProject implements IProject
 				data = chosenLoader.load(this, file, location);
 			}
 
-			if (data != null && this.cache.getDataId(location) == -1)
+			if (data != null && !this.cache.getDataId(location).isPresent())
 			{
 				this.loadData(data, file, location);
 

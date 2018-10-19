@@ -1,7 +1,6 @@
 package com.gildedgames.orbis_api.data.json;
 
 import com.gildedgames.orbis_api.data.management.IData;
-import com.gildedgames.orbis_api.data.management.IDataManual;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
@@ -10,7 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class JsonData implements IDataManual
+public class JsonData implements IData
 {
 
 	public static final String EXTENSION = "json";
