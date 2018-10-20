@@ -26,6 +26,14 @@ public class ProjectMetadata implements IProjectMetadata
 		this.display = Lists.newArrayList();
 	}
 
+	private ProjectMetadata(LocalDateTime lastChanged, List<IText> display, boolean downloaded, boolean downloading)
+	{
+		this.lastChanged = lastChanged;
+		this.display = display;
+		this.downloaded = downloaded;
+		this.downloading = downloading;
+	}
+
 	@Override
 	public void write(final NBTTagCompound tag)
 	{

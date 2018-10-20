@@ -10,6 +10,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -38,8 +40,10 @@ public class OrbisProjectManager implements IProjectManager
 	public OrbisProjectManager(final File baseDirectory, Object mod, String archiveBaseName, Supplier<IProject> projectFactory)
 	{
 		this.gson = new GsonBuilder()
-				.registerTypeAdapter(IProjectIdentifier.class, ProjectIdentifier.Serializer.class)
-				.registerTypeAdapter(IDataIdentifier.class, DataIdentifier.Serializer.class)
+				.registerTypeAdapter(IProjectIdentifier.class, new GenericSerializer<IProjectIdentifier>(ProjectIdentifier.class))
+				.registerTypeAdapter(IDataIdentifier.class, new GenericSerializer<IDataIdentifier>(DataIdentifier.class))
+				.registerTypeAdapter(IDataMetadata.class, new GenericSerializer<IDataMetadata>(DataMetadata.class))
+				.registerTypeAdapter(IProjectMetadata.class, new GenericSerializer<IProjectMetadata>(ProjectMetadata.class))
 				.create();
 
 		if (!baseDirectory.exists() && !baseDirectory.mkdirs())
@@ -158,22 +162,29 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
-
-					foundProjects.add(info.getIdentifier());
-
-					if (!this.idToProject.keySet().contains(info.getIdentifier()))
+					try
 					{
-						IProject project = this.projectFactory.get();
-						project.setInfo(info);
+						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
 
-						project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+						foundProjects.add(info.getIdentifier());
 
-						project.setLocationAsFile(file);
+						if (!this.idToProject.keySet().contains(info.getIdentifier()))
+						{
+							IProject project = this.projectFactory.get();
+							project.setInfo(info);
 
-						project.loadAndCacheData();
+							project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
 
-						this.cacheProject(file.getName(), project);
+							project.setLocationAsFile(file);
+
+							project.loadAndCacheData();
+
+							this.cacheProject(file.getName(), project);
+						}
+					}
+					catch (JsonSyntaxException | JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
 					}
 				}
 			}
@@ -209,33 +220,40 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
-
-					IProject project = this.projectFactory.get();
-					project.setInfo(info);
-
-					project.setLocationAsFile(file);
-
-					boolean needsToResave = false;
-
-					if (this.idToProject.containsKey(project.getInfo().getIdentifier()))
+					try
 					{
-						OrbisAPI.LOGGER.error("WARNING: A project (" + project.getInfo().getIdentifier()
-								+ ") has not been loaded since it has the same id as another existing project.");
+						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
 
-						return;
+						IProject project = this.projectFactory.get();
+						project.setInfo(info);
+
+						project.setLocationAsFile(file);
+
+						boolean needsToResave = false;
+
+						if (this.idToProject.containsKey(project.getInfo().getIdentifier()))
+						{
+							OrbisAPI.LOGGER.error("WARNING: A project (" + project.getInfo().getIdentifier()
+									+ ") has not been loaded since it has the same id as another existing project.");
+
+							return;
+						}
+
+						if (needsToResave)
+						{
+							this.saveProjectToDisk(project);
+						}
+
+						this.cacheProject(file.getName(), project);
+
+						project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+
+						project.loadAndCacheData();
 					}
-
-					if (needsToResave)
+					catch (JsonSyntaxException | JsonIOException e)
 					{
-						this.saveProjectToDisk(project);
+						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
 					}
-
-					this.cacheProject(file.getName(), project);
-
-					project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
-
-					project.loadAndCacheData();
 				}
 				catch (final IOException e)
 				{
@@ -266,23 +284,30 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
-					IProject project = this.projectFactory.get();
-
-					project.setInfo(info);
-
-					//TODO: This will neverh ave the location as file set???
-					if (project.getLocationAsFile().getName().equals(folderName))
+					try
 					{
-						project.setLocationAsFile(file);
+						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
+						IProject project = this.projectFactory.get();
 
-						this.cacheProject(file.getName(), project);
+						project.setInfo(info);
 
-						project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+						//TODO: This will neverh ave the location as file set???
+						if (project.getLocationAsFile().getName().equals(folderName))
+						{
+							project.setLocationAsFile(file);
 
-						project.loadAndCacheData();
+							this.cacheProject(file.getName(), project);
 
-						flag[0] = true;
+							project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+
+							project.loadAndCacheData();
+
+							flag[0] = true;
+						}
+					}
+					catch (JsonSyntaxException | JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
 					}
 				}
 			}
@@ -306,22 +331,29 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
-
-					if (info.getIdentifier().equals(identifier))
+					try
 					{
-						final IProject project = this.projectFactory.get();
-						project.setInfo(info);
+						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
 
-						project.setLocationAsFile(file);
+						if (info.getIdentifier().equals(identifier))
+						{
+							final IProject project = this.projectFactory.get();
+							project.setInfo(info);
 
-						this.cacheProject(file.getName(), project);
+							project.setLocationAsFile(file);
 
-						project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+							this.cacheProject(file.getName(), project);
 
-						project.loadAndCacheData();
+							project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
 
-						flag[0] = true;
+							project.loadAndCacheData();
+
+							flag[0] = true;
+						}
+					}
+					catch (JsonSyntaxException | JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
 					}
 				}
 			}
@@ -458,7 +490,8 @@ public class OrbisProjectManager implements IProjectManager
 	public <T extends IProject> T createAndSaveProject(final String name, final IProjectIdentifier identifier)
 	{
 		final File file = new File(this.baseDirectory, name);
-		final IProject project = new OrbisProject(file, new ProjectInformation(identifier, new ProjectMetadata()));
+		final IProject project = new OrbisProject(file,
+				new ProjectInformation(identifier, new ProjectMetadata()));
 
 		this.saveProjectToDisk(project);
 		this.cacheProject(name, project);
@@ -553,7 +586,14 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				try (OutputStreamWriter writer = new OutputStreamWriter(out))
 				{
-					this.gson.toJson(project.getInfo(), writer);
+					try
+					{
+						this.gson.toJson(project.getInfo(), writer);
+					}
+					catch (JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to save Project info to json file", e);
+					}
 				}
 			}
 			catch (final IOException e)

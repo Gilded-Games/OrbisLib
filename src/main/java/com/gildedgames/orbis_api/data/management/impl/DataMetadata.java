@@ -17,13 +17,13 @@ import java.util.List;
 public class DataMetadata implements IDataMetadata
 {
 	@SerializedName("name")
-	private String name = "";
+	public String name = "";
 
 	@SerializedName("display")
-	private List<IText> display;
+	public List<IText> display;
 
 	@SerializedName("identifier")
-	private IDataIdentifier identifier;
+	public IDataIdentifier identifier;
 
 	@SerializedName("dependencies")
 	private List<IDataIdentifier> dependencies;

@@ -10,6 +10,9 @@ import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
@@ -24,6 +27,7 @@ import java.nio.file.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class OrbisProject implements IProject
@@ -123,14 +127,24 @@ public class OrbisProject implements IProject
 
 		IMetadataLoader<OrbisProject> jsonMetadataLoader = new IMetadataLoader<OrbisProject>()
 		{
+			Gson gson = new GsonBuilder()
+					.registerTypeAdapter(IProjectIdentifier.class, new GenericSerializer<IProjectIdentifier>(ProjectIdentifier.class))
+					.registerTypeAdapter(IDataIdentifier.class, new GenericSerializer<IDataIdentifier>(DataIdentifier.class))
+					.registerTypeAdapter(IDataMetadata.class, new GenericSerializer<IDataMetadata>(DataMetadata.class)).create();
+
 			@Override
 			public void saveMetadata(OrbisProject project, IData data, File file, String location, OutputStream outputStream)
 			{
 				try (OutputStreamWriter writer = new OutputStreamWriter(outputStream))
 				{
-					Gson gson = new Gson();
-
-					gson.toJson(writer, DataMetadata.class);
+					try
+					{
+						this.gson.toJson(data.getMetadata(), writer);
+					}
+					catch (JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to save data metadata to json file", e);
+					}
 				}
 				catch (IOException e)
 				{
@@ -143,9 +157,14 @@ public class OrbisProject implements IProject
 			{
 				try (InputStreamReader reader = new InputStreamReader(input))
 				{
-					Gson gson = new Gson();
-
-					return gson.fromJson(reader, DataMetadata.class);
+					try
+					{
+						return this.gson.fromJson(reader, IDataMetadata.class);
+					}
+					catch (JsonSyntaxException | JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to load data metadata from json file", e);
+					}
 				}
 				catch (IOException e)
 				{
@@ -212,7 +231,7 @@ public class OrbisProject implements IProject
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.info = funnel.get("identifier");
+		this.info = funnel.get("info");
 	}
 
 	@Override
@@ -302,8 +321,7 @@ public class OrbisProject implements IProject
 		this.cache = cache;
 	}
 
-	@Override
-	public void writeData(final IData data, final File file)
+	private void writeMetadata(IData data, File file)
 	{
 		try
 		{
@@ -331,6 +349,12 @@ public class OrbisProject implements IProject
 		{
 			OrbisAPI.LOGGER.info(e);
 		}
+	}
+
+	@Override
+	public void writeData(final IData data, final File file)
+	{
+		this.writeMetadata(data, file);
 
 		try (FileOutputStream out = new FileOutputStream(file))
 		{
@@ -370,10 +394,10 @@ public class OrbisProject implements IProject
 		else if (this.locationFile != null && shouldSaveAfter)
 		{
 			/*
-			 * Save the data to disk to ensure it doesn't keep creating
+			 * Save the metadata to disk to ensure it doesn't keep creating
 			 * new identifiers each time the project is loaded.
 			 */
-			this.writeData(data, file);
+			this.writeMetadata(data, file);
 		}
 	}
 
@@ -403,7 +427,14 @@ public class OrbisProject implements IProject
 				return;
 			}
 
-			IDataMetadata metadata = metadataLoader.loadMetadata(this, file, location, metadataInput);
+			InputStream metaInput = metadataInput.get();
+
+			if (metaInput == null)
+			{
+				return;
+			}
+
+			IDataMetadata metadata = metadataLoader.loadMetadata(this, file, location, metaInput);
 
 			if (metadata != null)
 			{
@@ -414,6 +445,7 @@ public class OrbisProject implements IProject
 					if (dataLoader != null)
 					{
 						IData data = dataLoader.loadData(this, file, location, input);
+						data.setMetadata(metadata);
 
 						found[0] = true;
 
@@ -518,7 +550,7 @@ public class OrbisProject implements IProject
 					final String name = FilenameUtils.getName(path);
 
 					/* Prevents the path walking from including the project data itself (hidden file) **/
-					if (extension.equals("project"))
+					if (name.equals("project_data.json"))
 					{
 						return;
 					}
@@ -542,18 +574,28 @@ public class OrbisProject implements IProject
 
 							try (InputStream in = usesJar ? MinecraftServer.class.getResourceAsStream(resourceLocation) : new FileInputStream(file))
 							{
-								try (InputStream metaIn = usesJar ?
-										MinecraftServer.class.getResourceAsStream(resourceLocationMetadata) :
-										new FileInputStream(metadataFile))
-								{
-									String projectsLoc = resourceLocation.substring(
-											resourceLocation.lastIndexOf("projects") + 9);
+								String projectsLoc = resourceLocation.substring(
+										resourceLocation.lastIndexOf("projects") + "projects".length() + 1);
 
-									final String location = projectsLoc
-											.substring(projectsLoc.indexOf(locationRoot));
+								String projectName = FilenameUtils.getName(locationRoot);
 
-									dataWalker.walk(in, metaIn, file, location, resourceLocation);
-								}
+								final String location = projectsLoc
+										.substring(projectsLoc.indexOf(projectName) + projectName.length() + 1);
+
+								dataWalker.walk(in, () -> {
+									try
+									{
+										return usesJar ?
+												MinecraftServer.class.getResourceAsStream(resourceLocationMetadata) :
+												new FileInputStream(metadataFile);
+									}
+									catch (FileNotFoundException ignored)
+									{
+
+									}
+
+									return null;
+								}, file, location, resourceLocation);
 							}
 							catch (final IOException e)
 							{
@@ -588,10 +630,12 @@ public class OrbisProject implements IProject
 		String locationRoot = this.locationFile != null ? this.locationFile.getPath() : this.jarLocation.getPath();
 
 		String projectsLoc = filePath.substring(
-				filePath.lastIndexOf("projects") + 9);
+				filePath.lastIndexOf("projects") + "projects".length() + 1);
+
+		String projectName = FilenameUtils.getName(locationRoot);
 
 		return projectsLoc
-				.substring(projectsLoc.indexOf(locationRoot));
+				.substring(projectsLoc.indexOf(projectName) + projectName.length() + 1);
 	}
 
 	@Override
@@ -612,7 +656,46 @@ public class OrbisProject implements IProject
 
 			if (data != null && !this.cache.getDataId(location).isPresent())
 			{
-				IDataMetadata metadata = metadataLoader.loadMetadata(this, file, location, metadataInput);
+				InputStream metaInput = metadataInput.get();
+
+				IDataMetadata metadata = null;
+
+				if (metaInput == null)
+				{
+					if (!this.isModProject)
+					{
+						metadata = new DataMetadata();
+
+						metadata.setName(file.getName().replace("." + extension, ""));
+						metadata.setIdentifier(this.cache.createNextIdentifier());
+
+						File metaFile = new File(file.getPath().replace("." + extension, ".metadata"));
+
+						try (FileOutputStream out = new FileOutputStream(metaFile))
+						{
+							metadataLoader.saveMetadata(this, data, file, location, out);
+						}
+						catch (IOException e)
+						{
+							OrbisAPI.LOGGER.error("Failed to save metadata for data file", e);
+						}
+					}
+					else
+					{
+						OrbisAPI.LOGGER.error("WARNING: A data file in your mod project (" + this.getInfo()
+								+ ") doesn't have a metadata file, meaning it will not work. This can be auto-generated outside of a dev workspace if you simply load up the project.");
+					}
+				}
+				else
+				{
+					metadata = metadataLoader.loadMetadata(this, file, location, metaInput);
+				}
+
+				if (metadata == null)
+				{
+					OrbisAPI.LOGGER.error("WARNING: A data file could not load because there was no associate metadata file with it.");
+					return;
+				}
 
 				data.setMetadata(metadata);
 
@@ -642,6 +725,6 @@ public class OrbisProject implements IProject
 
 	private interface ProjectDataWalker
 	{
-		void walk(InputStream in, InputStream metaIn, File file, String location, String resourceLocation) throws IOException;
+		void walk(InputStream in, Supplier<InputStream> metaIn, File file, String location, String resourceLocation) throws IOException;
 	}
 }
