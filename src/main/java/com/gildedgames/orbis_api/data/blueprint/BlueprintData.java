@@ -226,14 +226,6 @@ public class BlueprintData
 		}
 	}
 
-	@Override
-	public void readMetadataOnly(NBTTagCompound tag)
-	{
-		NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("metadata");
-	}
-
 	public BlockDataContainer getBlockDataContainer()
 	{
 		return this.dataContainer;
@@ -308,7 +300,6 @@ public class BlueprintData
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		funnel.set("metadata", this.metadata);
 		funnel.set("dataContainer", this.dataContainer);
 		funnel.set("scheduleLayerTree", this.scheduleLayerTree);
 		funnel.set("variableTree", this.variableTree);
@@ -324,7 +315,6 @@ public class BlueprintData
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.metadata = funnel.get("metadata");
 		this.dataContainer = funnel.get("dataContainer");
 		this.scheduleLayerTree = funnel.getWithDefault("scheduleLayerTree", () -> this.scheduleLayerTree);
 		this.variableTree = funnel.getWithDefault("variableTree", () -> this.variableTree);

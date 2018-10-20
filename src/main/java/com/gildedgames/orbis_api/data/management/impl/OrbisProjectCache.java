@@ -92,15 +92,17 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		location = location.replace("/", "\\");
 
+		UUID id;
+
 		if (data.getMetadata().getIdentifier() == null || data.getMetadata().getIdentifier().getDataId() == null)
 		{
 			data.getMetadata().setIdentifier(this.createNextIdentifier());
 		}
 
-		UUID id = data.getMetadata().getIdentifier().getDataId();
+		id = data.getMetadata().getIdentifier().getDataId();
 
 		final boolean fromOtherProject =
-				data.getMetadata().getIdentifier() != null && !this.project.getProjectIdentifier()
+				data.getMetadata().getIdentifier() != null && !this.project.getInfo().getIdentifier()
 						.equals(data.getMetadata().getIdentifier().getProjectIdentifier());
 
 		/* If the data file seems to be moved from another project, it'll reassign a new data id for it **/
@@ -131,7 +133,7 @@ public class OrbisProjectCache implements IProjectCache
 
 		data.getMetadata().setName(location.substring(index).replace("." + data.getFileExtension(), ""));
 
-		this.project.getMetadata().setLastChanged(LocalDateTime.now());
+		this.project.getInfo().getMetadata().setLastChanged(LocalDateTime.now());
 	}
 
 	@Override
@@ -184,7 +186,7 @@ public class OrbisProjectCache implements IProjectCache
 			dataId = UUID.randomUUID();
 		}
 
-		return new DataIdentifier(this.project.getProjectIdentifier(), dataId);
+		return new DataIdentifier(this.project.getInfo().getIdentifier(), dataId);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.data.management;
 
+import com.gildedgames.orbis_api.data.management.impl.ProjectInformation;
 import com.gildedgames.orbis_api.util.mc.NBT;
 
 import javax.annotation.Nullable;
@@ -75,25 +76,9 @@ public interface IProject extends NBT
 	 */
 	boolean removeListener(IProjectListener listener);
 
-	/**
-	 * This unique identifier to distinguish it between other projects.
-	 * Includes a name and authors.
-	 * @return
-	 */
-	IProjectIdentifier getProjectIdentifier();
+	ProjectInformation getInfo();
 
-	/**
-	 * This unique identifier to distinguish it between other projects.
-	 * Includes a name and authors.
-	 * @param projectIdentifier
-	 */
-	void setProjectIdentifier(IProjectIdentifier projectIdentifier);
-
-	/**
-	 * Used for displaying information about this project to the user.
-	 * @return The project's metadata.
-	 */
-	IProjectMetadata getMetadata();
+	void setInfo(ProjectInformation info);
 
 	/**
 	 * @return The cache for this project, if it's currently loaded.

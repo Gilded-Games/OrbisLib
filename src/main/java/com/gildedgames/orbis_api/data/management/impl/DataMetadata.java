@@ -5,6 +5,7 @@ import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.IText;
 import com.google.common.collect.Lists;
+import com.google.gson.annotations.SerializedName;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.List;
@@ -15,12 +16,16 @@ import java.util.List;
  */
 public class DataMetadata implements IDataMetadata
 {
+	@SerializedName("name")
 	private String name = "";
 
+	@SerializedName("display")
 	private List<IText> display;
 
+	@SerializedName("identifier")
 	private IDataIdentifier identifier;
 
+	@SerializedName("dependencies")
 	private List<IDataIdentifier> dependencies;
 
 	public DataMetadata()

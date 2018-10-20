@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.data.management;
 
-import com.gildedgames.orbis_api.util.io.NBTMeta;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
 
@@ -11,7 +10,7 @@ import com.gildedgames.orbis_api.world.IWorldObject;
  *
  * It should NEVER serialise the IMetadata passed to it.
  */
-public interface IData extends NBT, NBTMeta
+public interface IData extends NBT
 {
 
 	/**

@@ -3,7 +3,6 @@ package com.gildedgames.orbis_api.data.json;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
-import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -93,24 +92,12 @@ public class JsonData implements IData
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		NBTFunnel funnel = new NBTFunnel(tag);
 
-		funnel.set("metadata", this.metadata);
 	}
 
 	@Override
 	public void read(NBTTagCompound tag)
 	{
-		NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.metadata = funnel.get("metadata");
-	}
-
-	@Override
-	public void readMetadataOnly(NBTTagCompound tag)
-	{
-		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("metadata");
 	}
 }

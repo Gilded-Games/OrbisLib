@@ -4,21 +4,18 @@ import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.data.management.*;
-import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.FileHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public class OrbisProjectManager implements IProjectManager
 {
@@ -34,8 +31,17 @@ public class OrbisProjectManager implements IProjectManager
 
 	private Set<IProjectManagerListener> listeners = Sets.newHashSet();
 
-	public OrbisProjectManager(final File baseDirectory, Object mod, String archiveBaseName)
+	private Supplier<IProject> projectFactory;
+
+	private Gson gson;
+
+	public OrbisProjectManager(final File baseDirectory, Object mod, String archiveBaseName, Supplier<IProject> projectFactory)
 	{
+		this.gson = new GsonBuilder()
+				.registerTypeAdapter(IProjectIdentifier.class, ProjectIdentifier.Serializer.class)
+				.registerTypeAdapter(IDataIdentifier.class, DataIdentifier.Serializer.class)
+				.create();
+
 		if (!baseDirectory.exists() && !baseDirectory.mkdirs())
 		{
 			throw new RuntimeException("Base directory for OrbisProjectManager cannot be created!");
@@ -49,6 +55,7 @@ public class OrbisProjectManager implements IProjectManager
 		this.baseDirectory = baseDirectory;
 		this.mod = mod;
 		this.archiveBaseName = archiveBaseName;
+		this.projectFactory = projectFactory;
 	}
 
 	public static boolean isProjectDirectory(final File file)
@@ -61,7 +68,7 @@ public class OrbisProjectManager implements IProjectManager
 			 * the metadata for the project **/
 			for (final File innerFile : innerFiles)
 			{
-				if (innerFile != null && !innerFile.isDirectory() && innerFile.getName().equals("project_data.project"))
+				if (innerFile != null && !innerFile.isDirectory() && innerFile.getName().equals("project_data.json"))
 				{
 					return true;
 				}
@@ -87,7 +94,7 @@ public class OrbisProjectManager implements IProjectManager
 	public void cacheProject(final String folderName, final IProject project)
 	{
 		this.nameToProject.put(folderName, project);
-		this.idToProject.put(project.getProjectIdentifier(), project);
+		this.idToProject.put(project.getInfo().getIdentifier(), project);
 	}
 
 	@Override
@@ -130,7 +137,7 @@ public class OrbisProjectManager implements IProjectManager
 					 * the metadata for the project **/
 					for (final File innerFile : innerFiles)
 					{
-						if (innerFile != null && !innerFile.isDirectory() && innerFile.getName().equals("project_data.project"))
+						if (innerFile != null && !innerFile.isDirectory() && innerFile.getName().equals("project_data.json"))
 						{
 							action.accept(innerFile, file);
 						}
@@ -149,22 +156,25 @@ public class OrbisProjectManager implements IProjectManager
 		{
 			try (FileInputStream in = new FileInputStream(innerFile))
 			{
-				final NBTTagCompound tag = CompressedStreamTools.readCompressed(in);
-				final NBTFunnel funnel = new NBTFunnel(tag);
-
-				final IProject project = funnel.get("project");
-
-				foundProjects.add(project.getProjectIdentifier());
-
-				if (!this.idToProject.keySet().contains(project.getProjectIdentifier()))
+				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
 
-					project.setLocationAsFile(file);
+					foundProjects.add(info.getIdentifier());
 
-					project.loadAndCacheData();
+					if (!this.idToProject.keySet().contains(info.getIdentifier()))
+					{
+						IProject project = this.projectFactory.get();
+						project.setInfo(info);
 
-					this.cacheProject(file.getName(), project);
+						project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+
+						project.setLocationAsFile(file);
+
+						project.loadAndCacheData();
+
+						this.cacheProject(file.getName(), project);
+					}
 				}
 			}
 			catch (final IOException e)
@@ -197,38 +207,44 @@ public class OrbisProjectManager implements IProjectManager
 			/** When found, load and cache the project into memory **/
 			try (FileInputStream in = new FileInputStream(innerFile))
 			{
-				final NBTTagCompound tag = CompressedStreamTools.readCompressed(in);
-
-				final NBTFunnel funnel = new NBTFunnel(tag);
-
-				final IProject project = funnel.get("project");
-
-				project.setLocationAsFile(file);
-
-				boolean needsToResave = false;
-
-				while (this.idToProject.containsKey(project.getProjectIdentifier()))
+				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					needsToResave = true;
+					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
 
-					project.setProjectIdentifier(
-							new ProjectIdentifier(project.getProjectIdentifier().getProjectId() + "-", project.getProjectIdentifier().getOriginalCreator()));
+					IProject project = this.projectFactory.get();
+					project.setInfo(info);
+
+					project.setLocationAsFile(file);
+
+					boolean needsToResave = false;
+
+					if (this.idToProject.containsKey(project.getInfo().getIdentifier()))
+					{
+						OrbisAPI.LOGGER.error("WARNING: A project (" + project.getInfo().getIdentifier()
+								+ ") has not been loaded since it has the same id as another existing project.");
+
+						return;
+					}
+
+					if (needsToResave)
+					{
+						this.saveProjectToDisk(project);
+					}
+
+					this.cacheProject(file.getName(), project);
+
+					project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+
+					project.loadAndCacheData();
 				}
-
-				if (needsToResave)
+				catch (final IOException e)
 				{
-					this.saveProjectToDisk(project);
+					OrbisAPI.LOGGER.catching(e);
 				}
-
-				this.cacheProject(file.getName(), project);
-
-				project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
-
-				project.loadAndCacheData();
 			}
-			catch (final IOException e)
+			catch (IOException e)
 			{
-				OrbisAPI.LOGGER.catching(e);
+				e.printStackTrace();
 			}
 		});
 	}
@@ -248,23 +264,26 @@ public class OrbisProjectManager implements IProjectManager
 			/** When found, load and cache the project into memory **/
 			try (FileInputStream in = new FileInputStream(innerFile))
 			{
-				final NBTTagCompound tag = CompressedStreamTools.readCompressed(in);
-
-				final NBTFunnel funnel = new NBTFunnel(tag);
-
-				final IProject project = funnel.get("project");
-
-				if (project.getLocationAsFile().getName().equals(folderName))
+				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					project.setLocationAsFile(file);
+					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
+					IProject project = this.projectFactory.get();
 
-					this.cacheProject(file.getName(), project);
+					project.setInfo(info);
 
-					project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+					//TODO: This will neverh ave the location as file set???
+					if (project.getLocationAsFile().getName().equals(folderName))
+					{
+						project.setLocationAsFile(file);
 
-					project.loadAndCacheData();
+						this.cacheProject(file.getName(), project);
 
-					flag[0] = true;
+						project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+
+						project.loadAndCacheData();
+
+						flag[0] = true;
+					}
 				}
 			}
 			catch (final IOException e)
@@ -285,23 +304,25 @@ public class OrbisProjectManager implements IProjectManager
 			/** When found, load and cache the project into memory **/
 			try (FileInputStream in = new FileInputStream(innerFile))
 			{
-				final NBTTagCompound tag = CompressedStreamTools.readCompressed(in);
-
-				final NBTFunnel funnel = new NBTFunnel(tag);
-
-				final IProject project = funnel.get("project");
-
-				if (project.getProjectIdentifier().equals(identifier))
+				try (InputStreamReader reader = new InputStreamReader(in))
 				{
-					project.setLocationAsFile(file);
+					ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
 
-					this.cacheProject(file.getName(), project);
+					if (info.getIdentifier().equals(identifier))
+					{
+						final IProject project = this.projectFactory.get();
+						project.setInfo(info);
 
-					project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+						project.setLocationAsFile(file);
 
-					project.loadAndCacheData();
+						this.cacheProject(file.getName(), project);
 
-					flag[0] = true;
+						project.setModAndArchiveLoadingFrom(this.mod, this.archiveBaseName);
+
+						project.loadAndCacheData();
+
+						flag[0] = true;
+					}
 				}
 			}
 			catch (final IOException e)
@@ -437,7 +458,7 @@ public class OrbisProjectManager implements IProjectManager
 	public <T extends IProject> T createAndSaveProject(final String name, final IProjectIdentifier identifier)
 	{
 		final File file = new File(this.baseDirectory, name);
-		final IProject project = new OrbisProject(file, identifier);
+		final IProject project = new OrbisProject(file, new ProjectInformation(identifier, new ProjectMetadata()));
 
 		this.saveProjectToDisk(project);
 		this.cacheProject(name, project);
@@ -450,7 +471,7 @@ public class OrbisProjectManager implements IProjectManager
 	{
 		final File location = new File(this.baseDirectory, name);
 
-		final IProject existing = this.idToProject.get(project.getProjectIdentifier());
+		final IProject existing = this.idToProject.get(project.getInfo().getIdentifier());
 
 		if (existing != null && existing.getLocationAsFile().exists())
 		{
@@ -461,7 +482,7 @@ public class OrbisProjectManager implements IProjectManager
 			 *
 			 * Then return so new project instance isn't cached.
 			 */
-			if (existing.getMetadata().getLastChanged().equals(project.getMetadata().getLastChanged()))
+			if (existing.getInfo().getMetadata().getLastChanged().equals(project.getInfo().getMetadata().getLastChanged()))
 			{
 				if (!existing.getLocationAsFile().equals(location))
 				{
@@ -519,7 +540,7 @@ public class OrbisProjectManager implements IProjectManager
 
 	private void saveProjectToDisk(final IProject project)
 	{
-		final File projectFile = new File(project.getLocationAsFile(), "project_data.project");
+		final File projectFile = new File(project.getLocationAsFile(), "project_data.json");
 
 		try
 		{
@@ -530,12 +551,10 @@ public class OrbisProjectManager implements IProjectManager
 
 			try (FileOutputStream out = new FileOutputStream(projectFile))
 			{
-				final NBTTagCompound tag = new NBTTagCompound();
-				final NBTFunnel funnel = new NBTFunnel(tag);
-
-				funnel.set("project", project);
-
-				CompressedStreamTools.writeCompressed(tag, out);
+				try (OutputStreamWriter writer = new OutputStreamWriter(out))
+				{
+					this.gson.toJson(project.getInfo(), writer);
+				}
 			}
 			catch (final IOException e)
 			{

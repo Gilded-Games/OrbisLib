@@ -89,14 +89,6 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 	}
 
 	@Override
-	public void readMetadataOnly(NBTTagCompound tag)
-	{
-		NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("metadata");
-	}
-
-	@Override
 	public void preSaveToDisk(IWorldObject object)
 	{
 
@@ -131,7 +123,6 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		funnel.set("metadata", this.metadata);
 		funnel.set("top", this.top);
 		funnel.set("bottom", this.bottom);
 		funnel.setArray("segments", this.segments);
@@ -142,7 +133,6 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.metadata = funnel.get("metadata");
 		this.top = funnel.get("top");
 		this.bottom = funnel.get("bottom");
 		this.segments = funnel.getArray("segments", IDataHolder.class);

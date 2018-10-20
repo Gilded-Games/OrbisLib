@@ -1,17 +1,21 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
 import com.gildedgames.orbis_api.data.management.IProjectIdentifier;
-import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.google.gson.*;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.JsonUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.lang.reflect.Type;
+import java.util.UUID;
 
 /**
  * A basic concrete implementation of IProjectIdentifier.
  */
 public class ProjectIdentifier implements IProjectIdentifier
 {
-	private String projectId;
+	private UUID projectId;
 
 	private String originalCreator;
 
@@ -20,7 +24,7 @@ public class ProjectIdentifier implements IProjectIdentifier
 
 	}
 
-	public ProjectIdentifier(final String projectId, final String originalCreator)
+	public ProjectIdentifier(final UUID projectId, final String originalCreator)
 	{
 		this.projectId = projectId;
 		this.originalCreator = originalCreator;
@@ -29,23 +33,19 @@ public class ProjectIdentifier implements IProjectIdentifier
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		tag.setString("id", this.projectId);
+		tag.setUniqueId("id", this.projectId);
 		tag.setString("originalCreator", this.originalCreator);
 	}
 
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
-		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.projectId = tag.getString("id");
+		this.projectId = tag.getUniqueId("id");
 		this.originalCreator = tag.getString("originalCreator");
 	}
 
 	@Override
-	public String getProjectId()
+	public UUID getProjectId()
 	{
 		return this.projectId;
 	}
@@ -93,6 +93,27 @@ public class ProjectIdentifier implements IProjectIdentifier
 	public String toString()
 	{
 		return this.projectId + ":" + this.originalCreator;
+	}
+
+	public class Serializer implements JsonDeserializer<IProjectIdentifier>, JsonSerializer<IProjectIdentifier>
+	{
+		@Override
+		public IProjectIdentifier deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws
+				JsonParseException
+		{
+			String[] values = JsonUtils.getString(element, "location").split(":");
+
+			UUID dataId = UUID.fromString(values[0]);
+			String originalCreator = values[1];
+
+			return new ProjectIdentifier(dataId, originalCreator);
+		}
+
+		@Override
+		public JsonElement serialize(IProjectIdentifier id, Type type, JsonSerializationContext context)
+		{
+			return new JsonPrimitive(id.toString());
+		}
 	}
 
 }

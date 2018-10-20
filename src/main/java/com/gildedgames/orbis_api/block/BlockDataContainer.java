@@ -8,7 +8,6 @@ import com.gildedgames.orbis_api.data.management.impl.DataMetadata;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
-import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -345,10 +344,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		{
 			tag.setByteArray("addBlocks", addBlocks);
 		}
-
-		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		funnel.set("actual_metadata", this.metadata);
 	}
 
 	@Override
@@ -473,10 +468,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				this.entities.put(i, entity);
 			}
 		}
-
-		final NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("actual_metadata");
 	}
 
 	@Override
@@ -543,14 +534,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	public void setMetadata(IDataMetadata metadata)
 	{
 		this.metadata = metadata;
-	}
-
-	@Override
-	public void readMetadataOnly(NBTTagCompound tag)
-	{
-		NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.metadata = funnel.get("metadata");
 	}
 
 	public NBTTagCompound getTileEntity(int x, int y, int z)

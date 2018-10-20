@@ -127,7 +127,7 @@ public class DataIdentifier implements IDataIdentifier
 			{
 				UUID dataId = UUID.fromString(values[0]);
 
-				String projectId = values[1];
+				UUID projectId = UUID.fromString(values[1]);
 				String creator = values[2];
 
 				return new DataIdentifier(new ProjectIdentifier(projectId, creator), dataId);

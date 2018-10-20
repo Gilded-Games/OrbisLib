@@ -240,6 +240,7 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 88, GuiVarItemStack.class);
 			IOHelper.register(s, 89, JsonData.class);
 			IOHelper.register(s, 90, GuiConditionCheckEntranceTriggerId.class);
+			IOHelper.register(s, 91, ProjectInformation.class);
 
 			this.io.register(s);
 		}
@@ -279,7 +280,7 @@ public class OrbisServices implements IOrbisServices
 	private boolean readProject(Object mod, String archiveBaseName, final ResourceLocation server)
 	{
 		final String s = server.getResourcePath();
-		final File file1 = new File(this.baseFolder, s + File.separator + "project_data.project");
+		final File file1 = new File(this.baseFolder, s + File.separator + "project_data.json");
 
 		if (!file1.exists())
 		{
@@ -321,7 +322,7 @@ public class OrbisServices implements IOrbisServices
 
 		try
 		{
-			inputstream = MinecraftServer.class.getResourceAsStream("/assets/" + s + "/orbis/" + s1 + "/project_data.project");
+			inputstream = MinecraftServer.class.getResourceAsStream("/assets/" + s + "/orbis/" + s1 + "/project_data.json");
 			this.readProjectFromStream(mod, archiveBaseName, s1, inputstream, URI.create("/assets/" + s + "/orbis/" + s1 + "/"));
 			return true;
 		}
@@ -413,19 +414,19 @@ public class OrbisServices implements IOrbisServices
 			{
 				this.projectManager = new OrbisProjectManager(
 						new File(Minecraft.getMinecraft().mcDataDir, "/orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"), this.mod,
-						this.archiveBaseName);
+						this.archiveBaseName, OrbisProject::new);
 			}
 			else
 			{
 				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().mcDataDir, "/orbis/local/projects/"), this.mod,
-						this.archiveBaseName);
+						this.archiveBaseName, OrbisProject::new);
 			}
 		}
 
 		if (this.projectManager == null)
 		{
 			this.projectManager = new OrbisProjectManager(new File(DimensionManager.getCurrentSaveRootDirectory(), "/orbis/projects/"), this.mod,
-					this.archiveBaseName);
+					this.archiveBaseName, OrbisProject::new);
 		}
 
 		this.listeners.forEach((l) -> l.onStartProjectManager(this.projectManager));
