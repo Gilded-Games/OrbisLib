@@ -139,14 +139,7 @@ public class OrbisServices implements IOrbisServices
 	@Nullable
 	public IProject loadProject(final MinecraftServer server, final ResourceLocation location, Object mod, String archiveBaseName)
 	{
-		IProject project = this.get(server, location, mod, archiveBaseName);
-
-		if (project != null)
-		{
-			project.setIsModProject(true);
-		}
-
-		return project;
+		return this.get(server, location, mod, archiveBaseName);
 	}
 
 	@Override
@@ -358,6 +351,7 @@ public class OrbisServices implements IOrbisServices
 
 		project.setJarLocation(location);
 		project.setModAndArchiveLoadingFrom(mod, archiveBaseName);
+		project.setIsModProject(true);
 
 		project.loadAndCacheData();
 

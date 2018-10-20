@@ -290,15 +290,6 @@ public class OrbisProject implements IProject
 	@Override
 	public void loadData(IData data, File file, String location)
 	{
-		final boolean fromOtherProject =
-				data.getMetadata().getIdentifier() != null && !this.identifier.equals(data.getMetadata().getIdentifier().getProjectIdentifier());
-
-		/* If the data file seems to be moved from another project, it'll reassign a new data id for it **/
-		if (fromOtherProject)
-		{
-			data.getMetadata().setIdentifier(this.cache.createNextIdentifier());
-		}
-
 		IDataIdentifier before = data.getMetadata().getIdentifier();
 
 		/* Loads data from file then sets it to the cache **/
@@ -310,12 +301,18 @@ public class OrbisProject implements IProject
 		 */
 		boolean shouldSaveAfter = !data.getMetadata().getIdentifier().equals(before);
 
-		/*
-		 * Save the data to disk to ensure it doesn't keep creating
-		 * new identifiers each time the project is loaded.
-		 */
-		if (this.locationFile != null && (shouldSaveAfter || fromOtherProject))
+		if (this.isModProject && shouldSaveAfter)
 		{
+			OrbisAPI.LOGGER.error("WARNING: A mod data file (" + data.getMetadata()
+					+ ") has a different identifier assigned after loading (Old identifier: " + before
+					+ "). This usually means the original identifier has a null UUID data id or the identifier itself is null. Please reimport this data into your project OUTSIDE of the development workspace and let it assign itself the correct metadata.");
+		}
+		else if (this.locationFile != null && shouldSaveAfter)
+		{
+			/*
+			 * Save the data to disk to ensure it doesn't keep creating
+			 * new identifiers each time the project is loaded.
+			 */
 			this.writeData(data, file);
 		}
 	}
@@ -364,7 +361,7 @@ public class OrbisProject implements IProject
 					// Nested data tags because of the way NBTHelper writes NBT files
 					tag = funnel.getTag().getCompoundTag("data").getCompoundTag("data");
 
-					//data.readMetadataOnly(tag);
+					data.readMetadataOnly(tag);
 				}
 
 				if (id.equals(data.getMetadata().getIdentifier()))
@@ -461,8 +458,11 @@ public class OrbisProject implements IProject
 					final URI uri = p.toUri();
 					final String path = uri.toString().contains("!") ? uri.toString().split("!")[1] : uri.toString();
 
+					String locationRoot = this.locationFile != null ? this.locationFile.getPath() : this.jarLocation.getPath();
+					String relativePath = path.replace(path.substring(0, path.indexOf("/assets")), "");
+
 					/* Prevents the path walking from including the project's jarLocation **/
-					if (path == null || path.equals(this.locationFile != null ? this.locationFile.getPath() : this.jarLocation.getPath()))
+					if (relativePath.equals(locationRoot) || !relativePath.startsWith(locationRoot))
 					{
 						return;
 					}
