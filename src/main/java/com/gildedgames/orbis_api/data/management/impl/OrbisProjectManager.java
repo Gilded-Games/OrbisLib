@@ -33,7 +33,9 @@ public class OrbisProjectManager implements IProjectManager
 
 	private Supplier<IProject> projectFactory;
 
-	public OrbisProjectManager(final File baseDirectory, Object mod, String archiveBaseName, Supplier<IProject> projectFactory)
+	private List<File> extraProjectSources;
+
+	public OrbisProjectManager(final File baseDirectory, List<File> extraProjectSources, Object mod, String archiveBaseName, Supplier<IProject> projectFactory)
 	{
 		if (!baseDirectory.exists() && !baseDirectory.mkdirs())
 		{
@@ -44,6 +46,8 @@ public class OrbisProjectManager implements IProjectManager
 		{
 			throw new IllegalArgumentException("File passed into OrbisProjectManager is not a directory!");
 		}
+
+		this.extraProjectSources = extraProjectSources;
 
 		this.baseDirectory = baseDirectory;
 		this.mod = mod;

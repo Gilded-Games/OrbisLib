@@ -66,6 +66,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -424,19 +425,22 @@ public class OrbisServices implements IOrbisServices
 			if (data != null)
 			{
 				this.projectManager = new OrbisProjectManager(
-						new File(Minecraft.getMinecraft().mcDataDir, "/orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"), this.mod,
+						new File(Minecraft.getMinecraft().mcDataDir, "/orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"),
+						Collections.emptyList(), this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}
 			else
 			{
-				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().mcDataDir, "/orbis/local/projects/"), this.mod,
+				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().mcDataDir, "/orbis/local/projects/"), Collections.emptyList(),
+						this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}
 		}
 
 		if (this.projectManager == null)
 		{
-			this.projectManager = new OrbisProjectManager(new File(DimensionManager.getCurrentSaveRootDirectory(), "/orbis/projects/"), this.mod,
+			this.projectManager = new OrbisProjectManager(new File(DimensionManager.getCurrentSaveRootDirectory(), "/orbis/projects/"), Collections.emptyList(),
+					this.mod,
 					this.archiveBaseName, OrbisProject::new);
 		}
 
