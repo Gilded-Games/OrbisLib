@@ -99,6 +99,8 @@ public class DirectoryNavigator implements IDirectoryNavigator
 		}
 
 		this.injectedDirectories.put(forDirectory, injectedDirectories);
+
+		this.refresh();
 	}
 
 	@Override

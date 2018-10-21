@@ -4,7 +4,6 @@ import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.data.management.*;
-import com.gildedgames.orbis_api.util.mc.FileHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -14,7 +13,6 @@ import com.google.gson.JsonSyntaxException;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class OrbisProjectManager implements IProjectManager
@@ -124,31 +122,39 @@ public class OrbisProjectManager implements IProjectManager
 		});
 	}
 
-	private void walkProjects(final BiConsumer<File, File> action)
+	private void walkProjects(ProjectWalker walker)
 	{
-		final File[] files = this.baseDirectory.listFiles();
+		List<File> directories = Lists.newArrayList(this.baseDirectory);
 
-		if (files == null)
-		{
-			return;
-		}
+		directories.addAll(this.extraProjectSources);
 
-		for (final File file : files)
+		for (int i = 0; i < directories.size(); i++)
 		{
-			/** Once we've found a directory, fetch files inside project directory **/
-			if (file != null && file.isDirectory())
+			File directory = directories.get(i);
+			final File[] files = directory.listFiles();
+
+			if (files == null)
 			{
-				final File[] innerFiles = file.listFiles();
+				return;
+			}
 
-				if (innerFiles != null)
+			for (final File file : files)
+			{
+				/** Once we've found a directory, fetch files inside project directory **/
+				if (file != null && file.isDirectory())
 				{
-					/** Attempt to find the hidden .project file that contains
-					 * the metadata for the project **/
-					for (final File innerFile : innerFiles)
+					final File[] innerFiles = file.listFiles();
+
+					if (innerFiles != null)
 					{
-						if (innerFile != null && !innerFile.isDirectory() && innerFile.getName().equals("project_data.json"))
+						/** Attempt to find the hidden .project file that contains
+						 * the metadata for the project **/
+						for (final File innerFile : innerFiles)
 						{
-							action.accept(innerFile, file);
+							if (innerFile != null && !innerFile.isDirectory() && innerFile.getName().equals("project_data.json"))
+							{
+								walker.accept(innerFile, file, i > 0);
+							}
 						}
 					}
 				}
@@ -161,7 +167,7 @@ public class OrbisProjectManager implements IProjectManager
 	{
 		final List<IProjectIdentifier> foundProjects = Lists.newArrayList();
 
-		this.walkProjects((innerFile, file) ->
+		this.walkProjects((innerFile, file, isExtraSourceProject) ->
 		{
 			try (FileInputStream in = new FileInputStream(innerFile))
 			{
@@ -185,6 +191,12 @@ public class OrbisProjectManager implements IProjectManager
 							project.loadAndCacheData();
 
 							this.cacheProject(file.getName(), project);
+						}
+						else if (isExtraSourceProject)
+						{
+							IProject project = this.idToProject.get(info.getIdentifier());
+
+							project.setLocationAsFile(file);
 						}
 					}
 					catch (JsonSyntaxException | JsonIOException e)
@@ -218,7 +230,7 @@ public class OrbisProjectManager implements IProjectManager
 	@Override
 	public void scanAndCacheProjects()
 	{
-		this.walkProjects((innerFile, file) ->
+		this.walkProjects((innerFile, file, isExtraSourceProject) ->
 		{
 			/** When found, load and cache the project into memory **/
 			try (FileInputStream in = new FileInputStream(innerFile))
@@ -229,25 +241,27 @@ public class OrbisProjectManager implements IProjectManager
 					{
 						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
 
-						IProject project = this.projectFactory.get();
-						project.setInfo(info);
-
-						project.setLocationAsFile(file);
-
-						boolean needsToResave = false;
-
-						if (this.idToProject.containsKey(project.getInfo().getIdentifier()))
+						if (this.idToProject.containsKey(info.getIdentifier()))
 						{
-							OrbisAPI.LOGGER.error("WARNING: A project (" + project.getInfo().getIdentifier()
-									+ ") has not been loaded since it has the same id as another existing project.");
+							if (isExtraSourceProject)
+							{
+								IProject project = this.idToProject.get(info.getIdentifier());
+
+								project.setLocationAsFile(file);
+							}
+							else
+							{
+								OrbisAPI.LOGGER.error("WARNING: A project (" + info.getIdentifier()
+										+ ") has not been loaded since it has the same id as another existing project.");
+							}
 
 							return;
 						}
 
-						if (needsToResave)
-						{
-							this.saveProjectToDisk(project);
-						}
+						IProject project = this.projectFactory.get();
+						project.setInfo(info);
+
+						project.setLocationAsFile(file);
 
 						this.cacheProject(file.getName(), project);
 
@@ -267,7 +281,7 @@ public class OrbisProjectManager implements IProjectManager
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				OrbisAPI.LOGGER.error("Scanning and caching projects failed:", e);
 			}
 		});
 	}
@@ -282,7 +296,7 @@ public class OrbisProjectManager implements IProjectManager
 	{
 		final boolean[] flag = new boolean[1];
 
-		this.walkProjects((innerFile, file) ->
+		this.walkProjects((innerFile, file, isExtraSourceProject) ->
 		{
 			/** When found, load and cache the project into memory **/
 			try (FileInputStream in = new FileInputStream(innerFile))
@@ -296,8 +310,7 @@ public class OrbisProjectManager implements IProjectManager
 
 						project.setInfo(info);
 
-						//TODO: This will neverh ave the location as file set???
-						if (project.getLocationAsFile().getName().equals(folderName))
+						if (file.getParent().equals(folderName))
 						{
 							project.setLocationAsFile(file);
 
@@ -329,7 +342,7 @@ public class OrbisProjectManager implements IProjectManager
 	{
 		final boolean[] flag = new boolean[1];
 
-		this.walkProjects((innerFile, file) ->
+		this.walkProjects((innerFile, file, isExtraProjectSource) ->
 		{
 			/** When found, load and cache the project into memory **/
 			try (FileInputStream in = new FileInputStream(innerFile))
@@ -580,38 +593,36 @@ public class OrbisProjectManager implements IProjectManager
 	{
 		final File projectFile = new File(project.getLocationAsFile(), "project_data.json");
 
-		try
+		/*if (projectFile.exists())
 		{
-			if (projectFile.exists())
-			{
-				FileHelper.unhide(projectFile);
-			}
+			FileHelper.unhide(projectFile);
+		}*/
 
-			try (FileOutputStream out = new FileOutputStream(projectFile))
+		try (FileOutputStream out = new FileOutputStream(projectFile))
+		{
+			try (OutputStreamWriter writer = new OutputStreamWriter(out))
 			{
-				try (OutputStreamWriter writer = new OutputStreamWriter(out))
+				try
 				{
-					try
-					{
-						OrbisAPI.services().getGson().toJson(project.getInfo(), writer);
-					}
-					catch (JsonIOException e)
-					{
-						OrbisAPI.LOGGER.error("Failed to save Project info to json file", e);
-					}
+					OrbisAPI.services().getGson().toJson(project.getInfo(), writer);
+				}
+				catch (JsonIOException e)
+				{
+					OrbisAPI.LOGGER.error("Failed to save Project info to json file", e);
 				}
 			}
-			catch (final IOException e)
-			{
-				OrbisAPI.LOGGER.error("Failed to save Project to disk", e);
-			}
-
-			FileHelper.hide(projectFile);
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.LOGGER.error(e);
+			OrbisAPI.LOGGER.error("Failed to save Project to disk", e);
 		}
+
+		//FileHelper.hide(projectFile);
+	}
+
+	private interface ProjectWalker
+	{
+		void accept(File innerFile, File file, boolean isExtraSourceProject);
 	}
 
 }
