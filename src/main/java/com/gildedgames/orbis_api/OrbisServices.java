@@ -27,8 +27,7 @@ import com.gildedgames.orbis_api.data.blueprint.*;
 import com.gildedgames.orbis_api.data.framework.FrameworkData;
 import com.gildedgames.orbis_api.data.framework.FrameworkNode;
 import com.gildedgames.orbis_api.data.json.JsonData;
-import com.gildedgames.orbis_api.data.management.IProject;
-import com.gildedgames.orbis_api.data.management.IProjectManager;
+import com.gildedgames.orbis_api.data.management.*;
 import com.gildedgames.orbis_api.data.management.impl.*;
 import com.gildedgames.orbis_api.data.pathway.Entrance;
 import com.gildedgames.orbis_api.data.pathway.PathwayData;
@@ -44,7 +43,6 @@ import com.gildedgames.orbis_api.network.instances.PacketUnregisterDimension;
 import com.gildedgames.orbis_api.preparation.IPrepRegistry;
 import com.gildedgames.orbis_api.preparation.impl.PrepRegistry;
 import com.gildedgames.orbis_api.util.io.IClassSerializer;
-import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.io.SimpleSerializer;
 import com.gildedgames.orbis_api.util.mc.BlockPosDimension;
 import com.gildedgames.orbis_api.world.data.IWorldDataManager;
@@ -52,10 +50,10 @@ import com.gildedgames.orbis_api.world.instances.IInstanceRegistry;
 import com.gildedgames.orbis_api.world.instances.InstanceRegistryImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -66,10 +64,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -106,6 +101,8 @@ public class OrbisServices implements IOrbisServices
 
 	private boolean scanAndCacheProjectsOnStartup;
 
+	private Gson gson;
+
 	public OrbisServices()
 	{
 		this.network = new NetworkMultipleParts(OrbisAPI.MOD_ID);
@@ -113,6 +110,13 @@ public class OrbisServices implements IOrbisServices
 		this.network.reg(PacketRegisterDimension.Handler.class, PacketRegisterDimension.class, Side.CLIENT);
 		this.network.reg(PacketUnregisterDimension.Handler.class, PacketUnregisterDimension.class, Side.CLIENT);
 		this.network.reg(PacketRegisterInstance.Handler.class, PacketRegisterInstance.class, Side.CLIENT);
+
+		this.gson = new GsonBuilder()
+				.registerTypeAdapter(IProjectIdentifier.class, new GenericSerializer<IProjectIdentifier>(ProjectIdentifier.class))
+				.registerTypeAdapter(IDataIdentifier.class, new GenericSerializer<IDataIdentifier>(DataIdentifier.class))
+				.registerTypeAdapter(IDataMetadata.class, new GenericSerializer<IDataMetadata>(DataMetadata.class))
+				.registerTypeAdapter(IProjectMetadata.class, new GenericSerializer<IProjectMetadata>(ProjectMetadata.class))
+				.create();
 	}
 
 	@Nullable
@@ -318,7 +322,6 @@ public class OrbisServices implements IOrbisServices
 		final String s = id.getResourceDomain();
 		final String s1 = id.getResourcePath();
 		InputStream inputstream = null;
-		boolean flag;
 
 		try
 		{
@@ -328,7 +331,6 @@ public class OrbisServices implements IOrbisServices
 		}
 		catch (final IOException var10)
 		{
-			flag = false;
 			OrbisAPI.LOGGER.error(var10);
 		}
 		finally
@@ -336,7 +338,7 @@ public class OrbisServices implements IOrbisServices
 			IOUtils.closeQuietly(inputstream);
 		}
 
-		return flag;
+		return false;
 	}
 
 	/**
@@ -344,11 +346,14 @@ public class OrbisServices implements IOrbisServices
 	 */
 	private void readProjectFromStream(Object mod, String archiveBaseName, final String id, final InputStream stream, final URI location) throws IOException
 	{
-		final NBTTagCompound tag = CompressedStreamTools.readCompressed(stream);
+		final IProject project = this.getProjectManager().getProjectFactory().get();
 
-		final NBTFunnel funnel = new NBTFunnel(tag);
+		try (InputStreamReader reader = new InputStreamReader(stream))
+		{
+			ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
 
-		final IProject project = funnel.get("project");
+			project.setInfo(info);
+		}
 
 		project.setJarLocation(location);
 		project.setModAndArchiveLoadingFrom(mod, archiveBaseName);
@@ -357,6 +362,12 @@ public class OrbisServices implements IOrbisServices
 		project.loadAndCacheData();
 
 		this.loadedProjects.put(id, project);
+	}
+
+	@Override
+	public Gson getGson()
+	{
+		return this.gson;
 	}
 
 	@Override

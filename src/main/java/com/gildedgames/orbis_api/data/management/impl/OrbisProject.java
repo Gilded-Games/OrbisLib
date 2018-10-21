@@ -9,8 +9,6 @@ import com.gildedgames.orbis_api.data.management.*;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -127,11 +125,6 @@ public class OrbisProject implements IProject
 
 		IMetadataLoader<OrbisProject> jsonMetadataLoader = new IMetadataLoader<OrbisProject>()
 		{
-			Gson gson = new GsonBuilder()
-					.registerTypeAdapter(IProjectIdentifier.class, new GenericSerializer<IProjectIdentifier>(ProjectIdentifier.class))
-					.registerTypeAdapter(IDataIdentifier.class, new GenericSerializer<IDataIdentifier>(DataIdentifier.class))
-					.registerTypeAdapter(IDataMetadata.class, new GenericSerializer<IDataMetadata>(DataMetadata.class)).create();
-
 			@Override
 			public void saveMetadata(OrbisProject project, IData data, File file, String location, OutputStream outputStream)
 			{
@@ -139,7 +132,7 @@ public class OrbisProject implements IProject
 				{
 					try
 					{
-						this.gson.toJson(data.getMetadata(), writer);
+						OrbisAPI.services().getGson().toJson(data.getMetadata(), writer);
 					}
 					catch (JsonIOException e)
 					{
@@ -159,7 +152,7 @@ public class OrbisProject implements IProject
 				{
 					try
 					{
-						return this.gson.fromJson(reader, IDataMetadata.class);
+						return OrbisAPI.services().getGson().fromJson(reader, IDataMetadata.class);
 					}
 					catch (JsonSyntaxException | JsonIOException e)
 					{
@@ -574,13 +567,10 @@ public class OrbisProject implements IProject
 
 							try (InputStream in = usesJar ? MinecraftServer.class.getResourceAsStream(resourceLocation) : new FileInputStream(file))
 							{
-								String projectsLoc = resourceLocation.substring(
-										resourceLocation.lastIndexOf("projects") + "projects".length() + 1);
+								String projectName = FilenameUtils.getName(locationRoot.substring(0, locationRoot.length() - 1));
 
-								String projectName = FilenameUtils.getName(locationRoot);
-
-								final String location = projectsLoc
-										.substring(projectsLoc.indexOf(projectName) + projectName.length() + 1);
+								final String location = resourceLocation
+										.substring(resourceLocation.indexOf(projectName) + projectName.length() + 1);
 
 								dataWalker.walk(in, () -> {
 									try
@@ -682,7 +672,7 @@ public class OrbisProject implements IProject
 					}
 					else
 					{
-						OrbisAPI.LOGGER.error("WARNING: A data file in your mod project (" + this.getInfo()
+						OrbisAPI.LOGGER.error("WARNING: A data file in your mod project (" + this.getInfo().getIdentifier()
 								+ ") doesn't have a metadata file, meaning it will not work. This can be auto-generated outside of a dev workspace if you simply load up the project.");
 					}
 				}

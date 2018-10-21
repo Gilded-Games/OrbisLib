@@ -8,8 +8,6 @@ import com.gildedgames.orbis_api.util.mc.FileHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
@@ -35,17 +33,8 @@ public class OrbisProjectManager implements IProjectManager
 
 	private Supplier<IProject> projectFactory;
 
-	private Gson gson;
-
 	public OrbisProjectManager(final File baseDirectory, Object mod, String archiveBaseName, Supplier<IProject> projectFactory)
 	{
-		this.gson = new GsonBuilder()
-				.registerTypeAdapter(IProjectIdentifier.class, new GenericSerializer<IProjectIdentifier>(ProjectIdentifier.class))
-				.registerTypeAdapter(IDataIdentifier.class, new GenericSerializer<IDataIdentifier>(DataIdentifier.class))
-				.registerTypeAdapter(IDataMetadata.class, new GenericSerializer<IDataMetadata>(DataMetadata.class))
-				.registerTypeAdapter(IProjectMetadata.class, new GenericSerializer<IProjectMetadata>(ProjectMetadata.class))
-				.create();
-
 		if (!baseDirectory.exists() && !baseDirectory.mkdirs())
 		{
 			throw new RuntimeException("Base directory for OrbisProjectManager cannot be created!");
@@ -80,6 +69,12 @@ public class OrbisProjectManager implements IProjectManager
 		}
 
 		return false;
+	}
+
+	@Override
+	public Supplier<IProject> getProjectFactory()
+	{
+		return this.projectFactory;
 	}
 
 	@Override
@@ -164,7 +159,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
 
 						foundProjects.add(info.getIdentifier());
 
@@ -222,7 +217,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
 
 						IProject project = this.projectFactory.get();
 						project.setInfo(info);
@@ -286,7 +281,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
 						IProject project = this.projectFactory.get();
 
 						project.setInfo(info);
@@ -333,7 +328,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = this.gson.fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
 
 						if (info.getIdentifier().equals(identifier))
 						{
@@ -588,7 +583,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						this.gson.toJson(project.getInfo(), writer);
+						OrbisAPI.services().getGson().toJson(project.getInfo(), writer);
 					}
 					catch (JsonIOException e)
 					{

@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * A management object for managing the projects within a specific directory.
@@ -16,6 +17,8 @@ import java.util.Optional;
  */
 public interface IProjectManager
 {
+	Supplier<IProject> getProjectFactory();
+
 	void listen(IProjectManagerListener listener);
 
 	boolean unlisten(IProjectManagerListener listener);
