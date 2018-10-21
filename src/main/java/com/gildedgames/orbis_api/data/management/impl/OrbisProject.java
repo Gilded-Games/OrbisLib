@@ -411,7 +411,7 @@ public class OrbisProject implements IProject
 				return;
 			}
 
-			String extension = FilenameUtils.getExtension(file.getName());
+			String extension = FilenameUtils.getExtension(location);
 
 			IMetadataLoader<OrbisProject> metadataLoader = this.metadataLoaders.get(extension);
 
@@ -632,7 +632,7 @@ public class OrbisProject implements IProject
 	public void loadAndCacheData()
 	{
 		this.walkDataLoading((input, metadataInput, file, location, resourceLocation) -> {
-			String extension = FilenameUtils.getExtension(file.getName());
+			String extension = FilenameUtils.getExtension(location);
 
 			IDataLoader<OrbisProject> dataLoader = this.acceptedFileExtensions.get(extension);
 			IMetadataLoader<OrbisProject> metadataLoader = this.metadataLoaders.get(extension);
