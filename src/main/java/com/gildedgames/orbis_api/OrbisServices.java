@@ -52,6 +52,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
@@ -444,18 +446,33 @@ public class OrbisServices implements IOrbisServices
 						{
 							extraProjectSources = Lists.newArrayList();
 
-							List<String> sources = this.gson.fromJson(reader, new TypeToken<List<String>>()
+							try
 							{
-							}.getType());
-
-							for (String source : sources)
-							{
-								File file = new File(source);
-
-								if (file.exists())
+								List<String> sources = this.gson.fromJson(reader, new TypeToken<List<String>>()
 								{
-									extraProjectSources.add(file);
+								}.getType());
+
+								OrbisAPI.LOGGER.info("Succesfully loaded extra_project_sources.json:");
+
+								for (String source : sources)
+								{
+									File file = new File(source);
+
+									if (file.exists())
+									{
+										extraProjectSources.add(file);
+										OrbisAPI.LOGGER.info("SUCCESS: " + source);
+									}
+									else
+									{
+										OrbisAPI.LOGGER.info("FAILED: " + source);
+									}
 								}
+							}
+							catch (JsonSyntaxException | JsonIOException e)
+							{
+								OrbisAPI.LOGGER.error("Could not load extra_project_sources.json, syntax error or IO exception.");
+								extraProjectSources = Collections.emptyList();
 							}
 						}
 					}
