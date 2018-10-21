@@ -6,6 +6,7 @@ import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -17,6 +18,8 @@ import java.util.function.Supplier;
  */
 public interface IProjectManager
 {
+	List<File> getExtraProjectSourceFolders();
+
 	Supplier<IProject> getProjectFactory();
 
 	void listen(IProjectManagerListener listener);

@@ -52,6 +52,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.server.MinecraftServer;
@@ -431,7 +432,44 @@ public class OrbisServices implements IOrbisServices
 			}
 			else
 			{
-				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().mcDataDir, "/orbis/local/projects/"), Collections.emptyList(),
+				File extraProjectSourcesFile = new File(Minecraft.getMinecraft().mcDataDir, "/orbis/extra_project_sources.json");
+
+				List<File> extraProjectSources = null;
+
+				if (extraProjectSourcesFile.exists())
+				{
+					try (FileInputStream in = new FileInputStream(extraProjectSourcesFile))
+					{
+						try (InputStreamReader reader = new InputStreamReader(in))
+						{
+							extraProjectSources = Lists.newArrayList();
+
+							List<String> sources = this.gson.fromJson(reader, new TypeToken<List<String>>()
+							{
+							}.getType());
+
+							for (String source : sources)
+							{
+								File file = new File(source);
+
+								if (file.exists())
+								{
+									extraProjectSources.add(file);
+								}
+							}
+						}
+					}
+					catch (IOException e)
+					{
+						OrbisAPI.LOGGER.error(e);
+					}
+				}
+				else
+				{
+					extraProjectSources = Collections.emptyList();
+				}
+
+				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().mcDataDir, "/orbis/local/projects/"), extraProjectSources,
 						this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}

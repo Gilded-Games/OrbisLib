@@ -76,6 +76,12 @@ public class OrbisProjectManager implements IProjectManager
 	}
 
 	@Override
+	public List<File> getExtraProjectSourceFolders()
+	{
+		return this.extraProjectSources;
+	}
+
+	@Override
 	public Supplier<IProject> getProjectFactory()
 	{
 		return this.projectFactory;

@@ -36,6 +36,13 @@ public interface IDirectoryNavigator
 	void openDirectory(File file);
 
 	/**
+	 * Injects a list of directories into the navigator of an existing directory when its viewed.
+	 * @param forDirectory Will only inject directories in this directory.
+	 * @param injectedDirectories The injected directories.
+	 */
+	void injectDirectories(File forDirectory, List<File> injectedDirectories);
+
+	/**
 	 * @return Whether or not the navigator has any history to
 	 * go back to.
 	 */

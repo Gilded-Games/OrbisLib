@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.client.gui.data.directory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -9,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.stream.Stream;
 
@@ -22,6 +24,8 @@ public class DirectoryNavigator implements IDirectoryNavigator
 	private final List<INavigatorNode> nodesInCurrentDirectory = Lists.newArrayList();
 
 	private final List<IDirectoryNavigatorListener> listeners = Lists.newArrayList();
+
+	private final Map<File, List<File>> injectedDirectories = Maps.newHashMap();
 
 	private final IDirectoryNodeFactory nodeFactory;
 
@@ -61,7 +65,7 @@ public class DirectoryNavigator implements IDirectoryNavigator
 	{
 		if (!file.isDirectory())
 		{
-			throw new RuntimeException("File provided to DirectoryNavigator.openDirectory() was not a directory.");
+			throw new RuntimeException("File provided to DirectoryNavigator.viewDirectories() was not a directory.");
 		}
 
 		if (this.currentDirectory != null)
@@ -76,6 +80,25 @@ public class DirectoryNavigator implements IDirectoryNavigator
 		this.listeners.forEach(l -> l.onDirectoryOpen(this, file));
 
 		this.refresh();
+	}
+
+	@Override
+	public void injectDirectories(File forDirectory, List<File> injectedDirectories)
+	{
+		if (!forDirectory.isDirectory())
+		{
+			throw new RuntimeException("File provided to DirectoryNavigator.injectDirectories() 'forDirectory' was not a directory.");
+		}
+
+		for (File file : injectedDirectories)
+		{
+			if (!file.isDirectory())
+			{
+				throw new RuntimeException("File provided to DirectoryNavigator.injectDirectories() 'injectedDirectories' was not a directory.");
+			}
+		}
+
+		this.injectedDirectories.put(forDirectory, injectedDirectories);
 	}
 
 	@Override
@@ -123,40 +146,50 @@ public class DirectoryNavigator implements IDirectoryNavigator
 	{
 		this.nodesInCurrentDirectory.clear();
 
-		try (Stream<Path> paths = Files.walk(Paths.get(this.currentDirectory.getPath())))
+		List<File> directories = Lists.newArrayList(this.currentDirectory);
+
+		if (this.injectedDirectories.containsKey(this.currentDirectory))
 		{
-			paths.forEach(p ->
-			{
-				final File file = p.toFile();
-
-				try
-				{
-					final String parent = file.getCanonicalPath().replace(file.getName(), "");
-					final String currentDirParent = this.currentDirectory.getCanonicalPath().replace(file.getName(), "") + File.separator;
-
-					if (file.getPath().equals(this.currentDirectory.getPath()) || !parent.equals(currentDirParent))
-					{
-						return;
-					}
-				}
-				catch (final IOException e)
-				{
-					e.printStackTrace();
-				}
-
-				final String extension = file.isDirectory() ? "" : FilenameUtils.getExtension(file.getName());
-
-				final INavigatorNode node = this.nodeFactory.createFrom(file, extension);
-
-				if (node != null)
-				{
-					this.nodesInCurrentDirectory.add(node);
-				}
-			});
+			directories.addAll(this.injectedDirectories.get(this.currentDirectory));
 		}
-		catch (final IOException e)
+
+		for (File directory : directories)
 		{
-			e.printStackTrace();
+			try (Stream<Path> paths = Files.walk(Paths.get(directory.getPath())))
+			{
+				paths.forEach(p ->
+				{
+					final File file = p.toFile();
+
+					try
+					{
+						final String parent = file.getCanonicalPath().replace(file.getName(), "");
+						final String currentDirParent = directory.getCanonicalPath().replace(file.getName(), "") + File.separator;
+
+						if (file.getPath().equals(directory.getPath()) || !parent.equals(currentDirParent))
+						{
+							return;
+						}
+					}
+					catch (final IOException e)
+					{
+						e.printStackTrace();
+					}
+
+					final String extension = file.isDirectory() ? "" : FilenameUtils.getExtension(file.getName());
+
+					final INavigatorNode node = this.nodeFactory.createFrom(file, extension);
+
+					if (node != null)
+					{
+						this.nodesInCurrentDirectory.add(node);
+					}
+				});
+			}
+			catch (final IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
 
 		this.nodesInCurrentDirectory.sort((p1, p2) ->
