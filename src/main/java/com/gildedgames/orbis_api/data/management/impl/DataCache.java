@@ -2,6 +2,7 @@ package com.gildedgames.orbis_api.data.management.impl;
 
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataCache;
+import com.gildedgames.orbis_api.data.management.IDataMetadata;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
@@ -17,6 +18,8 @@ public class DataCache implements IDataCache
 	private String cacheId;
 
 	private Map<UUID, IData> idToData = Maps.newHashMap();
+
+	private Map<UUID, IDataMetadata> idToMetadata = Maps.newHashMap();
 
 	private int nextId;
 
@@ -39,6 +42,7 @@ public class DataCache implements IDataCache
 		tag.setInteger("nextId", this.nextId);
 
 		funnel.setMap("idToData", this.idToData, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
+		funnel.setMap("idToMetadata", this.idToMetadata, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
 	}
 
 	@Override
@@ -50,6 +54,17 @@ public class DataCache implements IDataCache
 		this.nextId = tag.getInteger("nextId");
 
 		this.idToData = funnel.getMap("idToData", NBTFunnel.UUID_GETTER, NBTFunnel.getter());
+		this.idToMetadata = funnel.getMap("idToMetadata", NBTFunnel.UUID_GETTER, NBTFunnel.getter());
+
+		this.idToMetadata.forEach((uuid, metadata) ->
+		{
+			IData data = this.idToData.get(uuid);
+
+			if (data != null)
+			{
+				data.setMetadata(metadata);
+			}
+		});
 	}
 
 	@Override
@@ -74,7 +89,9 @@ public class DataCache implements IDataCache
 	@Override
 	public <T extends IData> Optional<T> getData(final UUID dataId)
 	{
-		return Optional.of((T) this.idToData.get(dataId));
+		T data = (T) this.idToData.get(dataId);
+
+		return Optional.ofNullable(data);
 	}
 
 	@Override
