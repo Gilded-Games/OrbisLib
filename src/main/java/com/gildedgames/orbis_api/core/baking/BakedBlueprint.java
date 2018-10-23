@@ -740,7 +740,10 @@ public class BakedBlueprint implements IDimensions
 
 		funnel.setPos("bakedMin", this.bakedMin);
 
-		funnel.set("blueprintId", this.blueprintData.getMetadata().getIdentifier());
+		if (this.blueprintData != null && this.blueprintData.getMetadata() != null)
+		{
+			funnel.set("blueprintId", this.blueprintData.getMetadata().getIdentifier());
+		}
 	}
 
 	@Override
@@ -769,7 +772,10 @@ public class BakedBlueprint implements IDimensions
 		{
 			final IDataIdentifier id = funnel.get("blueprintId");
 
-			OrbisAPI.services().getProjectManager().findData(id).ifPresent(data -> this.blueprintData = (BlueprintData) data);
+			if (id != null)
+			{
+				OrbisAPI.services().getProjectManager().findData(id).ifPresent(data -> this.blueprintData = (BlueprintData) data);
+			}
 		}
 		catch (final OrbisMissingDataException | OrbisMissingProjectException e)
 		{
