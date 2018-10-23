@@ -17,11 +17,18 @@ public class InventoryBlockForge implements IInventoryNBT
 
 	private final EntityPlayer player;
 
-	private final NonNullList<ItemStack> inventory = NonNullList.withSize(16, ItemStack.EMPTY);
+	private final NonNullList<ItemStack> inventory;
 
-	public InventoryBlockForge(final EntityPlayer player)
+	private InventoryBlockForge()
+	{
+		this.player = null;
+		this.inventory = null;
+	}
+
+	public InventoryBlockForge(final EntityPlayer player, int slotCount)
 	{
 		this.player = player;
+		this.inventory = NonNullList.withSize(slotCount, ItemStack.EMPTY);
 	}
 
 	@Override
