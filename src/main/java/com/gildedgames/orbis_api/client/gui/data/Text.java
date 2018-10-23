@@ -10,6 +10,8 @@ import net.minecraft.util.text.TextComponentString;
 public class Text implements IText
 {
 
+	public static final IText EMPTY = new Text(new TextComponentString(""), 1.0F);
+
 	private static final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
 
 	private ITextComponent component;
