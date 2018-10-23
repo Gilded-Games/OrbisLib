@@ -1,17 +1,10 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
-import com.gildedgames.orbis_api.data.blueprint.BlueprintStackerData;
-import com.gildedgames.orbis_api.data.framework.FrameworkData;
-import com.gildedgames.orbis_api.data.json.JsonData;
 import com.gildedgames.orbis_api.data.management.*;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import org.apache.commons.io.FilenameUtils;
@@ -25,6 +18,7 @@ import java.nio.file.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -32,13 +26,9 @@ public class OrbisProject implements IProject
 {
 	private final List<IProjectListener> listeners = Lists.newArrayList();
 
-	private final Map<String, IDataLoader<OrbisProject>> acceptedFileExtensions = Maps.newHashMap();
-
 	private final Map<IDataIdentifier, String> idToResourceLocation = Maps.newHashMap();
 
 	private final Map<IDataIdentifier, File> idToFile = Maps.newHashMap();
-
-	private final Map<String, IMetadataLoader<OrbisProject>> metadataLoaders = Maps.newHashMap();
 
 	private IProjectCache cache;
 
@@ -57,121 +47,6 @@ public class OrbisProject implements IProject
 	public OrbisProject()
 	{
 		this.cache = new OrbisProjectCache(this);
-
-		IDataLoader<OrbisProject> nbtDataLoader = new IDataLoader<OrbisProject>()
-		{
-			@Override
-			public void saveData(OrbisProject project, IData data, File file, String location, OutputStream output)
-			{
-				try
-				{
-					final NBTTagCompound tag = new NBTTagCompound();
-					final NBTFunnel funnel = new NBTFunnel(tag);
-
-					funnel.set("data", data);
-
-					CompressedStreamTools.writeCompressed(tag, output);
-				}
-				catch (final IOException e)
-				{
-					OrbisAPI.LOGGER.error("Failed to save project data to disk", e);
-				}
-			}
-
-			@Override
-			public IData loadData(OrbisProject project, File file, String location, InputStream input)
-			{
-				try
-				{
-					NBTTagCompound tag = CompressedStreamTools.readCompressed(input);
-					NBTFunnel funnel = new NBTFunnel(tag);
-
-					IData data = funnel.get("data");
-
-					tag = funnel.getTag().getCompoundTag("data").getCompoundTag("data");
-
-					data.read(tag);
-
-					return data;
-				}
-				catch (IOException e)
-				{
-					OrbisAPI.LOGGER.error("Failed to load project data from disk", e);
-				}
-
-				return null;
-			}
-		};
-
-		IDataLoader<OrbisProject> jsonDataLoader = new IDataLoader<OrbisProject>()
-		{
-			@Override
-			public void saveData(OrbisProject project, IData data, File file, String location, OutputStream output)
-			{
-
-			}
-
-			@Override
-			public IData loadData(OrbisProject project, File file, String location, InputStream input)
-			{
-				return new JsonData();
-			}
-		};
-
-		this.acceptedFileExtensions.put(BlueprintData.EXTENSION, nbtDataLoader);
-		this.acceptedFileExtensions.put(FrameworkData.EXTENSION, nbtDataLoader);
-		this.acceptedFileExtensions.put(BlueprintStackerData.EXTENSION, nbtDataLoader);
-		this.acceptedFileExtensions.put(JsonData.EXTENSION, jsonDataLoader);
-
-		IMetadataLoader<OrbisProject> jsonMetadataLoader = new IMetadataLoader<OrbisProject>()
-		{
-			@Override
-			public void saveMetadata(OrbisProject project, IData data, File file, String location, OutputStream outputStream)
-			{
-				try (OutputStreamWriter writer = new OutputStreamWriter(outputStream))
-				{
-					try
-					{
-						OrbisAPI.services().getGson().toJson(data.getMetadata(), writer);
-					}
-					catch (JsonIOException e)
-					{
-						OrbisAPI.LOGGER.error("Failed to save data metadata to json file", e);
-					}
-				}
-				catch (IOException e)
-				{
-					OrbisAPI.LOGGER.error("Failed to save data metadata to disk", e);
-				}
-			}
-
-			@Override
-			public IDataMetadata loadMetadata(OrbisProject project, File file, String location, InputStream input)
-			{
-				try (InputStreamReader reader = new InputStreamReader(input))
-				{
-					try
-					{
-						return OrbisAPI.services().getGson().fromJson(reader, IDataMetadata.class);
-					}
-					catch (JsonSyntaxException | JsonIOException e)
-					{
-						OrbisAPI.LOGGER.error("Failed to load data metadata from json file", e);
-					}
-				}
-				catch (IOException e)
-				{
-					OrbisAPI.LOGGER.error("Failed to load data metadata from disk", e);
-				}
-
-				return null;
-			}
-		};
-
-		this.metadataLoaders.put(BlueprintData.EXTENSION, jsonMetadataLoader);
-		this.metadataLoaders.put(FrameworkData.EXTENSION, jsonMetadataLoader);
-		this.metadataLoaders.put(BlueprintStackerData.EXTENSION, jsonMetadataLoader);
-		this.metadataLoaders.put(JsonData.EXTENSION, jsonMetadataLoader);
 	}
 
 	/**
@@ -319,9 +194,9 @@ public class OrbisProject implements IProject
 		try
 		{
 			String extension = FilenameUtils.getExtension(file.getName());
-			IMetadataLoader<OrbisProject> loader = this.metadataLoaders.get(extension);
+			Optional<IMetadataLoader<OrbisProject>> loader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
 
-			if (loader != null)
+			if (loader.isPresent())
 			{
 				//TODO SHOULD NOT ALWAYS BE FILE PATH, CAN BE RESOURCE LOCATION
 				String location = this.getLocationFromFile(file.getCanonicalPath());
@@ -330,7 +205,7 @@ public class OrbisProject implements IProject
 
 				try (FileOutputStream out = new FileOutputStream(metaFile))
 				{
-					loader.saveMetadata(this, data, file, location, out);
+					loader.get().saveMetadata(this, data, file, out);
 				}
 				catch (final IOException e)
 				{
@@ -347,20 +222,22 @@ public class OrbisProject implements IProject
 	@Override
 	public void writeData(final IData data, final File file)
 	{
+		String extension = FilenameUtils.getExtension(file.getPath());
+
 		this.writeMetadata(data, file);
 
-		try (FileOutputStream out = new FileOutputStream(file))
-		{
-			final NBTTagCompound tag = new NBTTagCompound();
-			final NBTFunnel funnel = new NBTFunnel(tag);
+		Optional<IDataLoader<OrbisProject>> dataLoader = OrbisAPI.services().getProjectManager().getDataLoaderForExtension(extension);
 
-			funnel.set("data", data);
-
-			CompressedStreamTools.writeCompressed(tag, out);
-		}
-		catch (final IOException e)
+		if (dataLoader.isPresent())
 		{
-			OrbisAPI.LOGGER.error("Failed to save project data to disk", e);
+			try (FileOutputStream stream = new FileOutputStream(file))
+			{
+				dataLoader.get().saveData(this, data, file, stream);
+			}
+			catch (IOException e)
+			{
+				OrbisAPI.LOGGER.error("Failed to write data to project directory", data, e);
+			}
 		}
 	}
 
@@ -411,11 +288,11 @@ public class OrbisProject implements IProject
 				return;
 			}
 
-			String extension = FilenameUtils.getExtension(file.getName());
+			String extension = FilenameUtils.getExtension(location);
 
-			IMetadataLoader<OrbisProject> metadataLoader = this.metadataLoaders.get(extension);
+			Optional<IMetadataLoader<OrbisProject>> metadataLoader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
 
-			if (metadataLoader == null)
+			if (!metadataLoader.isPresent())
 			{
 				return;
 			}
@@ -427,17 +304,17 @@ public class OrbisProject implements IProject
 				return;
 			}
 
-			IDataMetadata metadata = metadataLoader.loadMetadata(this, file, location, metaInput);
+			IDataMetadata metadata = metadataLoader.get().loadMetadata(this, file, metaInput);
 
 			if (metadata != null)
 			{
 				if (id.equals(metadata.getIdentifier()))
 				{
-					IDataLoader<OrbisProject> dataLoader = this.acceptedFileExtensions.get(extension);
+					Optional<IDataLoader<OrbisProject>> dataLoader = OrbisAPI.services().getProjectManager().getDataLoaderForExtension(extension);
 
-					if (dataLoader != null)
+					if (dataLoader.isPresent())
 					{
-						IData data = dataLoader.loadData(this, file, location, input);
+						IData data = dataLoader.get().loadData(this, file, input);
 						data.setMetadata(metadata);
 
 						found[0] = true;
@@ -549,7 +426,7 @@ public class OrbisProject implements IProject
 					}
 
 					/* Make sure the file has an extension type accepted by this project **/
-					if (this.acceptedFileExtensions.keySet().contains(extension))
+					if (OrbisAPI.services().getProjectManager().getAcceptedExtensions().contains(extension))
 					{
 						try
 						{
@@ -632,17 +509,17 @@ public class OrbisProject implements IProject
 	public void loadAndCacheData()
 	{
 		this.walkDataLoading((input, metadataInput, file, location, resourceLocation) -> {
-			String extension = FilenameUtils.getExtension(file.getName());
+			String extension = FilenameUtils.getExtension(location);
 
-			IDataLoader<OrbisProject> dataLoader = this.acceptedFileExtensions.get(extension);
-			IMetadataLoader<OrbisProject> metadataLoader = this.metadataLoaders.get(extension);
+			Optional<IDataLoader<OrbisProject>> dataLoader = OrbisAPI.services().getProjectManager().getDataLoaderForExtension(extension);
+			Optional<IMetadataLoader<OrbisProject>> metadataLoader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
 
-			if (dataLoader == null)
+			if (!dataLoader.isPresent() || !metadataLoader.isPresent())
 			{
 				return;
 			}
 
-			final IData data = dataLoader.loadData(this, file, location, input);
+			final IData data = dataLoader.get().loadData(this, file, input);
 
 			if (data != null && !this.cache.getDataId(location).isPresent())
 			{
@@ -663,7 +540,7 @@ public class OrbisProject implements IProject
 
 						try (FileOutputStream out = new FileOutputStream(metaFile))
 						{
-							metadataLoader.saveMetadata(this, data, file, location, out);
+							metadataLoader.get().saveMetadata(this, data, file, out);
 						}
 						catch (IOException e)
 						{
@@ -678,7 +555,7 @@ public class OrbisProject implements IProject
 				}
 				else
 				{
-					metadata = metadataLoader.loadMetadata(this, file, location, metaInput);
+					metadata = metadataLoader.get().loadMetadata(this, file, metaInput);
 				}
 
 				if (metadata == null)

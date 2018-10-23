@@ -1,39 +1,37 @@
 package com.gildedgames.orbis_api.block;
 
-import net.minecraft.block.state.IBlockState;
+import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
-public class BlockInstance
+public class BlockInstance implements NBT
 {
 
-	private final IBlockState blockData;
+	private BlockData data;
 
-	private final NBTTagCompound entity;
+	private BlockPos pos;
 
-	private final BlockPos pos;
-
-	public BlockInstance(final IBlockState blockData, final NBTTagCompound entity, final BlockPos pos)
+	private BlockInstance()
 	{
-		this.blockData = blockData;
-		this.pos = pos;
-		this.entity = entity;
+
 	}
 
-	public IBlockState getBlockState()
+	public BlockInstance(final BlockData data, final BlockPos pos)
 	{
-		return this.blockData;
+		this.data = data;
+		this.pos = pos;
+	}
+
+	public BlockData getData()
+	{
+		return this.data;
 	}
 
 	public BlockPos getPos()
 	{
 		return this.pos;
-	}
-
-	public NBTTagCompound getEntity()
-	{
-		return this.entity;
 	}
 
 	@Override
@@ -50,8 +48,8 @@ public class BlockInstance
 			final BlockInstance o = (BlockInstance) obj;
 			final EqualsBuilder builder = new EqualsBuilder();
 
-			builder.append(this.blockData, o.blockData);
-			builder.append(this.pos, o.blockData);
+			builder.append(this.data, o.data);
+			builder.append(this.pos, o.pos);
 
 			flag = builder.isEquals();
 		}
@@ -62,7 +60,24 @@ public class BlockInstance
 	@Override
 	public String toString()
 	{
-		return "BlockInstance - POS: " + this.pos.toString() + ", STATE: " + this.blockData.toString();
+		return "BlockInstance - POS: " + this.pos.toString() + ", BLOCKDATA: " + this.data.toString();
 	}
 
+	@Override
+	public void write(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		funnel.set("d", this.data);
+		funnel.setPos("p", this.pos);
+	}
+
+	@Override
+	public void read(NBTTagCompound tag)
+	{
+		NBTFunnel funnel = new NBTFunnel(tag);
+
+		this.data = funnel.get("d");
+		this.pos = funnel.getPos("p");
+	}
 }

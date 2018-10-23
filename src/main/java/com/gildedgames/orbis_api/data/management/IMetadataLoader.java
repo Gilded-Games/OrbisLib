@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 public interface IMetadataLoader<PROJECT extends IProject>
 {
-	void saveMetadata(PROJECT project, IData data, File file, String location, OutputStream output);
+	void saveMetadata(PROJECT project, IData data, File file, OutputStream output);
 
-	IDataMetadata loadMetadata(PROJECT project, File file, String location, InputStream input);
+	IDataMetadata loadMetadata(PROJECT project, File file, InputStream input);
 }

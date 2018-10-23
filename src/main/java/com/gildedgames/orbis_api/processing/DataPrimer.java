@@ -199,7 +199,7 @@ public class DataPrimer
 
 	public void create(final BlockInstance instance, final ICreationData<?> data)
 	{
-		this.create(instance.getBlockState(), instance.getEntity(), instance.getPos(), data);
+		this.create(instance.getData().getBlockState(), instance.getData().getTileEntity(), instance.getPos(), data);
 	}
 
 	public void create(final IBlockState blockData, final NBTTagCompound entityData, final BlockPos pos, final ICreationData<?> creationData)

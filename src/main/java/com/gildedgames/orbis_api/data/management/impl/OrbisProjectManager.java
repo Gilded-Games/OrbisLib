@@ -3,12 +3,19 @@ package com.gildedgames.orbis_api.data.management.impl;
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
+import com.gildedgames.orbis_api.data.blueprint.BlueprintStackerData;
+import com.gildedgames.orbis_api.data.framework.FrameworkData;
+import com.gildedgames.orbis_api.data.json.JsonData;
 import com.gildedgames.orbis_api.data.management.*;
+import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -22,6 +29,10 @@ public class OrbisProjectManager implements IProjectManager
 	private final Map<IProjectIdentifier, IProject> idToProject = Maps.newHashMap();
 
 	private final Map<String, IProject> nameToProject = Maps.newHashMap();
+
+	private final Map<String, IDataLoader<OrbisProject>> extensionToDataLoader = Maps.newHashMap();
+
+	private final Map<String, IMetadataLoader<OrbisProject>> extensionToMetadataLoader = Maps.newHashMap();
 
 	private Object mod;
 
@@ -51,6 +62,121 @@ public class OrbisProjectManager implements IProjectManager
 		this.mod = mod;
 		this.archiveBaseName = archiveBaseName;
 		this.projectFactory = projectFactory;
+
+		IDataLoader<OrbisProject> nbtDataLoader = new IDataLoader<OrbisProject>()
+		{
+			@Override
+			public void saveData(OrbisProject project, IData data, File file, OutputStream output)
+			{
+				try
+				{
+					final NBTTagCompound tag = new NBTTagCompound();
+					final NBTFunnel funnel = new NBTFunnel(tag);
+
+					funnel.set("data", data);
+
+					CompressedStreamTools.writeCompressed(tag, output);
+				}
+				catch (final IOException e)
+				{
+					OrbisAPI.LOGGER.error("Failed to save project data to disk", e);
+				}
+			}
+
+			@Override
+			public IData loadData(OrbisProject project, File file, InputStream input)
+			{
+				try
+				{
+					NBTTagCompound tag = CompressedStreamTools.readCompressed(input);
+					NBTFunnel funnel = new NBTFunnel(tag);
+
+					IData data = funnel.get("data");
+
+					tag = funnel.getTag().getCompoundTag("data").getCompoundTag("data");
+
+					data.read(tag);
+
+					return data;
+				}
+				catch (IOException e)
+				{
+					OrbisAPI.LOGGER.error("Failed to load project data from disk", e);
+				}
+
+				return null;
+			}
+		};
+
+		IDataLoader<OrbisProject> jsonDataLoader = new IDataLoader<OrbisProject>()
+		{
+			@Override
+			public void saveData(OrbisProject project, IData data, File file, OutputStream output)
+			{
+
+			}
+
+			@Override
+			public IData loadData(OrbisProject project, File file, InputStream input)
+			{
+				return new JsonData();
+			}
+		};
+
+		this.extensionToDataLoader.put(BlueprintData.EXTENSION, nbtDataLoader);
+		this.extensionToDataLoader.put(FrameworkData.EXTENSION, nbtDataLoader);
+		this.extensionToDataLoader.put(BlueprintStackerData.EXTENSION, nbtDataLoader);
+		this.extensionToDataLoader.put(JsonData.EXTENSION, jsonDataLoader);
+
+		IMetadataLoader<OrbisProject> jsonMetadataLoader = new IMetadataLoader<OrbisProject>()
+		{
+			@Override
+			public void saveMetadata(OrbisProject project, IData data, File file, OutputStream outputStream)
+			{
+				try (OutputStreamWriter writer = new OutputStreamWriter(outputStream))
+				{
+					try
+					{
+						OrbisAPI.services().getGson().toJson(data.getMetadata(), writer);
+					}
+					catch (JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to save data metadata to json file", e);
+					}
+				}
+				catch (IOException e)
+				{
+					OrbisAPI.LOGGER.error("Failed to save data metadata to disk", e);
+				}
+			}
+
+			@Override
+			public IDataMetadata loadMetadata(OrbisProject project, File file, InputStream input)
+			{
+				try (InputStreamReader reader = new InputStreamReader(input))
+				{
+					try
+					{
+						return OrbisAPI.services().getGson().fromJson(reader, IDataMetadata.class);
+					}
+					catch (JsonSyntaxException | JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to load data metadata from json file", e);
+					}
+				}
+				catch (IOException e)
+				{
+					OrbisAPI.LOGGER.error("Failed to load data metadata from disk", e);
+				}
+
+				return null;
+			}
+		};
+
+		this.extensionToMetadataLoader.put(BlueprintData.EXTENSION, jsonMetadataLoader);
+		this.extensionToMetadataLoader.put(FrameworkData.EXTENSION, jsonMetadataLoader);
+		this.extensionToMetadataLoader.put(BlueprintStackerData.EXTENSION, jsonMetadataLoader);
+		this.extensionToMetadataLoader.put(JsonData.EXTENSION, jsonMetadataLoader);
 	}
 
 	public static boolean isProjectDirectory(final File file)
@@ -71,6 +197,24 @@ public class OrbisProjectManager implements IProjectManager
 		}
 
 		return false;
+	}
+
+	@Override
+	public <T extends IProject> Optional<IMetadataLoader<T>> getMetadataLoaderForExtension(String extension)
+	{
+		return Optional.ofNullable((IMetadataLoader<T>) this.extensionToMetadataLoader.get(extension));
+	}
+
+	@Override
+	public <T extends IProject> Optional<IDataLoader<T>> getDataLoaderForExtension(String extension)
+	{
+		return Optional.ofNullable((IDataLoader<T>) this.extensionToDataLoader.get(extension));
+	}
+
+	@Override
+	public Collection<String> getAcceptedExtensions()
+	{
+		return this.extensionToDataLoader.keySet();
 	}
 
 	@Override
@@ -176,6 +320,13 @@ public class OrbisProjectManager implements IProjectManager
 					try
 					{
 						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
+
+						if (info == null)
+						{
+							OrbisAPI.LOGGER.error("Failed to load project info from json file", innerFile);
+
+							return;
+						}
 
 						foundProjects.add(info.getIdentifier());
 

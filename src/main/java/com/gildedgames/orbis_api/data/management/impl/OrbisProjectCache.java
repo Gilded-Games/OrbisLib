@@ -2,8 +2,6 @@ package com.gildedgames.orbis_api.data.management.impl;
 
 import com.gildedgames.orbis_api.data.management.*;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -14,13 +12,15 @@ import java.util.*;
 public class OrbisProjectCache implements IProjectCache
 {
 
-	private final Map<UUID, IDataMetadata> idToMetadata = Maps.newHashMap();
+	private Map<UUID, IDataMetadata> idToMetadata = Maps.newHashMap();
 
 	private IProject project;
 
-	private BiMap<UUID, IData> idToData = HashBiMap.create();
+	private Map<UUID, IData> idToData = Maps.newHashMap();
 
-	private BiMap<UUID, String> idToLocation = HashBiMap.create();
+	private Map<UUID, String> idToLocation = Maps.newHashMap();
+
+	private Map<String, UUID> locationToId = Maps.newHashMap();
 
 	private OrbisProjectCache()
 	{
@@ -55,6 +55,7 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		this.idToData.clear();
 		this.idToLocation.clear();
+		this.locationToId.clear();
 		this.idToMetadata.clear();
 	}
 
@@ -84,7 +85,8 @@ public class OrbisProjectCache implements IProjectCache
 	public void removeData(final UUID dataId)
 	{
 		this.idToData.remove(dataId);
-		this.idToLocation.remove(dataId);
+		String location = this.idToLocation.remove(dataId);
+		this.locationToId.remove(location);
 	}
 
 	@Override
@@ -141,14 +143,8 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		if (!this.idToLocation.containsKey(dataId) || !Objects.equals(this.idToLocation.get(dataId), location))
 		{
-			if (this.idToLocation.containsValue(location))
-			{
-				this.idToLocation.forcePut(dataId, location);
-			}
-			else
-			{
-				this.idToLocation.put(dataId, location);
-			}
+			this.idToLocation.put(dataId, location);
+			this.locationToId.put(location, dataId);
 		}
 	}
 
@@ -168,9 +164,9 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		location = location.replace("/", "\\");
 
-		if (this.idToLocation.inverse().containsKey(location))
+		if (this.locationToId.containsKey(location))
 		{
-			return Optional.of(this.idToLocation.inverse().get(location));
+			return Optional.of(this.locationToId.get(location));
 		}
 
 		return Optional.empty();
@@ -196,6 +192,7 @@ public class OrbisProjectCache implements IProjectCache
 
 		funnel.setMap("idToData", this.idToData, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
 		funnel.setMap("idToLocation", this.idToLocation, NBTFunnel.UUID_SETTER, NBTFunnel.STRING_SETTER);
+		funnel.setMap("idToMetadata", this.idToMetadata, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
 	}
 
 	@Override
@@ -203,15 +200,21 @@ public class OrbisProjectCache implements IProjectCache
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.idToData = HashBiMap.create(funnel.getMap("idToData", NBTFunnel.UUID_GETTER, NBTFunnel.getter()));
-		this.idToLocation = HashBiMap.create(funnel.getMap("idToLocation", NBTFunnel.UUID_GETTER, NBTFunnel.STRING_GETTER));
+		this.idToData = funnel.getMap("idToData", NBTFunnel.UUID_GETTER, NBTFunnel.getter());
+		this.idToLocation = funnel.getMap("idToLocation", NBTFunnel.UUID_GETTER, NBTFunnel.STRING_GETTER);
 
-		for (final Map.Entry<UUID, IData> entry : this.idToData.entrySet())
+		this.idToLocation.forEach((id, location) -> this.locationToId.put(location, id));
+
+		this.idToMetadata = funnel.getMap("idToMetadata", NBTFunnel.UUID_GETTER, NBTFunnel.getter());
+
+		this.idToMetadata.forEach((uuid, metadata) ->
 		{
-			final UUID id = entry.getKey();
-			final IData data = entry.getValue();
+			IData data = this.idToData.get(uuid);
 
-			this.idToMetadata.put(id, data.getMetadata());
-		}
+			if (data != null)
+			{
+				data.setMetadata(metadata);
+			}
+		});
 	}
 }

@@ -18,6 +18,12 @@ import java.util.function.Supplier;
  */
 public interface IProjectManager
 {
+	<T extends IProject> Optional<IMetadataLoader<T>> getMetadataLoaderForExtension(String extension);
+
+	<T extends IProject> Optional<IDataLoader<T>> getDataLoaderForExtension(String extension);
+
+	Collection<String> getAcceptedExtensions();
+
 	List<File> getExtraProjectSourceFolders();
 
 	Supplier<IProject> getProjectFactory();
