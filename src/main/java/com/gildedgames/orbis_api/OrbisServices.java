@@ -236,7 +236,6 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 75, GuiVarBoolean.EqualsTrue.class);
 			IOHelper.register(s, 76, GuiVarBoolean.EqualsFalse.class);
 			IOHelper.register(s, 77, GuiVarBoolean.Set.class);
-			IOHelper.register(s, 78, BlockDataContainerDefault.class);
 			IOHelper.register(s, 79, PostResolveActionMutateBlueprintVariable.class);
 			IOHelper.register(s, 80, BlockDataChunk.class);
 			IOHelper.register(s, 81, BakedBlueprint.class);
