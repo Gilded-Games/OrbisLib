@@ -1,8 +1,5 @@
 package com.gildedgames.orbis_api.data.management;
 
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
-
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Collection;
@@ -66,12 +63,18 @@ public interface IProjectManager
 	Collection<IProject> getCachedProjects();
 
 	/**
+	 * @param id The id for the project.
+	 * @return Whether or not the project exists in this manager.
+	 */
+	boolean projectExists(IProjectIdentifier id);
+
+	/**
 	 * Attempts to find a project with the provided folder name.
 	 * If it cannot find a project, it will return null.
 	 * @param folderName The name of the folder that the project is in.
 	 * @return The found project.
 	 */
-	<T extends IProject> Optional<T> findProject(String folderName) throws OrbisMissingProjectException;
+	<T extends IProject> Optional<T> findProject(String folderName);
 
 	/**
 	 * Attempts to find a project with the provided identifier.
@@ -79,7 +82,7 @@ public interface IProjectManager
 	 * @param identifier The identifier for the project.
 	 * @return The found project.
 	 */
-	<T extends IProject> Optional<T> findProject(IProjectIdentifier identifier) throws OrbisMissingProjectException;
+	<T extends IProject> Optional<T> findProject(IProjectIdentifier identifier);
 
 	/**
 	 * Attempts to find a data with the provided location.
@@ -90,7 +93,7 @@ public interface IProjectManager
 	 * @param location The location of the data.
 	 * @return The found project.
 	 */
-	<T extends IData> Optional<T> findData(IProject project, File location) throws OrbisMissingDataException, OrbisMissingProjectException;
+	<T extends IData> Optional<T> findData(IProject project, File location);
 
 	/**
 	 * Same as findProject(), but instead attempts to find
@@ -102,7 +105,7 @@ public interface IProjectManager
 	 * @param identifier The identifier for the data.
 	 * @return The found data.
 	 */
-	<T extends IData> Optional<T> findData(IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException;
+	<T extends IData> Optional<T> findData(IDataIdentifier identifier);
 
 	/**
 	 * Same as findData(), but instead attempts to find
@@ -114,7 +117,7 @@ public interface IProjectManager
 	 * @param identifier The identifier for the data.
 	 * @return The found data.
 	 */
-	<T extends IDataMetadata> Optional<T> findMetadata(IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException;
+	<T extends IDataMetadata> Optional<T> findMetadata(IDataIdentifier identifier);
 
 	/**
 	 * Creates a new project with the provided name and identfier.
@@ -152,11 +155,5 @@ public interface IProjectManager
 	 * @return Whether or not that folder name is taken already by another project.
 	 */
 	boolean projectNameExists(String name);
-
-	/**
-	 * @param id The id for the project.
-	 * @return Whether or not the project exists in this manager.
-	 */
-	boolean projectExists(IProjectIdentifier id);
 
 }

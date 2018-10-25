@@ -1,14 +1,14 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.data.IDataHolder;
+import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
+import java.util.Optional;
 import java.util.Random;
 
 public class BlueprintDataHolder implements IDataHolder<BlueprintData>
@@ -62,15 +62,16 @@ public class BlueprintDataHolder implements IDataHolder<BlueprintData>
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		try
-		{
-			final IDataIdentifier id = funnel.get("id");
+		final IDataIdentifier id = funnel.get("id");
+		Optional<IData> data = OrbisAPI.services().getProjectManager().findData(id);
 
-			OrbisAPI.services().getProjectManager().findData(id).ifPresent(data -> this.data = (BlueprintData) data);
-		}
-		catch (final OrbisMissingDataException | OrbisMissingProjectException e)
+		if (data.isPresent())
 		{
-			OrbisAPI.LOGGER.error("Missing in " + this.getClass().getName() + " : ", e);
+			this.data = (BlueprintData) data.get();
+		}
+		else
+		{
+			OrbisAPI.LOGGER.error("Missing in " + this.getClass().getName() + " : ", id);
 		}
 	}
 }

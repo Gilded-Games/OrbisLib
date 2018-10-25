@@ -1,14 +1,13 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintStackerData;
 import com.gildedgames.orbis_api.data.framework.FrameworkData;
 import com.gildedgames.orbis_api.data.json.JsonData;
 import com.gildedgames.orbis_api.data.management.*;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.FileHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -17,8 +16,9 @@ import com.google.gson.JsonSyntaxException;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 
-import javax.annotation.Nullable;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -535,9 +535,8 @@ public class OrbisProjectManager implements IProjectManager
 		return flag[0];
 	}
 
-	@Nullable
 	@Override
-	public <T extends IProject> Optional<T> findProject(final String folderName) throws OrbisMissingProjectException
+	public <T extends IProject> Optional<T> findProject(final String folderName)
 	{
 		final IProject project = this.nameToProject.get(folderName);
 
@@ -548,16 +547,17 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				return Optional.of((T) this.nameToProject.get(folderName));
 			}
-
-			throw new OrbisMissingProjectException(folderName);
+			else
+			{
+				return Optional.empty();
+			}
 		}
 
 		return Optional.of((T) project);
 	}
 
-	@Nullable
 	@Override
-	public <T extends IProject> Optional<T> findProject(final IProjectIdentifier identifier) throws OrbisMissingProjectException
+	public <T extends IProject> Optional<T> findProject(final IProjectIdentifier identifier)
 	{
 		final IProject project = this.idToProject.get(identifier);
 
@@ -568,16 +568,17 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				return Optional.of((T) this.idToProject.get(identifier));
 			}
-
-			throw new OrbisMissingProjectException(identifier);
+			else
+			{
+				return Optional.empty();
+			}
 		}
 
 		return Optional.of((T) project);
 	}
 
-	@Nullable
 	@Override
-	public <T extends IData> Optional<T> findData(final IProject project, final File file) throws OrbisMissingDataException, OrbisMissingProjectException
+	public <T extends IData> Optional<T> findData(final IProject project, final File file)
 	{
 		try
 		{
@@ -603,15 +604,14 @@ public class OrbisProjectManager implements IProjectManager
 		return Optional.empty();
 	}
 
-	@Nullable
 	@Override
-	public <T extends IData> Optional<T> findData(final IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException
+	public <T extends IData> Optional<T> findData(final IDataIdentifier identifier)
 	{
 		final Optional<IProject> projectOp = this.findProject(identifier.getProjectIdentifier());
 
 		if (!projectOp.isPresent())
 		{
-			throw new NullPointerException("Project is null when trying to find data!");
+			return Optional.empty();
 		}
 
 		IProject project = projectOp.get();
@@ -625,22 +625,23 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				return project.getCache().getData(identifier.getDataId());
 			}
-
-			throw new OrbisMissingDataException(identifier);
+			else
+			{
+				return Optional.empty();
+			}
 		}
 
 		return (Optional<T>) data;
 	}
 
-	@Nullable
 	@Override
-	public <T extends IDataMetadata> Optional<T> findMetadata(final IDataIdentifier identifier) throws OrbisMissingDataException, OrbisMissingProjectException
+	public <T extends IDataMetadata> Optional<T> findMetadata(final IDataIdentifier identifier)
 	{
 		final Optional<IProject> projectOp = this.findProject(identifier.getProjectIdentifier());
 
 		if (!projectOp.isPresent())
 		{
-			throw new NullPointerException("Project is null when trying to find data!");
+			return Optional.empty();
 		}
 
 		IProject project = projectOp.get();
@@ -649,7 +650,7 @@ public class OrbisProjectManager implements IProjectManager
 
 		if (!metadata.isPresent())
 		{
-			throw new OrbisMissingDataException(identifier);
+			return Optional.empty();
 		}
 
 		return (Optional<T>) metadata;
@@ -744,31 +745,43 @@ public class OrbisProjectManager implements IProjectManager
 	{
 		final File projectFile = new File(project.getLocationAsFile(), "project_data.json");
 
-		/*if (projectFile.exists())
+		try
 		{
-			FileHelper.unhide(projectFile);
-		}*/
+			boolean hiddenProjectFile = projectFile.exists() && Files.getAttribute(Paths.get(projectFile.getPath()), "dos:hidden") == Boolean.TRUE;
 
-		try (FileOutputStream out = new FileOutputStream(projectFile))
-		{
-			try (OutputStreamWriter writer = new OutputStreamWriter(out))
+			if (hiddenProjectFile)
 			{
-				try
+				FileHelper.unhide(projectFile);
+			}
+
+			try (FileOutputStream out = new FileOutputStream(projectFile))
+			{
+				try (OutputStreamWriter writer = new OutputStreamWriter(out))
 				{
-					OrbisAPI.services().getGson().toJson(project.getInfo(), writer);
-				}
-				catch (JsonIOException e)
-				{
-					OrbisAPI.LOGGER.error("Failed to save Project info to json file", e);
+					try
+					{
+						OrbisAPI.services().getGson().toJson(project.getInfo(), writer);
+					}
+					catch (JsonIOException e)
+					{
+						OrbisAPI.LOGGER.error("Failed to save Project info to json file", e);
+					}
 				}
 			}
-		}
-		catch (final IOException e)
-		{
-			OrbisAPI.LOGGER.error("Failed to save Project to disk", e);
-		}
+			catch (final IOException e)
+			{
+				OrbisAPI.LOGGER.error("Failed to save Project to disk", e);
+			}
 
-		//FileHelper.hide(projectFile);
+			if (hiddenProjectFile)
+			{
+				FileHelper.hide(projectFile);
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	private interface ProjectWalker

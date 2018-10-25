@@ -5,8 +5,6 @@ import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockDataContainerDefaultVoid;
 import com.gildedgames.orbis_api.core.BlockDataChunk;
 import com.gildedgames.orbis_api.core.ICreationData;
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingDataException;
-import com.gildedgames.orbis_api.core.exceptions.OrbisMissingProjectException;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
 import com.gildedgames.orbis_api.core.tree.INode;
 import com.gildedgames.orbis_api.core.tree.LayerLink;
@@ -17,6 +15,7 @@ import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolv
 import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
+import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
 import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
@@ -40,10 +39,7 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BakedBlueprint implements IDimensions
 {
@@ -768,18 +764,20 @@ public class BakedBlueprint implements IDimensions
 
 		this.bakedMin = funnel.getPos("bakedMin");
 
-		try
-		{
-			final IDataIdentifier id = funnel.get("blueprintId");
+		final IDataIdentifier id = funnel.get("blueprintId");
 
-			if (id != null)
-			{
-				OrbisAPI.services().getProjectManager().findData(id).ifPresent(data -> this.blueprintData = (BlueprintData) data);
-			}
-		}
-		catch (final OrbisMissingDataException | OrbisMissingProjectException e)
+		if (id != null)
 		{
-			OrbisAPI.LOGGER.error("Missing in " + this.getClass().getName() + " : ", e);
+			Optional<IData> data = OrbisAPI.services().getProjectManager().findData(id);
+
+			if (data.isPresent())
+			{
+				this.blueprintData = (BlueprintData) data.get();
+			}
+			else
+			{
+				OrbisAPI.LOGGER.error("Missing data in " + this.getClass().getName() + " : ", id);
+			}
 		}
 	}
 }

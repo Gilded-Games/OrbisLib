@@ -175,6 +175,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 	}
 
+	public boolean isOutsideOfContainer(BlockPos pos)
+	{
+		int index = this.getIndex(pos.getX(), pos.getY(), pos.getZ());
+
+		return index >= this.blocks.length || index < 0;
+	}
+
 	public IBlockState getBlockState(final BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
