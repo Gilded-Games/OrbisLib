@@ -107,7 +107,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		final int minx = bounding.getMin().getX();
 		final int miny = bounding.getMin().getY();
 		final int minz = bounding.getMin().getZ();
-		final BlockDataContainer container = new BlockDataContainerDefaultVoid(bounding.getWidth(), bounding.getHeight(), bounding.getLength());
+		final BlockDataContainer container = new BlockDataContainer(bounding.getWidth(), bounding.getHeight(), bounding.getLength());
 		for (final BlockPos pos : shape.getShapeData())
 		{
 			final IBlockState state = world.getBlockState(pos);
