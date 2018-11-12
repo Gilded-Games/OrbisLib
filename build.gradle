@@ -30,6 +30,9 @@ archivesBaseName = "${mod_name}"
 
 jar {
     from sourceSets.main.output
+    manifest {
+        attributes 'Maven-Artifact': "${group}:${archivesBaseName}:${version}"
+    }
 }
 
 minecraft {
