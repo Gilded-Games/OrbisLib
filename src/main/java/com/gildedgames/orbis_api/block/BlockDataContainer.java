@@ -46,15 +46,24 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private int nextLocalId;
 
+	private IBlockState defaultBlock;
+
 	public BlockDataContainer()
+	{
+		this(Blocks.AIR.getDefaultState());
+	}
+
+	public BlockDataContainer(IBlockState defaultBlock)
 	{
 		this.localIdToBlock = new Int2ObjectOpenHashMap<>();
 		this.blockToLocalId = new Object2IntOpenHashMap<>();
 
-		this.localIdToBlock.put(-1, this.getDefaultBlock().getBlock());
-		this.blockToLocalId.put(this.getDefaultBlock().getBlock(), -1);
+		this.localIdToBlock.put(-1, defaultBlock.getBlock());
+		this.blockToLocalId.put(defaultBlock.getBlock(), -1);
 
 		this.metadata = new DataMetadata();
+
+		this.defaultBlock = defaultBlock;
 	}
 
 	/**
@@ -62,9 +71,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	 * @param height Maximum height possible is 256
 	 * @param length
 	 */
-	public BlockDataContainer(final int width, final int height, final int length)
+	public BlockDataContainer(final IBlockState defaultBlock, final int width, final int height, final int length)
 	{
-		this();
+		this(defaultBlock);
 
 		this.width = width;
 		this.height = Math.min(256, height);
@@ -77,9 +86,19 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.blocksMeta = new byte[this.getVolume()];
 	}
 
+	public BlockDataContainer(IBlockState defaultBlock, final IRegion region)
+	{
+		this(defaultBlock, region.getWidth(), region.getHeight(), region.getLength());
+	}
+
+	public BlockDataContainer(final int width, final int height, final int length)
+	{
+		this(Blocks.AIR.getDefaultState(), width, height, length);
+	}
+
 	public BlockDataContainer(final IRegion region)
 	{
-		this(region.getWidth(), region.getHeight(), region.getLength());
+		this(Blocks.AIR.getDefaultState(), region);
 	}
 
 	public static BlockDataContainer fromShape(final World world, final IShape shape)
@@ -88,7 +107,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		final int minx = bounding.getMin().getX();
 		final int miny = bounding.getMin().getY();
 		final int minz = bounding.getMin().getZ();
-		final BlockDataContainer container = new BlockDataContainerDefaultVoid(bounding.getWidth(), bounding.getHeight(), bounding.getLength());
+		final BlockDataContainer container = new BlockDataContainer(bounding.getWidth(), bounding.getHeight(), bounding.getLength());
 		for (final BlockPos pos : shape.getShapeData())
 		{
 			final IBlockState state = world.getBlockState(pos);
@@ -156,6 +175,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 	}
 
+	public boolean isOutsideOfContainer(BlockPos pos)
+	{
+		int index = this.getIndex(pos.getX(), pos.getY(), pos.getZ());
+
+		return index >= this.blocks.length || index < 0;
+	}
+
 	public IBlockState getBlockState(final BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
@@ -217,7 +243,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	protected IBlockState getDefaultBlock()
 	{
-		return Blocks.AIR.getDefaultState();
+		return this.defaultBlock;
 	}
 
 	@Override

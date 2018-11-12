@@ -447,7 +447,7 @@ public class OrbisProject implements IProject
 								String projectName = FilenameUtils.getName(locationRoot.substring(0, locationRoot.length() - 1));
 
 								final String location = resourceLocation
-										.substring(resourceLocation.indexOf(projectName) + projectName.length() + 1);
+										.substring(resourceLocation.indexOf(projectName) + projectName.length() + 2);
 
 								dataWalker.walk(in, () -> {
 									try
