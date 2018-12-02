@@ -51,7 +51,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 	private static final InventoryBasic basicInventory = new InventoryBasic("tmp", true, 45);
 
 	/** Currently selected creative inventory tab index. */
-	private static int selectedTabIndex = CreativeTabs.BUILDING_BLOCKS.getTabIndex();
+	private static int selectedTabIndex = CreativeTabs.BUILDING_BLOCKS.getIndex();
 
 	private static int tabPage = 0;
 
@@ -153,7 +153,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		boolean flag = type == ClickType.QUICK_MOVE;
 		type = slotId == -999 && type == ClickType.PICKUP ? ClickType.THROW : type;
 
-		if (slotIn == null && selectedTabIndex != CreativeTabs.INVENTORY.getTabIndex() && type != ClickType.QUICK_CRAFT)
+		if (slotIn == null && selectedTabIndex != CreativeTabs.INVENTORY.getIndex() && type != ClickType.QUICK_CRAFT)
 		{
 			InventoryPlayer inventoryplayer1 = this.mc.player.inventory;
 
@@ -188,7 +188,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 					this.mc.playerController.sendSlotPacket(ItemStack.EMPTY, j);
 				}
 			}
-			else if (selectedTabIndex == CreativeTabs.INVENTORY.getTabIndex())
+			else if (selectedTabIndex == CreativeTabs.INVENTORY.getIndex())
 			{
 				if (slotIn == this.destroyItemSlot)
 				{
@@ -505,7 +505,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		if (creativetabs != null && creativetabs.drawInForegroundOfTab())
 		{
 			GlStateManager.disableBlend();
-			this.fontRenderer.drawString(I18n.format(creativetabs.getTranslatedTabLabel()), 8, 6, 4210752);
+			this.fontRenderer.drawString(I18n.format(creativetabs.getTranslationKey()), 8, 6, 4210752);
 		}
 	}
 
@@ -565,7 +565,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		{
 			return false;
 		}
-		return selectedTabIndex != CreativeTabs.INVENTORY.getTabIndex() && CreativeTabs.CREATIVE_TAB_ARRAY[selectedTabIndex].shouldHidePlayerInventory()
+		return selectedTabIndex != CreativeTabs.INVENTORY.getIndex() && CreativeTabs.CREATIVE_TAB_ARRAY[selectedTabIndex].hasScrollbar()
 				&& ((GuiContainerCreativePublic.ContainerCreativePublic) this.inventorySlots).canScroll();
 	}
 
@@ -579,7 +579,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			return;
 		}
 		int i = selectedTabIndex;
-		selectedTabIndex = tab.getTabIndex();
+		selectedTabIndex = tab.getIndex();
 		GuiContainerCreativePublic.ContainerCreativePublic guicontainercreative$containercreative = (GuiContainerCreativePublic.ContainerCreativePublic) this.inventorySlots;
 		this.dragSplittingSlots.clear();
 		guicontainercreative$containercreative.itemList.clear();
@@ -675,7 +675,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			this.destroyItemSlot = new Slot(basicInventory, 0, 173, 112);
 			guicontainercreative$containercreative.inventorySlots.add(this.destroyItemSlot);
 		}
-		else if (i == CreativeTabs.INVENTORY.getTabIndex())
+		else if (i == CreativeTabs.INVENTORY.getIndex())
 		{
 			guicontainercreative$containercreative.inventorySlots = this.originalSlots;
 			this.originalSlots = null;
@@ -796,7 +796,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			this.renderCreativeInventoryHoveringText(CreativeTabs.INVENTORY, mouseX, mouseY);
 		}
 
-		if (this.destroyItemSlot != null && selectedTabIndex == CreativeTabs.INVENTORY.getTabIndex() && this
+		if (this.destroyItemSlot != null && selectedTabIndex == CreativeTabs.INVENTORY.getIndex() && this
 				.isPointInRegion(this.destroyItemSlot.xPos, this.destroyItemSlot.yPos, 16, 16, mouseX, mouseY))
 		{
 			this.drawHoveringText(I18n.format("inventory.binSlot"), mouseX, mouseY);
@@ -822,7 +822,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 	@Override
 	protected void renderToolTip(ItemStack stack, int x, int y)
 	{
-		if (selectedTabIndex == CreativeTabs.SEARCH.getTabIndex())
+		if (selectedTabIndex == CreativeTabs.SEARCH.getIndex())
 		{
 			List<String> list = stack.getTooltip(this.mc.player,
 					this.mc.gameSettings.advancedItemTooltips ? ITooltipFlag.TooltipFlags.ADVANCED : ITooltipFlag.TooltipFlags.NORMAL);
@@ -849,14 +849,14 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 
 			if (creativetabs != null)
 			{
-				list.add(1, "" + TextFormatting.BOLD + TextFormatting.BLUE + I18n.format(creativetabs.getTranslatedTabLabel()));
+				list.add(1, "" + TextFormatting.BOLD + TextFormatting.BLUE + I18n.format(creativetabs.getTranslationKey()));
 			}
 
 			for (int i = 0; i < list.size(); ++i)
 			{
 				if (i == 0)
 				{
-					list.set(i, stack.getRarity().rarityColor + list.get(i));
+					list.set(i, stack.getRarity().color + list.get(i));
 				}
 				else
 				{
@@ -900,7 +900,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			{
 				continue;
 			}
-			if (creativetabs1.getTabIndex() != selectedTabIndex)
+			if (creativetabs1.getIndex() != selectedTabIndex)
 			{
 				this.drawTab(creativetabs1);
 			}
@@ -929,7 +929,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		int k = j + 112;
 		this.mc.getTextureManager().bindTexture(CREATIVE_INVENTORY_TABS);
 
-		if (creativetabs.shouldHidePlayerInventory())
+		if (creativetabs.hasScrollbar())
 		{
 			this.drawTexturedModalRect(i, j + (int) ((float) (k - j - 17) * this.currentScroll), 232 + (this.needsScrollBars() ? 0 : 12), 0, 12, 15);
 		}
@@ -965,7 +965,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			}
 		}
 
-		int i = tab.getTabColumn();
+		int i = tab.getColumn();
 		int j = 28 * i;
 		int k = 0;
 
@@ -978,7 +978,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			j += i;
 		}
 
-		if (tab.isTabInFirstRow())
+		if (tab.isOnTopRow())
 		{
 			k = k - 32;
 		}
@@ -996,7 +996,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 	 */
 	protected boolean renderCreativeInventoryHoveringText(CreativeTabs tab, int mouseX, int mouseY)
 	{
-		int i = tab.getTabColumn();
+		int i = tab.getColumn();
 		int j = 28 * i;
 		int k = 0;
 
@@ -1009,7 +1009,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 			j += i;
 		}
 
-		if (tab.isTabInFirstRow())
+		if (tab.isOnTopRow())
 		{
 			k = k - 32;
 		}
@@ -1020,7 +1020,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 
 		if (this.isPointInRegion(j + 3, k + 3, 23, 27, mouseX, mouseY))
 		{
-			this.drawHoveringText(I18n.format(tab.getTranslatedTabLabel()), mouseX, mouseY);
+			this.drawHoveringText(I18n.format(tab.getTranslationKey()), mouseX, mouseY);
 			return true;
 		}
 		else
@@ -1035,9 +1035,9 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 	 */
 	protected void drawTab(CreativeTabs tab)
 	{
-		boolean flag = tab.getTabIndex() == selectedTabIndex;
-		boolean flag1 = tab.isTabInFirstRow();
-		int i = tab.getTabColumn();
+		boolean flag = tab.getIndex() == selectedTabIndex;
+		boolean flag1 = tab.isOnTopRow();
+		int i = tab.getColumn();
 		int j = i * 28;
 		int k = 0;
 		int l = this.guiLeft + 28 * i;
@@ -1078,7 +1078,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		i1 = i1 + 8 + (flag1 ? 1 : -1);
 		GlStateManager.enableLighting();
 		GlStateManager.enableRescaleNormal();
-		ItemStack itemstack = tab.getIconItemStack();
+		ItemStack itemstack = tab.getIcon();
 		this.itemRender.renderItemAndEffectIntoGUI(itemstack, l, i1);
 		this.itemRender.renderItemOverlays(this.fontRenderer, itemstack, l, i1);
 		GlStateManager.disableLighting();

@@ -111,7 +111,7 @@ public class BlockUtil
 
 	public static int getTopBlockHeight(final World world, int posX, int posZ)
 	{
-		final Chunk chunk = world.getChunkFromChunkCoords(posX >> 4, posZ >> 4);
+		final Chunk chunk = world.getChunk(posX >> 4, posZ >> 4);
 		final int x = posX;
 		final int z = posZ;
 		int k = chunk.getTopFilledSegment() + 15;

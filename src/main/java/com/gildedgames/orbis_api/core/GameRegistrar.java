@@ -31,8 +31,8 @@ public class GameRegistrar
 
 	public Block findBlock(final ResourceLocation identifier)
 	{
-		final String modId = identifier.getResourceDomain();
-		final String name = identifier.getResourcePath();
+		final String modId = identifier.getNamespace();
+		final String name = identifier.getPath();
 
 		if (modId.equals("minecraft") || modId.equals(""))
 		{
@@ -44,7 +44,7 @@ public class GameRegistrar
 
 	public Item findItem(final ResourceLocation identifier)
 	{
-		final String modId = identifier.getResourceDomain();
+		final String modId = identifier.getNamespace();
 
 		if (modId.equals("minecraft") || modId.equals(""))
 		{

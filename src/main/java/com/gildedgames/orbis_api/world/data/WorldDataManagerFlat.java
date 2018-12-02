@@ -32,7 +32,7 @@ public class WorldDataManagerFlat implements IWorldDataManager
 			throw new IllegalArgumentException("Data name can not be null");
 		}
 
-		File dirs = new File(this.file, data.getName().getResourceDomain() + "/" + data.getName().getResourcePath());
+		File dirs = new File(this.file, data.getName().getNamespace() + "/" + data.getName().getPath());
 
 		if (!dirs.isDirectory() && !dirs.mkdirs())
 		{
@@ -88,7 +88,7 @@ public class WorldDataManagerFlat implements IWorldDataManager
 
 	private File getFile(IWorldData data, String path)
 	{
-		return new File(this.file, data.getName().getResourceDomain() + "//" + data.getName().getResourcePath() + "//" + path);
+		return new File(this.file, data.getName().getNamespace() + "//" + data.getName().getPath() + "//" + path);
 	}
 
 	@Override

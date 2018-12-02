@@ -335,8 +335,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 			final ResourceLocation identifier = entry.getValue();
 
-			data.setString("mod", identifier.getResourceDomain());
-			data.setString("name", identifier.getResourcePath());
+			data.setString("mod", identifier.getNamespace());
+			data.setString("name", identifier.getPath());
 			data.setInteger("id", entry.getKey());
 
 			identifierList.appendTag(data);

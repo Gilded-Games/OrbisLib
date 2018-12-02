@@ -259,7 +259,7 @@ public class OrbisServices implements IOrbisServices
 	@Nullable
 	private IProject get(@Nullable final MinecraftServer server, final ResourceLocation projectPath, Object mod, String archiveBaseName)
 	{
-		final String s = projectPath.getResourcePath();
+		final String s = projectPath.getPath();
 
 		if (this.loadedProjects.containsKey(s))
 		{
@@ -287,7 +287,7 @@ public class OrbisServices implements IOrbisServices
 	 */
 	private boolean readProject(Object mod, String archiveBaseName, final ResourceLocation server)
 	{
-		final String s = server.getResourcePath();
+		final String s = server.getPath();
 		final File file1 = new File(this.baseFolder, s + File.separator + "project_data.json");
 
 		if (!file1.exists())
@@ -323,8 +323,8 @@ public class OrbisServices implements IOrbisServices
 	 */
 	private boolean readProjectFromJar(Object mod, String archiveBaseName, final ResourceLocation id)
 	{
-		final String s = id.getResourceDomain();
-		final String s1 = id.getResourcePath();
+		final String s = id.getNamespace();
+		final String s1 = id.getPath();
 		InputStream inputstream = null;
 
 		try
@@ -428,13 +428,13 @@ public class OrbisServices implements IOrbisServices
 			if (data != null)
 			{
 				this.projectManager = new OrbisProjectManager(
-						new File(Minecraft.getMinecraft().mcDataDir, "/orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"),
+						new File(Minecraft.getMinecraft().gameDir, "/orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"),
 						Collections.emptyList(), this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}
 			else
 			{
-				File extraProjectSourcesFile = new File(Minecraft.getMinecraft().mcDataDir, "/orbis/extra_project_sources.json");
+				File extraProjectSourcesFile = new File(Minecraft.getMinecraft().gameDir, "/orbis/extra_project_sources.json");
 
 				List<File> extraProjectSources = null;
 
@@ -486,7 +486,7 @@ public class OrbisServices implements IOrbisServices
 					extraProjectSources = Collections.emptyList();
 				}
 
-				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().mcDataDir, "/orbis/local/projects/"), extraProjectSources,
+				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().gameDir, "/orbis/local/projects/"), extraProjectSources,
 						this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}

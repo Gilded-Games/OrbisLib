@@ -101,7 +101,7 @@ public class OrbisAPI
 		return new ResourceLocation(OrbisAPI.MOD_ID, name);
 	}
 
-	public static String getResourcePath(final String name)
+	public static String getPath(final String name)
 	{
 		return (OrbisAPI.MOD_ID + ":") + name;
 	}

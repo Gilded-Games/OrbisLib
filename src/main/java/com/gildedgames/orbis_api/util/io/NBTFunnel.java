@@ -40,8 +40,8 @@ public class NBTFunnel
 		final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(state.getBlock());
 		short meta = (short) (state.getBlock().getMetaFromState(state));
 
-		t.setString("mod", identifier.getResourceDomain());
-		t.setString("name", identifier.getResourcePath());
+		t.setString("mod", identifier.getNamespace());
+		t.setString("name", identifier.getPath());
 		t.setShort("meta", meta);
 
 		return t;

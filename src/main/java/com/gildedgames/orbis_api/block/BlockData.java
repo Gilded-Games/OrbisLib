@@ -89,8 +89,8 @@ public class BlockData implements NBT
 		final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(block);
 		short meta = (short) (this.blockState == null ? 0 : block.getMetaFromState(this.blockState));
 
-		tag.setString("mod", identifier.getResourceDomain());
-		tag.setString("name", identifier.getResourcePath());
+		tag.setString("mod", identifier.getNamespace());
+		tag.setString("name", identifier.getPath());
 		tag.setShort("meta", meta);
 
 		final boolean hasTileEntity = this.tileEntity != null;
