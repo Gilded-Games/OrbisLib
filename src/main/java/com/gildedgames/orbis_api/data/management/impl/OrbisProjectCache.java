@@ -92,6 +92,7 @@ public class OrbisProjectCache implements IProjectCache
 	@Override
 	public void setData(final IData data, String location)
 	{
+		// TODO: Why?
 		location = location.replace("/", "\\");
 
 		UUID id;

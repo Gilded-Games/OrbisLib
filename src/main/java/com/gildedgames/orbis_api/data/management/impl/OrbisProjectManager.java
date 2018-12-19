@@ -131,7 +131,7 @@ public class OrbisProjectManager implements IProjectManager
 		IMetadataLoader<OrbisProject> jsonMetadataLoader = new IMetadataLoader<OrbisProject>()
 		{
 			@Override
-			public void saveMetadata(OrbisProject project, IData data, File file, OutputStream outputStream)
+			public void saveMetadata(OrbisProject project, IData data, OutputStream outputStream)
 			{
 				try (OutputStreamWriter writer = new OutputStreamWriter(outputStream))
 				{
@@ -151,7 +151,7 @@ public class OrbisProjectManager implements IProjectManager
 			}
 
 			@Override
-			public IDataMetadata loadMetadata(OrbisProject project, File file, InputStream input)
+			public IDataMetadata loadMetadata(OrbisProject project, InputStream input)
 			{
 				try (InputStreamReader reader = new InputStreamReader(input))
 				{

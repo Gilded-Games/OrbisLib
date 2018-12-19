@@ -6,21 +6,17 @@ import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.FileSystem;
-import java.nio.file.*;
-import java.util.Collections;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class OrbisProject implements IProject
 {
@@ -191,31 +187,21 @@ public class OrbisProject implements IProject
 
 	private void writeMetadata(IData data, File file)
 	{
-		try
-		{
-			String extension = FilenameUtils.getExtension(file.getName());
-			Optional<IMetadataLoader<OrbisProject>> loader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
+		String extension = FilenameUtils.getExtension(file.getName());
+		Optional<IMetadataLoader<OrbisProject>> loader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
 
-			if (loader.isPresent())
+		if (loader.isPresent())
+		{
+			File metaFile = new File(FilenameUtils.removeExtension(file.getPath()) + ".metadata");
+
+			try (FileOutputStream out = new FileOutputStream(metaFile))
 			{
-				//TODO SHOULD NOT ALWAYS BE FILE PATH, CAN BE RESOURCE LOCATION
-				String location = this.getLocationFromFile(file.getCanonicalPath());
-
-				File metaFile = new File(file.getPath().replace("." + extension, ".metadata"));
-
-				try (FileOutputStream out = new FileOutputStream(metaFile))
-				{
-					loader.get().saveMetadata(this, data, file, out);
-				}
-				catch (final IOException e)
-				{
-					OrbisAPI.LOGGER.error("Failed to save data metadata to disk", e);
-				}
+				loader.get().saveMetadata(this, data, out);
 			}
-		}
-		catch (IOException e)
-		{
-			OrbisAPI.LOGGER.info(e);
+			catch (final IOException e)
+			{
+				OrbisAPI.LOGGER.error("Failed to save data metadata to disk", e);
+			}
 		}
 	}
 
@@ -281,7 +267,7 @@ public class OrbisProject implements IProject
 
 		final boolean[] found = { false };
 
-		this.walkDataLoading((input, metadataInput, file, location, resourceLocation) -> {
+		this.walkDataLoading((input, metadataInput, file, location) -> {
 			// If already loaded, continue to next file
 			if (!this.cache.getDataId(location).isPresent())
 			{
@@ -304,7 +290,7 @@ public class OrbisProject implements IProject
 				return;
 			}
 
-			IDataMetadata metadata = metadataLoader.get().loadMetadata(this, file, metaInput);
+			IDataMetadata metadata = metadataLoader.get().loadMetadata(this, metaInput);
 
 			if (metadata != null)
 			{
@@ -327,7 +313,7 @@ public class OrbisProject implements IProject
 						}
 						else
 						{
-							this.idToResourceLocation.put(data.getMetadata().getIdentifier(), resourceLocation);
+							this.idToResourceLocation.put(data.getMetadata().getIdentifier(), location);
 						}
 					}
 				}
@@ -350,165 +336,74 @@ public class OrbisProject implements IProject
 	 */
 	private void walkDataLoading(ProjectDataWalker dataWalker)
 	{
-		try
-		{
-			/*
-			 * Uses the file jarLocation if accessible (used on Orbis client)
-			 * Otherwise, uses URI and accesses from MC server resource
-			 * so it works when stored in a mod jar.
-			 */
-			final String rawPath = this.mod.getClass().getResource("").toURI().toString();
-			URI resources = URI.create(rawPath);
-
-			final Path myPath;
-			FileSystem fileSystem = null;
-
-			final boolean usesJar;
-
-			String modPackage = "/" + this.mod.getClass().getName().replace(this.mod.getClass().getSimpleName(), "").replace(".", "/");
-
-			/* INSIDE JAR **/
-			if (resources.getScheme().equals("jar") && this.isModProject)
-			{
-				resources = URI.create(rawPath.replace(modPackage, "/"));
-
-				fileSystem = FileSystems.newFileSystem(resources, Collections.emptyMap());
-				myPath = fileSystem.getPath("/");
-
-				usesJar = true;
-			}
-			else if (this.jarLocation != null) /* DEVELOPMENT WORKSPACE, JAR **/
-			{
-				String subRaw = rawPath.substring(rawPath.lastIndexOf(this.archiveBaseName));
-				String pack = subRaw.substring(this.archiveBaseName.length(), subRaw.indexOf("/"));
-
-				String orig = "/" + this.archiveBaseName + pack + modPackage;
-				String assets = "/" + this.archiveBaseName + "_main/assets/";
-
-				resources = URI.create(rawPath.replace(orig, assets));
-
-				myPath = Paths.get(resources);
-
-				usesJar = false;
-			}
-			else
-			{
-				myPath = Paths.get(this.locationFile.getPath());
-
-				usesJar = false;
-			}
-
-			String locationRoot = this.locationFile != null ? this.locationFile.getPath() : this.jarLocation.getPath();
-
-			try (Stream<Path> paths = Files.walk(myPath))
-			{
-				paths.forEach(p ->
-				{
-					final URI uri = p.toUri();
-					final String path = uri.toString().contains("!") ? uri.toString().split("!")[1] : uri.toString();
-
-					String relativePath = path.contains("/assets") ? path.replace(path.substring(0, path.indexOf("/assets")), "") : path;
-
-					/* Prevents the path walking from including the project's jarLocation **/
-					if (relativePath.replace("/", "\\").equals(locationRoot.replace("/", "\\")) || !relativePath.replace("/", "\\")
-							.contains(locationRoot.replace("/", "\\")))
-					{
-						return;
-					}
-
-					final String extension = FilenameUtils.getExtension(path);
-					final String name = FilenameUtils.getName(path);
-
-					/* Prevents the path walking from including the project data itself (hidden file) **/
-					if (name.equals("project_data.json"))
-					{
-						return;
-					}
-
-					/* Make sure the file has an extension type accepted by this project **/
-					if (OrbisAPI.services().getProjectManager().getAcceptedExtensions().contains(extension))
-					{
-						try
-						{
-							File file = null;
-
-							if (!usesJar)
-							{
-								file = new File(uri);
-							}
-
-							final String resourceLocation = !usesJar ? file.getCanonicalPath() : path;
-
-							File metadataFile = file != null ? new File(file.getPath().replace("." + extension, ".metadata")) : null;
-							String resourceLocationMetadata = resourceLocation.replace("." + extension, ".metadata");
-
-							try (InputStream in = usesJar ? MinecraftServer.class.getResourceAsStream(resourceLocation) : new FileInputStream(file))
-							{
-								String projectName = FilenameUtils.getName(locationRoot.substring(0, locationRoot.length() - 1));
-
-								final String location = resourceLocation
-										.substring(resourceLocation.indexOf(projectName) + projectName.length() + 2);
-
-								dataWalker.walk(in, () -> {
-									try
-									{
-										return usesJar ?
-												MinecraftServer.class.getResourceAsStream(resourceLocationMetadata) :
-												new FileInputStream(metadataFile);
-									}
-									catch (FileNotFoundException ignored)
-									{
-
-									}
-
-									return null;
-								}, file, location, resourceLocation);
-							}
-							catch (final IOException e)
-							{
-								OrbisAPI.LOGGER.error(e);
-							}
-						}
-						catch (final IOException e)
-						{
-							OrbisAPI.LOGGER.error(e);
-						}
-					}
-				});
-			}
-			catch (final IOException e)
-			{
-				OrbisAPI.LOGGER.error(e);
-			}
-
-			if (fileSystem != null)
-			{
-				fileSystem.close();
-			}
-		}
-		catch (final IOException | URISyntaxException e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	private String getLocationFromFile(String filePath)
-	{
 		String locationRoot = this.locationFile != null ? this.locationFile.getPath() : this.jarLocation.getPath();
 
-		String projectsLoc = filePath.substring(
-				filePath.lastIndexOf("projects") + "projects".length() + 1);
+		URL classpathURL = this.mod.getClass().getClassLoader().getResource("");
 
-		String projectName = FilenameUtils.getName(locationRoot);
+		// If this isn't null, we're in a writable classpath
+		File classpathDir = null;
 
-		return projectsLoc
-				.substring(projectsLoc.indexOf(projectName) + projectName.length() + 1);
+		if (classpathURL != null)
+		{
+			File classpathFile = new File(classpathURL.getPath(), locationRoot);
+
+			if (classpathFile.isDirectory())
+			{
+				classpathDir = classpathFile;
+			}
+		}
+
+		List<String> fileList;
+
+		try (InputStream stream = OrbisProject.class.getResourceAsStream(locationRoot + "project_index.txt"))
+		{
+			if (stream == null)
+			{
+				throw new IOException("Project file index does not exist");
+			}
+
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
+			{
+				fileList = reader.lines()
+						.filter(line -> !line.startsWith("#"))
+						.collect(Collectors.toList());
+			}
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException("Failed to read project file index", e);
+		}
+
+		for (String filePath : fileList)
+		{
+			String fullPath = locationRoot + filePath;
+
+			try (InputStream stream = OrbisProject.class.getResourceAsStream(fullPath))
+			{
+				if (stream == null)
+				{
+					OrbisAPI.LOGGER.warn("File in project index does not exist: " + fullPath);
+
+					continue;
+				}
+
+				String name = fullPath.replace(locationRoot, "");
+
+				File file = classpathDir != null ? new File(classpathDir, fullPath) : null;
+
+				dataWalker.walk(stream, () -> OrbisProject.class.getResourceAsStream(FilenameUtils.removeExtension(fullPath) + ".metadata"), file, name);
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException("Failed to iterate project files", e);
+			}
+		}
 	}
 
 	@Override
 	public void loadAndCacheData()
 	{
-		this.walkDataLoading((input, metadataInput, file, location, resourceLocation) -> {
+		this.walkDataLoading((input, metadataInput, file, location) -> {
 			String extension = FilenameUtils.getExtension(location);
 
 			Optional<IDataLoader<OrbisProject>> dataLoader = OrbisAPI.services().getProjectManager().getDataLoaderForExtension(extension);
@@ -540,7 +435,7 @@ public class OrbisProject implements IProject
 
 						try (FileOutputStream out = new FileOutputStream(metaFile))
 						{
-							metadataLoader.get().saveMetadata(this, data, file, out);
+							metadataLoader.get().saveMetadata(this, data, out);
 						}
 						catch (IOException e)
 						{
@@ -555,12 +450,13 @@ public class OrbisProject implements IProject
 				}
 				else
 				{
-					metadata = metadataLoader.get().loadMetadata(this, file, metaInput);
+					metadata = metadataLoader.get().loadMetadata(this, metaInput);
 				}
 
 				if (metadata == null)
 				{
 					OrbisAPI.LOGGER.error("WARNING: A data file could not load because there was no associate metadata file with it.");
+
 					return;
 				}
 
@@ -574,7 +470,7 @@ public class OrbisProject implements IProject
 				}
 				else
 				{
-					this.idToResourceLocation.put(data.getMetadata().getIdentifier(), resourceLocation);
+					this.idToResourceLocation.put(data.getMetadata().getIdentifier(), location);
 				}
 			}
 			else
@@ -592,6 +488,6 @@ public class OrbisProject implements IProject
 
 	private interface ProjectDataWalker
 	{
-		void walk(InputStream in, Supplier<InputStream> metaIn, File file, String location, String resourceLocation) throws IOException;
+		void walk(InputStream stream, Supplier<InputStream> metaProvider, File file, String location) throws IOException;
 	}
 }
