@@ -428,13 +428,13 @@ public class OrbisServices implements IOrbisServices
 			if (data != null)
 			{
 				this.projectManager = new OrbisProjectManager(
-						new File(Minecraft.getMinecraft().gameDir, "/orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"),
+						new File(Minecraft.getMinecraft().gameDir, "orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"),
 						Collections.emptyList(), this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}
 			else
 			{
-				File extraProjectSourcesFile = new File(Minecraft.getMinecraft().gameDir, "/orbis/extra_project_sources.json");
+				File extraProjectSourcesFile = new File(Minecraft.getMinecraft().gameDir, "orbis/extra_project_sources.json");
 
 				List<File> extraProjectSources = null;
 
@@ -486,7 +486,7 @@ public class OrbisServices implements IOrbisServices
 					extraProjectSources = Collections.emptyList();
 				}
 
-				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().gameDir, "/orbis/local/projects/"), extraProjectSources,
+				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().gameDir, "orbis/local/projects/"), extraProjectSources,
 						this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}
@@ -494,7 +494,7 @@ public class OrbisServices implements IOrbisServices
 
 		if (this.projectManager == null)
 		{
-			this.projectManager = new OrbisProjectManager(new File(DimensionManager.getCurrentSaveRootDirectory(), "/orbis/projects/"), Collections.emptyList(),
+			this.projectManager = new OrbisProjectManager(new File(DimensionManager.getCurrentSaveRootDirectory(), "orbis/projects/"), Collections.emptyList(),
 					this.mod,
 					this.archiveBaseName, OrbisProject::new);
 		}

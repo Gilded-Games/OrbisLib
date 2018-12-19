@@ -88,7 +88,7 @@ public class WorldDataManagerFlat implements IWorldDataManager
 
 	private File getFile(IWorldData data, String path)
 	{
-		return new File(this.file, data.getName().getNamespace() + "//" + data.getName().getPath() + "//" + path);
+		return new File(this.file, data.getName().getNamespace() + "/" + data.getName().getPath() + "/" + path);
 	}
 
 	@Override
