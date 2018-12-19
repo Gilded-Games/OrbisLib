@@ -83,4 +83,7 @@ task signJar(type: SignJar, dependsOn: reobfJar) {
     outputFile = jar.archivePath
 }
 
-build.dependsOn signJar
+
+if (System.getenv("GRADLE_BUILD_SIGNED") == 'true') {
+    build.dependsOn signJar
+}
