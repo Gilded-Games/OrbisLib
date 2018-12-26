@@ -14,11 +14,19 @@ public class GuiTextLabel extends GuiElement
 {
 	private GuiText text;
 
+	public GuiTextLabel(final Rect rect)
+	{
+		this(rect, null);
+	}
+
 	public GuiTextLabel(final Rect rect, final ITextComponent component)
 	{
 		super(rect, true);
 
-		this.text = new GuiText(Dim2D.build().centerY(true).x(3).y(this.dim().height() / 2).addY(1).flush(), new Text(component, 1.0F));
+		if (component != null)
+		{
+			this.text = new GuiText(Dim2D.build().centerY(true).x(3).y(this.dim().height() / 2).addY(1).flush(), new Text(component, 1.0F));
+		}
 	}
 
 	public void setText(ITextComponent component)
@@ -31,7 +39,10 @@ public class GuiTextLabel extends GuiElement
 	@Override
 	public void build()
 	{
-		this.context().addChildren(this.text);
+		if (this.text != null)
+		{
+			this.context().addChildren(this.text);
+		}
 
 		this.state().setCanBeTopHoverElement(true);
 	}
