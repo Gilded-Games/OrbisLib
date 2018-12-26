@@ -7,14 +7,14 @@ import java.util.Random;
 
 public class MathUtil
 {
-	public static boolean epsilonEquals(double p_180185_0_, double p_180185_1_)
+	public static boolean epsilonEquals(double d1, double d2)
 	{
-		return Math.abs(p_180185_1_ - p_180185_0_) < 1.0E-5F;
+		return Math.abs(d2 - d1) < 1.0E-5F;
 	}
 
-	public static boolean epsilonEquals(float p_180185_0_, float p_180185_1_)
+	public static boolean epsilonEquals(float f1, float f2)
 	{
-		return MathHelper.abs(p_180185_1_ - p_180185_0_) < 1.0E-5F;
+		return MathHelper.abs(f2 - f1) < 1.0E-5F;
 	}
 
 	public static <T> T getRandomElement(Collection<T> from, Random rand)
