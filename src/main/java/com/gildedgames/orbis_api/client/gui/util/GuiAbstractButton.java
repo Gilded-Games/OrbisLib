@@ -22,7 +22,7 @@ public class GuiAbstractButton extends GuiElement
 
 	public GuiAbstractButton(final Rect dim, final GuiTexture defaultState, final GuiTexture hoveredState, final GuiTexture clickedState)
 	{
-		this(dim, defaultState, hoveredState, clickedState, hoveredState);
+		this(dim, defaultState, hoveredState, clickedState, null);
 	}
 
 	public GuiAbstractButton(final Rect dim, final GuiTexture defaultState, final GuiTexture hoveredState, final GuiTexture clickedState,
@@ -81,9 +81,7 @@ public class GuiAbstractButton extends GuiElement
 		this.hoveredState.dim().mod().center(false).resetPos().flush();
 		this.clickedState.dim().mod().center(false).resetPos().flush();
 
-		this.context().addChildren(this.hoveredState);
-		this.context().addChildren(this.clickedState);
-		this.context().addChildren(this.defaultState);
+		this.context().addChildren(this.clickedState, this.defaultState, this.hoveredState);
 
 		this.clickedState.state().setCanBeTopHoverElement(true);
 
