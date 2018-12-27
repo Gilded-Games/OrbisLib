@@ -12,10 +12,6 @@ import com.gildedgames.orbis_api.util.mc.NBT;
  */
 public interface IPrepSectorData extends NBT
 {
-	IPrepSector setParent(IPrepSector sector);
-
-	IPrepSector getParent();
-
 	/**
 	 * @return True if this sector should be saved again, such as if it's data has changed.
 	 */
@@ -36,6 +32,4 @@ public interface IPrepSectorData extends NBT
 	int getSectorY();
 
 	long getSeed();
-
-	boolean shouldPrepareChunk(int chunkX, int chunkY);
 }

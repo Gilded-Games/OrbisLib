@@ -6,8 +6,6 @@ public interface IPrepManager
 
 	IPrepSectorAccess getAccess();
 
-	IPrepSectorAccessClient getClientAccess();
-
 	IPrepSectorData createSector(int sectorX, int sectorZ);
 
 	void decorateSectorData(IPrepSectorData data);

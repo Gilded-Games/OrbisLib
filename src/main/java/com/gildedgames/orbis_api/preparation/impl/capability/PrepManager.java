@@ -51,12 +51,6 @@ public class PrepManager implements IPrepManager
 	}
 
 	@Override
-	public IPrepSectorAccessClient getClientAccess()
-	{
-		return (IPrepSectorAccessClient) this.access;
-	}
-
-	@Override
 	public IPrepSectorAccess getAccess()
 	{
 		return this.access;
