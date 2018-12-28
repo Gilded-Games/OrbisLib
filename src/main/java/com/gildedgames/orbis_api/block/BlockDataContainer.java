@@ -10,6 +10,7 @@ import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
@@ -29,11 +30,6 @@ import java.util.Set;
 
 public class BlockDataContainer implements NBT, IDimensions, IData
 {
-
-	private Int2ObjectOpenHashMap<Block> localIdToBlock;
-
-	private Object2IntOpenHashMap<Block> blockToLocalId;
-
 	private short[] blocks;
 
 	private byte[] blocksMeta;
@@ -44,8 +40,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private IDataMetadata metadata;
 
-	private int nextLocalId;
-
 	private IBlockState defaultBlock;
 
 	public BlockDataContainer()
@@ -55,12 +49,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	public BlockDataContainer(IBlockState defaultBlock)
 	{
-		this.localIdToBlock = new Int2ObjectOpenHashMap<>();
-		this.blockToLocalId = new Object2IntOpenHashMap<>();
-
-		this.localIdToBlock.put(-1, defaultBlock.getBlock());
-		this.blockToLocalId.put(defaultBlock.getBlock(), -1);
-
 		this.metadata = new DataMetadata();
 
 		this.defaultBlock = defaultBlock;
@@ -156,22 +144,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		int indexThis = this.getIndex(thisX, thisY, thisZ);
 		int indexOther = data.getIndex(otherX, otherY, otherZ);
 
-		Block otherBlock = data.localIdToBlock.get(data.blocks[indexOther]);
-
-		if (!this.blockToLocalId.containsKey(otherBlock))
-		{
-			int id = this.nextLocalId++;
-
-			this.localIdToBlock.put(id, otherBlock);
-			this.blockToLocalId.put(otherBlock, id);
-		}
-
-		this.blocks[indexThis] = (short) this.blockToLocalId.getInt(otherBlock);
+		this.blocks[indexThis] = data.blocks[indexOther];
 		this.blocksMeta[indexThis] = data.blocksMeta[indexOther];
 
-		if (data.entities.get(indexOther) != null)
+		NBTTagCompound tag = data.entities.get(indexOther);
+
+		if (tag != null)
 		{
-			this.entities.put(indexThis, data.entities.get(indexOther).copy());
+			this.entities.put(indexThis, tag.copy());
 		}
 	}
 
@@ -195,26 +175,27 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	public IBlockState getBlockState(final int index)
 	{
 		int id = this.blocks[index];
+
 		if (id < 0)
 		{
 			return this.getDefaultBlock();
 		}
-		return this.localIdToBlock.get(id).getStateFromMeta(this.blocksMeta[index]);
+
+		return Block.getBlockById(id).getStateFromMeta(this.blocksMeta[index]);
 	}
 
 	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
 	{
 		final int index = this.getIndex(x, y, z);
 
-		if (!this.blockToLocalId.containsKey(state.getBlock()))
-		{
-			int id = this.nextLocalId++;
+		int id = -1;
 
-			this.localIdToBlock.put(id, state.getBlock());
-			this.blockToLocalId.put(state.getBlock(), id);
+		if (state.getBlock() != this.defaultBlock.getBlock())
+		{
+			id = Block.getIdFromBlock(state.getBlock());
 		}
 
-		this.blocks[index] = (short) this.blockToLocalId.getInt(state.getBlock());
+		this.blocks[index] = (short) id;
 		this.blocksMeta[index] = (byte) state.getBlock().getMetaFromState(state);
 	}
 
@@ -249,7 +230,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setInteger("nextLocalId", this.nextLocalId);
+		int nextLocalId = 0;
+
+		Int2IntOpenHashMap blockToLocalId = new Int2IntOpenHashMap();
 
 		tag.setInteger("width", this.getWidth());
 		tag.setInteger("height", this.getHeight());
@@ -278,18 +261,27 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 			{
 				blockId = this.blocks[i];
 				meta = this.blocksMeta[i];
+
+				if (!blockToLocalId.containsKey(blockId))
+				{
+					int id = nextLocalId++;
+
+					blockToLocalId.put(blockId, id);
+				}
+
+				final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(Block.getBlockById(blockId));
+
+				blockId = blockToLocalId.get(blockId);
+
+				if (!identifiers.containsKey(blockId))
+				{
+					identifiers.put(blockId, identifier);
+				}
 			}
 			else
 			{
 				blockId = -1;
 				meta = this.getDefaultBlock().getBlock().getMetaFromState(this.getDefaultBlock());
-			}
-
-			final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(this.localIdToBlock.get(blockId));
-
-			if (!identifiers.containsKey(blockId))
-			{
-				identifiers.put(blockId, identifier);
 			}
 
 			if (blockId > 255)
@@ -375,7 +367,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
-		this.nextLocalId = tag.getInteger("nextLocalId");
+		Int2IntOpenHashMap localIdToBlock = new Int2IntOpenHashMap();
+		localIdToBlock.put(-1, -1);
 
 		this.width = tag.getInteger("width");
 		this.height = tag.getInteger("height");
@@ -408,14 +401,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 			{
 				int id = data.getInteger("id");
 
-				this.localIdToBlock.put(id, block);
-				this.blockToLocalId.put(block, id);
+				localIdToBlock.put(id, Block.getIdFromBlock(block));
 			}
-		}
-
-		if (!tag.hasKey("nextLocalId"))
-		{
-			this.localIdToBlock.keySet().stream().mapToInt(Integer::intValue).max().ifPresent((value) -> this.nextLocalId = value + 1);
 		}
 
 		if (!missingMods.isEmpty())
@@ -477,15 +464,16 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				}
 			}
 
-			final Block block = this.localIdToBlock.get(finalId);
-
-			if (block == null)
+			if (finalId >= 0)
 			{
-				throw new NullPointerException("Wasn't able to load block with id " + finalId);
+				this.blocks[i] = (short) localIdToBlock.get(finalId);
+				this.blocksMeta[i] = metadata[i];
 			}
-
-			this.blocks[i] = (short) finalId;
-			this.blocksMeta[i] = metadata[i];
+			else
+			{
+				this.blocks[i] = (short) -1;
+				this.blocksMeta[i] = (byte) this.defaultBlock.getBlock().getMetaFromState(this.defaultBlock);
+			}
 
 			NBTTagCompound entity = tileEntities.get(i);
 
@@ -512,16 +500,11 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	{
 		final BlockDataContainer data = new BlockDataContainer();
 
-		data.nextLocalId = this.nextLocalId;
-
 		data.blocks = new short[this.blocks.length];
 		data.blocksMeta = new byte[this.blocksMeta.length];
 
 		System.arraycopy(this.blocks, 0, data.blocks, 0, this.blocks.length);
 		System.arraycopy(this.blocksMeta, 0, data.blocksMeta, 0, this.blocksMeta.length);
-
-		data.localIdToBlock = new Int2ObjectOpenHashMap<>(this.localIdToBlock);
-		data.blockToLocalId = new Object2IntOpenHashMap<>(this.blockToLocalId);
 
 		NBTTagCompound tag;
 
