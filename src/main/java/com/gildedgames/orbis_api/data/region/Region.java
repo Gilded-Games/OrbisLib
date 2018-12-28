@@ -7,6 +7,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.function.Consumer;
+
 public class Region implements IMutableRegion
 {
 
@@ -178,6 +180,24 @@ public class Region implements IMutableRegion
 	public Iterable<BlockPos.MutableBlockPos> getMutableBlockPosInRegion()
 	{
 		return BlockPos.getAllInBoxMutable(this.min, this.max);
+	}
+
+	public void iterateBlocksInRegion(Consumer<BlockPos> consumer)
+	{
+		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+		for (int x = this.min.getX(); x <= this.max.getX(); x++)
+		{
+			for (int y = this.min.getY(); y <= this.max.getY(); y++)
+			{
+				for (int z = this.min.getZ(); z <= this.max.getZ(); z++)
+				{
+					pos.setPos(x, y, z);
+
+					consumer.accept(pos);
+				}
+			}
+		}
 	}
 
 	public int getXSize()

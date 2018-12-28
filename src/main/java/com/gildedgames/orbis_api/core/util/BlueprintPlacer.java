@@ -18,6 +18,7 @@ public class BlueprintPlacer
 	public static final Rotation[] ROTATIONS = Rotation.values();
 
 	/** Filled with block access instances for each world
+	 * TODO: Is this safe?
 	 */
 	private static final List<DataPrimer> primers = Lists.newArrayList();
 

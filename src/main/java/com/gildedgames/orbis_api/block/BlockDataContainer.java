@@ -20,6 +20,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -151,7 +152,27 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		if (tag != null)
 		{
-			this.entities.put(indexThis, tag.copy());
+			this.entities.put(indexThis, tag);
+		}
+	}
+
+	public void copyBlockFromWithRotation(BlockDataContainer data, int otherX, int otherY, int otherZ, int thisX, int thisY, int thisZ, Rotation rotation)
+	{
+		int indexThis = this.getIndex(thisX, thisY, thisZ);
+		int indexOther = data.getIndex(otherX, otherY, otherZ);
+
+		this.blocks[indexThis] = data.blocks[indexOther];
+
+		IBlockState state = Block.getBlockById(data.blocks[indexOther])
+				.getStateFromMeta(data.blocksMeta[indexOther]);
+
+		this.blocksMeta[indexThis] = (byte) state.getBlock().getMetaFromState(state.withRotation(rotation));
+
+		NBTTagCompound tag = data.entities.get(indexOther);
+
+		if (tag != null)
+		{
+			this.entities.put(indexThis, tag);
 		}
 	}
 
@@ -182,6 +203,29 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 
 		return Block.getBlockById(id).getStateFromMeta(this.blocksMeta[index]);
+	}
+
+
+	public Block getBlock(BlockPos pos)
+	{
+		return this.getBlock(this.getIndex(pos.getX(), pos.getY(), pos.getZ()));
+	}
+
+	public Block getBlock(int x, int y, int z)
+	{
+		return this.getBlock(this.getIndex(x, y, z));
+	}
+
+	public Block getBlock(int index)
+	{
+		int id = this.blocks[index];
+
+		if (id < 0)
+		{
+			return this.defaultBlock.getBlock();
+		}
+
+		return Block.getBlockById(id);
 	}
 
 	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException

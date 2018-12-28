@@ -389,6 +389,11 @@ public class BakedBlueprint implements IDimensions
 
 	private void chunkUpBlocks(BlockPos min, BlockPos max, ChunkPos[] chunksOccupied, Region boundsBeforeRotateAtOrigin, Rotation rotation)
 	{
+		for (int i = 0; i < this.chunks.length; i++)
+		{
+			this.chunks[i] = new BlockDataChunk(chunksOccupied[i], new BlockDataContainerDefaultVoid(16, this.rawDataContainer.getHeight(), 16));
+		}
+
 		final int rotAmount = Math.abs(RotationHelp.getRotationAmount(rotation, Rotation.NONE));
 
 		if (rotAmount != 0)
@@ -421,6 +426,10 @@ public class BakedBlueprint implements IDimensions
 				zDif = 16 - Math.abs(zDif);
 			}
 
+			BlockDataChunk chunk = null;
+
+			int prevChunkX = 0, prevChunkZ = 0;
+
 			for (final OrbisTuple<BlockPos.MutableBlockPos, BlockPos.MutableBlockPos> tuple : RotationHelp
 					.getAllInBoxRotated(min, max,
 							this.data.getRotation(), null))
@@ -431,47 +440,34 @@ public class BakedBlueprint implements IDimensions
 				final int chunkX = ((rotated.getX()) >> 4) - startChunkX;
 				final int chunkZ = ((rotated.getZ()) >> 4) - startChunkZ;
 
-				int index = 0;
-
-				for (int i = 0; i < chunksOccupied.length; i++)
+				if (chunk == null || prevChunkX != chunkX || prevChunkZ != chunkZ)
 				{
-					final ChunkPos p = chunksOccupied[i];
-
-					if (p.x - startChunkX == chunkX && p.z - startChunkZ == chunkZ)
+					for (int i = 0; i < chunksOccupied.length; i++)
 					{
-						if (this.chunks[i] == null)
-						{
-							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainerDefaultVoid(16, this.rawDataContainer.getHeight(), 16));
-						}
+						final ChunkPos p = chunksOccupied[i];
 
-						index = i;
-						break;
+						if (p.x - startChunkX == chunkX && p.z - startChunkZ == chunkZ)
+						{
+							prevChunkX = chunkX;
+							prevChunkZ = chunkZ;
+							chunk = this.chunks[i];
+
+							break;
+						}
 					}
 				}
 
-				final BlockDataChunk chunk = this.chunks[index];
-
 				if (chunk != null)
 				{
-					try
-					{
-						int xIndex = (rotated.getX() - m.getX() + xDif) % 16;
-						int zIndex = (rotated.getZ() - m.getZ() + zDif) % 16;
+					int xIndex = (rotated.getX() - m.getX() + xDif) & 0xF;
+					int zIndex = (rotated.getZ() - m.getZ() + zDif) & 0xF;
 
-						chunk.getContainer()
-								.copyBlockFrom(this.rawDataContainer, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(),
-										beforeRot.getZ() - min.getZ(),
-										xIndex, rotated.getY() - m.getY(),
-										zIndex);
-
-						IBlockState original = chunk.getContainer().getBlockState(xIndex, rotated.getY() - m.getY(), zIndex);
-
-						chunk.getContainer().setBlockState(original.withRotation(this.data.getRotation()), xIndex, rotated.getY() - m.getY(), zIndex);
-					}
-					catch (ArrayIndexOutOfBoundsException e)
-					{
-						OrbisAPI.LOGGER.error(e);
-					}
+					chunk.getContainer()
+							.copyBlockFromWithRotation(this.rawDataContainer, beforeRot.getX() - min.getX(), beforeRot.getY() - min.getY(),
+									beforeRot.getZ() - min.getZ(),
+									xIndex, rotated.getY() - m.getY(),
+									zIndex,
+									rotation);
 				}
 			}
 		}
@@ -499,12 +495,15 @@ public class BakedBlueprint implements IDimensions
 
 			this.bakedMin = min;
 
-			for (final BlockPos.MutableBlockPos iterPos : boundsBeforeRotateAtOrigin.getMutableBlockPosInRegion())
+			int xDif2 = xDif;
+			int zDif2 = zDif;
+
+			boundsBeforeRotateAtOrigin.iterateBlocksInRegion(iterPos ->
 			{
 				final int chunkX = ((min.getX() + iterPos.getX()) >> 4) - startChunkX;
 				final int chunkZ = ((min.getZ() + iterPos.getZ()) >> 4) - startChunkZ;
 
-				int index = 0;
+				BlockDataChunk chunk = null;
 
 				for (int i = 0; i < chunksOccupied.length; i++)
 				{
@@ -512,34 +511,18 @@ public class BakedBlueprint implements IDimensions
 
 					if (p.x - startChunkX == chunkX && p.z - startChunkZ == chunkZ)
 					{
-						if (this.chunks[i] == null)
-						{
-							this.chunks[i] = new BlockDataChunk(p, new BlockDataContainerDefaultVoid(16, this.rawDataContainer.getHeight(), 16));
-						}
+						chunk = this.chunks[i];
 
-						index = i;
 						break;
 					}
 				}
-
-				final BlockDataChunk chunk = this.chunks[index];
-
 				if (chunk != null)
 				{
-					try
-					{
-
-						chunk.getContainer()
-								.copyBlockFrom(this.rawDataContainer, iterPos.getX(), iterPos.getY(), iterPos.getZ(), (iterPos.getX() + xDif) % 16,
-										iterPos.getY(),
-										(iterPos.getZ() + zDif) % 16);
-					}
-					catch (ArrayIndexOutOfBoundsException e)
-					{
-						OrbisAPI.LOGGER.error(e);
-					}
+					chunk.getContainer()
+							.copyBlockFrom(this.rawDataContainer, iterPos.getX(), iterPos.getY(), iterPos.getZ(),
+									(iterPos.getX() + xDif2) & 0xF, iterPos.getY(), (iterPos.getZ() + zDif2) & 0xF);
 				}
-			}
+			});
 		}
 	}
 
@@ -574,19 +557,19 @@ public class BakedBlueprint implements IDimensions
 		// REBAKE CHUNKS
 		this.rawDataContainer = new BlockDataContainer(this.width, this.height, this.length);
 
-		BlockPos bakedMin = this.bakedMin;
-		BlockPos bakedMax = bakedMin.add(this.width - 1, this.height - 1, this.length - 1);
+		final BlockPos bakedMin = this.bakedMin;
+		final BlockPos bakedMax = bakedMin.add(this.width - 1, this.height - 1, this.length - 1);
 
 		for (BlockDataChunk chunk : this.chunks)
 		{
-			BlockDataContainer container = chunk.getContainer();
+			final BlockDataContainer container = chunk.getContainer();
 
 			final Region region = new Region(new BlockPos(0, 0, 0),
 					new BlockPos(container.getWidth() - 1, container.getHeight() - 1, container.getLength() - 1));
 
-			BlockPos chunkMin = chunk.getPos().getBlock(0, this.bakedMin.getY(), 0);
+			final BlockPos chunkMin = chunk.getPos().getBlock(0, this.bakedMin.getY(), 0);
 
-			for (final BlockPos.MutableBlockPos p : region.getMutableBlockPosInRegion())
+			region.iterateBlocksInRegion(p ->
 			{
 				int origX = p.getX();
 				int origY = p.getY();
@@ -600,32 +583,12 @@ public class BakedBlueprint implements IDimensions
 						|| newY > bakedMax.getY()
 						|| newZ > bakedMax.getZ())
 				{
-					continue;
+					return;
 				}
 
-				final IBlockState state = container.getBlockState(origX, origY, origZ);
-				final NBTTagCompound entity = container
-						.getTileEntity(origX, origY, origZ);
+				this.rawDataContainer.copyBlockFrom(container, origX, origY, origZ, newX - bakedMin.getX(), newY - bakedMin.getY(), newZ - bakedMin.getZ());
 
-				if (state == null)
-				{
-					continue;
-				}
-
-				try
-				{
-					if (entity != null)
-					{
-						this.rawDataContainer.setTileEntity(entity, newX - bakedMin.getX(), newY - bakedMin.getY(), newZ - bakedMin.getZ());
-					}
-
-					this.rawDataContainer.setBlockState(state, newX - bakedMin.getX(), newY - bakedMin.getY(), newZ - bakedMin.getZ());
-				}
-				catch (ArrayIndexOutOfBoundsException e)
-				{
-					OrbisAPI.LOGGER.info(e);
-				}
-			}
+			});
 		}
 
 		/*this.chunks = new BlockDataChunk[1];
