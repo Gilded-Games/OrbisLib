@@ -1,7 +1,7 @@
 package com.gildedgames.orbis_api.world.instances;
 
-import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.OrbisAPICapabilities;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.network.instances.PacketRegisterDimension;
 import com.gildedgames.orbis_api.network.instances.PacketUnregisterDimension;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
@@ -89,11 +89,11 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 		DimensionManager.registerDimension(id, type);
 
-		OrbisAPI.LOGGER.info("DimensionType " + type.getName() + " registered (ID: " + id + ") to instance registry");
+		OrbisLib.LOGGER.info("DimensionType " + type.getName() + " registered (ID: " + id + ") to instance registry");
 
-		if (OrbisAPI.isServer())
+		if (OrbisLib.isServer())
 		{
-			OrbisAPI.network().sendPacketToAllPlayers(new PacketRegisterDimension(instance.getDimensionType(), instance.getDimensionId()));
+			OrbisLib.network().sendPacketToAllPlayers(new PacketRegisterDimension(instance.getDimensionType(), instance.getDimensionId()));
 		}
 
 		this.instances.add(instance);
@@ -115,7 +115,7 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 		{
 			this.deleteQueue.add(instance);
 
-			OrbisAPI.LOGGER.info("Dimension ID " + id + " queued to unload");
+			OrbisLib.LOGGER.info("Dimension ID " + id + " queued to unload");
 		}
 	}
 
@@ -146,7 +146,7 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 	{
 		int id = instance.getDimensionId();
 
-		OrbisAPI.LOGGER.info("Dimension with ID " + id + " queued for deletion");
+		OrbisLib.LOGGER.info("Dimension with ID " + id + " queued for deletion");
 
 		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 		server.addScheduledTask(() -> {
@@ -154,12 +154,12 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 			if (!file.isDirectory())
 			{
-				OrbisAPI.LOGGER.warn("World save directory '" + file.getAbsolutePath() + "' doesn't exist, cannot delete (this is likely a severe bug)");
+				OrbisLib.LOGGER.warn("World save directory '" + file.getAbsolutePath() + "' doesn't exist, cannot delete (this is likely a severe bug)");
 
 				return;
 			}
 
-			OrbisAPI.LOGGER.info("Dimension with ID " + id + " is being deleted");
+			OrbisLib.LOGGER.info("Dimension with ID " + id + " is being deleted");
 
 			try
 			{
@@ -167,12 +167,12 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 			}
 			catch (IOException e)
 			{
-				OrbisAPI.LOGGER.warn("Failed to cleanup dimension ID " + id);
+				OrbisLib.LOGGER.warn("Failed to cleanup dimension ID " + id);
 
 				return;
 			}
 
-			OrbisAPI.LOGGER.info("Deleted dimension with ID " + id + ", unregistering...");
+			OrbisLib.LOGGER.info("Deleted dimension with ID " + id + ", unregistering...");
 
 			this.unregisterInstance(instance);
 		});
@@ -184,9 +184,9 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 		DimensionManager.unregisterDimension(id);
 
-		if (OrbisAPI.isServer())
+		if (OrbisLib.isServer())
 		{
-			OrbisAPI.network().sendPacketToAllPlayers(new PacketUnregisterDimension(instance.getDimensionId()));
+			OrbisLib.network().sendPacketToAllPlayers(new PacketUnregisterDimension(instance.getDimensionId()));
 		}
 
 		this.instances.remove(instance);
@@ -222,9 +222,9 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 		{
 			DimensionManager.unregisterDimension(instance.getDimensionId());
 
-			if (OrbisAPI.isServer())
+			if (OrbisLib.isServer())
 			{
-				OrbisAPI.network().sendPacketToAllPlayers(new PacketUnregisterDimension(instance.getDimensionId()));
+				OrbisLib.network().sendPacketToAllPlayers(new PacketUnregisterDimension(instance.getDimensionId()));
 			}
 		}
 
@@ -239,7 +239,7 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 		int i = 0;
 
-		tag.setInteger("size", OrbisAPI.instances().getInstanceHandlers().size());
+		tag.setInteger("size", OrbisLib.instances().getInstanceHandlers().size());
 
 		for (final IInstanceHandler<?> handler : this.getInstanceHandlers())
 		{
@@ -263,7 +263,7 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 	{
 		for (IInstance instance : this.instances)
 		{
-			OrbisAPI.network().sendPacketToPlayer(new PacketRegisterDimension(instance.getDimensionType(), instance.getDimensionId()),
+			OrbisLib.network().sendPacketToPlayer(new PacketRegisterDimension(instance.getDimensionType(), instance.getDimensionId()),
 					(EntityPlayerMP) event.player);
 		}
 	}

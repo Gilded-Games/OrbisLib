@@ -1,6 +1,7 @@
 package com.gildedgames.orbis_api.network.instances;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
+import com.gildedgames.orbis_api.network.util.IMessageHeader;
 import com.gildedgames.orbis_api.network.util.IMessageMultipleParts;
 import com.google.common.collect.Lists;
 import io.netty.buffer.Unpooled;
@@ -52,53 +53,90 @@ public abstract class MessageHandler<REQ extends IMessage, RES extends IMessage>
 
 			input.close();
 
-			ArrayList<byte[]> byteArray = OrbisAPI.network().getPacketParts().get(partID);
-
-			if (byteArray == null)
-			{
-				byteArray = Lists.newArrayList();
-
-				OrbisAPI.network().getPacketParts().put(partID, byteArray);
-
-				for (int i = 0; i < packetTotalParts; i++)
-				{
-					byteArray.add(new byte[0]);
-				}
-			}
-
-			byteArray.set(packetPart, byteFragment);
-
-			boolean hasAllInfo = true;
-
-			for (final byte[] byteList : byteArray)
-			{
-				if (byteList.length == 0)
-				{
-					hasAllInfo = false;
-					break;
-				}
-			}
-
-			if (hasAllInfo)
+			if (packetPart == -1 && messageParts instanceof IMessageHeader) // is header part
 			{
 				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-				for (final byte[] byteList : byteArray)
+				outputStream.write(byteFragment);
+
+				((IMessageHeader) messageParts).readHeader(Unpooled.copiedBuffer(outputStream.toByteArray()));
+
+				return this.onHeader(message, player);
+			}
+			else
+			{
+				ArrayList<byte[]> byteArray = OrbisLib.network().getPacketParts().get(partID);
+
+				if (byteArray == null)
 				{
-					outputStream.write(byteList);
+					byteArray = Lists.newArrayList();
+
+					OrbisLib.network().getPacketParts().put(partID, byteArray);
+
+					for (int i = 0; i < packetTotalParts; i++)
+					{
+						byteArray.add(new byte[0]);
+					}
 				}
 
-				OrbisAPI.network().getPacketParts().remove(partID);
+				byteArray.set(packetPart, byteFragment);
 
-				messageParts.read(Unpooled.copiedBuffer(outputStream.toByteArray()));
-				return this.onMessage(message, player);
+				boolean hasAllParts = true;
+
+				for (final byte[] byteList : byteArray)
+				{
+					if (byteList.length == 0)
+					{
+						hasAllParts = false;
+						break;
+					}
+				}
+
+				if (hasAllParts)
+				{
+					final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+					for (final byte[] byteList : byteArray)
+					{
+						outputStream.write(byteList);
+					}
+
+					OrbisLib.network().getPacketParts().remove(partID);
+
+					if (messageParts instanceof IMessageHeader)
+					{
+						((IMessageHeader) messageParts).transferDataFromHeader(message);
+					}
+
+					messageParts.read(Unpooled.copiedBuffer(outputStream.toByteArray()));
+					return this.onMessage(message, player);
+				}
+				else
+				{
+					if (messageParts instanceof IMessageHeader)
+					{
+						((IMessageHeader) messageParts).transferDataFromHeader(message);
+					}
+
+					return this.onPart(packetPart, message, player);
+				}
 			}
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.LOGGER.error("Couldn't process message part!", e);
+			OrbisLib.LOGGER.error("Couldn't process message part!", e);
 		}
 
+		return null;
+	}
+
+	public RES onPart(int partId, REQ message, EntityPlayer player)
+	{
+		return null;
+	}
+
+	public RES onHeader(REQ message, EntityPlayer player)
+	{
 		return null;
 	}
 

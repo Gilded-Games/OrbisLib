@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessClientImpl;
 import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessServerImpl;
@@ -38,7 +38,7 @@ public class PrepManager implements IPrepManager
 		}
 		else
 		{
-			this.access = new PrepSectorAccessServerImpl(this.world, this.registry, this, OrbisAPI.services().getWorldDataManager(world));
+			this.access = new PrepSectorAccessServerImpl(this.world, this.registry, this, OrbisLib.services().getWorldDataManager(world));
 		}
 
 		this.chunkManager = new PrepChunkManager(this.world, this.registry);

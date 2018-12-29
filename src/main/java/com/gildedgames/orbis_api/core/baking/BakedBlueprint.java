@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.core.baking;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.block.BlockDataContainerDefaultVoid;
 import com.gildedgames.orbis_api.core.BlockDataChunk;
@@ -470,7 +470,7 @@ public class BakedBlueprint implements IDimensions
 					}
 					catch (ArrayIndexOutOfBoundsException e)
 					{
-						OrbisAPI.LOGGER.error(e);
+						OrbisLib.LOGGER.error(e);
 					}
 				}
 			}
@@ -536,7 +536,7 @@ public class BakedBlueprint implements IDimensions
 					}
 					catch (ArrayIndexOutOfBoundsException e)
 					{
-						OrbisAPI.LOGGER.error(e);
+						OrbisLib.LOGGER.error(e);
 					}
 				}
 			}
@@ -623,7 +623,7 @@ public class BakedBlueprint implements IDimensions
 				}
 				catch (ArrayIndexOutOfBoundsException e)
 				{
-					OrbisAPI.LOGGER.info(e);
+					OrbisLib.LOGGER.info(e);
 				}
 			}
 		}
@@ -768,7 +768,7 @@ public class BakedBlueprint implements IDimensions
 
 		if (id != null)
 		{
-			Optional<IData> data = OrbisAPI.services().getProjectManager().findData(id);
+			Optional<IData> data = OrbisLib.services().getProjectManager().findData(id);
 
 			if (data.isPresent())
 			{
@@ -776,7 +776,7 @@ public class BakedBlueprint implements IDimensions
 			}
 			else
 			{
-				OrbisAPI.LOGGER.error("Missing data in " + this.getClass().getName() + " : ", id);
+				OrbisLib.LOGGER.error("Missing data in " + this.getClass().getName() + " : ", id);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.util.io;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.client.rect.Pos2D;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
@@ -37,7 +37,7 @@ public class NBTFunnel
 	{
 		NBTTagCompound t = new NBTTagCompound();
 
-		final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(state.getBlock());
+		final ResourceLocation identifier = OrbisLib.services().registrar().getIdentifierFor(state.getBlock());
 		short meta = (short) (state.getBlock().getMetaFromState(state));
 
 		t.setString("mod", identifier.getResourceDomain());
@@ -52,7 +52,7 @@ public class NBTFunnel
 		String mod = tag.getString("mod");
 		String name = tag.getString("name");
 
-		final Block block = OrbisAPI.services().registrar().findBlock(new ResourceLocation(mod, name));
+		final Block block = OrbisLib.services().registrar().findBlock(new ResourceLocation(mod, name));
 
 		int meta = tag.getShort("meta");
 

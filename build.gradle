@@ -42,6 +42,11 @@ minecraft {
     runDir = "run"
 }
 
+repositories
+{
+	mavenCentral()
+}
+
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
@@ -84,3 +89,9 @@ task signJar(type: SignJar, dependsOn: reobfJar) {
 }
 
 build.dependsOn signJar
+
+dependencies
+{
+	compile "org.luaj:luaj-jse:3.0.1"
+    compile files('libs/evald.jar')
+}

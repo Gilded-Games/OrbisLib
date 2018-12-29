@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.block;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.util.mc.BlockUtil;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
@@ -68,7 +68,7 @@ public class BlockFilterHelper
 		}
 		else
 		{
-			OrbisAPI.LOGGER
+			OrbisLib.LOGGER
 					.info("WARNING: A mod is trying to register a particular block recognition implementation more than once. Something is wrong. Please notify the mod author.");
 		}
 	}

@@ -16,6 +16,8 @@ public interface INetworkMultipleParts
 
 	Map<Integer, ArrayList<byte[]>> getPacketParts();
 
+	Map<Integer, ? extends IMessage> getPacketHeaders();
+
 	void sendPacketToDimension(final IMessage message, final int dimension);
 
 	void sendPacketToAllPlayers(final IMessage message);

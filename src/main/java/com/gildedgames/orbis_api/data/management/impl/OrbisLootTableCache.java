@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
 import com.gildedgames.orbis_api.data.management.IProject;
 import com.google.common.cache.CacheBuilder;
@@ -113,7 +113,7 @@ public class OrbisLootTableCache
 		@Nullable
 		private LootTable loadLootTable(IDataIdentifier id)
 		{
-			Optional<IProject> projectOp = OrbisAPI.services().getProjectManager().findProject(id.getProjectIdentifier());
+			Optional<IProject> projectOp = OrbisLib.services().getProjectManager().findProject(id.getProjectIdentifier());
 
 			if (!projectOp.isPresent())
 			{

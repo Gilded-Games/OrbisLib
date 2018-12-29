@@ -1,10 +1,11 @@
 package com.gildedgames.orbis_api.network.util;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,6 +19,8 @@ public abstract class PacketMultipleParts implements IMessage, IMessageMultipleP
 
 	private byte[] data;
 
+	private int totalParts;
+
 	public PacketMultipleParts()
 	{
 
@@ -28,9 +31,14 @@ public abstract class PacketMultipleParts implements IMessage, IMessageMultipleP
 		this.data = data;
 	}
 
-	@Override
-	public IMessage[] getParts()
+	public int getTotalParts()
 	{
+		return this.totalParts;
+	}
+
+	private IMessage[] getParts(@Nullable IMessageHeader header)
+	{
+		boolean hasHeader = header != null;
 		final ByteBuf buf = Unpooled.buffer();
 
 		this.write(buf);
@@ -40,26 +48,56 @@ public abstract class PacketMultipleParts implements IMessage, IMessageMultipleP
 
 		int dataLength = byteArray.length;
 
-		final int packetTotalParts = (int) Math.ceil(dataLength / ((float) PACKET_SIZE_LIMIT));
+		this.totalParts = (int) Math.ceil(dataLength / ((float) PACKET_SIZE_LIMIT));
 		int partIndex = 0;
 
 		int dataSize;
 
-		final IMessage[] parts = new IMessage[Math.max(1, packetTotalParts)];
+		final IMessage[] parts = new IMessage[Math.max(1, this.totalParts + (hasHeader ? 1 : 0))];
+
+		// Write the header part if packet supports headers
+		if (hasHeader)
+		{
+			ByteBuf headerBuf = Unpooled.buffer();
+
+			header.writeHeader(headerBuf);
+
+			final byte[] headerByteArray = new byte[headerBuf.readableBytes()];
+			headerBuf.readBytes(headerByteArray);
+
+			final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+			final DataOutputStream outputFragment = new DataOutputStream(byteStream);
+
+			try
+			{
+				outputFragment.writeInt(nextPartID);
+				outputFragment.writeByte(this.totalParts);
+				outputFragment.writeByte(-1); // -1 represents header
+				outputFragment.writeInt(headerByteArray.length);
+
+				outputFragment.write(headerByteArray);
+			}
+			catch (final IOException e)
+			{
+				OrbisLib.LOGGER.error("Couldn't write header fragment for message parts!", e);
+			}
+
+			parts[0] = this.createPart(byteStream.toByteArray());
+		}
 
 		/**
 		 * If packet is empty, simply return one part
 		 */
 		if (dataLength <= 0)
 		{
-			parts[0] = this.createPart(new byte[0]);
+			parts[hasHeader ? 1 : 0] = this.createPart(new byte[0]);
 
 			return parts;
 		}
 
 		while (dataLength > 0)
 		{
-			if (partIndex >= packetTotalParts)
+			if (partIndex >= this.totalParts)
 			{
 				dataSize = dataLength;
 			}
@@ -76,7 +114,7 @@ public abstract class PacketMultipleParts implements IMessage, IMessageMultipleP
 			try
 			{
 				outputFragment.writeInt(nextPartID);
-				outputFragment.writeByte(packetTotalParts);
+				outputFragment.writeByte(this.totalParts);
 				outputFragment.writeByte(partIndex);
 				outputFragment.writeInt(dataLength > PACKET_SIZE_LIMIT ? PACKET_SIZE_LIMIT : dataLength);
 
@@ -84,10 +122,10 @@ public abstract class PacketMultipleParts implements IMessage, IMessageMultipleP
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.LOGGER.error("Couldn't write output fragment for message parts!", e);
+				OrbisLib.LOGGER.error("Couldn't write output fragment for message parts!", e);
 			}
 
-			parts[partIndex] = this.createPart(byteStream.toByteArray());
+			parts[partIndex + (hasHeader ? 1 : 0)] = this.createPart(byteStream.toByteArray());
 
 			partIndex++;
 			dataLength -= PACKET_SIZE_LIMIT;
@@ -96,6 +134,18 @@ public abstract class PacketMultipleParts implements IMessage, IMessageMultipleP
 		nextPartID++;
 
 		return parts;
+	}
+
+	@Override
+	public IMessage[] getParts()
+	{
+		return this.getParts(null);
+	}
+
+	@Override
+	public IMessage[] getPartsWithHeader(IMessageHeader header)
+	{
+		return this.getParts(header);
 	}
 
 	@Override

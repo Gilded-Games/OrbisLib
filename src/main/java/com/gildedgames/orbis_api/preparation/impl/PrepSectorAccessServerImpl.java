@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.preparation.impl;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.util.ChunkMap;
 import com.gildedgames.orbis_api.world.data.IWorldData;
@@ -38,6 +38,12 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 	private final IPrepManager prepManager;
 
+	private final ChunkMap<IPrepSector> loaded = new ChunkMap<>();
+
+	private final ChunkMap<IPrepSector> generating = new ChunkMap<>();
+
+	private final IWorldDataManager dataManager;
+
 	private final LoadingCache<ChunkPos, IPrepSector> dormantCache = CacheBuilder.newBuilder()
 			.maximumSize(32 + (8 * THREADS))
 			.expireAfterAccess(2, TimeUnit.MINUTES)
@@ -61,12 +67,6 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 					return sector;
 				}
 			});
-
-	private final ChunkMap<IPrepSector> loaded = new ChunkMap<>();
-
-	private final ChunkMap<IPrepSector> generating = new ChunkMap<>();
-
-	private final IWorldDataManager dataManager;
 
 	public PrepSectorAccessServerImpl(World world, IPrepRegistryEntry registry, IPrepManager prepManager, IWorldDataManager dataManager)
 	{
@@ -159,11 +159,11 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 		{
 			sector = new PrepSector(data);
 
-			OrbisAPI.LOGGER.info("Loaded Sector (" + sectorX + ", " + sectorZ + ") from disk");
+			OrbisLib.LOGGER.info("Loaded Sector (" + sectorX + ", " + sectorZ + ") from disk");
 		}
 		else
 		{
-			OrbisAPI.LOGGER.info("Generating Sector (" + sectorX + ", " + sectorZ + ")");
+			OrbisLib.LOGGER.info("Generating Sector (" + sectorX + ", " + sectorZ + ")");
 
 			data = this.prepManager.createSector(sectorX, sectorZ);
 			sector = new PrepSector(data);
@@ -276,7 +276,7 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 			}
 			catch (IOException e)
 			{
-				OrbisAPI.LOGGER.warn("Failed to flush sector", e);
+				OrbisLib.LOGGER.warn("Failed to flush sector", e);
 			}
 
 			sector.getData().markClean();

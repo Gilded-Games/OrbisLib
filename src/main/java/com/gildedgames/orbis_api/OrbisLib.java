@@ -12,6 +12,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
@@ -22,29 +23,32 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 
 /**
- * This OrbisAPI allows mod developers to integrate
+ * This OrbisLib allows mod developers to integrate
  * the projects they've developed with the Orbis tool
  * into their mod designs. It's recommended you create an
  * IOrbisDefinitionRegistry and register it in this API's services.
  */
-@Mod(name = OrbisAPI.MOD_NAME, modid = OrbisAPI.MOD_ID, version = OrbisAPI.MOD_VERSION, certificateFingerprint = OrbisAPI.MOD_FINGERPRINT)
+@Mod(name = OrbisLib.MOD_NAME, modid = OrbisLib.MOD_ID, version = OrbisLib.MOD_VERSION, certificateFingerprint = OrbisLib.MOD_FINGERPRINT)
 @Mod.EventBusSubscriber
-public class OrbisAPI
+public class OrbisLib
 {
-	public static final String MOD_NAME = "Orbis API";
+	public static final String MOD_NAME = "OrbisLib";
 
-	public static final String MOD_ID = "orbis_api";
+	public static final String MOD_ID = "orbislib";
 
 	public static final String MOD_VERSION = "1.12.2-1.1.12";
 
 	public static final String MOD_FINGERPRINT = "db341c083b1b8ce9160a769b569ef6737b3f4cdf";
 
-	public static final Logger LOGGER = LogManager.getLogger("OrbisAPI");
+	public static final Logger LOGGER = LogManager.getLogger("OrbisLib");
 
-	@Mod.Instance(OrbisAPI.MOD_ID)
-	public static OrbisAPI INSTANCE;
+	@Mod.Instance(OrbisLib.MOD_ID)
+	public static OrbisLib INSTANCE;
 
-	private static IOrbisServices services;
+	@SidedProxy(clientSide = "com.gildedgames.orbis_api.client.ClientProxy", serverSide = "com.gildedgames.orbis_api.CommonProxy")
+	public static CommonProxy PROXY;
+
+	private static IOrbisLibServices services;
 
 	private static boolean loadedInstances;
 
@@ -58,13 +62,13 @@ public class OrbisAPI
 		return FMLCommonHandler.instance().getSide().isServer();
 	}
 
-	public static IOrbisServices services()
+	public static IOrbisLibServices services()
 	{
-		if (OrbisAPI.services == null)
+		if (OrbisLib.services == null)
 		{
-			OrbisAPI.services = new OrbisServices();
+			OrbisLib.services = new OrbisLibServices();
 
-			MinecraftForge.EVENT_BUS.register(OrbisAPI.services().instances());
+			MinecraftForge.EVENT_BUS.register(OrbisLib.services().instances());
 
 			MinecraftForge.EVENT_BUS.register(WorldObjectManagerEvents.class);
 			MinecraftForge.EVENT_BUS.register(WorldDataManagerContainerEvents.class);
@@ -73,22 +77,22 @@ public class OrbisAPI
 			MinecraftForge.EVENT_BUS.register(PrepTasks.class);
 		}
 
-		return OrbisAPI.services;
+		return OrbisLib.services;
 	}
 
 	public static IPrepRegistry sectors()
 	{
-		return OrbisAPI.services().sectors();
+		return OrbisLib.services().sectors();
 	}
 
 	public static INetworkMultipleParts network()
 	{
-		return OrbisAPI.services().network();
+		return OrbisLib.services().network();
 	}
 
 	public static IInstanceRegistry instances()
 	{
-		return OrbisAPI.services().instances();
+		return OrbisLib.services().instances();
 	}
 
 	public static File getWorldDirectory()
@@ -98,12 +102,12 @@ public class OrbisAPI
 
 	public static ResourceLocation getResource(final String name)
 	{
-		return new ResourceLocation(OrbisAPI.MOD_ID, name);
+		return new ResourceLocation(OrbisLib.MOD_ID, name);
 	}
 
 	public static String getResourcePath(final String name)
 	{
-		return (OrbisAPI.MOD_ID + ":") + name;
+		return (OrbisLib.MOD_ID + ":") + name;
 	}
 
 	@Mod.EventHandler
@@ -115,7 +119,7 @@ public class OrbisAPI
 	@Mod.EventHandler
 	public void onServerStopping(final FMLServerStoppingEvent event)
 	{
-		OrbisAPI.instances().saveAllInstancesToDisk();
+		OrbisLib.instances().saveAllInstancesToDisk();
 
 		loadedInstances = false;
 	}
@@ -123,7 +127,7 @@ public class OrbisAPI
 	@Mod.EventHandler
 	public void onServerStopped(final FMLServerStoppedEvent event)
 	{
-		OrbisAPI.instances().cleanup();
+		OrbisLib.instances().cleanup();
 	}
 
 	@Mod.EventHandler

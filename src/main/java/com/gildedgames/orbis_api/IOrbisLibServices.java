@@ -5,6 +5,7 @@ import com.gildedgames.orbis_api.core.registry.IOrbisDefinitionRegistry;
 import com.gildedgames.orbis_api.data.management.IProject;
 import com.gildedgames.orbis_api.data.management.IProjectManager;
 import com.gildedgames.orbis_api.data.management.impl.OrbisLootTableCache;
+import com.gildedgames.orbis_api.filetransfer.IFileTransferTracker;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
 import com.gildedgames.orbis_api.preparation.IPrepRegistry;
 import com.gildedgames.orbis_api.world.data.IWorldDataManager;
@@ -16,8 +17,9 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public interface IOrbisServices
+public interface IOrbisLibServices
 {
+	IFileTransferTracker getTransferManager();
 
 	Gson getGson();
 
@@ -27,9 +29,9 @@ public interface IOrbisServices
 
 	INetworkMultipleParts network();
 
-	void listen(IOrbisServicesListener listener);
+	void listen(IOrbisLibServicesListener listener);
 
-	boolean unlisten(IOrbisServicesListener listener);
+	boolean unlisten(IOrbisLibServicesListener listener);
 
 	GameRegistrar registrar();
 

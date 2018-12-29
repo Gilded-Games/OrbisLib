@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.block;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -86,7 +86,7 @@ public class BlockData implements NBT
 
 		Block block = this.blockState == null ? this.block : this.blockState.getBlock();
 
-		final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(block);
+		final ResourceLocation identifier = OrbisLib.services().registrar().getIdentifierFor(block);
 		short meta = (short) (this.blockState == null ? 0 : block.getMetaFromState(this.blockState));
 
 		tag.setString("mod", identifier.getResourceDomain());
@@ -110,7 +110,7 @@ public class BlockData implements NBT
 		String mod = tag.getString("mod");
 		String name = tag.getString("name");
 
-		final Block block = OrbisAPI.services().registrar().findBlock(new ResourceLocation(mod, name));
+		final Block block = OrbisLib.services().registrar().findBlock(new ResourceLocation(mod, name));
 
 		int meta = tag.getShort("meta");
 
@@ -158,7 +158,7 @@ public class BlockData implements NBT
 	{
 		final HashCodeBuilder builder = new HashCodeBuilder();
 
-		builder.append(OrbisAPI.services().registrar().getStateId(this.getBlockState()));
+		builder.append(OrbisLib.services().registrar().getStateId(this.getBlockState()));
 
 		return builder.toHashCode();
 	}

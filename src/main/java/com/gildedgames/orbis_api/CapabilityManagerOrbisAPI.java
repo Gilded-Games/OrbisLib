@@ -36,13 +36,13 @@ public class CapabilityManagerOrbisAPI
 	{
 		final World world = event.getObject();
 
-		event.addCapability(OrbisAPI.getResource("WorldData"), new WorldDataManagerContainerProvider(event.getObject()));
+		event.addCapability(OrbisLib.getResource("WorldData"), new WorldDataManagerContainerProvider(event.getObject()));
 
-		for (IPrepRegistryEntry entry : OrbisAPI.sectors().getEntries())
+		for (IPrepRegistryEntry entry : OrbisLib.sectors().getEntries())
 		{
 			if (entry.shouldAttachTo(world))
 			{
-				event.addCapability(OrbisAPI.getResource("PrepManagerPool"), new PrepManagerStorageProvider(world, entry));
+				event.addCapability(OrbisLib.getResource("PrepManagerPool"), new PrepManagerStorageProvider(world, entry));
 
 				break;
 			}
@@ -59,18 +59,18 @@ public class CapabilityManagerOrbisAPI
 
 		if (event.getObject() instanceof EntityPlayer)
 		{
-			event.addCapability(OrbisAPI.getResource("PlayerInstances"), new PlayerInstancesProvider((EntityPlayer) event.getObject()));
+			event.addCapability(OrbisLib.getResource("PlayerInstances"), new PlayerInstancesProvider((EntityPlayer) event.getObject()));
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerClone(final PlayerEvent.Clone event)
 	{
-		final IPlayerInstances oldPlayer = OrbisAPI.instances().getPlayer(event.getOriginal());
+		final IPlayerInstances oldPlayer = OrbisLib.instances().getPlayer(event.getOriginal());
 
 		if (oldPlayer != null)
 		{
-			final IPlayerInstances newPlayer = OrbisAPI.instances().getPlayer((EntityPlayer) event.getEntity());
+			final IPlayerInstances newPlayer = OrbisLib.instances().getPlayer((EntityPlayer) event.getEntity());
 
 			final Capability.IStorage<IPlayerInstances> storage = OrbisAPICapabilities.PLAYER_INSTANCES.getStorage();
 

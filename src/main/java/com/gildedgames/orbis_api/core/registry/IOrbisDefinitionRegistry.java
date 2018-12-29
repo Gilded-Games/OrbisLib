@@ -7,7 +7,7 @@ import com.gildedgames.orbis_api.core.BlueprintDefinition;
  * back any definitions you've created
  * after reloading the game. You should
  * use the default implementation or create
- * your own and register it with the OrbisAPI
+ * your own and register it with the OrbisLib
  * services.
  */
 public interface IOrbisDefinitionRegistry

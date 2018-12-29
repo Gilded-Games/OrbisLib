@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.client.gui.util;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.client.gui.data.DropdownElement;
 import com.gildedgames.orbis_api.client.gui.data.IDropdownElement;
 import com.gildedgames.orbis_api.client.gui.data.directory.IDirectoryNavigator;
@@ -16,21 +16,21 @@ import java.util.Collections;
 public class GuiFactoryGeneric
 {
 
-	public static final ResourceLocation DELETE = OrbisAPI.getResource("list/delete.png");
+	public static final ResourceLocation DELETE = OrbisLib.getResource("list/delete.png");
 
-	public static final ResourceLocation DELETE_CLICKED = OrbisAPI.getResource("list/delete_clicked.png");
+	public static final ResourceLocation DELETE_CLICKED = OrbisLib.getResource("list/delete_clicked.png");
 
-	public static final ResourceLocation DELETE_DISABLED = OrbisAPI.getResource("list/delete_disabled.png");
+	public static final ResourceLocation DELETE_DISABLED = OrbisLib.getResource("list/delete_disabled.png");
 
-	public static final ResourceLocation DELETE_HOVERED = OrbisAPI.getResource("list/delete_hovered.png");
+	public static final ResourceLocation DELETE_HOVERED = OrbisLib.getResource("list/delete_hovered.png");
 
-	public static final ResourceLocation ADD = OrbisAPI.getResource("list/add.png");
+	public static final ResourceLocation ADD = OrbisLib.getResource("list/add.png");
 
-	public static final ResourceLocation ADD_CLICKED = OrbisAPI.getResource("list/add_clicked.png");
+	public static final ResourceLocation ADD_CLICKED = OrbisLib.getResource("list/add_clicked.png");
 
-	public static final ResourceLocation ADD_DISABLED = OrbisAPI.getResource("list/add_disabled.png");
+	public static final ResourceLocation ADD_DISABLED = OrbisLib.getResource("list/add_disabled.png");
 
-	public static final ResourceLocation ADD_HOVERED = OrbisAPI.getResource("list/add_hovered.png");
+	public static final ResourceLocation ADD_HOVERED = OrbisLib.getResource("list/add_hovered.png");
 
 	private GuiFactoryGeneric()
 	{

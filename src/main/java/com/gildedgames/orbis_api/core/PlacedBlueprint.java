@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.core;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
@@ -139,7 +139,7 @@ public class PlacedBlueprint implements NBT
 		this.registryId = tag.getString("registryId");
 		this.definitionID = tag.getInteger("definitionId");
 
-		this.def = OrbisAPI.services().findDefinitionRegistry(this.registryId).get(this.definitionID);
+		this.def = OrbisLib.services().findDefinitionRegistry(this.registryId).get(this.definitionID);
 
 		this.data = funnel.get("creation");
 

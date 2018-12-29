@@ -11,6 +11,8 @@ public interface IMessageMultipleParts
 
 	IMessage[] getParts();
 
+	IMessage[] getPartsWithHeader(IMessageHeader header);
+
 	void read(ByteBuf buf);
 
 	void write(ByteBuf buf);

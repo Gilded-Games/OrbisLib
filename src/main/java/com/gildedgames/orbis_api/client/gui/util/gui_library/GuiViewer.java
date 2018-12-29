@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.client.gui.util.gui_library;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis_api.util.InputHelper;
 import com.gildedgames.orbis_api.util.mc.ContainerGeneric;
@@ -196,7 +196,7 @@ public abstract class GuiViewer extends GuiContainer implements IGuiViewer
 		}
 		catch (IOException e)
 		{
-			OrbisAPI.LOGGER.info(e);
+			OrbisLib.LOGGER.info(e);
 		}
 	}
 

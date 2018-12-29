@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.framework.generation;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.pathway.IEntrance;
@@ -175,8 +175,8 @@ public class FDGDNode extends BlueprintRegion
 		}
 		if (bestResult == null)
 		{
-			OrbisAPI.LOGGER.info("Was unable to find a valid assignment of entrances to edges. This should not happen.");
-			OrbisAPI.LOGGER.info(best);
+			OrbisLib.LOGGER.info("Was unable to find a valid assignment of entrances to edges. This should not happen.");
+			OrbisLib.LOGGER.info(best);
 		}
 		else
 		{
@@ -205,7 +205,7 @@ public class FDGDNode extends BlueprintRegion
 		final Tuple<Map<FDGDEdge, IEntrance>, Integer> result = this.bestEntrances(edgesL, entrances, 0, 0, Integer.MAX_VALUE);
 		if (result == null)
 		{
-			OrbisAPI.LOGGER.info("Was unable to find a valid assignment of entrances to edges. This should not happen.");
+			OrbisLib.LOGGER.info("Was unable to find a valid assignment of entrances to edges. This should not happen.");
 		}
 		//			throw new FailedToGenerateException("Was not able to find a suitable connection assignment.");
 		else

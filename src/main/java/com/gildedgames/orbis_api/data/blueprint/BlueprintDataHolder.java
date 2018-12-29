@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.IDataHolder;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
@@ -63,7 +63,7 @@ public class BlueprintDataHolder implements IDataHolder<BlueprintData>
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		final IDataIdentifier id = funnel.get("id");
-		Optional<IData> data = OrbisAPI.services().getProjectManager().findData(id);
+		Optional<IData> data = OrbisLib.services().getProjectManager().findData(id);
 
 		if (data.isPresent())
 		{
@@ -71,7 +71,7 @@ public class BlueprintDataHolder implements IDataHolder<BlueprintData>
 		}
 		else
 		{
-			OrbisAPI.LOGGER.error("Missing in " + this.getClass().getName() + " : ", id);
+			OrbisLib.LOGGER.error("Missing in " + this.getClass().getName() + " : ", id);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.framework;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.framework.generation.FDGDEdge;
@@ -388,7 +388,7 @@ public class FrameworkAlgorithm implements IFrameworkAlgorithm
 		Collections.shuffle(edges);
 		//TODO: Make sure this is always larger than edges.size()
 		final int maxAmount = (int) Math.pow(edges.size(), spiderwebGrowth);
-		OrbisAPI.LOGGER.info(maxAmount);
+		OrbisLib.LOGGER.info(maxAmount);
 
 		//		for (int j = 0; j < tree.size(); j++)
 		//		{
@@ -535,7 +535,7 @@ public class FrameworkAlgorithm implements IFrameworkAlgorithm
 		final List<FDGDEdge> edges = new ArrayList<>(this.fdgdGraph.edgeSet());
 		//TODO: Make sure this is always larger than edges.size()
 		final int maxAmount = (int) Math.pow(edges.size(), graphDestroy);
-		OrbisAPI.LOGGER.info(maxAmount);
+		OrbisLib.LOGGER.info(maxAmount);
 
 		int i = 0;
 		FDGDEdge removed = null;
@@ -620,7 +620,7 @@ public class FrameworkAlgorithm implements IFrameworkAlgorithm
 							}
 							if (!isIntersectingOthers)
 							{
-								OrbisAPI.LOGGER.info("Adding edge");
+								OrbisLib.LOGGER.info("Adding edge");
 								this.fdgdGraph.addEdge(n, n2, e);
 								continue outerloop;
 							}
@@ -646,7 +646,7 @@ public class FrameworkAlgorithm implements IFrameworkAlgorithm
 		PathwayNode currentState = this.pathfindingSolver.currentState();
 		if (currentState == null)
 		{
-			OrbisAPI.LOGGER.info("No more states to expand. This is not supposed to happen");
+			OrbisLib.LOGGER.info("No more states to expand. This is not supposed to happen");
 			return () -> (new ArrayList<PathwayNode>()).iterator();
 		}
 		return currentState.fullPath();

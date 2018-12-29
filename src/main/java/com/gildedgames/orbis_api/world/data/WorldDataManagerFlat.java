@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.world.data;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -19,7 +19,7 @@ public class WorldDataManagerFlat implements IWorldDataManager
 	{
 		this.file = new File(file, "flat");
 
-		OrbisAPI.LOGGER.info("Creating file-backed world storage at " + this.file.getAbsolutePath());
+		OrbisLib.LOGGER.info("Creating file-backed world storage at " + this.file.getAbsolutePath());
 	}
 
 	@Override

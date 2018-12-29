@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
 import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
@@ -89,7 +89,7 @@ public class PrepChunkManager implements IPrepChunkManager
 		}
 		catch (ExecutionException e)
 		{
-			OrbisAPI.LOGGER.info("Couldn't find prep chunk at: (x, " + chunkX + ". y, " + chunkY);
+			OrbisLib.LOGGER.info("Couldn't find prep chunk at: (x, " + chunkX + ". y, " + chunkY);
 		}
 
 		return null;

@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.blueprint;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.DataCondition;
 import com.gildedgames.orbis_api.data.IDataHolder;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
@@ -192,7 +192,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 		{
 
 			final IDataIdentifier id = pair.getKey();
-			final Optional<BlueprintData> data = OrbisAPI.services().getProjectManager().findData(id);
+			final Optional<BlueprintData> data = OrbisLib.services().getProjectManager().findData(id);
 
 			if (data.isPresent())
 			{
@@ -200,7 +200,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 			}
 			else
 			{
-				OrbisAPI.LOGGER.error("Missing in " + this.getClass().getName() + " : ", id);
+				OrbisLib.LOGGER.error("Missing in " + this.getClass().getName() + " : ", id);
 			}
 		}
 

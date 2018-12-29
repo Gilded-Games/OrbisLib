@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.network.instances;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.network.NetworkUtils;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.gildedgames.orbis_api.world.instances.IInstance;
@@ -65,7 +65,7 @@ public class PacketRegisterInstance implements IMessage
 		@Override
 		public PacketRegisterInstance onMessage(final PacketRegisterInstance message, final EntityPlayer player)
 		{
-			final IPlayerInstances instances = OrbisAPI.instances().getPlayer(player);
+			final IPlayerInstances instances = OrbisLib.instances().getPlayer(player);
 
 			instances.setInstance(message.instance);
 

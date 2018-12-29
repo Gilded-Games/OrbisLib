@@ -34,6 +34,7 @@ import com.gildedgames.orbis_api.data.pathway.PathwayData;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.*;
 import com.gildedgames.orbis_api.data.shapes.*;
+import com.gildedgames.orbis_api.filetransfer.IFileTransferTracker;
 import com.gildedgames.orbis_api.inventory.InventorySpawnEggs;
 import com.gildedgames.orbis_api.network.INetworkMultipleParts;
 import com.gildedgames.orbis_api.network.NetworkMultipleParts;
@@ -73,9 +74,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class OrbisServices implements IOrbisServices
+public class OrbisLibServices implements IOrbisLibServices
 {
-	public final Logger logger = LogManager.getLogger("OrbisAPI");
+	public final Logger logger = LogManager.getLogger("OrbisLib");
 
 	private final Map<String, IOrbisDefinitionRegistry> idToRegistry = Maps.newHashMap();
 
@@ -85,7 +86,7 @@ public class OrbisServices implements IOrbisServices
 
 	private final GameRegistrar gameRegistrar = new GameRegistrar();
 
-	private List<IOrbisServicesListener> listeners = Lists.newArrayList();
+	private List<IOrbisLibServicesListener> listeners = Lists.newArrayList();
 
 	private IProjectManager projectManager;
 
@@ -107,9 +108,11 @@ public class OrbisServices implements IOrbisServices
 
 	private Gson gson;
 
-	public OrbisServices()
+	private IFileTransferTracker clientFTM, serverFTM;
+
+	public OrbisLibServices()
 	{
-		this.network = new NetworkMultipleParts(OrbisAPI.MOD_ID);
+		this.network = new NetworkMultipleParts(OrbisLib.MOD_ID);
 
 		this.network.reg(PacketRegisterDimension.Handler.class, PacketRegisterDimension.class, Side.CLIENT);
 		this.network.reg(PacketUnregisterDimension.Handler.class, PacketUnregisterDimension.class, Side.CLIENT);
@@ -335,7 +338,7 @@ public class OrbisServices implements IOrbisServices
 		}
 		catch (final IOException var10)
 		{
-			OrbisAPI.LOGGER.error(var10);
+			OrbisLib.LOGGER.error(var10);
 		}
 		finally
 		{
@@ -369,6 +372,12 @@ public class OrbisServices implements IOrbisServices
 	}
 
 	@Override
+	public IFileTransferTracker getTransferManager()
+	{
+		return null;
+	}
+
+	@Override
 	public Gson getGson()
 	{
 		return this.gson;
@@ -393,7 +402,7 @@ public class OrbisServices implements IOrbisServices
 	}
 
 	@Override
-	public void listen(IOrbisServicesListener listener)
+	public void listen(IOrbisLibServicesListener listener)
 	{
 		if (!this.listeners.contains(listener))
 		{
@@ -402,7 +411,7 @@ public class OrbisServices implements IOrbisServices
 	}
 
 	@Override
-	public boolean unlisten(IOrbisServicesListener listener)
+	public boolean unlisten(IOrbisLibServicesListener listener)
 	{
 		return this.listeners.remove(listener);
 	}
@@ -421,7 +430,7 @@ public class OrbisServices implements IOrbisServices
 			return;
 		}
 
-		if (OrbisAPI.isClient())
+		if (OrbisLib.isClient())
 		{
 			final ServerData data = Minecraft.getMinecraft().getCurrentServerData();
 
@@ -452,7 +461,7 @@ public class OrbisServices implements IOrbisServices
 								{
 								}.getType());
 
-								OrbisAPI.LOGGER.info("Succesfully loaded extra_project_sources.json:");
+								OrbisLib.LOGGER.info("Succesfully loaded extra_project_sources.json:");
 
 								for (String source : sources)
 								{
@@ -461,24 +470,24 @@ public class OrbisServices implements IOrbisServices
 									if (file.exists())
 									{
 										extraProjectSources.add(file);
-										OrbisAPI.LOGGER.info("SUCCESS: " + source);
+										OrbisLib.LOGGER.info("SUCCESS: " + source);
 									}
 									else
 									{
-										OrbisAPI.LOGGER.info("FAILED: " + source);
+										OrbisLib.LOGGER.info("FAILED: " + source);
 									}
 								}
 							}
 							catch (JsonSyntaxException | JsonIOException e)
 							{
-								OrbisAPI.LOGGER.error("Could not load extra_project_sources.json, syntax error or IO exception.");
+								OrbisLib.LOGGER.error("Could not load extra_project_sources.json, syntax error or IO exception.");
 								extraProjectSources = Collections.emptyList();
 							}
 						}
 					}
 					catch (IOException e)
 					{
-						OrbisAPI.LOGGER.error(e);
+						OrbisLib.LOGGER.error(e);
 					}
 				}
 				else

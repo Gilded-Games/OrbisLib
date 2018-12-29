@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.world.instances;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.util.TeleporterGeneric;
 import com.gildedgames.orbis_api.util.mc.BlockPosDimension;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
@@ -48,7 +48,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	{
 		for (IInstance instance : this.instances.values())
 		{
-			OrbisAPI.instances().unloadInstance(instance);
+			OrbisLib.instances().unloadInstance(instance);
 		}
 
 		this.instances.clear();
@@ -57,7 +57,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	@Override
 	public void registerInstance(T instance)
 	{
-		OrbisAPI.instances().loadInstance(instance);
+		OrbisLib.instances().loadInstance(instance);
 
 		this.instances.put(instance.getDimensionId(), instance);
 	}
@@ -67,7 +67,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	{
 		if (instance.isTemporary() && instance.getPlayers().isEmpty())
 		{
-			OrbisAPI.instances().unloadInstance(instance);
+			OrbisLib.instances().unloadInstance(instance);
 
 			this.instances.remove(instance.getDimensionId());
 		}
@@ -131,7 +131,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	{
 		if (this.instances.containsValue(instance))
 		{
-			final IPlayerInstances hook = OrbisAPI.instances().getPlayer(player);
+			final IPlayerInstances hook = OrbisLib.instances().getPlayer(player);
 
 			if (hook.getInstance() != null)
 			{
@@ -167,7 +167,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	@Override
 	public void returnPlayerFromInstance(final EntityPlayerMP player)
 	{
-		final IPlayerInstances hook = OrbisAPI.instances().getPlayer(player);
+		final IPlayerInstances hook = OrbisLib.instances().getPlayer(player);
 
 		if (hook.getInstance() != null && hook.getOutside() != null)
 		{

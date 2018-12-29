@@ -24,6 +24,8 @@ public class NetworkMultipleParts implements INetworkMultipleParts
 {
 	private final HashMap<Integer, ArrayList<byte[]>> packetParts = Maps.newHashMap();
 
+	private final HashMap<Integer, ? extends IMessage> packetHeaders = Maps.newHashMap();
+
 	private SimpleNetworkWrapper instance;
 
 	private int discriminant;
@@ -44,6 +46,12 @@ public class NetworkMultipleParts implements INetworkMultipleParts
 	public Map<Integer, ArrayList<byte[]>> getPacketParts()
 	{
 		return this.packetParts;
+	}
+
+	@Override
+	public Map<Integer, ? extends IMessage> getPacketHeaders()
+	{
+		return this.packetHeaders;
 	}
 
 	private IMessage[] fetchParts(final IMessage message)

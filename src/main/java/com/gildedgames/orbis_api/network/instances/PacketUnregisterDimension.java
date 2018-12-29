@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.network.instances;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.DimensionManager;
@@ -44,7 +44,7 @@ public class PacketUnregisterDimension implements IMessage
 			}
 			else
 			{
-				OrbisAPI.LOGGER.warn("Tried to unregister dimension " + message.dimID + " by request of server, but it's not registered");
+				OrbisLib.LOGGER.warn("Tried to unregister dimension " + message.dimID + " by request of server, but it's not registered");
 			}
 
 			return null;

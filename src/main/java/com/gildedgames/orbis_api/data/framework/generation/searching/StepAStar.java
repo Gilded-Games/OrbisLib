@@ -116,7 +116,7 @@ public class StepAStar<T extends AStarNode>
 	{
 		if (this.currentState == null)
 		{
-			//OrbisAPI.LOGGER.info("Current state in StepAStar is null.");
+			//OrbisLib.LOGGER.info("Current state in StepAStar is null.");
 		}
 
 		return this.currentState;

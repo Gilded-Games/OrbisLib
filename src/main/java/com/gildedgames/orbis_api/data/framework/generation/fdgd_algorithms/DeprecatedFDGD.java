@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.framework.generation.fdgd_algorithms;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.framework.FrameworkAlgorithm;
 import com.gildedgames.orbis_api.data.framework.FrameworkType;
 import com.gildedgames.orbis_api.data.framework.Graph;
@@ -27,7 +27,7 @@ public class DeprecatedFDGD implements IGDAlgorithm
 	public void initialize(Graph<FDGDNode, FDGDEdge> graph, FrameworkType type, Random random)
 	{
 		this.params = this.paramFac.createParams(graph, type);
-		OrbisAPI.LOGGER.info(this.params);
+		OrbisLib.LOGGER.info(this.params);
 	}
 
 	@Override

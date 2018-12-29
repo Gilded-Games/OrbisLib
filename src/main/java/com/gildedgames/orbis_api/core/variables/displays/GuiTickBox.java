@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.core.variables.displays;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.client.gui.util.GuiTexture;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
@@ -13,9 +13,9 @@ import java.util.function.Consumer;
 
 public class GuiTickBox extends GuiElement
 {
-	private static final ResourceLocation TICK_BOX = OrbisAPI.getResource("tick_box.png");
+	private static final ResourceLocation TICK_BOX = OrbisLib.getResource("tick_box.png");
 
-	private static final ResourceLocation TICK_BOX_PRESSED = OrbisAPI.getResource("tick_box_pressed.png");
+	private static final ResourceLocation TICK_BOX_PRESSED = OrbisLib.getResource("tick_box_pressed.png");
 
 	private final ResourceLocation untickedTexture, tickedTexture;
 

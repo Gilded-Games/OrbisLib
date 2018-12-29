@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.core.variables.displays;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.client.gui.util.GuiTexture;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiViewer;
@@ -20,7 +20,7 @@ import java.util.List;
 
 public class GuiItemStackChooserScreen extends GuiViewer
 {
-	private static final ResourceLocation STACK_INVENTORY = OrbisAPI.getResource("stack_inventory.png");
+	private static final ResourceLocation STACK_INVENTORY = OrbisLib.getResource("stack_inventory.png");
 
 	private GuiItemStackChooser chooser;
 

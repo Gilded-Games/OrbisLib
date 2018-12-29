@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.management.IDataCache;
 import com.gildedgames.orbis_api.data.management.IDataCachePool;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
@@ -58,7 +58,7 @@ public class DataCachePool implements IDataCachePool
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.LOGGER.catching(e);
+			OrbisLib.LOGGER.catching(e);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class DataCachePool implements IDataCachePool
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.LOGGER.error("Failed to save IDataCache to disk", e);
+			OrbisLib.LOGGER.error("Failed to save IDataCache to disk", e);
 		}
 	}
 
@@ -109,7 +109,7 @@ public class DataCachePool implements IDataCachePool
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.LOGGER.error(e);
+			OrbisLib.LOGGER.error(e);
 		}
 	}
 
@@ -132,7 +132,7 @@ public class DataCachePool implements IDataCachePool
 
 		if (cache == null)
 		{
-			OrbisAPI.LOGGER.warn("The cache you attempted to find (" + cacheID + ") could not be found. Something might be wrong.");
+			OrbisLib.LOGGER.warn("The cache you attempted to find (" + cacheID + ") could not be found. Something might be wrong.");
 
 			return Optional.empty();
 		}

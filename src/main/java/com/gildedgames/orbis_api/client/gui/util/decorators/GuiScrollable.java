@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.client.gui.util.decorators;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.client.gui.util.GuiTexture;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.GuiLibHelper;
@@ -17,11 +17,11 @@ import org.lwjgl.opengl.GL11;
 
 public class GuiScrollable extends GuiElement
 {
-	private static final ResourceLocation SCROLL_KNOB = OrbisAPI.getResource("list/scroll_knob.png");
+	private static final ResourceLocation SCROLL_KNOB = OrbisLib.getResource("list/scroll_knob.png");
 
-	private static final ResourceLocation SCROLL_KNOB_DISABLED = OrbisAPI.getResource("list/scroll_knob_disabled.png");
+	private static final ResourceLocation SCROLL_KNOB_DISABLED = OrbisLib.getResource("list/scroll_knob_disabled.png");
 
-	private static final ResourceLocation SCROLL_BAR = OrbisAPI.getResource("list/scroll_bar.png");
+	private static final ResourceLocation SCROLL_BAR = OrbisLib.getResource("list/scroll_bar.png");
 
 	private IGuiElement window, pane;
 

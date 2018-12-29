@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.block;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.core.exceptions.OrbisMissingModsException;
 import com.gildedgames.orbis_api.data.management.IData;
 import com.gildedgames.orbis_api.data.management.IDataMetadata;
@@ -285,7 +285,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				meta = this.getDefaultBlock().getBlock().getMetaFromState(this.getDefaultBlock());
 			}
 
-			final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(this.localIdToBlock.get(blockId));
+			final ResourceLocation identifier = OrbisLib.services().registrar().getIdentifierFor(this.localIdToBlock.get(blockId));
 
 			if (!identifiers.containsKey(blockId))
 			{
@@ -394,7 +394,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 			final String modname = data.getString("mod");
 			final String blockname = data.getString("name");
 
-			final Block block = OrbisAPI.services().registrar().findBlock(new ResourceLocation(modname, blockname));
+			final Block block = OrbisLib.services().registrar().findBlock(new ResourceLocation(modname, blockname));
 
 			/**
 			 * Add to missing mods list if we can't find the block with our registrar

@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintStackerData;
 import com.gildedgames.orbis_api.data.framework.FrameworkData;
@@ -79,7 +79,7 @@ public class OrbisProjectManager implements IProjectManager
 				}
 				catch (final IOException e)
 				{
-					OrbisAPI.LOGGER.error("Failed to save project data to disk", e);
+					OrbisLib.LOGGER.error("Failed to save project data to disk", e);
 				}
 			}
 
@@ -101,7 +101,7 @@ public class OrbisProjectManager implements IProjectManager
 				}
 				catch (IOException e)
 				{
-					OrbisAPI.LOGGER.error("Failed to load project data from disk", e);
+					OrbisLib.LOGGER.error("Failed to load project data from disk", e);
 				}
 
 				return null;
@@ -137,16 +137,16 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						OrbisAPI.services().getGson().toJson(data.getMetadata(), writer);
+						OrbisLib.services().getGson().toJson(data.getMetadata(), writer);
 					}
 					catch (JsonIOException e)
 					{
-						OrbisAPI.LOGGER.error("Failed to save data metadata to json file", e);
+						OrbisLib.LOGGER.error("Failed to save data metadata to json file", e);
 					}
 				}
 				catch (IOException e)
 				{
-					OrbisAPI.LOGGER.error("Failed to save data metadata to disk", e);
+					OrbisLib.LOGGER.error("Failed to save data metadata to disk", e);
 				}
 			}
 
@@ -157,16 +157,16 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						return OrbisAPI.services().getGson().fromJson(reader, IDataMetadata.class);
+						return OrbisLib.services().getGson().fromJson(reader, IDataMetadata.class);
 					}
 					catch (JsonSyntaxException | JsonIOException e)
 					{
-						OrbisAPI.LOGGER.error("Failed to load data metadata from json file", e);
+						OrbisLib.LOGGER.error("Failed to load data metadata from json file", e);
 					}
 				}
 				catch (IOException e)
 				{
-					OrbisAPI.LOGGER.error("Failed to load data metadata from disk", e);
+					OrbisLib.LOGGER.error("Failed to load data metadata from disk", e);
 				}
 
 				return null;
@@ -319,11 +319,11 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisLib.services().getGson().fromJson(reader, ProjectInformation.class);
 
 						if (info == null)
 						{
-							OrbisAPI.LOGGER.error("Failed to load project info from json file", innerFile);
+							OrbisLib.LOGGER.error("Failed to load project info from json file", innerFile);
 
 							return;
 						}
@@ -352,13 +352,13 @@ public class OrbisProjectManager implements IProjectManager
 					}
 					catch (JsonSyntaxException | JsonIOException e)
 					{
-						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
+						OrbisLib.LOGGER.error("Failed to load project info from json file", e);
 					}
 				}
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.LOGGER.catching(e);
+				OrbisLib.LOGGER.catching(e);
 			}
 		});
 
@@ -390,7 +390,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisLib.services().getGson().fromJson(reader, ProjectInformation.class);
 
 						if (this.idToProject.containsKey(info.getIdentifier()))
 						{
@@ -402,7 +402,7 @@ public class OrbisProjectManager implements IProjectManager
 							}
 							else
 							{
-								OrbisAPI.LOGGER.error("WARNING: A project (" + info.getIdentifier()
+								OrbisLib.LOGGER.error("WARNING: A project (" + info.getIdentifier()
 										+ ") has not been loaded since it has the same id as another existing project.");
 							}
 
@@ -422,17 +422,17 @@ public class OrbisProjectManager implements IProjectManager
 					}
 					catch (JsonSyntaxException | JsonIOException e)
 					{
-						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
+						OrbisLib.LOGGER.error("Failed to load project info from json file", e);
 					}
 				}
 				catch (final IOException e)
 				{
-					OrbisAPI.LOGGER.catching(e);
+					OrbisLib.LOGGER.catching(e);
 				}
 			}
 			catch (IOException e)
 			{
-				OrbisAPI.LOGGER.error("Scanning and caching projects failed:", e);
+				OrbisLib.LOGGER.error("Scanning and caching projects failed:", e);
 			}
 		});
 	}
@@ -456,7 +456,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisLib.services().getGson().fromJson(reader, ProjectInformation.class);
 						IProject project = this.projectFactory.get();
 
 						project.setInfo(info);
@@ -476,13 +476,13 @@ public class OrbisProjectManager implements IProjectManager
 					}
 					catch (JsonSyntaxException | JsonIOException e)
 					{
-						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
+						OrbisLib.LOGGER.error("Failed to load project info from json file", e);
 					}
 				}
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.LOGGER.catching(e);
+				OrbisLib.LOGGER.catching(e);
 			}
 		});
 
@@ -502,7 +502,7 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						ProjectInformation info = OrbisAPI.services().getGson().fromJson(reader, ProjectInformation.class);
+						ProjectInformation info = OrbisLib.services().getGson().fromJson(reader, ProjectInformation.class);
 
 						if (info.getIdentifier().equals(identifier))
 						{
@@ -522,13 +522,13 @@ public class OrbisProjectManager implements IProjectManager
 					}
 					catch (JsonSyntaxException | JsonIOException e)
 					{
-						OrbisAPI.LOGGER.error("Failed to load project info from json file", e);
+						OrbisLib.LOGGER.error("Failed to load project info from json file", e);
 					}
 				}
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.LOGGER.catching(e);
+				OrbisLib.LOGGER.catching(e);
 			}
 		});
 
@@ -598,7 +598,7 @@ public class OrbisProjectManager implements IProjectManager
 		}
 		catch (final IOException e)
 		{
-			OrbisAPI.LOGGER.error(e);
+			OrbisLib.LOGGER.error(e);
 		}
 
 		return Optional.empty();
@@ -760,17 +760,17 @@ public class OrbisProjectManager implements IProjectManager
 				{
 					try
 					{
-						OrbisAPI.services().getGson().toJson(project.getInfo(), writer);
+						OrbisLib.services().getGson().toJson(project.getInfo(), writer);
 					}
 					catch (JsonIOException e)
 					{
-						OrbisAPI.LOGGER.error("Failed to save Project info to json file", e);
+						OrbisLib.LOGGER.error("Failed to save Project info to json file", e);
 					}
 				}
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.LOGGER.error("Failed to save Project to disk", e);
+				OrbisLib.LOGGER.error("Failed to save Project to disk", e);
 			}
 
 			if (hiddenProjectFile)

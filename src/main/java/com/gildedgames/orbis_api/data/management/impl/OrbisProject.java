@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.management.impl;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.management.*;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
@@ -194,7 +194,7 @@ public class OrbisProject implements IProject
 		try
 		{
 			String extension = FilenameUtils.getExtension(file.getName());
-			Optional<IMetadataLoader<OrbisProject>> loader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
+			Optional<IMetadataLoader<OrbisProject>> loader = OrbisLib.services().getProjectManager().getMetadataLoaderForExtension(extension);
 
 			if (loader.isPresent())
 			{
@@ -209,13 +209,13 @@ public class OrbisProject implements IProject
 				}
 				catch (final IOException e)
 				{
-					OrbisAPI.LOGGER.error("Failed to save data metadata to disk", e);
+					OrbisLib.LOGGER.error("Failed to save data metadata to disk", e);
 				}
 			}
 		}
 		catch (IOException e)
 		{
-			OrbisAPI.LOGGER.info(e);
+			OrbisLib.LOGGER.info(e);
 		}
 	}
 
@@ -226,7 +226,7 @@ public class OrbisProject implements IProject
 
 		this.writeMetadata(data, file);
 
-		Optional<IDataLoader<OrbisProject>> dataLoader = OrbisAPI.services().getProjectManager().getDataLoaderForExtension(extension);
+		Optional<IDataLoader<OrbisProject>> dataLoader = OrbisLib.services().getProjectManager().getDataLoaderForExtension(extension);
 
 		if (dataLoader.isPresent())
 		{
@@ -236,7 +236,7 @@ public class OrbisProject implements IProject
 			}
 			catch (IOException e)
 			{
-				OrbisAPI.LOGGER.error("Failed to write data to project directory", data, e);
+				OrbisLib.LOGGER.error("Failed to write data to project directory", data, e);
 			}
 		}
 	}
@@ -257,7 +257,7 @@ public class OrbisProject implements IProject
 
 		if (this.isModProject && shouldSaveAfter)
 		{
-			OrbisAPI.LOGGER.error("WARNING: A mod data file (" + data.getMetadata()
+			OrbisLib.LOGGER.error("WARNING: A mod data file (" + data.getMetadata()
 					+ ") has a different identifier assigned after loading (Old identifier: " + before
 					+ "). This usually means the original identifier has a null UUID data id or the identifier itself is null. Please reimport this data into your project OUTSIDE of the development workspace and let it assign itself the correct metadata.");
 		}
@@ -290,7 +290,7 @@ public class OrbisProject implements IProject
 
 			String extension = FilenameUtils.getExtension(location);
 
-			Optional<IMetadataLoader<OrbisProject>> metadataLoader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
+			Optional<IMetadataLoader<OrbisProject>> metadataLoader = OrbisLib.services().getProjectManager().getMetadataLoaderForExtension(extension);
 
 			if (!metadataLoader.isPresent())
 			{
@@ -310,7 +310,7 @@ public class OrbisProject implements IProject
 			{
 				if (id.equals(metadata.getIdentifier()))
 				{
-					Optional<IDataLoader<OrbisProject>> dataLoader = OrbisAPI.services().getProjectManager().getDataLoaderForExtension(extension);
+					Optional<IDataLoader<OrbisProject>> dataLoader = OrbisLib.services().getProjectManager().getDataLoaderForExtension(extension);
 
 					if (dataLoader.isPresent())
 					{
@@ -426,7 +426,7 @@ public class OrbisProject implements IProject
 					}
 
 					/* Make sure the file has an extension type accepted by this project **/
-					if (OrbisAPI.services().getProjectManager().getAcceptedExtensions().contains(extension))
+					if (OrbisLib.services().getProjectManager().getAcceptedExtensions().contains(extension))
 					{
 						try
 						{
@@ -466,19 +466,19 @@ public class OrbisProject implements IProject
 							}
 							catch (final IOException e)
 							{
-								OrbisAPI.LOGGER.error(e);
+								OrbisLib.LOGGER.error(e);
 							}
 						}
 						catch (final IOException e)
 						{
-							OrbisAPI.LOGGER.error(e);
+							OrbisLib.LOGGER.error(e);
 						}
 					}
 				});
 			}
 			catch (final IOException e)
 			{
-				OrbisAPI.LOGGER.error(e);
+				OrbisLib.LOGGER.error(e);
 			}
 
 			if (fileSystem != null)
@@ -511,8 +511,8 @@ public class OrbisProject implements IProject
 		this.walkDataLoading((input, metadataInput, file, location, resourceLocation) -> {
 			String extension = FilenameUtils.getExtension(location);
 
-			Optional<IDataLoader<OrbisProject>> dataLoader = OrbisAPI.services().getProjectManager().getDataLoaderForExtension(extension);
-			Optional<IMetadataLoader<OrbisProject>> metadataLoader = OrbisAPI.services().getProjectManager().getMetadataLoaderForExtension(extension);
+			Optional<IDataLoader<OrbisProject>> dataLoader = OrbisLib.services().getProjectManager().getDataLoaderForExtension(extension);
+			Optional<IMetadataLoader<OrbisProject>> metadataLoader = OrbisLib.services().getProjectManager().getMetadataLoaderForExtension(extension);
 
 			if (!dataLoader.isPresent() || !metadataLoader.isPresent())
 			{
@@ -544,12 +544,12 @@ public class OrbisProject implements IProject
 						}
 						catch (IOException e)
 						{
-							OrbisAPI.LOGGER.error("Failed to save metadata for data file", e);
+							OrbisLib.LOGGER.error("Failed to save metadata for data file", e);
 						}
 					}
 					else
 					{
-						OrbisAPI.LOGGER.error("WARNING: A data file in your mod project (" + this.getInfo().getIdentifier()
+						OrbisLib.LOGGER.error("WARNING: A data file in your mod project (" + this.getInfo().getIdentifier()
 								+ ") doesn't have a metadata file, meaning it will not work. This can be auto-generated outside of a dev workspace if you simply load up the project.");
 					}
 				}
@@ -560,7 +560,7 @@ public class OrbisProject implements IProject
 
 				if (metadata == null)
 				{
-					OrbisAPI.LOGGER.error("WARNING: A data file could not load because there was no associate metadata file with it.");
+					OrbisLib.LOGGER.error("WARNING: A data file could not load because there was no associate metadata file with it.");
 					return;
 				}
 
@@ -579,7 +579,7 @@ public class OrbisProject implements IProject
 			}
 			else
 			{
-				OrbisAPI.LOGGER.error("Failed to load back a data file from project.", location);
+				OrbisLib.LOGGER.error("Failed to load back a data file from project.", location);
 			}
 		});
 	}

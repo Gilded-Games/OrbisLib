@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.core.baking;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.management.IDataIdentifier;
 import com.gildedgames.orbis_api.processing.DataPrimer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
@@ -55,7 +55,7 @@ public class BakedLootTableApply implements IBakedPosAction
 		{
 			IInventory inventory = (IInventory) te;
 
-			LootTable loot = OrbisAPI.services().lootTableCache().getLootTableFromLocation(this.lootTable);
+			LootTable loot = OrbisLib.services().lootTableCache().getLootTableFromLocation(this.lootTable);
 
 			Random random;
 

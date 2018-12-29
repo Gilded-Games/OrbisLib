@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.data.framework.generation.fdgd_algorithms;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.data.framework.FrameworkAlgorithm;
 import com.gildedgames.orbis_api.data.framework.FrameworkType;
 import com.gildedgames.orbis_api.data.framework.Graph;
@@ -89,8 +89,8 @@ public class FruchtermanReingold implements IGDAlgorithm
 		this.max_iterations = UN_MAX_ITERATIONS +
 				(int) (((UP_MAX_ITERATIONS - UN_MAX_ITERATIONS) / 150f) * Math.min(150, graph.vertexSet().size()));
 		this.cooling = (float) Math.pow(END_SPEED / this.s, 1.0 / this.max_iterations);
-		OrbisAPI.LOGGER.info(this.cooling);
-		OrbisAPI.LOGGER.info(this.max_iterations);
+		OrbisLib.LOGGER.info(this.cooling);
+		OrbisLib.LOGGER.info(this.max_iterations);
 		for (FDGDNode u : graph.vertexSet())
 		{
 			u.setPosition(random.nextFloat() * this.W - this.W / 2f, 0, random.nextFloat() * this.L - this.L / 2f);
@@ -169,8 +169,8 @@ public class FruchtermanReingold implements IGDAlgorithm
 			}
 			else
 			{
-				OrbisAPI.LOGGER.info(this.k);
-				OrbisAPI.LOGGER.info("END OF FDGD");
+				OrbisLib.LOGGER.info(this.k);
+				OrbisLib.LOGGER.info("END OF FDGD");
 				return FrameworkAlgorithm.Phase.PATHWAYS;
 			}
 		}
@@ -187,7 +187,7 @@ public class FruchtermanReingold implements IGDAlgorithm
 				(int) (((UP_SPIDER_MAX_ITERATIONS - UN_SPIDER_MAX_ITERATIONS) / 150f) * Math.min(150, graph.vertexSet().size()));
 		this.max_iterations = fdgdIterations + addedIterations;
 		this.cooling = (float) Math.pow(END_SPEED_SPIDER / this.s, 1.0 / addedIterations);
-		OrbisAPI.LOGGER.info(this.cooling);
-		OrbisAPI.LOGGER.info(this.max_iterations);
+		OrbisLib.LOGGER.info(this.cooling);
+		OrbisLib.LOGGER.info(this.max_iterations);
 	}
 }

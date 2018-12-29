@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.util.mc;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.util.io.IClassSerializer;
 import com.google.common.collect.AbstractIterator;
 import net.minecraft.item.ItemStack;
@@ -120,7 +120,7 @@ public class NBTHelper
 			return ItemStack.EMPTY;
 		}
 
-		ItemStack itemstack = new ItemStack(OrbisAPI.services().registrar().findItem(new ResourceLocation(tag.getString("id"))), tag.getByte("count"),
+		ItemStack itemstack = new ItemStack(OrbisLib.services().registrar().findItem(new ResourceLocation(tag.getString("id"))), tag.getByte("count"),
 				tag.getShort("meta"));
 
 		if (tag.hasKey("shareTag"))
@@ -144,7 +144,7 @@ public class NBTHelper
 
 		tag.setBoolean("_null", false);
 
-		tag.setString("id", OrbisAPI.services().registrar().getIdentifierFor(stack.getItem()).toString());
+		tag.setString("id", OrbisLib.services().registrar().getIdentifierFor(stack.getItem()).toString());
 		tag.setByte("count", (byte) stack.getCount());
 		tag.setShort("meta", (short) stack.getMetadata());
 
@@ -290,7 +290,7 @@ public class NBTHelper
 
 		nbt.write(tag);
 
-		IClassSerializer serializer = OrbisAPI.services().io().findSerializer(nbt);
+		IClassSerializer serializer = OrbisLib.services().io().findSerializer(nbt);
 
 		final int id = serializer.serialize(nbt);
 		final T obj = serializer.deserialize(world, id);
@@ -311,7 +311,7 @@ public class NBTHelper
 			return tag;
 		}
 
-		IClassSerializer serializer = OrbisAPI.services().io().findSerializer(nbt);
+		IClassSerializer serializer = OrbisLib.services().io().findSerializer(nbt);
 
 		tag.setBoolean("_null", false);
 		tag.setString("s_id", serializer.identifier());
@@ -333,7 +333,7 @@ public class NBTHelper
 			return def.get();
 		}
 
-		IClassSerializer serializer = OrbisAPI.services().io().findSerializer(tag.getString("s_id"));
+		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
 		final int id = tag.getInteger("id");
 
@@ -350,7 +350,7 @@ public class NBTHelper
 			return null;
 		}
 
-		IClassSerializer serializer = OrbisAPI.services().io().findSerializer(tag.getString("s_id"));
+		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
 		final int id = tag.getInteger("id");
 
@@ -367,7 +367,7 @@ public class NBTHelper
 			return def.get();
 		}
 
-		IClassSerializer serializer = OrbisAPI.services().io().findSerializer(tag.getString("s_id"));
+		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
 		final int id = tag.getInteger("id");
 
@@ -384,7 +384,7 @@ public class NBTHelper
 			return null;
 		}
 
-		IClassSerializer serializer = OrbisAPI.services().io().findSerializer(tag.getString("s_id"));
+		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
 		final int id = tag.getInteger("id");
 
@@ -401,7 +401,7 @@ public class NBTHelper
 			return null;
 		}
 
-		IClassSerializer serializer = OrbisAPI.services().io().findSerializer(tag.getString("s_id"));
+		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
 		final int id = tag.getInteger("id");
 

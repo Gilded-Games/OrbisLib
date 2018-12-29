@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.client.gui.util.vanilla;
 
-import com.gildedgames.orbis_api.OrbisAPI;
+import com.gildedgames.orbis_api.OrbisLib;
 import com.gildedgames.orbis_api.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis_api.client.gui.util.gui_library.*;
 import com.gildedgames.orbis_api.client.rect.Dim2D;
@@ -205,7 +205,7 @@ public abstract class GuiFrameCreative extends GuiContainerCreativePublic implem
 		}
 		catch (IOException e)
 		{
-			OrbisAPI.LOGGER.info(e);
+			OrbisLib.LOGGER.info(e);
 		}
 	}
 
