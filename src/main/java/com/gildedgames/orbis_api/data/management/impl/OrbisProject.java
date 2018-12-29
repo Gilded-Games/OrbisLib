@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +40,8 @@ public class OrbisProject implements IProject
 	private boolean isModProject;
 
 	private ProjectInformation info;
+
+	private IProjectFilesystem filesystem = new ProjectFilesystemClasspath();
 
 	public OrbisProject()
 	{
@@ -133,6 +136,11 @@ public class OrbisProject implements IProject
 	public void setLocationAsFile(final File location)
 	{
 		this.locationFile = location;
+
+		if (location != null)
+		{
+			this.filesystem = new ProjectFilesystemLocal();
+		}
 	}
 
 	@Override
@@ -336,7 +344,7 @@ public class OrbisProject implements IProject
 	 */
 	private void walkDataLoading(ProjectDataWalker dataWalker)
 	{
-		String locationRoot = this.locationFile != null ? this.locationFile.getPath() : this.jarLocation.getPath();
+		String locationRoot = this.locationFile != null ? this.locationFile.getAbsolutePath() + File.separator : this.jarLocation.getPath();
 
 		URL classpathURL = this.mod.getClass().getClassLoader().getResource("");
 
@@ -353,13 +361,55 @@ public class OrbisProject implements IProject
 			}
 		}
 
-		List<String> fileList;
+		if (!this.isModProject && this.locationFile != null)
+		{
+			File projectIndex = new File(locationRoot, "project_index.txt");
 
-		try (InputStream stream = OrbisProject.class.getResourceAsStream(locationRoot + "project_index.txt"))
+			if (projectIndex.exists())
+			{
+				projectIndex.delete();
+			}
+
+			try (OutputStream stream = new FileOutputStream(projectIndex))
+			{
+				try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream)))
+				{
+					Files.find(this.locationFile.toPath(),
+							Integer.MAX_VALUE,
+							(filePath, fileAttr) -> fileAttr.isRegularFile() && !FilenameUtils.getName(filePath.toString()).equals("project_data.json")
+									&& OrbisAPI
+									.services()
+									.getProjectManager().getAcceptedExtensions()
+									.contains(FilenameUtils.getExtension(filePath.toString())))
+							.forEach((path) -> {
+								try
+								{
+									String name = path.toAbsolutePath().toString().replace(locationRoot, "");
+
+									writer.write(name);
+									writer.newLine();
+								}
+								catch (IOException e)
+								{
+									OrbisAPI.LOGGER.info(e);
+								}
+							});
+				}
+			}
+			catch (IOException e)
+			{
+				throw new RuntimeException("Failed to read project file index", e);
+			}
+		}
+
+		List<String> fileList;
+		String projectIndex = locationRoot + "project_index.txt";
+
+		try (InputStream stream = this.filesystem.getInputStream(projectIndex))
 		{
 			if (stream == null)
 			{
-				throw new IOException("Project file index does not exist");
+				throw new RuntimeException("Project file index does not exist: " + projectIndex);
 			}
 
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
@@ -378,7 +428,7 @@ public class OrbisProject implements IProject
 		{
 			String fullPath = locationRoot + filePath;
 
-			try (InputStream stream = OrbisProject.class.getResourceAsStream(fullPath))
+			try (InputStream stream = this.filesystem.getInputStream(fullPath))
 			{
 				if (stream == null)
 				{
@@ -389,9 +439,9 @@ public class OrbisProject implements IProject
 
 				String name = fullPath.replace(locationRoot, "");
 
-				File file = classpathDir != null ? new File(classpathDir, fullPath) : null;
+				File file = classpathDir != null ? new File(classpathDir, fullPath) : new File(fullPath);
 
-				dataWalker.walk(stream, () -> OrbisProject.class.getResourceAsStream(FilenameUtils.removeExtension(fullPath) + ".metadata"), file, name);
+				dataWalker.walk(stream, () -> this.filesystem.getInputStream(FilenameUtils.removeExtension(fullPath) + ".metadata"), file, name);
 			}
 			catch (IOException e)
 			{
