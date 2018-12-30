@@ -33,4 +33,8 @@ public interface IPrepSector
 	 * @return True if the sector has currently watching chunks or watching players
 	 */
 	boolean hasWatchers();
+
+	int getDormantTicks();
+
+	void tick();
 }

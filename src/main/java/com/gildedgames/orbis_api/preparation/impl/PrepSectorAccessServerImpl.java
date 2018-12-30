@@ -6,6 +6,8 @@ import com.gildedgames.orbis_api.util.ChunkMap;
 import com.gildedgames.orbis_api.world.data.IWorldData;
 import com.gildedgames.orbis_api.world.data.IWorldDataManager;
 import com.google.common.util.concurrent.*;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -26,6 +28,9 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 	private final World world;
 
+	private final ListeningExecutorService foregroundService =
+			MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor(threadFactory));
+
 	private final ListeningExecutorService backgroundService =
 			MoreExecutors.listeningDecorator(new ThreadPoolExecutor(0, THREADS, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), threadFactory));
 
@@ -37,7 +42,11 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 	private final ChunkMap<IPrepSector> generating = new ChunkMap<>();
 
+	private final ChunkMap<ListenableFuture<IPrepSector>> loading = new ChunkMap<>();
+
 	private final IWorldDataManager dataManager;
+
+	private final ArrayList<IPrepSector> dirty = new ArrayList<>();
 
 	public PrepSectorAccessServerImpl(World world, IPrepRegistryEntry registry, IPrepManager prepManager, IWorldDataManager dataManager)
 	{
@@ -52,14 +61,9 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	@Override
 	public Optional<IPrepSector> getLoadedSector(int sectorX, int sectorZ)
 	{
-		if (this.world.isRemote)
-		{
-			return Optional.empty();
-		}
-
 		synchronized (this.generating)
 		{
-			IPrepSector job = PrepSectorAccessServerImpl.this.generating.get(sectorX, sectorZ);
+			IPrepSector job = this.generating.get(sectorX, sectorZ);
 
 			if (job != null)
 			{
@@ -82,6 +86,14 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	@Override
 	public ListenableFuture<IPrepSector> provideSector(int sectorX, int sectorZ, boolean background)
 	{
+		synchronized (this.loading)
+		{
+			if (this.loading.containsKey(sectorX, sectorZ))
+			{
+				return this.loading.get(sectorX, sectorZ);
+			}
+		}
+
 		Optional<IPrepSector> sector = this.getLoadedSector(sectorX, sectorZ);
 
 		if (sector.isPresent())
@@ -89,36 +101,17 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 			return Futures.immediateFuture(sector.get());
 		}
 
-		if (background)
+		synchronized (this.loading)
 		{
-			return this.backgroundService.submit(() -> this.generateSector(sectorX, sectorZ));
-		}
-		else
-		{
-			try
-			{
-				return Futures.immediateFuture(this.generateSector(sectorX, sectorZ));
-			}
-			catch (IOException e)
-			{
-				return Futures.immediateFailedFuture(e);
-			}
+			ListeningExecutorService service = background ? this.backgroundService : this.foregroundService;
+
+			ListenableFuture<IPrepSector> future = service.submit(() -> this.loadSector(sectorX, sectorZ));
+
+			this.loading.put(sectorX, sectorZ, future);
+
+			return future;
 		}
 	}
-
-	private IPrepSector generateSector(int sectorX, int sectorZ) throws IOException
-	{
-		synchronized (this.loaded)
-		{
-			if (this.loaded.containsKey(sectorX, sectorZ))
-			{
-				return this.loaded.get(sectorX, sectorZ);
-			}
-		}
-
-		return this.loadSector(sectorX, sectorZ);
-	}
-
 
 	@Override
 	public ListenableFuture<IPrepSector> provideSectorForChunk(final int chunkX, final int chunkZ, boolean background)
@@ -131,11 +124,6 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 	private IPrepSector loadSector(int sectorX, int sectorZ) throws IOException
 	{
-		if (this.world.isRemote)
-		{
-			return null;
-		}
-
 		IPrepSectorData data = this.readSectorDataFromDisk(sectorX, sectorZ);
 
 		PrepSector sector;
@@ -143,9 +131,13 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 		if (data != null)
 		{
 			sector = new PrepSector(data);
+
+			OrbisAPI.LOGGER.info("Loaded Sector (" + sectorX + ", " + sectorZ + ") from disk");
 		}
 		else
 		{
+			OrbisAPI.LOGGER.info("Generating Sector (" + sectorX + ", " + sectorZ + ")");
+
 			data = this.prepManager.createSector(sectorX, sectorZ);
 			sector = new PrepSector(data);
 
@@ -231,22 +223,13 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	@Override
 	public void flush()
 	{
-		if (this.world.isRemote)
-		{
-			return;
-		}
+		List<IPrepSector> dirty;
 
-		List<IPrepSector> dirty = new ArrayList<>();
-
-		synchronized (this.loaded)
+		synchronized (this.dirty)
 		{
-			for (IPrepSector sector : this.loaded.getValues())
-			{
-				if (sector.getData().isDirty())
-				{
-					dirty.add(sector);
-				}
-			}
+			dirty = new ArrayList<>(this.dirty);
+
+			this.dirty.clear();
 		}
 
 		for (IPrepSector sector : dirty)
@@ -262,6 +245,26 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 			sector.getData().markClean();
 		}
+	}
+
+	@Override
+	public void update()
+	{
+		LongList removeFutures = new LongArrayList();
+
+		this.loading.getInnerMap().forEachEntry((key, value) -> {
+			if (value.isDone() || value.isCancelled())
+			{
+				removeFutures.add(key);
+			}
+
+			return true;
+		});
+
+		for (long key : removeFutures)
+		{
+			this.loading.getInnerMap().remove(key);
+		}
 
 		synchronized (this.loaded)
 		{
@@ -269,8 +272,22 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 			for (IPrepSector sector : this.loaded.getValues())
 			{
-				if (!sector.hasWatchers())
+				sector.tick();
+
+				if (sector.getData().isDirty())
 				{
+					synchronized (this.dirty)
+					{
+						this.dirty.add(sector);
+					}
+
+					continue;
+				}
+
+				if (sector.getDormantTicks() > 20 * 60)
+				{
+					OrbisAPI.LOGGER.info("Unloading Sector (" + sector.getData().getSectorX() + ", " + sector.getData().getSectorY() + ")");
+
 					removal.add(sector);
 				}
 			}

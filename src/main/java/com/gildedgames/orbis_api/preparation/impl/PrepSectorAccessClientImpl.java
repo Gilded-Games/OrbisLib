@@ -80,6 +80,12 @@ public class PrepSectorAccessClientImpl implements IPrepSectorAccessClient
 	}
 
 	@Override
+	public void update()
+	{
+
+	}
+
+	@Override
 	public void addSector(IPrepSector sector)
 	{
 		this.loaded.put(sector.getData().getSectorX(), sector.getData().getSectorY(), sector);

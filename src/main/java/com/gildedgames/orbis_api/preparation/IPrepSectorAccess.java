@@ -92,4 +92,6 @@ public interface IPrepSectorAccess
 	void retainSector(IPrepSector sector);
 
 	Collection<IPrepSector> getLoadedSectors();
+
+	void update();
 }

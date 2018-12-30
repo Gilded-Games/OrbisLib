@@ -1,11 +1,11 @@
 package com.gildedgames.orbis_api.preparation.impl;
 
-import com.gildedgames.orbis_api.OrbisAPICapabilities;
 import com.gildedgames.orbis_api.preparation.IPrepManager;
 import com.gildedgames.orbis_api.preparation.impl.util.PrepHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class PrepTasks
 {
@@ -14,14 +14,11 @@ public class PrepTasks
 	{
 		final World world = event.getWorld();
 
-		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER, null))
-		{
-			IPrepManager manager = PrepHelper.getManager(world);
+		IPrepManager manager = PrepHelper.getManager(world);
 
-			if (manager != null)
-			{
-				manager.getAccess().onChunkLoaded(event.getChunk().x, event.getChunk().z);
-			}
+		if (manager != null)
+		{
+			manager.getAccess().onChunkLoaded(event.getChunk().x, event.getChunk().z);
 		}
 	}
 
@@ -30,14 +27,24 @@ public class PrepTasks
 	{
 		final World world = event.getWorld();
 
-		if (world.hasCapability(OrbisAPICapabilities.PREP_MANAGER, null))
-		{
-			IPrepManager manager = PrepHelper.getManager(world);
+		IPrepManager manager = PrepHelper.getManager(world);
 
-			if (manager != null)
-			{
-				manager.getAccess().onChunkUnloaded(event.getChunk().x, event.getChunk().z);
-			}
+		if (manager != null)
+		{
+			manager.getAccess().onChunkUnloaded(event.getChunk().x, event.getChunk().z);
+		}
+	}
+
+	@SubscribeEvent
+	public static void onWorldTick(final TickEvent.WorldTickEvent event)
+	{
+		final World world = event.world;
+
+		IPrepManager manager = PrepHelper.getManager(world);
+
+		if (manager != null)
+		{
+			manager.getAccess().update();
 		}
 	}
 }

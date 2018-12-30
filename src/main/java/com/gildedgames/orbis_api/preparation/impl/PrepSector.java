@@ -16,6 +16,8 @@ public class PrepSector implements IPrepSector
 
 	private IPrepSectorData data;
 
+	private int dormantTicks;
+
 	public PrepSector(IPrepSectorData data)
 	{
 		this.data = data;
@@ -54,6 +56,25 @@ public class PrepSector implements IPrepSector
 	@Override
 	public boolean hasWatchers()
 	{
-		return !this.watchingChunks.isEmpty() && !this.watchingPlayers.isEmpty();
+		return !this.watchingChunks.isEmpty() || !this.watchingPlayers.isEmpty();
+	}
+
+	@Override
+	public int getDormantTicks()
+	{
+		return this.dormantTicks;
+	}
+
+	@Override
+	public void tick()
+	{
+		if (this.hasWatchers())
+		{
+			this.dormantTicks = 0;
+		}
+		else
+		{
+			this.dormantTicks++;
+		}
 	}
 }
