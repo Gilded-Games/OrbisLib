@@ -284,7 +284,7 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 					continue;
 				}
 
-				if (sector.getDormantTicks() > 20 * 60)
+				if (sector.getDormantTicks() > 20 * 60 * 5)
 				{
 					OrbisAPI.LOGGER.info("Unloading Sector (" + sector.getData().getSectorX() + ", " + sector.getData().getSectorY() + ")");
 
