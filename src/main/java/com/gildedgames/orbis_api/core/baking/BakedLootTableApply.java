@@ -75,6 +75,17 @@ public class BakedLootTableApply implements IBakedPosAction
 	}
 
 	@Override
+	public IBakedPosAction copy()
+	{
+		BakedLootTableApply action = new BakedLootTableApply();
+		action.lootTable = this.lootTable;
+		action.lootTableSeed = this.lootTableSeed;
+		action.pos = this.pos;
+
+		return action;
+	}
+
+	@Override
 	public void write(NBTTagCompound tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);

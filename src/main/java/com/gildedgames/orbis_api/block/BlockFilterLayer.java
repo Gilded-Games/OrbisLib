@@ -183,7 +183,7 @@ public class BlockFilterLayer implements NBT
 				continue;
 			}
 
-			primer.create(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), pos.toImmutable(), creationData);
+			primer.setBlockInWorld(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), pos.toImmutable(), creationData);
 		}
 	}
 
@@ -344,7 +344,7 @@ public class BlockFilterLayer implements NBT
 
 			if (!edge || creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())*/
 			{
-				primer.create(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), c, creationData);
+				primer.setBlockInWorld(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), c, creationData);
 			}
 		}
 

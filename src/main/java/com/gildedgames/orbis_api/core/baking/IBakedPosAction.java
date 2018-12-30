@@ -11,4 +11,6 @@ public interface IBakedPosAction extends NBT
 	void setPos(BlockPos pos);
 
 	void call(DataPrimer primer);
+
+	IBakedPosAction copy();
 }

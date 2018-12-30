@@ -12,7 +12,6 @@ import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -139,24 +138,101 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return index % this.width;
 	}
 
-	public void copyBlockFrom(BlockDataContainer data, int otherX, int otherY, int otherZ, int thisX, int thisY, int thisZ)
-			throws ArrayIndexOutOfBoundsException
+	public BlockDataContainer rotateCounterclockwise90()
 	{
-		int indexThis = this.getIndex(thisX, thisY, thisZ);
-		int indexOther = data.getIndex(otherX, otherY, otherZ);
+		BlockDataContainer container = new BlockDataContainer(this.getDefaultBlock(), this.length, this.height, this.width);
 
-		this.blocks[indexThis] = data.blocks[indexOther];
-		this.blocksMeta[indexThis] = data.blocksMeta[indexOther];
-
-		NBTTagCompound tag = data.entities.get(indexOther);
-
-		if (tag != null)
+		for (int z = 0; z < this.length; z++)
 		{
-			this.entities.put(indexThis, tag);
+			for (int x = 0; x < this.width; x++)
+			{
+				for (int y = 0; y < this.height; y++)
+				{
+					container.copyBlockFromWithRotation(this, x, y, z, this.length - z - 1, y, x, Rotation.CLOCKWISE_90);
+				}
+			}
 		}
+
+		for (int key : this.entities.keySet())
+		{
+			NBTTagCompound tag = this.entities.get(key);
+
+			int x = this.getX(key);
+			int y = this.getY(key);
+			int z = this.getZ(key);
+
+			int otherIndex = container.getIndex(this.length - z - 1, y, x);
+
+			container.entities.put(otherIndex, tag.copy());
+		}
+
+
+		return container;
 	}
 
-	public void copyBlockFromWithRotation(BlockDataContainer data, int otherX, int otherY, int otherZ, int thisX, int thisY, int thisZ, Rotation rotation)
+	public BlockDataContainer rotateClockwise90()
+	{
+		BlockDataContainer container = new BlockDataContainer(this.getDefaultBlock(), this.length, this.height, this.width);
+
+		for (int z = 0; z < this.length; z++)
+		{
+			for (int x = 0; x < this.width; x++)
+			{
+				for (int y = 0; y < this.height; y++)
+				{
+					container.copyBlockFromWithRotation(this, x, y, z, z, y, this.width - x - 1, Rotation.COUNTERCLOCKWISE_90);
+				}
+			}
+		}
+
+		for (int key : this.entities.keySet())
+		{
+			NBTTagCompound tag = this.entities.get(key);
+
+			int x = this.getX(key);
+			int y = this.getY(key);
+			int z = this.getZ(key);
+
+			int otherIndex = container.getIndex(z, y, this.width - x - 1);
+
+			container.entities.put(otherIndex, tag.copy());
+		}
+
+		return container;
+	}
+
+	public BlockDataContainer rotateClockwise180()
+	{
+		BlockDataContainer container = new BlockDataContainer(this.getDefaultBlock(), this.width, this.height, this.length);
+
+		for (int z = 0; z < this.length; z++)
+		{
+			for (int x = 0; x < this.width; x++)
+			{
+				for (int y = 0; y < this.height; y++)
+				{
+					container.copyBlockFromWithRotation(this, x, y, z, this.width - x - 1, y, this.length - z - 1, Rotation.CLOCKWISE_180);
+				}
+			}
+		}
+
+		for (int key : this.entities.keySet())
+		{
+			NBTTagCompound tag = this.entities.get(key);
+
+			int x = this.getX(key);
+			int y = this.getY(key);
+			int z = this.getZ(key);
+
+			int otherIndex = container.getIndex(this.width - x - 1, y, this.length - z - 1);
+
+			container.entities.put(otherIndex, tag.copy());
+		}
+
+		return container;
+	}
+
+	private void copyBlockFromWithRotation(BlockDataContainer data, int otherX, int otherY, int otherZ, int thisX, int thisY, int thisZ, Rotation rotation)
 	{
 		int indexThis = this.getIndex(thisX, thisY, thisZ);
 		int indexOther = data.getIndex(otherX, otherY, otherZ);
@@ -167,14 +243,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				.getStateFromMeta(data.blocksMeta[indexOther]);
 
 		this.blocksMeta[indexThis] = (byte) state.getBlock().getMetaFromState(state.withRotation(rotation));
-
-		NBTTagCompound tag = data.entities.get(indexOther);
-
-		if (tag != null)
-		{
-			this.entities.put(indexThis, tag);
-		}
 	}
+
 
 	public boolean isOutsideOfContainer(BlockPos pos)
 	{
@@ -204,7 +274,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		return Block.getBlockById(id).getStateFromMeta(this.blocksMeta[index]);
 	}
-
 
 	public Block getBlock(BlockPos pos)
 	{
@@ -266,7 +335,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.length;
 	}
 
-	protected IBlockState getDefaultBlock()
+	public IBlockState getDefaultBlock()
 	{
 		return this.defaultBlock;
 	}

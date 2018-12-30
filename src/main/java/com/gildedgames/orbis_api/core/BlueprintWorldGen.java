@@ -43,23 +43,18 @@ public class BlueprintWorldGen implements IWorldGen
 					BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)] :
 					BlueprintPlacer.ROTATIONS[0];
 
-			final ICreationData<CreationData> data = new CreationData(world).pos(position);
+			final ICreationData<CreationData> data = new CreationData(world);
 
 			data.rotation(rotation);
 
 			this.chosenDef = this.def == null ? this.defPool.getRandomDefinition(rand) : this.def;
 
 			this.lastBake = new BakedBlueprint(this.chosenDef.getData(), data);
-
-			this.lastBake.bake();
-		}
-		else
-		{
-			this.lastBake.rebake(position);
 		}
 
-		boolean generated = BlueprintPlacer
-				.place(new DataPrimer(blockAccess), this.lastBake, this.chosenDef.getConditions(), true);
+		DataPrimer primer = new DataPrimer(blockAccess);
+
+		boolean generated = BlueprintPlacer.place(primer, this.lastBake, this.chosenDef.getConditions(), position, true);
 
 		if (generated)
 		{

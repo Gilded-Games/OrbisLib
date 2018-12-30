@@ -2,6 +2,8 @@ package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
+import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
+import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
@@ -9,8 +11,13 @@ import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlacedBlueprint implements NBT
 {
+	private List<IBakedPosAction> pendingPosActions;
+
 	private World world;
 
 	private BlueprintDefinition def;
@@ -46,6 +53,15 @@ public class PlacedBlueprint implements NBT
 		this.data = data;
 
 		this.baked = baked;
+		this.pendingPosActions = new ArrayList<>(this.baked.getBakedPosActions());
+
+		for (int i = 0; i < this.pendingPosActions.size(); i++)
+		{
+			IBakedPosAction action = this.pendingPosActions.get(i).copy();
+			action.setPos(action.getPos().add(this.getCreationData().getPos()));
+
+			this.pendingPosActions.set(i, action);
+		}
 	}
 
 	public PlacedBlueprint(final World world, final NBTTagCompound tag)
@@ -129,6 +145,7 @@ public class PlacedBlueprint implements NBT
 		tag.setBoolean("hasGeneratedAChunk", this.hasGeneratedAChunk);
 
 		funnel.set("baked", this.baked);
+		funnel.setList("pendingPosActions", this.pendingPosActions);
 	}
 
 	@Override
@@ -146,6 +163,7 @@ public class PlacedBlueprint implements NBT
 		this.hasGeneratedAChunk = tag.getBoolean("hasGeneratedAChunk");
 
 		this.baked = funnel.get("baked");
+		this.pendingPosActions = funnel.getList("pendingPosActions");
 	}
 
 	@Override
@@ -157,5 +175,18 @@ public class PlacedBlueprint implements NBT
 		clone.hasGeneratedAChunk = this.hasGeneratedAChunk;
 
 		return clone;
+	}
+
+	public Region getRegion()
+	{
+		Region region = new Region(this.baked.getBakedRegion());
+		region.add(this.getCreationData().getPos());
+
+		return region;
+	}
+
+	public List<IBakedPosAction> getPendingPosActions()
+	{
+		return this.pendingPosActions;
 	}
 }

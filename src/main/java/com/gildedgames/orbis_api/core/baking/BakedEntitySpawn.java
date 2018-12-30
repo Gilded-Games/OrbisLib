@@ -69,6 +69,18 @@ public class BakedEntitySpawn implements IBakedPosAction
 	}
 
 	@Override
+	public IBakedPosAction copy()
+	{
+		BakedEntitySpawn spawn = new BakedEntitySpawn();
+		spawn.customRotation = this.customRotation;
+		spawn.egg = this.egg;
+		spawn.pos = this.pos;
+		spawn.rotationDegrees = this.rotationDegrees;
+
+		return spawn;
+	}
+
+	@Override
 	public void write(NBTTagCompound tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);

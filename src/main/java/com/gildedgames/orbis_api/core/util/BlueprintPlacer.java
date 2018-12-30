@@ -58,37 +58,29 @@ public class BlueprintPlacer
 
 		if (result)
 		{
-			baked.rebake(relocateTo);
-
-			placeWith.create(baked);
+			placeWith.place(baked, relocateTo);
 		}
 
 		return result;
 	}
 
-	public static boolean place(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions,
-			boolean checkAreaLoaded)
-	{
-		final boolean result = placeWith.canGenerate(baked, conditions, checkAreaLoaded);
-
-		if (result)
-		{
-			placeWith.create(baked);
-		}
-
-		return result;
-	}
+//	public static boolean place(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions,
+//			boolean checkAreaLoaded)
+//	{
+//		final boolean result = placeWith.canGenerate(baked, conditions, checkAreaLoaded);
+//
+//		if (result)
+//		{
+//			placeWith.place(baked, relocateTo);
+//		}
+//
+//		return result;
+//	}
 
 	public static boolean findPlace(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos relocateTo,
 			boolean checkAreaLoaded)
 	{
 		return placeWith.canGenerate(baked, conditions, relocateTo, checkAreaLoaded);
-	}
-
-	public static boolean findPlace(final DataPrimer placeWith, BakedBlueprint baked, List<PlacementCondition> conditions,
-			boolean checkAreaLoaded)
-	{
-		return placeWith.canGenerate(baked, conditions, checkAreaLoaded);
 	}
 
 }
