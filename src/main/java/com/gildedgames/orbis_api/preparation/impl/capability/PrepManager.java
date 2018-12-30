@@ -1,7 +1,10 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.OrbisAPI;
-import com.gildedgames.orbis_api.preparation.*;
+import com.gildedgames.orbis_api.preparation.IPrepManager;
+import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
+import com.gildedgames.orbis_api.preparation.IPrepSectorAccess;
+import com.gildedgames.orbis_api.preparation.IPrepSectorData;
 import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessClientImpl;
 import com.gildedgames.orbis_api.preparation.impl.PrepSectorAccessServerImpl;
 import net.minecraft.nbt.NBTBase;
@@ -18,8 +21,6 @@ public class PrepManager implements IPrepManager
 	private final IPrepRegistryEntry registry;
 
 	private IPrepSectorAccess access;
-
-	private IPrepChunkManager chunkManager;
 
 	public PrepManager()
 	{
@@ -40,8 +41,6 @@ public class PrepManager implements IPrepManager
 		{
 			this.access = new PrepSectorAccessServerImpl(this.world, this.registry, this, OrbisAPI.services().getWorldDataManager(world));
 		}
-
-		this.chunkManager = new PrepChunkManager(this.world, this.registry);
 	}
 
 	@Override
@@ -67,7 +66,7 @@ public class PrepManager implements IPrepManager
 	@Override
 	public void decorateSectorData(IPrepSectorData data)
 	{
-		this.registry.postSectorDataCreate(this.world, data, this.chunkManager);
+		this.registry.postSectorDataCreate(this.world, data);
 	}
 
 	public static class Storage implements Capability.IStorage<IPrepManager>

@@ -2,8 +2,10 @@ package com.gildedgames.orbis_api.preparation.impl.util;
 
 import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
+import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
 import com.gildedgames.orbis_api.preparation.IPrepSectorData;
 import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
+import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManager;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -27,13 +29,14 @@ public class BlockAccessPrep implements IBlockAccessExtended
 
 	private IPrepSectorData sectorData;
 
-	public BlockAccessPrep(World world, IPrepSectorData sectorData, IPrepChunkManager iPrepChunkManager)
+	public BlockAccessPrep(World world, IPrepSectorData sectorData, IPrepRegistryEntry registryEntry)
 	{
 		this.world = world;
 
 		this.sectorData = sectorData;
-		this.chunkManager = iPrepChunkManager;
-		this.transformer = iPrepChunkManager.createMaskTransformer();
+
+		this.chunkManager = new PrepChunkManager(world, registryEntry);
+		this.transformer = this.chunkManager.createMaskTransformer();
 	}
 
 	@Override

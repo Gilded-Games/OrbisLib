@@ -1,15 +1,11 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
-import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
 import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
 import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
 import com.gildedgames.orbis_api.preparation.IPrepSectorData;
 import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
-import com.gildedgames.orbis_api.util.PointSerializer;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.gildedgames.orbis_api.util.ChunkMap;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -17,41 +13,14 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 public class PrepChunkManager implements IPrepChunkManager
 {
-
 	private World world;
 
 	private IPrepRegistryEntry registryEntry;
 
-	private ThreadLocal<IPrepSectorData> currentSectorData = new ThreadLocal<>();
-
-	private final LoadingCache<Long, ChunkMask> chunkCache = CacheBuilder.newBuilder()
-			.maximumSize(512)
-			.expireAfterWrite(10, TimeUnit.MINUTES)
-			.build(new CacheLoader<Long, ChunkMask>()
-				   {
-					   @Override
-					   public ChunkMask load(Long key)
-					   {
-						   int x = PointSerializer.x(key);
-						   int y = PointSerializer.y(key);
-
-						   Biome[] biomes = new Biome[256];
-						   biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, x * 16, y * 16, 16, 16);
-
-						   ChunkMask mask = new ChunkMask();
-
-						   PrepChunkManager.this.registryEntry
-								   .threadSafeGenerateMask(PrepChunkManager.this.world, PrepChunkManager.this.currentSectorData.get(), biomes, mask, x, y);
-
-						   return mask;
-					   }
-				   }
-			);
+	private final ChunkMap<ChunkMask> chunkCache = new ChunkMap<>();
 
 	public PrepChunkManager()
 	{
@@ -64,11 +33,6 @@ public class PrepChunkManager implements IPrepChunkManager
 		this.registryEntry = registryEntry;
 	}
 
-	private LoadingCache<Long, ChunkMask> getChunkCache()
-	{
-		return this.chunkCache;
-	}
-
 	@Override
 	public World getWorld()
 	{
@@ -79,20 +43,28 @@ public class PrepChunkManager implements IPrepChunkManager
 	@Override
 	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY)
 	{
-		this.currentSectorData.set(sectorData);
-
-		long hash = PointSerializer.toLong(chunkX, chunkY);
-
-		try
+		synchronized (this.chunkCache)
 		{
-			return this.getChunkCache().get(hash);
-		}
-		catch (ExecutionException e)
-		{
-			OrbisAPI.LOGGER.info("Couldn't find prep chunk at: (x, " + chunkX + ". y, " + chunkY);
+			if (this.chunkCache.containsKey(chunkX, chunkY))
+			{
+				return this.chunkCache.get(chunkX, chunkY);
+			}
 		}
 
-		return null;
+		Biome[] biomes = new Biome[256];
+		biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkY * 16, 16, 16);
+
+		ChunkMask mask = new ChunkMask();
+
+		PrepChunkManager.this.registryEntry
+				.threadSafeGenerateMask(PrepChunkManager.this.world, sectorData, biomes, mask, chunkX, chunkY);
+
+		synchronized (this.chunkCache)
+		{
+			this.chunkCache.put(chunkX, chunkY, mask);
+		}
+
+		return mask;
 	}
 
 	@Override

@@ -23,7 +23,7 @@ public interface IPrepRegistryEntry
 
 	boolean shouldAttachTo(World world);
 
-	void postSectorDataCreate(World world, IPrepSectorData data, IPrepChunkManager chunkManager);
+	void postSectorDataCreate(World world, IPrepSectorData data);
 
 	IPrepSectorData createData(World world, long seed, int sectorX, int sectorY);
 

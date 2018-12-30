@@ -5,17 +5,12 @@ import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.util.ChunkMap;
 import com.gildedgames.orbis_api.world.data.IWorldData;
 import com.gildedgames.orbis_api.world.data.IWorldDataManager;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.*;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
-import javax.annotation.Nonnull;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,30 +32,6 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	private final IPrepRegistryEntry registry;
 
 	private final IPrepManager prepManager;
-
-	private final LoadingCache<ChunkPos, IPrepSector> dormantCache = CacheBuilder.newBuilder()
-			.maximumSize(32 + (8 * THREADS))
-			.expireAfterAccess(2, TimeUnit.MINUTES)
-			.build(new CacheLoader<ChunkPos, IPrepSector>()
-			{
-				@Override
-				public IPrepSector load(@Nonnull ChunkPos key) throws Exception
-				{
-					IPrepSector sector;
-
-					synchronized (PrepSectorAccessServerImpl.this.loaded)
-					{
-						sector = PrepSectorAccessServerImpl.this.loaded.get(key.x, key.z);
-					}
-
-					if (sector == null)
-					{
-						return PrepSectorAccessServerImpl.this.loadSector(key.x, key.z);
-					}
-
-					return sector;
-				}
-			});
 
 	private final ChunkMap<IPrepSector> loaded = new ChunkMap<>();
 
@@ -96,7 +67,7 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 			}
 		}
 
-		return Optional.ofNullable(this.dormantCache.getIfPresent(new ChunkPos(sectorX, sectorZ)));
+		return Optional.ofNullable(this.loaded.get(sectorX, sectorZ));
 	}
 
 	@Override
@@ -120,20 +91,34 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 		if (background)
 		{
-			return this.backgroundService.submit(() -> this.dormantCache.get(new ChunkPos(sectorX, sectorZ)));
+			return this.backgroundService.submit(() -> this.generateSector(sectorX, sectorZ));
 		}
 		else
 		{
 			try
 			{
-				return Futures.immediateFuture(PrepSectorAccessServerImpl.this.dormantCache.get(new ChunkPos(sectorX, sectorZ)));
+				return Futures.immediateFuture(this.generateSector(sectorX, sectorZ));
 			}
-			catch (ExecutionException e)
+			catch (IOException e)
 			{
 				return Futures.immediateFailedFuture(e);
 			}
 		}
 	}
+
+	private IPrepSector generateSector(int sectorX, int sectorZ) throws IOException
+	{
+		synchronized (this.loaded)
+		{
+			if (this.loaded.containsKey(sectorX, sectorZ))
+			{
+				return this.loaded.get(sectorX, sectorZ);
+			}
+		}
+
+		return this.loadSector(sectorX, sectorZ);
+	}
+
 
 	@Override
 	public ListenableFuture<IPrepSector> provideSectorForChunk(final int chunkX, final int chunkZ, boolean background)
@@ -144,7 +129,7 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 		return this.provideSector(sectorX, sectorZ, background);
 	}
 
-	private IPrepSector loadSector(int sectorX, int sectorZ) throws Exception
+	private IPrepSector loadSector(int sectorX, int sectorZ) throws IOException
 	{
 		if (this.world.isRemote)
 		{
@@ -158,13 +143,9 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 		if (data != null)
 		{
 			sector = new PrepSector(data);
-
-			OrbisAPI.LOGGER.info("Loaded Sector (" + sectorX + ", " + sectorZ + ") from disk");
 		}
 		else
 		{
-			OrbisAPI.LOGGER.info("Generating Sector (" + sectorX + ", " + sectorZ + ")");
-
 			data = this.prepManager.createSector(sectorX, sectorZ);
 			sector = new PrepSector(data);
 
