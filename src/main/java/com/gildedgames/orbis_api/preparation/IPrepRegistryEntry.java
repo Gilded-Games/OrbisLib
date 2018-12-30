@@ -12,7 +12,7 @@ import net.minecraft.world.chunk.ChunkPrimer;
  * Example is a registration which finds locations to place Blueprints, then
  * schedules them into the sector.
  */
-public interface IPrepRegistryEntry
+public interface IPrepRegistryEntry<T>
 {
 	ResourceLocation getUniqueId();
 
@@ -54,7 +54,9 @@ public interface IPrepRegistryEntry
 	 */
 	void threadSafeGenerateChunk(World world, IPrepSectorData sectorData, Biome[] biomes, ChunkPrimer primer, int chunkX, int chunkY);
 
-	void threadSafeGenerateMask(World world, IPrepSectorData sectorData, Biome[] biomes, ChunkMask mask, int x, int y);
+	void threadSafeGenerateMask(T info, World world, IPrepSectorData sectorData, Biome[] biomes, ChunkMask mask, int x, int y);
 
 	IChunkMaskTransformer createMaskTransformer();
+
+	T generateChunkColumnInfo(World world, IPrepSectorData sectorData, Biome[] biomes, int chunkX, int chunkY);
 }

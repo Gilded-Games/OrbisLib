@@ -14,20 +14,22 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
 
-public class PrepChunkManager implements IPrepChunkManager
+public class PrepChunkManager<T> implements IPrepChunkManager<T>
 {
 	private World world;
 
-	private IPrepRegistryEntry registryEntry;
+	private IPrepRegistryEntry<T> registryEntry;
 
 	private final ChunkMap<ChunkMask> chunkCache = new ChunkMap<>();
+
+	private final ChunkMap<T> columnCache = new ChunkMap<T>();
 
 	public PrepChunkManager()
 	{
 
 	}
 
-	public PrepChunkManager(World world, IPrepRegistryEntry registryEntry)
+	public PrepChunkManager(World world, IPrepRegistryEntry<T> registryEntry)
 	{
 		this.world = world;
 		this.registryEntry = registryEntry;
@@ -41,30 +43,47 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	@Nullable
 	@Override
-	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY)
+	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkZ)
 	{
 		synchronized (this.chunkCache)
 		{
-			if (this.chunkCache.containsKey(chunkX, chunkY))
+			if (this.chunkCache.containsKey(chunkX, chunkZ))
 			{
-				return this.chunkCache.get(chunkX, chunkY);
+				return this.chunkCache.get(chunkX, chunkZ);
 			}
 		}
 
+		T info = this.getChunkColumnMetadata(sectorData, chunkX, chunkZ);
+
 		Biome[] biomes = new Biome[256];
-		biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkY * 16, 16, 16);
+		biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkZ * 16, 16, 16);
 
 		ChunkMask mask = new ChunkMask();
 
-		PrepChunkManager.this.registryEntry
-				.threadSafeGenerateMask(PrepChunkManager.this.world, sectorData, biomes, mask, chunkX, chunkY);
+		this.registryEntry
+				.threadSafeGenerateMask(info, this.world, sectorData, biomes, mask, chunkX, chunkZ);
 
-		synchronized (this.chunkCache)
-		{
-			this.chunkCache.put(chunkX, chunkY, mask);
-		}
+		this.chunkCache.put(chunkX, chunkZ, mask);
 
 		return mask;
+	}
+
+	@Override
+	public T getChunkColumnMetadata(IPrepSectorData sectorData, int chunkX, int chunkZ)
+	{
+		if (this.columnCache.containsKey(chunkX, chunkZ))
+		{
+			return this.columnCache.get(chunkX, chunkZ);
+		}
+
+		Biome[] biomes = new Biome[256];
+		biomes = this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkZ * 16, 16, 16);
+
+		T info = this.registryEntry.generateChunkColumnInfo(PrepChunkManager.this.world, sectorData, biomes, chunkX, chunkZ);
+
+		this.columnCache.put(chunkX, chunkZ, info);
+
+		return info;
 	}
 
 	@Override
