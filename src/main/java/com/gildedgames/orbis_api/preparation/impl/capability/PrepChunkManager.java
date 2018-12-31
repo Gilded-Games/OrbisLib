@@ -11,7 +11,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
 
 public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkManager<T>
 {
@@ -83,18 +82,13 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 		return info;
 	}
 
-	// TODO: This is the worst.
 	private long getChunkKey(int x, int y, int z)
 	{
-		ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-		buffer.putShort((short) x);
-		buffer.putShort((short) y);
-		buffer.putShort((short) z);
-		buffer.putShort((short) 0);
+		long key = (x & 0xFFFFL) << 48;
+		key |= (z & 0xFFFFL) << 32;
+		key |= (y & 0xFFFFL) << 16;
 
-		buffer.flip();
-
-		return buffer.getLong();
+		return key;
 	}
 
 	@Override
