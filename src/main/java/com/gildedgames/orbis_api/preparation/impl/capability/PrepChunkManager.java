@@ -1,11 +1,9 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
-import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
-import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
-import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
-import com.gildedgames.orbis_api.preparation.IPrepSectorData;
+import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import com.gildedgames.orbis_api.util.ChunkMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -13,16 +11,17 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
+import java.nio.ByteBuffer;
 
-public class PrepChunkManager<T> implements IPrepChunkManager<T>
+public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkManager<T>
 {
 	private World world;
 
 	private IPrepRegistryEntry<T> registryEntry;
 
-	private final ChunkMap<ChunkMask> chunkCache = new ChunkMap<>();
+	private final Long2ObjectOpenHashMap<ChunkMask> chunkCache = new Long2ObjectOpenHashMap<>();
 
-	private final ChunkMap<T> columnCache = new ChunkMap<T>();
+	private final ChunkMap<T> columnCache = new ChunkMap<>();
 
 	public PrepChunkManager()
 	{
@@ -43,33 +42,31 @@ public class PrepChunkManager<T> implements IPrepChunkManager<T>
 
 	@Nullable
 	@Override
-	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkZ)
+	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY, int chunkZ)
 	{
-		synchronized (this.chunkCache)
+		long key = this.getChunkKey(chunkX, chunkY, chunkZ);
+
+		if (this.chunkCache.containsKey(key))
 		{
-			if (this.chunkCache.containsKey(chunkX, chunkZ))
-			{
-				return this.chunkCache.get(chunkX, chunkZ);
-			}
+			return this.chunkCache.get(key);
 		}
 
-		T info = this.getChunkColumnMetadata(sectorData, chunkX, chunkZ);
+		T info = this.getChunkColumnInfo(sectorData, chunkX, chunkZ);
 
 		Biome[] biomes = new Biome[256];
-		biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkZ * 16, 16, 16);
+		biomes = this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkZ * 16, 16, 16);
 
-		ChunkMask mask = new ChunkMask();
+		ChunkMask mask = new ChunkMask(chunkX, chunkY, chunkZ);
 
-		this.registryEntry
-				.threadSafeGenerateMask(info, this.world, sectorData, biomes, mask, chunkX, chunkZ);
+		this.registryEntry.threadSafeGenerateMask(info, this.world, sectorData, biomes, mask, chunkX, chunkY, chunkZ);
 
-		this.chunkCache.put(chunkX, chunkZ, mask);
+		this.chunkCache.put(key, mask);
 
 		return mask;
 	}
 
 	@Override
-	public T getChunkColumnMetadata(IPrepSectorData sectorData, int chunkX, int chunkZ)
+	public T getChunkColumnInfo(IPrepSectorData sectorData, int chunkX, int chunkZ)
 	{
 		if (this.columnCache.containsKey(chunkX, chunkZ))
 		{
@@ -79,11 +76,25 @@ public class PrepChunkManager<T> implements IPrepChunkManager<T>
 		Biome[] biomes = new Biome[256];
 		biomes = this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkZ * 16, 16, 16);
 
-		T info = this.registryEntry.generateChunkColumnInfo(PrepChunkManager.this.world, sectorData, biomes, chunkX, chunkZ);
+		T info = this.registryEntry.generateChunkColumnInfo(this.world, sectorData, biomes, chunkX, chunkZ);
 
 		this.columnCache.put(chunkX, chunkZ, info);
 
 		return info;
+	}
+
+	// TODO: This is the worst.
+	private long getChunkKey(int x, int y, int z)
+	{
+		ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+		buffer.putShort((short) x);
+		buffer.putShort((short) y);
+		buffer.putShort((short) z);
+		buffer.putShort((short) 0);
+
+		buffer.flip();
+
+		return buffer.getLong();
 	}
 
 	@Override

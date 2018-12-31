@@ -50,11 +50,11 @@ public interface IPrepRegistryEntry<T>
 	 * @param biomes Biomes passed through in a thread-safe manner. Do not fetch biomes any other way.
 	 * @param primer The primer that this chunk will use to generate data.
 	 * @param chunkX The chunk's x position.
-	 * @param chunkY The chunk's y position.
+	 * @param chunkZ The chunk's z position.
 	 */
-	void threadSafeGenerateChunk(World world, IPrepSectorData sectorData, Biome[] biomes, ChunkPrimer primer, int chunkX, int chunkY);
+	void threadSafeGenerateChunk(World world, IPrepSectorData sectorData, Biome[] biomes, ChunkPrimer primer, int chunkX, int chunkZ);
 
-	void threadSafeGenerateMask(T info, World world, IPrepSectorData sectorData, Biome[] biomes, ChunkMask mask, int x, int y);
+	void threadSafeGenerateMask(T info, World world, IPrepSectorData sectorData, Biome[] biomes, ChunkMask mask, int x, int y, int z);
 
 	IChunkMaskTransformer createMaskTransformer();
 

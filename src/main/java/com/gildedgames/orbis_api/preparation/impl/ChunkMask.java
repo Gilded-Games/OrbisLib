@@ -17,21 +17,40 @@ import net.minecraft.world.chunk.ChunkPrimer;
  */
 public class ChunkMask
 {
-	private byte[] mask = new byte[16 * 256 * 16];
+	private final byte[] mask = new byte[16 * 16 * 16];
+
+	private final int x, y, z;
+
+	public ChunkMask(int x, int y, int z)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		this.mask[x << 12 | z << 8 | y] = (byte) b;
+		if (x < 0 || x > 15 || y < 0 || y > 15 || z < 0 || z > 15)
+		{
+			throw new IllegalArgumentException("Out of bounds");
+		}
+
+		this.mask[x << 8 | z << 4 | y] = (byte) b;
 	}
 
 	public int getBlock(int x, int y, int z)
 	{
-		return this.mask[x << 12 | z << 8 | y];
+		if (x < 0 || x > 15 || y < 0 || y > 15 || z < 0 || z > 15)
+		{
+			throw new IllegalArgumentException("Out of bounds");
+		}
+
+		return this.mask[x << 8 | z << 4 | y];
 	}
 
 	public int getTopBlock(int x, int z)
 	{
-		for (int y = 255; y > 0; y--)
+		for (int y = 16; y > 0; y--)
 		{
 			if (this.getBlock(x, y, z) > 0)
 			{
@@ -44,20 +63,38 @@ public class ChunkMask
 
 	public ChunkPrimer createChunk(ChunkPrimer primer, IChunkMaskTransformer func)
 	{
+		int offsetY = this.y * 16;
+
 		for (int x = 0; x < 16; x++)
 		{
 			for (int z = 0; z < 16; z++)
 			{
-				for (int y = 0; y < 256; y++)
+				for (int y = 0; y < 16; y++)
 				{
 					int raw = this.getBlock(x, y, z);
 
 					IBlockState state = func.remapBlock(raw);
-					primer.setBlockState(x, y, z, state);
+
+					primer.setBlockState(x, y + offsetY, z, state);
 				}
 			}
 		}
 
 		return primer;
+	}
+
+	public int getX()
+	{
+		return this.x;
+	}
+
+	public int getY()
+	{
+		return this.y;
+	}
+
+	public int getZ()
+	{
+		return this.z;
 	}
 }

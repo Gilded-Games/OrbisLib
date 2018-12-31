@@ -1,9 +1,6 @@
 package com.gildedgames.orbis_api.preparation.impl.util;
 
-import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
-import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
-import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
-import com.gildedgames.orbis_api.preparation.IPrepSectorData;
+import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManager;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
@@ -25,17 +22,17 @@ public class BlockAccessPrep implements IBlockAccessExtended
 
 	private World world;
 
-	private IPrepChunkManager chunkManager;
+	private IPrepChunkManager<? extends IChunkColumnInfo> chunkManager;
 
 	private IPrepSectorData sectorData;
 
-	public BlockAccessPrep(World world, IPrepSectorData sectorData, IPrepRegistryEntry registryEntry)
+	public BlockAccessPrep(World world, IPrepSectorData sectorData, IPrepRegistryEntry<? extends IChunkColumnInfo> registryEntry)
 	{
 		this.world = world;
 
 		this.sectorData = sectorData;
 
-		this.chunkManager = new PrepChunkManager(world, registryEntry);
+		this.chunkManager = new PrepChunkManager<>(world, registryEntry);
 		this.transformer = this.chunkManager.createMaskTransformer();
 	}
 
@@ -79,17 +76,12 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	@Override
 	public int getTopY(int x, int z)
 	{
-		ChunkMask chunk = this.getChunk(x >> 4, z >> 4);
+		int chunkX = x >> 4;
+		int chunkZ = z >> 4;
 
-		for (int y = 255; y > 0; y--)
-		{
-			if (chunk.getBlock(x & 15, y, z & 15) > 0)
-			{
-				return y;
-			}
-		}
+		IChunkColumnInfo info = this.chunkManager.getChunkColumnInfo(this.sectorData, chunkX, chunkZ);
 
-		return -1;
+		return info.getHeight(x & 15, z & 15);
 	}
 
 	@Override
@@ -144,9 +136,9 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	@Override
 	public IBlockState getBlockState(BlockPos pos)
 	{
-		ChunkMask chunk = this.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+		ChunkMask chunk = this.getChunk(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 
-		return this.transformer.remapBlock(chunk.getBlock(pos.getX() & 15, pos.getY(), pos.getZ() & 15));
+		return this.transformer.remapBlock(chunk.getBlock(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15));
 	}
 
 	@Override
@@ -179,13 +171,13 @@ public class BlockAccessPrep implements IBlockAccessExtended
 		return false;
 	}
 
-	protected ChunkMask getChunk(int x, int z)
+	protected ChunkMask getChunk(int x, int y, int z)
 	{
-		ChunkMask chunk = this.chunkManager.getChunk(this.sectorData, x, z);
+		ChunkMask chunk = this.chunkManager.getChunk(this.sectorData, x, y, z);
 
 		if (chunk == null)
 		{
-			throw new RuntimeException("ChunkMask is null at position: x(" + x + "), y(" + z + ")");
+			throw new RuntimeException("ChunkMask is null at position: x(" + x + "), y(" + y + "), z(" + z + ")");
 		}
 
 		return chunk;
