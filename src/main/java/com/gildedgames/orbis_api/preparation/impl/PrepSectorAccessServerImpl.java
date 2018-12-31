@@ -138,6 +138,8 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 		{
 			OrbisAPI.LOGGER.info("Generating Sector (" + sectorX + ", " + sectorZ + ")");
 
+			long startTime = System.currentTimeMillis();
+
 			data = this.prepManager.createSector(sectorX, sectorZ);
 			sector = new PrepSector(data);
 
@@ -154,6 +156,10 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 			}
 
 			sector.getData().markDirty();
+
+			long duration = System.currentTimeMillis() - startTime;
+
+			OrbisAPI.LOGGER.info("Finished generating Sector (" + sectorX + ", " + sectorZ + ") in " + duration + "ms");
 		}
 
 		return sector;
