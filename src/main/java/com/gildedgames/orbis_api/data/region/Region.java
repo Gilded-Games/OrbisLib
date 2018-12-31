@@ -102,9 +102,9 @@ public class Region implements IMutableRegion
 	/**
 	 * Returns true if the given region intersects2D somewhere with this region
 	 */
-	public boolean intersectsWith(final Region region)
+	public boolean intersectsWith(final IRegion region)
 	{
-		return RegionHelp.intersects2D(this, region);
+		return RegionHelp.intersects3D(this, region);
 	}
 
 	/**
@@ -230,7 +230,7 @@ public class Region implements IMutableRegion
 		return this.min.getZ() + (double) (this.max.getZ() - this.min.getZ() + 1) / 2;
 	}
 
-	public Region fromIntersection(Region other)
+	public Region fromIntersection(IRegion other)
 	{
 		return new Region(new BlockPos(
 				Math.max(this.getMin().getX(), other.getMin().getX()),

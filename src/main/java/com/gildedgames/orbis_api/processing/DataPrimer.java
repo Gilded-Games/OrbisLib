@@ -6,6 +6,7 @@ import com.gildedgames.orbis_api.core.PlacedBlueprint;
 import com.gildedgames.orbis_api.core.PlacementCondition;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
+import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -14,7 +15,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -76,11 +76,11 @@ public class DataPrimer
 
 		for (final BlockPos pos : bakedRegion.getMutableBlockPosInRegion())
 		{
-			IBlockState block = container.getBlockState(
-					pos.getX() - baked.getBakedRegion().getMin().getX(),
-					pos.getY() - baked.getBakedRegion().getMin().getY(),
-					pos.getZ() - baked.getBakedRegion().getMin().getZ()
-			);
+			int thisX = pos.getX() - baked.getBakedRegion().getMin().getX();
+			int thisY = pos.getY() - baked.getBakedRegion().getMin().getY();
+			int thisZ = pos.getZ() - baked.getBakedRegion().getMin().getZ();
+
+			IBlockState block = container.getBlockState(thisX, thisY, thisZ);
 
 			mutatedPos.setPos(pos.getX() + offset.getX(), pos.getY() + offset.getY(), pos.getZ() + offset.getZ());
 
@@ -138,22 +138,20 @@ public class DataPrimer
 		}
 	}
 
-	public void place(PlacedBlueprint placed, ChunkPos chunkPos, boolean createsEntities)
+	public void place(PlacedBlueprint placed, IRegion region, boolean createsEntities)
 	{
 		BakedBlueprint baked = placed.getBaked();
 
 		BlockPos offset = placed.getCreationData().getPos();
 
-		Region chunkRegion = new Region(chunkPos.getBlock(0, 0, 0), chunkPos.getBlock(15, 255, 15));
-
-		if (!this.copyBlocksIntoWorld(offset, baked, chunkRegion, placed.getCreationData()))
+		if (!this.copyBlocksIntoWorld(offset, baked, region, placed.getCreationData()))
 		{
 			return;
 		}
 
 		if (createsEntities)
 		{
-			Region intersection = placed.getRegion().fromIntersection(chunkRegion);
+			Region intersection = placed.getRegion().fromIntersection(region);
 
 			Iterator<IBakedPosAction> it = placed.getPendingPosActions().iterator();
 
@@ -171,7 +169,7 @@ public class DataPrimer
 		}
 	}
 
-	private boolean copyBlocksIntoWorld(BlockPos offset, BakedBlueprint blueprint, Region bounds, ICreationData<?> data)
+	private boolean copyBlocksIntoWorld(BlockPos offset, BakedBlueprint blueprint, IRegion bounds, ICreationData<?> data)
 	{
 		BlockDataContainer blocks = blueprint.getBlockData();
 
