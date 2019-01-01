@@ -1,5 +1,9 @@
 package com.gildedgames.orbis_api.preparation.impl.util;
 
+import com.gildedgames.orbis_api.core.PlacementCondition;
+import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
+import com.gildedgames.orbis_api.core.util.BlueprintUtil;
+import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManager;
@@ -9,14 +13,17 @@ import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
-public class BlockAccessPrep implements IBlockAccessExtended
+public abstract class BlockAccessPrep implements IBlockAccessExtended
 {
 	protected IChunkMaskTransformer transformer;
 
@@ -44,25 +51,7 @@ public class BlockAccessPrep implements IBlockAccessExtended
 	}
 
 	@Override
-	public boolean canAccess(BlockPos pos)
-	{
-		return true;
-	}
-
-	@Override
 	public boolean canAccess(BlockPos pos, int radius)
-	{
-		return true;
-	}
-
-	@Override
-	public boolean canAccess(int x, int z)
-	{
-		return true;
-	}
-
-	@Override
-	public boolean canAccess(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
 	{
 		return true;
 	}
@@ -181,5 +170,61 @@ public class BlockAccessPrep implements IBlockAccessExtended
 		}
 
 		return chunk;
+	}
+
+	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos offset, final boolean checkAreaLoaded)
+	{
+		Region bakedRegion = baked.getBakedRegion();
+
+		BlockPos minReloc = bakedRegion.getMin().add(offset);
+		BlockPos maxReloc = bakedRegion.getMax().add(offset);
+
+		Region offsetRegion = new Region(minReloc, maxReloc);
+
+		if (checkAreaLoaded)
+		{
+			if (!this.canAccess(minReloc.getX() - 2, minReloc.getY() - 2, minReloc.getZ() - 2,
+					maxReloc.getX() + 2, maxReloc.getY() + 2, maxReloc.getZ() + 2))
+			{
+				return false;
+			}
+		}
+
+		for (ChunkPos chunk : BlueprintUtil.getChunksInsideTemplate(baked.getBlockData(), offsetRegion.getMin(), Rotation.NONE))
+		{
+			for (final PlacementCondition condition : conditions)
+			{
+				if (!condition.prePlacementResolve(this, offsetRegion.getMin()))
+				{
+					return false;
+				}
+			}
+
+			Region chunkRegion = new Region(
+					new BlockPos(chunk.x * 16, 0, chunk.z * 16),
+					new BlockPos((chunk.x * 16) + 15, 255, (chunk.z * 16) + 15)
+			);
+
+			Region intersecting = offsetRegion.fromIntersection(chunkRegion);
+
+			for (final BlockPos pos : intersecting.getMutableBlockPosInRegion())
+			{
+				int thisX = pos.getX() - offsetRegion.getMin().getX();
+				int thisY = pos.getY() - offsetRegion.getMin().getY();
+				int thisZ = pos.getZ() - offsetRegion.getMin().getZ();
+
+				IBlockState block = baked.getBlockData().getBlockState(thisX, thisY, thisZ);
+
+				for (final PlacementCondition condition : conditions)
+				{
+					if (!condition.canPlace(this, minReloc, block, pos))
+					{
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 }
