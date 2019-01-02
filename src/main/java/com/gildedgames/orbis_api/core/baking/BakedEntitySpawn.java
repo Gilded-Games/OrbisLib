@@ -50,6 +50,7 @@ public class BakedEntitySpawn implements IBakedPosAction
 	public void call(DataPrimer primer)
 	{
 		World world = primer.getWorld();
+
 		Entity entity = EntityUtil
 				.spawnCreature(primer, world, ItemMonsterPlacer.getNamedIdFrom(this.egg), (double) this.pos.getX() + 0.5D, (double) this.pos.getY(),
 						(double) this.pos.getZ() + 0.5, this.customRotation, this.rotationDegrees);

@@ -6,7 +6,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
 
@@ -61,7 +60,5 @@ public interface IBlockAccessExtended extends IBlockAccess
 	void setTileEntity(BlockPos pos, TileEntity tileEntity);
 
 	void spawnEntity(Entity entity);
-
-	Biome getServerBiome(BlockPos pos);
 
 }

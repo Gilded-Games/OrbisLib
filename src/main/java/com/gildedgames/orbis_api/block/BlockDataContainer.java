@@ -603,11 +603,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	}
 
-	public BlockDataContainer createNewContainer()
-	{
-		return new BlockDataContainer();
-	}
-
 	@Override
 	public BlockDataContainer clone()
 	{
@@ -663,6 +658,11 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.entities.get(this.getIndex(x, y, z));
 	}
 
+	public void setTileEntity(NBTTagCompound tileEntity, BlockPos pos)
+	{
+		this.setTileEntity(tileEntity, pos.getX(), pos.getY(), pos.getZ());
+	}
+
 	public void setTileEntity(NBTTagCompound tileEntity, int x, int y, int z)
 	{
 		if (tileEntity == null)
@@ -686,4 +686,5 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 			this.entities.put(this.getIndex(translated.getX(), translated.getY(), translated.getZ()), entity.writeToNBT(new NBTTagCompound()));
 		}
 	}
+
 }

@@ -103,12 +103,6 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 
 	}
 
-	@Override
-	public Biome getServerBiome(BlockPos pos)
-	{
-		return null;
-	}
-
 	@Nullable
 	@Override
 	public TileEntity getTileEntity(BlockPos pos)
@@ -127,7 +121,7 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 	{
 		ChunkSegmentMask chunk = this.getChunk(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 
-		return this.transformer.remapBlock(chunk.getBlock(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15));
+		return this.transformer.getBlockState(chunk.getBlock(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15));
 	}
 
 	@Override

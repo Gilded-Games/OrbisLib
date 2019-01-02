@@ -18,7 +18,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
 import java.util.List;
 
 public class DataPrimer
@@ -96,7 +95,7 @@ public class DataPrimer
 		return true;
 	}
 
-	public void setBlockInWorld(final IBlockState state, final NBTTagCompound entity, final BlockPos pos, final ICreationData<?> creationData)
+	private void setBlockInWorld(final IBlockState state, final NBTTagCompound entity, final BlockPos pos, final ICreationData<?> creationData)
 	{
 		if (state.getMaterial() == Material.AIR && !creationData.placeAir())
 		{
@@ -110,7 +109,7 @@ public class DataPrimer
 
 		if (state.getBlock() != Blocks.STRUCTURE_VOID || creationData.placesVoid())
 		{
-			this.access.setBlockState(pos, state, 2);
+			this.access.setBlockState(pos, state, 2 | 16);
 
 			if (entity != null && this.access.getWorld() != null)
 			{
@@ -138,7 +137,7 @@ public class DataPrimer
 		}
 	}
 
-	public void place(PlacedBlueprint placed, IRegion region, boolean createsEntities)
+	public void place(PlacedBlueprint placed, IRegion region)
 	{
 		BakedBlueprint baked = placed.getBaked();
 
@@ -149,22 +148,13 @@ public class DataPrimer
 			return;
 		}
 
-		if (createsEntities)
+		Region intersection = placed.getRegion().fromIntersection(region);
+
+		for (IBakedPosAction action : placed.getPendingPosActions())
 		{
-			Region intersection = placed.getRegion().fromIntersection(region);
-
-			Iterator<IBakedPosAction> it = placed.getPendingPosActions().iterator();
-
-			while (it.hasNext())
+			if (intersection.contains(action.getPos()))
 			{
-				IBakedPosAction action = it.next();
-
-				if (intersection.contains(action.getPos()))
-				{
-					action.call(this);
-
-					it.remove();
-				}
+				action.call(this);
 			}
 		}
 	}
@@ -203,7 +193,6 @@ public class DataPrimer
 
 			this.setBlockInWorld(block, entity, pos, data);
 		}
-
 
 		return true;
 	}

@@ -7,19 +7,17 @@ import com.gildedgames.orbis_api.data.region.IShape;
 import com.gildedgames.orbis_api.data.schedules.IBlueprint;
 import com.gildedgames.orbis_api.data.schedules.IFilterOptions;
 import com.gildedgames.orbis_api.data.schedules.IPositionRecord;
-import com.gildedgames.orbis_api.processing.BlockAccessBlockDataContainer;
-import com.gildedgames.orbis_api.processing.BlockAccessExtendedWrapper;
-import com.gildedgames.orbis_api.processing.DataPrimer;
-import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
 import com.gildedgames.orbis_api.util.OrbisTuple;
 import com.gildedgames.orbis_api.util.RotationHelp;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.world.WorldObjectUtils;
 import com.google.common.collect.Lists;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -146,10 +144,6 @@ public class BlockFilterLayer implements NBT
 			return;
 		}
 
-		IBlockAccessExtended access = new BlockAccessBlockDataContainer(world, container);
-
-		final DataPrimer primer = new DataPrimer(access);
-
 		BlockDataWithConditions replacementBlock = null;
 
 		if (!options.getChoosesPerBlockVar().getData())
@@ -159,9 +153,7 @@ public class BlockFilterLayer implements NBT
 
 		for (final BlockPos.MutableBlockPos pos : positions)
 		{
-			final IBlockState state;
-
-			state = access.getBlockState(pos);
+			final IBlockState state = container.getBlockState(pos);
 
 			if (!this.getFilterType().filter(creationData.getCreator(), pos, state, this.requiredBlocks, world, creationData.getRandom()))
 			{
@@ -183,7 +175,22 @@ public class BlockFilterLayer implements NBT
 				continue;
 			}
 
-			primer.setBlockInWorld(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), pos.toImmutable(), creationData);
+			if (state.getMaterial() == Material.AIR && !creationData.placeAir())
+			{
+				return;
+			}
+
+			if (state.getBlock() != Blocks.STRUCTURE_VOID || creationData.placesVoid())
+			{
+				container.setBlockState(replacementBlock.getBlockState(), pos);
+
+				NBTTagCompound entity = replacementBlock.getTileEntity();
+
+				if (entity != null)
+				{
+					container.setTileEntity(entity, pos);
+				}
+			}
 		}
 	}
 
@@ -217,8 +224,6 @@ public class BlockFilterLayer implements NBT
 			}
 		}
 
-		final DataPrimer primer = new DataPrimer(new BlockAccessExtendedWrapper(world));
-
 		BlockDataWithConditions replacementBlock = null;
 
 		if (!options.getChoosesPerBlockVar().getData())
@@ -242,7 +247,7 @@ public class BlockFilterLayer implements NBT
 
 				if (shape.contains(beforeRot))
 				{
-					this.applyInner(primer, rotated, replacementBlock, intersect, holder, parentFilter, shape, creationData, options);
+					this.applyInner(world, rotated, replacementBlock, intersect, holder, parentFilter, shape, creationData, options);
 				}
 			}
 		}
@@ -250,18 +255,16 @@ public class BlockFilterLayer implements NBT
 		{
 			for (final BlockPos.MutableBlockPos iterPos : shape.getShapeData())
 			{
-				this.applyInner(primer, iterPos,
+				this.applyInner(world, iterPos,
 						replacementBlock, intersect, holder,
 						parentFilter, shape, creationData, options);
 			}
 		}
 	}
 
-	private void applyInner(DataPrimer primer, BlockPos p, BlockDataWithConditions replacementBlock, IShape intersect, IBlueprint holder,
+	private void applyInner(World world, BlockPos p, BlockDataWithConditions replacementBlock, IShape intersect, IBlueprint holder,
 			final BlockFilter parentFilter, IShape shape, final ICreationData<?> creationData, IFilterOptions options)
 	{
-		World world = creationData.getWorld();
-
 		BlockPos without = p;
 
 		int schedX = 0;
@@ -344,7 +347,12 @@ public class BlockFilterLayer implements NBT
 
 			if (!edge || creationData.getRandom().nextFloat() > options.getEdgeNoiseVar().getData())*/
 			{
-				primer.setBlockInWorld(replacementBlock.getBlockState(), replacementBlock.getTileEntity(), c, creationData);
+				world.setBlockState(c, replacementBlock.getBlockState());
+
+				if (replacementBlock.getTileEntity() != null)
+				{
+					world.setTileEntity(c, TileEntity.create(world, replacementBlock.getTileEntity()));
+				}
 			}
 		}
 
