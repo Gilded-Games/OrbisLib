@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.preparation;
 
-import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
+import com.gildedgames.orbis_api.preparation.impl.ChunkSegmentMask;
 import net.minecraft.world.World;
 
 /**
@@ -10,7 +10,7 @@ public interface IPrepChunkManager<T extends IChunkColumnInfo>
 {
 	World getWorld();
 
-	ChunkMask getChunk(IPrepSectorData sectorData, final int chunkX, final int chunkY, final int chunkZ);
+	ChunkSegmentMask getChunk(IPrepSectorData sectorData, final int chunkX, final int chunkY, final int chunkZ);
 
 	T getChunkColumnInfo(IPrepSectorData sectorData, final int chunkX, final int chunkY);
 

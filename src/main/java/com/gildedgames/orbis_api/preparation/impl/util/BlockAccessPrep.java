@@ -5,7 +5,7 @@ import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.preparation.*;
-import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
+import com.gildedgames.orbis_api.preparation.impl.ChunkSegmentMask;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManager;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
 import net.minecraft.block.state.IBlockState;
@@ -125,7 +125,7 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 	@Override
 	public IBlockState getBlockState(BlockPos pos)
 	{
-		ChunkMask chunk = this.getChunk(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+		ChunkSegmentMask chunk = this.getChunk(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 
 		return this.transformer.remapBlock(chunk.getBlock(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15));
 	}
@@ -160,13 +160,13 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 		return false;
 	}
 
-	protected ChunkMask getChunk(int x, int y, int z)
+	protected ChunkSegmentMask getChunk(int x, int y, int z)
 	{
-		ChunkMask chunk = this.chunkManager.getChunk(this.sectorData, x, y, z);
+		ChunkSegmentMask chunk = this.chunkManager.getChunk(this.sectorData, x, y, z);
 
 		if (chunk == null)
 		{
-			throw new RuntimeException("ChunkMask is null at position: x(" + x + "), y(" + y + "), z(" + z + ")");
+			throw new RuntimeException("ChunkSegmentMask is null at position: x(" + x + "), y(" + y + "), z(" + z + ")");
 		}
 
 		return chunk;

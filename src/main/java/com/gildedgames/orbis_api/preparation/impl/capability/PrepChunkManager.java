@@ -1,7 +1,7 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.preparation.*;
-import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
+import com.gildedgames.orbis_api.preparation.impl.ChunkSegmentMask;
 import com.gildedgames.orbis_api.util.ChunkMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.nbt.NBTBase;
@@ -18,7 +18,7 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 
 	private IPrepRegistryEntry<T> registryEntry;
 
-	private final Long2ObjectOpenHashMap<ChunkMask> chunkCache = new Long2ObjectOpenHashMap<>();
+	private final Long2ObjectOpenHashMap<ChunkSegmentMask> chunkCache = new Long2ObjectOpenHashMap<>();
 
 	private final ChunkMap<T> columnCache = new ChunkMap<>();
 
@@ -41,7 +41,7 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 
 	@Nullable
 	@Override
-	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY, int chunkZ)
+	public ChunkSegmentMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY, int chunkZ)
 	{
 		long key = this.getChunkKey(chunkX, chunkY, chunkZ);
 
@@ -55,7 +55,7 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 		Biome[] biomes = new Biome[256];
 		biomes = this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkZ * 16, 16, 16);
 
-		ChunkMask mask = new ChunkMask(chunkX, chunkY, chunkZ);
+		ChunkSegmentMask mask = new ChunkSegmentMask(chunkX, chunkY, chunkZ);
 
 		this.registryEntry.threadSafeGenerateMask(info, this.world, sectorData, biomes, mask, chunkX, chunkY, chunkZ);
 
