@@ -1,14 +1,16 @@
 package com.gildedgames.orbis_api.preparation.impl;
 
 import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IBlockStatePalette;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.ArrayList;
@@ -141,24 +143,60 @@ public class ChunkDataContainer
 
 		boolean flag = chunk.getWorld().provider.hasSkyLight();
 
-		for (int y = 0; y < 256; y++)
+		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
-			ExtendedBlockStorage chunkBlocks = chunk.getBlockStorageArray()[y >> 4];
+			ExtendedBlockStorage chunkBlocks = chunk.getBlockStorageArray()[chunkY];
+
+			BlockStateContainer container = null;
+			BlockStateCacher cacher = null;
+
+			if (chunkBlocks != Chunk.NULL_BLOCK_STORAGE)
+			{
+				container = chunkBlocks.getData();
+
+				cacher = new BlockStateCacher(container.palette, container.bits);
+			}
 
 			for (int x = 0; x < 16; x++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
-					Block block = this.getBlock(x, y, z);
-
-					if (block != Blocks.AIR)
+					for (int y = 0; y < 16; y++)
 					{
-						if (chunkBlocks == Chunk.NULL_BLOCK_STORAGE)
+						int index = this.getIndex(x, y + (chunkY * 16), z);
+
+						int blockID = this.blocks[index];
+
+						if (blockID == 0)
 						{
-							chunk.getBlockStorageArray()[y >> 4] = chunkBlocks = new ExtendedBlockStorage(y & 0xF0, flag);
+							continue;
 						}
 
-						chunkBlocks.set(x, y & 15, z, this.getBlockState(x, y, z));
+						int blockMeta = this.blocksMeta[index];
+
+						if (chunkBlocks == Chunk.NULL_BLOCK_STORAGE)
+						{
+							chunkBlocks = new ExtendedBlockStorage(chunkY << 4, flag);
+							container = chunkBlocks.getData();
+
+							chunk.getBlockStorageArray()[chunkY] = chunkBlocks;
+						}
+
+						if (cacher == null)
+						{
+							cacher = new BlockStateCacher(container.palette, container.bits);
+						}
+
+						int val = cacher.getBlockState(blockID, blockMeta);
+
+						if (cacher.bits != container.bits)
+						{
+							cacher = new BlockStateCacher(container.palette, container.bits);
+						}
+
+						chunkBlocks.blockRefCount++;
+
+						container.storage.setAt(y << 8 | z << 4 | x, val);
 					}
 				}
 			}
@@ -190,5 +228,40 @@ public class ChunkDataContainer
 	public int getChunkZ()
 	{
 		return this.chunkZ;
+	}
+
+	// I hate Minecraft.
+	private class BlockStateCacher
+	{
+		private final Int2IntOpenHashMap cache = new Int2IntOpenHashMap();
+
+		private final IBlockStatePalette palette;
+
+		private final int bits;
+
+		public BlockStateCacher(IBlockStatePalette palette, int bits)
+		{
+			this.cache.defaultReturnValue(-1);
+
+			this.palette = palette;
+			this.bits = bits;
+		}
+
+		public int getBlockState(int blockID, int blockMeta)
+		{
+			int index = blockID << 4 | blockMeta;
+
+			int state = this.cache.get(index);
+
+			if (state < 0)
+			{
+				state = this.palette.idFor(Block.getBlockById(blockID).getStateFromMeta(blockMeta));
+
+				this.cache.put(index, state);
+			}
+
+			return state;
+		}
+
 	}
 }

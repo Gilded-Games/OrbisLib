@@ -27,6 +27,9 @@ jar {
     manifest {
         attributes 'Maven-Artifact': "${group}:${archivesBaseName}:${version}"
     }
+    manifest.mainAttributes(
+            "FMLAT": "orbis_api_at.cfg"
+    )
 }
 
 minecraft {
