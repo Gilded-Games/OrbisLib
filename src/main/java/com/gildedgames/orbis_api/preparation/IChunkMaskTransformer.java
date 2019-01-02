@@ -4,9 +4,7 @@ import net.minecraft.block.state.IBlockState;
 
 public interface IChunkMaskTransformer
 {
-	IBlockState getBlockState(int val);
+	IBlockState getBlockState(int key);
 
-	int getBlockID(int val);
-
-	int getBlockMeta(int val);
+	int getBlockCount();
 }

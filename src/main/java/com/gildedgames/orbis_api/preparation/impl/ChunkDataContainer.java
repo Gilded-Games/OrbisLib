@@ -1,26 +1,23 @@
 package com.gildedgames.orbis_api.preparation.impl;
 
 import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IBlockStatePalette;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class ChunkDataContainer
 {
-	private final short[] blocks = new short[16 * 256 * 16];
-
-	private final byte[] blocksMeta = new byte[16 * 256 * 16];
+	private final BlockStateContainer[] segments = new BlockStateContainer[16];
 
 	private final HashMap<BlockPos, TileEntity> tileEntities = new HashMap<>();
 
@@ -34,11 +31,6 @@ public class ChunkDataContainer
 		this.chunkZ = chunkZ;
 	}
 
-	private int getIndex(int x, int y, int z)
-	{
-		return y << 8 | z << 4 | x;
-	}
-
 	public IBlockState getBlockState(final BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
@@ -46,41 +38,26 @@ public class ChunkDataContainer
 
 	public IBlockState getBlockState(final int x, final int y, final int z)
 	{
-		return this.getBlockState(this.getIndex(x, y, z));
-	}
+		BlockStateContainer segment = this.segments[y >> 4];
 
-	private IBlockState getBlockState(final int index)
-	{
-		int blockID = this.blocks[index];
-		int blockMeta = this.blocksMeta[index];
+		if (segment == null)
+		{
+			return Blocks.AIR.getDefaultState();
+		}
 
-		Block block = Block.getBlockById(blockID);
-		return block.getStateFromMeta(blockMeta);
-	}
-
-	public Block getBlock(BlockPos pos)
-	{
-		return this.getBlock(this.getIndex(pos.getX(), pos.getY(), pos.getZ()));
-	}
-
-	public Block getBlock(int x, int y, int z)
-	{
-		return this.getBlock(this.getIndex(x, y, z));
-	}
-
-	private Block getBlock(int index)
-	{
-		return Block.getBlockById(this.blocks[index]);
+		return segment.get(x, y & 15, z);
 	}
 
 	public void setBlockState(final int x, final int y, final int z, final IBlockState state)
 	{
-		int id = Block.getIdFromBlock(state.getBlock());
+		BlockStateContainer segment = this.segments[y >> 4];
 
-		final int index = this.getIndex(x, y, z);
+		if (segment == null)
+		{
+			this.segments[y >> 4] = segment = new BlockStateContainer();
+		}
 
-		this.blocks[index] = (short) id;
-		this.blocksMeta[index] = (byte) state.getBlock().getMetaFromState(state);
+		segment.set(x, y & 15, z, state);
 	}
 
 	public void setBlockState(final BlockPos pos, final IBlockState state)
@@ -118,20 +95,34 @@ public class ChunkDataContainer
 				continue;
 			}
 
+			BlockStateContainer segment = null;
+			BlockStateCacher cacher = null;
+
 			for (int x = 0; x < 16; x++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
 					for (int y = 0; y < 16; y++)
 					{
-						int raw = mask.getBlock(x, y, z);
+						int block = mask.getBlock(x, y, z);
 
-						int index = container.getIndex(x, y + (chunkY * 16), z);
-						container.blocks[index] = (short) transformer.getBlockID(raw);
-						container.blocksMeta[index] = (byte) transformer.getBlockMeta(raw);
+						if (block == 0)
+						{
+							continue;
+						}
+
+						if (segment == null)
+						{
+							segment = new BlockStateContainer();
+							cacher = new BlockStateCacher(transformer, segment);
+						}
+
+						segment.storage.setAt(y << 8 | z << 4 | x, cacher.getValue(transformer, block));
 					}
 				}
 			}
+
+			container.segments[chunkY] = segment;
 		}
 
 		return container;
@@ -145,56 +136,25 @@ public class ChunkDataContainer
 
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
-			ExtendedBlockStorage chunkBlocks = chunk.getBlockStorageArray()[chunkY];
+			BlockStateContainer segment = this.segments[chunkY];
 
-			BlockStateContainer container = null;
-			BlockStateCacher cacher = null;
-
-			if (chunkBlocks != Chunk.NULL_BLOCK_STORAGE)
+			if (segment == null)
 			{
-				container = chunkBlocks.getData();
-
-				cacher = new BlockStateCacher(container.palette, container.bits);
+				continue;
 			}
 
-			for (int y = 0; y < 16; y++)
+			ExtendedBlockStorage chunkBlocks = new ExtendedBlockStorage(chunkY << 4, flag);
+			chunkBlocks.data = segment;
+
+			chunk.getBlockStorageArray()[chunkY] = chunkBlocks;
+
+			for (int i = 0; i < 4096; i++)
 			{
-				for (int z = 0; z < 16; z++)
+				int data = segment.storage.getAt(i);
+
+				if (data > 0)
 				{
-					for (int x = 0; x < 16; x++)
-					{
-						int index = this.getIndex(x, y + (chunkY * 16), z);
-
-						int blockID = this.blocks[index];
-
-						if (blockID == 0)
-						{
-							continue;
-						}
-
-						if (chunkBlocks == Chunk.NULL_BLOCK_STORAGE)
-						{
-							chunkBlocks = new ExtendedBlockStorage(chunkY << 4, flag);
-							container = chunkBlocks.getData();
-
-							chunk.getBlockStorageArray()[chunkY] = chunkBlocks;
-
-							cacher = new BlockStateCacher(container.palette, container.bits);
-						}
-
-						int blockMeta = this.blocksMeta[index];
-
-						int val = cacher.getBlockState(blockID, blockMeta);
-
-						if (cacher.bits != container.bits)
-						{
-							cacher = new BlockStateCacher(container.palette, container.bits);
-						}
-
-						chunkBlocks.blockRefCount++;
-
-						container.storage.setAt(y << 8 | z << 4 | x, val);
-					}
+					chunkBlocks.blockRefCount++;
 				}
 			}
 		}
@@ -227,37 +187,44 @@ public class ChunkDataContainer
 		return this.chunkZ;
 	}
 
-	// I hate Minecraft.
-	private class BlockStateCacher
+	private static class BlockStateCacher
 	{
-		private final Int2IntOpenHashMap cache = new Int2IntOpenHashMap();
+		private final int[] cache;
 
-		private final IBlockStatePalette palette;
+		private final BlockStateContainer container;
 
-		private final int bits;
-
-		public BlockStateCacher(IBlockStatePalette palette, int bits)
+		public BlockStateCacher(IChunkMaskTransformer transformer, BlockStateContainer container)
 		{
-			this.cache.defaultReturnValue(-1);
+			this.cache = new int[transformer.getBlockCount()];
+			this.container = container;
 
-			this.palette = palette;
-			this.bits = bits;
+			this.reset();
 		}
 
-		public int getBlockState(int blockID, int blockMeta)
+		public int getValue(IChunkMaskTransformer transformer, int index)
 		{
-			int index = blockID << 4 | blockMeta;
-
-			int state = this.cache.get(index);
+			int state = this.cache[index];
 
 			if (state < 0)
 			{
-				state = this.palette.idFor(Block.getBlockById(blockID).getStateFromMeta(blockMeta));
+				int bits = this.container.bits;
 
-				this.cache.put(index, state);
+				state = this.container.palette.idFor(transformer.getBlockState(index));
+
+				if (bits != this.container.bits)
+				{
+					this.reset();
+				}
+
+				this.cache[index] = state;
 			}
 
 			return state;
+		}
+
+		private void reset()
+		{
+			Arrays.fill(this.cache, -1);
 		}
 
 	}
