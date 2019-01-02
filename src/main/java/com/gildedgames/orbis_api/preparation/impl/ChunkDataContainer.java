@@ -36,7 +36,7 @@ public class ChunkDataContainer
 
 	private int getIndex(int x, int y, int z)
 	{
-		return x << 12 | z << 8 | y;
+		return y << 8 | z << 4 | x;
 	}
 
 	public IBlockState getBlockState(final BlockPos pos)
@@ -157,11 +157,11 @@ public class ChunkDataContainer
 				cacher = new BlockStateCacher(container.palette, container.bits);
 			}
 
-			for (int x = 0; x < 16; x++)
+			for (int y = 0; y < 16; y++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
-					for (int y = 0; y < 16; y++)
+					for (int x = 0; x < 16; x++)
 					{
 						int index = this.getIndex(x, y + (chunkY * 16), z);
 
@@ -172,20 +172,17 @@ public class ChunkDataContainer
 							continue;
 						}
 
-						int blockMeta = this.blocksMeta[index];
-
 						if (chunkBlocks == Chunk.NULL_BLOCK_STORAGE)
 						{
 							chunkBlocks = new ExtendedBlockStorage(chunkY << 4, flag);
 							container = chunkBlocks.getData();
 
 							chunk.getBlockStorageArray()[chunkY] = chunkBlocks;
-						}
 
-						if (cacher == null)
-						{
 							cacher = new BlockStateCacher(container.palette, container.bits);
 						}
+
+						int blockMeta = this.blocksMeta[index];
 
 						int val = cacher.getBlockState(blockID, blockMeta);
 
