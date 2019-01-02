@@ -189,7 +189,17 @@ public class DataPrimer
 			int z = pos.getZ() - region.getMin().getZ();
 
 			final IBlockState block = blocks.getBlockState(x, y, z);
-			final NBTTagCompound entity = blocks.getTileEntity(x, y, z);
+
+			final NBTTagCompound entity;
+
+			if (block.getBlock().hasTileEntity(block))
+			{
+				entity = blocks.getTileEntity(x, y, z);
+			}
+			else
+			{
+				entity = null;
+			}
 
 			this.setBlockInWorld(block, entity, pos, data);
 		}
