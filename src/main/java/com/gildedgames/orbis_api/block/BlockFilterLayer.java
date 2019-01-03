@@ -30,9 +30,6 @@ import java.util.Random;
 
 public class BlockFilterLayer implements NBT
 {
-
-	private static final List<BlockData> AIR_BLOCKS = Lists.newArrayList(new BlockData(Blocks.AIR.getDefaultState()));
-
 	protected List<BlockDataWithConditions> requiredBlocks = Lists.newArrayList();
 
 	protected List<BlockDataWithConditions> replacementBlocks = Lists.newArrayList();

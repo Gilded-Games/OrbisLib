@@ -1,75 +1,11 @@
 package com.gildedgames.orbis_api.util;
 
-import com.google.common.collect.Lists;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class ObjectFilter
 {
-
-	private ObjectFilter()
-	{
-
-	}
-
-	public static <T> List<T> getTypesFrom(final Object[] array, final Class<? extends T> typeClass)
-	{
-		return getTypesFrom(Arrays.asList(array), typeClass);
-	}
-
-	public static <T> List<T> getTypesFrom(final T[] array, final FilterCondition<T> condition)
-	{
-		return getTypesFrom(Arrays.asList(array), condition);
-	}
-
-	public static <T> T getFirstFrom(final Object[] array, final Class<? extends T> typeClass)
-	{
-		return getFirstFrom(Arrays.asList(array), typeClass);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T, K> Map<K, T> getTypesFromKeys(final Map<?, ?> map, final Class<? extends K> keyClass, final Class<? extends T> typeClass)
-	{
-		final Map<K, T> returnMap = new HashMap<>();
-
-		for (final Map.Entry<?, ?> entry : map.entrySet())
-		{
-			final Object key = entry.getKey();
-			final Object value = entry.getValue();
-
-			if (key != null && typeClass.isAssignableFrom(key.getClass()))
-			{
-				returnMap.put((K) key, (T) value);
-			}
-		}
-
-		return returnMap;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T, K> Map<K, T> getTypesFromValues(final Map<?, ?> map, final Class<? extends K> keyClass, final Class<? extends T> typeClass)
-	{
-		final Map<K, T> returnMap = new HashMap<>();
-
-		for (final Map.Entry<?, ?> entry : map.entrySet())
-		{
-			final Object key = entry.getKey();
-			final Object value = entry.getValue();
-
-			if (value != null && typeClass.isAssignableFrom(value.getClass()))
-			{
-				returnMap.put((K) key, (T) value);
-			}
-		}
-
-		return returnMap;
-	}
-
-	public static <T> List<T> getTypesFrom(final Iterable<?> iterable, final Class<? extends T> typeClass)
-	{
-		return ObjectFilter.getTypesFrom(Lists.newArrayList(iterable), typeClass);
-	}
-
 	@SuppressWarnings("unchecked")
 	public static <T> List<T> getTypesFrom(final Collection<?> list, final Class<? extends T> typeClass)
 	{
@@ -106,26 +42,13 @@ public class ObjectFilter
 	{
 		for (final Object obj : list)
 		{
-			if (obj != null && typeClass.isAssignableFrom(obj.getClass()))
+			if (obj != null && obj.getClass() == typeClass)
 			{
 				return (T) obj;
 			}
 		}
 
 		return null;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> T cast(final Object object, final Class<? extends T> typeClass)
-	{
-		T returnObject = null;
-
-		if (object != null && typeClass.isAssignableFrom(object.getClass()))
-		{
-			returnObject = (T) object;
-		}
-
-		return returnObject;
 	}
 
 	public static abstract class FilterCondition<T>

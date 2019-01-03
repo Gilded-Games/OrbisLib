@@ -248,7 +248,6 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 89, JsonData.class);
 			IOHelper.register(s, 90, GuiConditionCheckEntranceTriggerId.class);
 			IOHelper.register(s, 91, ProjectInformation.class);
-			IOHelper.register(s, 92, BlockInstance.class);
 
 			this.io.register(s);
 		}
