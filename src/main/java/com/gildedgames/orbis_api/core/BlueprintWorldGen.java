@@ -9,6 +9,7 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.HashMap;
 import java.util.Random;
 
 public class BlueprintWorldGen implements IWorldGen
@@ -21,6 +22,8 @@ public class BlueprintWorldGen implements IWorldGen
 	private BakedBlueprint lastBake;
 
 	private BlueprintDefinition chosenDef;
+
+	private final HashMap<BlueprintDefinition, BakedBlueprint[]> cachedRotations = new HashMap<>();
 
 	public BlueprintWorldGen(final BlueprintDefinitionPool defPool)
 	{
@@ -43,13 +46,34 @@ public class BlueprintWorldGen implements IWorldGen
 					BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)] :
 					BlueprintPlacer.ROTATIONS[0];
 
-			final ICreationData<CreationData> data = new CreationData(world);
-
-			data.rotation(rotation);
-
 			this.chosenDef = this.def == null ? this.defPool.getRandomDefinition(rand) : this.def;
 
-			this.lastBake = new BakedBlueprint(this.chosenDef.getData(), data);
+			final BakedBlueprint[] cachedRotations;
+
+			if (this.cachedRotations.containsKey(this.chosenDef))
+			{
+				cachedRotations = this.cachedRotations.get(this.chosenDef);
+			}
+			else
+			{
+				cachedRotations = new BakedBlueprint[4];
+
+				this.cachedRotations.put(this.chosenDef, cachedRotations);
+			}
+
+			BakedBlueprint cachedBlueprint = cachedRotations[rotation.ordinal()];
+
+			if (cachedBlueprint == null)
+			{
+				final ICreationData<CreationData> data = new CreationData(world);
+				data.rotation(rotation);
+
+				cachedBlueprint = new BakedBlueprint(this.chosenDef.getData(), data);
+
+				cachedRotations[rotation.ordinal()] = cachedBlueprint;
+			}
+
+			this.lastBake = cachedBlueprint;
 		}
 
 		DataPrimer primer = new DataPrimer(blockAccess);
