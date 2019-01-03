@@ -22,10 +22,4 @@ public class BlockDataContainerDefaultVoid extends BlockDataContainer
 	{
 		return VOID_BLOCK;
 	}
-
-	@Override
-	public BlockDataContainer createNewContainer()
-	{
-		return new BlockDataContainerDefaultVoid();
-	}
 }
