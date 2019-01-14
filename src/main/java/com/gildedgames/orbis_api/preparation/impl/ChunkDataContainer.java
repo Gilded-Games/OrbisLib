@@ -17,7 +17,7 @@ import java.util.HashMap;
 
 public class ChunkDataContainer
 {
-	private final BlockStateContainer[] segments = new BlockStateContainer[16];
+	private final ExtendedBlockStorage[] segments = new ExtendedBlockStorage[16];
 
 	private final HashMap<BlockPos, TileEntity> tileEntities = new HashMap<>();
 
@@ -25,10 +25,13 @@ public class ChunkDataContainer
 
 	private final int chunkX, chunkZ;
 
-	public ChunkDataContainer(int chunkX, int chunkZ)
+	private final boolean hasSkylight;
+
+	public ChunkDataContainer(int chunkX, int chunkZ, boolean hasSkylight)
 	{
 		this.chunkX = chunkX;
 		this.chunkZ = chunkZ;
+		this.hasSkylight = hasSkylight;
 	}
 
 	public IBlockState getBlockState(final BlockPos pos)
@@ -38,7 +41,7 @@ public class ChunkDataContainer
 
 	public IBlockState getBlockState(final int x, final int y, final int z)
 	{
-		BlockStateContainer segment = this.segments[y >> 4];
+		ExtendedBlockStorage segment = this.segments[y >> 4];
 
 		if (segment == null)
 		{
@@ -50,11 +53,11 @@ public class ChunkDataContainer
 
 	public void setBlockState(final int x, final int y, final int z, final IBlockState state)
 	{
-		BlockStateContainer segment = this.segments[y >> 4];
+		ExtendedBlockStorage segment = this.segments[y >> 4];
 
 		if (segment == null)
 		{
-			this.segments[y >> 4] = segment = new BlockStateContainer();
+			this.segments[y >> 4] = segment = new ExtendedBlockStorage((y >> 4) * 16, this.hasSkylight);
 		}
 
 		segment.set(x, y & 15, z, state);
@@ -82,9 +85,9 @@ public class ChunkDataContainer
 		}
 	}
 
-	public static ChunkDataContainer createFromChunkSegmentMasks(ChunkSegmentMask[] masks, IChunkMaskTransformer transformer, int chunkX, int chunkZ)
+	public static ChunkDataContainer createFromChunkSegmentMasks(World world, ChunkSegmentMask[] masks, IChunkMaskTransformer transformer, int chunkX, int chunkZ)
 	{
-		ChunkDataContainer container = new ChunkDataContainer(chunkX, chunkZ);
+		ChunkDataContainer container = new ChunkDataContainer(chunkX, chunkZ, world.provider.hasSkyLight());
 
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
@@ -95,7 +98,7 @@ public class ChunkDataContainer
 				continue;
 			}
 
-			BlockStateContainer segment = null;
+			ExtendedBlockStorage segment = null;
 			BlockStateCacher cacher = null;
 
 			for (int x = 0; x < 16; x++)
@@ -113,11 +116,14 @@ public class ChunkDataContainer
 
 						if (segment == null)
 						{
-							segment = new BlockStateContainer();
-							cacher = new BlockStateCacher(transformer, segment);
+							segment = new ExtendedBlockStorage(chunkY << 4, world.provider.hasSkyLight());
+							cacher = new BlockStateCacher(transformer, segment.data);
 						}
 
-						segment.storage.setAt(y << 8 | z << 4 | x, cacher.getValue(transformer, block));
+						int key = cacher.getValue(transformer, block);
+
+						segment.data.storage.setAt(y << 8 | z << 4 | x, key);
+						segment.blockRefCount++;
 					}
 				}
 			}
@@ -132,31 +138,16 @@ public class ChunkDataContainer
 	{
 		Chunk chunk = new Chunk(world, chunkX, chunkZ);
 
-		boolean flag = chunk.getWorld().provider.hasSkyLight();
-
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
-			BlockStateContainer segment = this.segments[chunkY];
+			ExtendedBlockStorage segment = this.segments[chunkY];
 
 			if (segment == null)
 			{
 				continue;
 			}
 
-			ExtendedBlockStorage chunkBlocks = new ExtendedBlockStorage(chunkY << 4, flag);
-			chunkBlocks.data = segment;
-
-			chunk.getBlockStorageArray()[chunkY] = chunkBlocks;
-
-			for (int i = 0; i < 4096; i++)
-			{
-				int data = segment.storage.getAt(i);
-
-				if (data > 0)
-				{
-					chunkBlocks.blockRefCount++;
-				}
-			}
+			chunk.getBlockStorageArray()[chunkY] = segment;
 		}
 
 		for (TileEntity tileEntity : this.tileEntities.values())
