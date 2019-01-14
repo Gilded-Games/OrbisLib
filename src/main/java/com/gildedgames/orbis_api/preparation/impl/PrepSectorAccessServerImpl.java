@@ -6,8 +6,6 @@ import com.gildedgames.orbis_api.util.ChunkMap;
 import com.gildedgames.orbis_api.world.data.IWorldData;
 import com.gildedgames.orbis_api.world.data.IWorldDataManager;
 import com.google.common.util.concurrent.*;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -256,21 +254,8 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 	@Override
 	public void update()
 	{
-		LongList removeFutures = new LongArrayList();
-
-		this.loading.getInnerMap().forEachEntry((key, value) -> {
-			if (value.isDone() || value.isCancelled())
-			{
-				removeFutures.add(key);
-			}
-
-			return true;
-		});
-
-		for (long key : removeFutures)
-		{
-			this.loading.getInnerMap().remove(key);
-		}
+		this.loading.getInnerMap().long2ObjectEntrySet().removeIf(entry ->
+				entry.getValue().isDone() || entry.getValue().isCancelled());
 
 		synchronized (this.loaded)
 		{

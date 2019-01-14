@@ -1,7 +1,6 @@
 package com.gildedgames.orbis_api.util;
 
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.Collection;
@@ -13,14 +12,14 @@ import java.util.Collection;
  */
 public class ChunkMap<T>
 {
-	protected TLongObjectMap<T> map = new TLongObjectHashMap<>();
+	protected Long2ObjectOpenHashMap<T> map = new Long2ObjectOpenHashMap<>();
 
 	public ChunkMap()
 	{
 
 	}
 
-	public static <T> ChunkMap<T> createFrom(TLongObjectMap<T> map)
+	public static <T> ChunkMap<T> createFrom(Long2ObjectOpenHashMap<T> map)
 	{
 		ChunkMap<T> created = new ChunkMap<>();
 		created.map = map;
@@ -28,7 +27,7 @@ public class ChunkMap<T>
 		return created;
 	}
 
-	public TLongObjectMap<T> getInnerMap()
+	public Long2ObjectOpenHashMap<T> getInnerMap()
 	{
 		return this.map;
 	}
@@ -112,7 +111,7 @@ public class ChunkMap<T>
 	 */
 	public Collection<T> getValues()
 	{
-		return this.map.valueCollection();
+		return this.map.values();
 	}
 
 	/**
