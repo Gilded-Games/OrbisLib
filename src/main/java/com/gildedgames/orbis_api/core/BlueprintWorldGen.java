@@ -9,32 +9,21 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.HashMap;
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 public class BlueprintWorldGen implements IWorldGen
 {
-
+	@Nonnull
 	private final BlueprintDefinition def;
-
-	private final BlueprintDefinitionPool defPool;
 
 	private BakedBlueprint lastBake;
 
-	private BlueprintDefinition chosenDef;
-
-	private final HashMap<BlueprintDefinition, BakedBlueprint[]> cachedRotations = new HashMap<>();
-
-	public BlueprintWorldGen(final BlueprintDefinitionPool defPool)
-	{
-		this.def = null;
-		this.defPool = defPool;
-	}
+	private final BakedBlueprint[] cachedRotations = new BakedBlueprint[4];
 
 	public BlueprintWorldGen(final BlueprintDefinition def)
 	{
 		this.def = def;
-		this.defPool = null;
 	}
 
 	@Override
@@ -42,35 +31,20 @@ public class BlueprintWorldGen implements IWorldGen
 	{
 		if (this.lastBake == null)
 		{
-			final Rotation rotation = (this.def != null ? this.def.hasRandomRotation() : this.defPool.hasRandomRotation()) ?
+			final Rotation rotation = this.def.hasRandomRotation() ?
 					BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)] :
 					BlueprintPlacer.ROTATIONS[0];
 
-			this.chosenDef = this.def == null ? this.defPool.getRandomDefinition(rand) : this.def;
-
-			final BakedBlueprint[] cachedRotations;
-
-			if (this.cachedRotations.containsKey(this.chosenDef))
-			{
-				cachedRotations = this.cachedRotations.get(this.chosenDef);
-			}
-			else
-			{
-				cachedRotations = new BakedBlueprint[4];
-
-				this.cachedRotations.put(this.chosenDef, cachedRotations);
-			}
-
-			BakedBlueprint cachedBlueprint = cachedRotations[rotation.ordinal()];
+			BakedBlueprint cachedBlueprint = this.cachedRotations[rotation.ordinal()];
 
 			if (cachedBlueprint == null)
 			{
 				final ICreationData<CreationData> data = new CreationData(world);
 				data.rotation(rotation);
 
-				cachedBlueprint = new BakedBlueprint(this.chosenDef.getData(), data);
+				cachedBlueprint = new BakedBlueprint(this.def.getData(), data);
 
-				cachedRotations[rotation.ordinal()] = cachedBlueprint;
+				this.cachedRotations[rotation.ordinal()] = cachedBlueprint;
 			}
 
 			this.lastBake = cachedBlueprint;
@@ -78,7 +52,7 @@ public class BlueprintWorldGen implements IWorldGen
 
 		DataPrimer primer = new DataPrimer(blockAccess);
 
-		boolean generated = BlueprintPlacer.place(primer, this.lastBake, this.chosenDef.getConditions(), position, true);
+		boolean generated = BlueprintPlacer.place(primer, this.lastBake, this.def.getConditions(), position, true);
 
 		if (generated)
 		{

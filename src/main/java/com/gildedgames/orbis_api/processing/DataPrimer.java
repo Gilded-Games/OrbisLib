@@ -45,9 +45,9 @@ public class DataPrimer
 		this.access.spawnEntity(entity);
 	}
 
-	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos offset, final boolean checkAreaLoaded)
+	public boolean canGenerate(BakedBlueprint blueprint, List<PlacementCondition> conditions, BlockPos offset, final boolean checkAreaLoaded)
 	{
-		Region bakedRegion = baked.getBakedRegion();
+		Region bakedRegion = blueprint.getBakedRegion();
 
 		BlockPos minReloc = bakedRegion.getMin().add(offset);
 		BlockPos maxReloc = bakedRegion.getMax().add(offset);
@@ -63,32 +63,9 @@ public class DataPrimer
 
 		for (final PlacementCondition condition : conditions)
 		{
-			if (!condition.prePlacementResolve(this.access, minReloc))
+			if (!condition.validate(this.access, blueprint, minReloc))
 			{
 				return false;
-			}
-		}
-
-		BlockDataContainer container = baked.getBlockData();
-
-		BlockPos.MutableBlockPos mutatedPos = new BlockPos.MutableBlockPos();
-
-		for (final BlockPos pos : bakedRegion.getMutableBlockPosInRegion())
-		{
-			int thisX = pos.getX() - baked.getBakedRegion().getMin().getX();
-			int thisY = pos.getY() - baked.getBakedRegion().getMin().getY();
-			int thisZ = pos.getZ() - baked.getBakedRegion().getMin().getZ();
-
-			IBlockState block = container.getBlockState(thisX, thisY, thisZ);
-
-			mutatedPos.setPos(pos.getX() + offset.getX(), pos.getY() + offset.getY(), pos.getZ() + offset.getZ());
-
-			for (final PlacementCondition condition : conditions)
-			{
-				if (!condition.canPlace(this.access, minReloc, block, mutatedPos))
-				{
-					return false;
-				}
 			}
 		}
 
