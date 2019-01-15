@@ -89,6 +89,8 @@ public class ChunkDataContainer
 	{
 		ChunkDataContainer container = new ChunkDataContainer(chunkX, chunkZ, world.provider.hasSkyLight());
 
+		BlockStateCacher cacher = new BlockStateCacher(transformer);
+
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
 			ChunkSegmentMask mask = masks[chunkY];
@@ -99,7 +101,6 @@ public class ChunkDataContainer
 			}
 
 			ExtendedBlockStorage segment = null;
-			BlockStateCacher cacher = null;
 
 			for (int x = 0; x < 16; x++)
 			{
@@ -117,7 +118,8 @@ public class ChunkDataContainer
 						if (segment == null)
 						{
 							segment = new ExtendedBlockStorage(chunkY << 4, world.provider.hasSkyLight());
-							cacher = new BlockStateCacher(transformer, segment.data);
+
+							cacher.update(segment.data);
 						}
 
 						int key = cacher.getValue(transformer, block);
@@ -182,11 +184,15 @@ public class ChunkDataContainer
 	{
 		private final int[] cache;
 
-		private final BlockStateContainer container;
+		private BlockStateContainer container;
 
-		public BlockStateCacher(IChunkMaskTransformer transformer, BlockStateContainer container)
+		public BlockStateCacher(IChunkMaskTransformer transformer)
 		{
 			this.cache = new int[transformer.getBlockCount()];
+		}
+
+		public void update(BlockStateContainer container)
+		{
 			this.container = container;
 
 			this.reset();
@@ -194,6 +200,11 @@ public class ChunkDataContainer
 
 		public int getValue(IChunkMaskTransformer transformer, int index)
 		{
+			if (this.container == null)
+			{
+				throw new IllegalStateException("Not yet initialized");
+			}
+
 			int state = this.cache[index];
 
 			if (state < 0)
