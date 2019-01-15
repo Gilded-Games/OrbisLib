@@ -29,21 +29,11 @@ public class ChunkSegmentMask
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		if (x < 0 || x > 15 || y < 0 || y > 15 || z < 0 || z > 15)
-		{
-			throw new IllegalArgumentException("Out of bounds");
-		}
-
 		this.blocks[x << 8 | z << 4 | y] = (byte) b;
 	}
 
 	public int getBlock(int x, int y, int z)
 	{
-		if (x < 0 || x > 15 || y < 0 || y > 15 || z < 0 || z > 15)
-		{
-			throw new IllegalArgumentException("Out of bounds");
-		}
-
 		return this.blocks[x << 8 | z << 4 | y];
 	}
 
