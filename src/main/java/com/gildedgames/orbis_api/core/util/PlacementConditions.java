@@ -39,7 +39,7 @@ public class PlacementConditions
 						}
 
 						if (!BlockUtil.isSolid(blueprintBlock) && blueprintBlock.getMaterial() != Material.PORTAL
-								|| blueprintBlock.getMaterial() != Material.AIR)
+								&& blueprintBlock.getMaterial() != Material.AIR)
 						{
 							continue;
 						}
