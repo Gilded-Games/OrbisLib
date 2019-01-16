@@ -5,7 +5,6 @@ import com.gildedgames.orbis_api.core.BlockDataChunk;
 import com.gildedgames.orbis_api.core.CreationData;
 import com.gildedgames.orbis_api.core.GameRegistrar;
 import com.gildedgames.orbis_api.core.PlacedBlueprint;
-import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.baking.BakedEntitySpawn;
 import com.gildedgames.orbis_api.core.registry.IOrbisDefinitionRegistry;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
@@ -238,7 +237,6 @@ public class OrbisServices implements IOrbisServices
 			IOHelper.register(s, 77, GuiVarBoolean.Set.class);
 			IOHelper.register(s, 79, PostResolveActionMutateBlueprintVariable.class);
 			IOHelper.register(s, 80, BlockDataChunk.class);
-			IOHelper.register(s, 81, BakedBlueprint.class);
 			IOHelper.register(s, 82, BakedEntitySpawn.class);
 			IOHelper.register(s, 83, BlockStateRecord.class);
 			IOHelper.register(s, 84, ScheduleLayerOptions.class);

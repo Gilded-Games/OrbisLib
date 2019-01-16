@@ -9,15 +9,13 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import javax.annotation.Nonnull;
 import java.util.Random;
 
 public class BlueprintWorldGen implements IWorldGen
 {
-	@Nonnull
 	private final BlueprintDefinition def;
 
-	private BakedBlueprint lastBake;
+	private BakedBlueprint baked;
 
 	private final BakedBlueprint[] cachedRotations = new BakedBlueprint[4];
 
@@ -29,11 +27,9 @@ public class BlueprintWorldGen implements IWorldGen
 	@Override
 	public boolean generate(final IBlockAccessExtended blockAccess, final World world, final Random rand, final BlockPos position, final boolean centered)
 	{
-		if (this.lastBake == null)
+		if (this.baked == null)
 		{
-			final Rotation rotation = this.def.hasRandomRotation() ?
-					BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)] :
-					BlueprintPlacer.ROTATIONS[0];
+			final Rotation rotation = this.def.hasRandomRotation() ? BlueprintPlacer.getRandomRotation(rand) : Rotation.NONE;
 
 			BakedBlueprint cachedBlueprint = this.cachedRotations[rotation.ordinal()];
 
@@ -42,24 +38,26 @@ public class BlueprintWorldGen implements IWorldGen
 				final ICreationData<CreationData> data = new CreationData(world);
 				data.rotation(rotation);
 
-				cachedBlueprint = new BakedBlueprint(this.def.getData(), data);
+				cachedBlueprint = new BakedBlueprint(this.def, data);
 
 				this.cachedRotations[rotation.ordinal()] = cachedBlueprint;
 			}
 
-			this.lastBake = cachedBlueprint;
+			this.baked = cachedBlueprint;
 		}
 
 		DataPrimer primer = new DataPrimer(blockAccess);
 
-		boolean generated = BlueprintPlacer.place(primer, this.lastBake, this.def.getConditions(), position, true);
+		boolean result = primer.canGenerate(this.baked, position, true);
 
-		if (generated)
+		if (result)
 		{
-			this.lastBake = null;
+			primer.place(this.baked, position);
+
+			this.baked = null;
 		}
 
-		return generated;
+		return result;
 	}
 
 	@Override

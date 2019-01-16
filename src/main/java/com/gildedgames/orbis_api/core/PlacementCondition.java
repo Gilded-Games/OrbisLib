@@ -9,4 +9,5 @@ public interface PlacementCondition
 
 	boolean validate(IBlockAccessExtended access, BakedBlueprint blueprint, BlockPos offset);
 
+	int getPriority();
 }

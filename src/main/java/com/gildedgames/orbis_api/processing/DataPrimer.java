@@ -18,7 +18,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class DataPrimer
 {
@@ -45,7 +44,7 @@ public class DataPrimer
 		this.access.spawnEntity(entity);
 	}
 
-	public boolean canGenerate(BakedBlueprint blueprint, List<PlacementCondition> conditions, BlockPos offset, final boolean checkAreaLoaded)
+	public boolean canGenerate(BakedBlueprint blueprint, BlockPos offset, final boolean checkAreaLoaded)
 	{
 		Region bakedRegion = blueprint.getBakedRegion();
 
@@ -61,7 +60,7 @@ public class DataPrimer
 			}
 		}
 
-		for (final PlacementCondition condition : conditions)
+		for (final PlacementCondition condition : blueprint.getDefinition().getConditions())
 		{
 			if (!condition.validate(this.access, blueprint, minReloc))
 			{
@@ -108,7 +107,7 @@ public class DataPrimer
 			return;
 		}
 
-		for (IBakedPosAction action : baked.getBakedPosActions())
+		for (IBakedPosAction action : baked.getBakedPositionActions())
 		{
 			action.call(this);
 		}
@@ -159,7 +158,7 @@ public class DataPrimer
 			intersection = region;
 		}
 
-		for (BlockPos pos : BlockPos.getAllInBox(intersection.getMin(), intersection.getMax()))
+		for (BlockPos pos : BlockPos.getAllInBoxMutable(intersection.getMin(), intersection.getMax()))
 		{
 			int x = pos.getX() - region.getMin().getX();
 			int y = pos.getY() - region.getMin().getY();

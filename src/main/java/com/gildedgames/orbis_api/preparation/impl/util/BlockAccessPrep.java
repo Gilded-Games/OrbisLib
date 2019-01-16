@@ -18,7 +18,6 @@ import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public abstract class BlockAccessPrep implements IBlockAccessExtended
 {
@@ -163,7 +162,7 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 		return chunk;
 	}
 
-	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos offset, final boolean checkAreaLoaded)
+	public boolean canGenerate(BakedBlueprint baked, BlockPos offset, final boolean checkAreaLoaded)
 	{
 		Region bakedRegion = baked.getBakedRegion();
 
@@ -179,7 +178,7 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 			}
 		}
 
-		for (final PlacementCondition condition : conditions)
+		for (final PlacementCondition condition : baked.getDefinition().getConditions())
 		{
 			if (!condition.validate(this, baked, minReloc))
 			{
