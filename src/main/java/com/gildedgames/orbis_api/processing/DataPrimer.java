@@ -44,25 +44,20 @@ public class DataPrimer
 		this.access.spawnEntity(entity);
 	}
 
-	public boolean canGenerate(BakedBlueprint blueprint, BlockPos offset, final boolean checkAreaLoaded)
+	public boolean canGenerate(BakedBlueprint blueprint, BlockPos offset)
 	{
-		Region bakedRegion = blueprint.getBakedRegion();
+		Region region = new Region(blueprint.getBakedRegion());
+		region.add(offset);
 
-		BlockPos minReloc = bakedRegion.getMin().add(offset);
-		BlockPos maxReloc = bakedRegion.getMax().add(offset);
-
-		if (checkAreaLoaded)
+		if (!this.access.canAccess(region.getMin().getX() - 2, region.getMin().getY() - 2, region.getMin().getZ() - 2,
+				region.getMax().getX() + 2, region.getMax().getY() + 2, region.getMax().getZ() + 2))
 		{
-			if (!this.access.canAccess(minReloc.getX() - 2, minReloc.getY() - 2, minReloc.getZ() - 2,
-					maxReloc.getX() + 2, maxReloc.getY() + 2, maxReloc.getZ() + 2))
-			{
-				return false;
-			}
+			return false;
 		}
 
 		for (final PlacementCondition condition : blueprint.getDefinition().getConditions())
 		{
-			if (!condition.validate(this.access, blueprint, minReloc))
+			if (!condition.validate(this.access, blueprint, region.getMin()))
 			{
 				return false;
 			}
@@ -71,28 +66,25 @@ public class DataPrimer
 		return true;
 	}
 
-	private void setBlockInWorld(final IBlockState state, final NBTTagCompound entity, final BlockPos pos, final ICreationData<?> creationData)
+	private void setBlockInWorld(final IBlockState state, final NBTTagCompound entityNBT, final BlockPos pos, final ICreationData<?> creationData)
 	{
 		if (state.getMaterial() == Material.AIR && !creationData.placeAir())
 		{
 			return;
 		}
 
-		if (!creationData.shouldCreate(state, pos))
+		if (state.getBlock() == Blocks.STRUCTURE_VOID && !creationData.placesVoid())
 		{
 			return;
 		}
 
-		if (state.getBlock() != Blocks.STRUCTURE_VOID || creationData.placesVoid())
+		this.access.setBlockState(pos, state, 2 | 16);
+
+		if (entityNBT != null && this.access.getWorld() != null)
 		{
-			this.access.setBlockState(pos, state, 2 | 16);
+			TileEntity te = TileEntity.create(this.access.getWorld(), entityNBT);
 
-			if (entity != null && this.access.getWorld() != null)
-			{
-				TileEntity te = TileEntity.create(this.access.getWorld(), entity);
-
-				this.access.setTileEntity(pos, te);
-			}
+			this.access.setTileEntity(pos, te);
 		}
 
 		// TODO: Re-enable event.
@@ -160,6 +152,11 @@ public class DataPrimer
 
 		for (BlockPos pos : BlockPos.getAllInBoxMutable(intersection.getMin(), intersection.getMax()))
 		{
+			if (!data.shouldCreate(pos))
+			{
+				continue;
+			}
+
 			int x = pos.getX() - region.getMin().getX();
 			int y = pos.getY() - region.getMin().getY();
 			int z = pos.getZ() - region.getMin().getZ();

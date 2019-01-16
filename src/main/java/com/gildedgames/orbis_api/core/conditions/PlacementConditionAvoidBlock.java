@@ -26,6 +26,12 @@ public class PlacementConditionAvoidBlock implements PlacementCondition
 
 		int floorHeight = blueprint.getDefinition().getFloorHeight();
 
+		if (!access.canAccess(offset.getX(), offset.getY() + floorHeight - 1, offset.getZ(),
+				offset.getX() + container.getWidth(), offset.getY() + floorHeight, offset.getZ() + container.getLength()))
+		{
+			return false;
+		}
+
 		BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
 		for (int x = 0; x < container.getWidth(); x++)
@@ -41,7 +47,7 @@ public class PlacementConditionAvoidBlock implements PlacementCondition
 
 				pos.setPos(offset.getX() + x, offset.getY() + floorHeight - 1, offset.getZ() + z);
 
-				if (!access.canAccess(pos) || ArrayUtils.contains(this.avoidedBlocks, access.getBlockState(pos).getBlock()))
+				if (ArrayUtils.contains(this.avoidedBlocks, access.getBlockState(pos).getBlock()))
 				{
 					return false;
 				}

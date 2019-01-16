@@ -217,39 +217,9 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getPositions(final BlockFilter filter, BlockPos offset)
+	public IRegion getRegion()
 	{
-		return new Iterable<BlockPos.MutableBlockPos>()
-		{
-
-			@Override
-			public Iterator<BlockPos.MutableBlockPos> iterator()
-			{
-				final Iterator<BlockPos.MutableBlockPos> iter = BlockPos
-						.getAllInBoxMutable(FilterRecord.this.getBoundingBox().getMin().add(offset), FilterRecord.this.getBoundingBox().getMax().add(offset))
-						.iterator();
-
-				return new AbstractIterator<BlockPos.MutableBlockPos>()
-				{
-
-					@Override
-					protected BlockPos.MutableBlockPos computeNext()
-					{
-						while (iter.hasNext())
-						{
-							final BlockPos.MutableBlockPos next = iter.next();
-
-							if (filter.equals(FilterRecord.this.get(next.getX() - offset.getX(), next.getY() - offset.getY(), next.getZ() - offset.getZ())))
-							{
-								return next;
-							}
-						}
-
-						return this.endOfData();
-					}
-				};
-			}
-		};
+		return this.boundingBox;
 	}
 
 	@Override

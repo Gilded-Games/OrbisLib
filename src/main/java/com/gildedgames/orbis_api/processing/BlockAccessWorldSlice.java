@@ -1,33 +1,30 @@
 package com.gildedgames.orbis_api.processing;
 
-import com.gildedgames.orbis_api.preparation.impl.ChunkDataContainer;
+import com.gildedgames.orbis_api.world.WorldSlice;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
 
-public class BlockAccessChunkDataContainer implements IBlockAccessExtended
+public class BlockAccessWorldSlice implements IBlockAccessExtended
 {
 	private final World world;
 
-	private final ChunkDataContainer container;
+	private final WorldSlice slice;
 
-	private final int offsetX, offsetZ;
-
-	public BlockAccessChunkDataContainer(final World world, final ChunkDataContainer container)
+	public BlockAccessWorldSlice(final World world, final ChunkPos pos)
 	{
 		this.world = world;
-		this.container = container;
 
-		this.offsetX = (this.container.getChunkX() * 16);
-		this.offsetZ = (this.container.getChunkZ() * 16);
+		this.slice = new WorldSlice(this.world, pos);
 	}
 
 	@Nullable
@@ -40,29 +37,25 @@ public class BlockAccessChunkDataContainer implements IBlockAccessExtended
 	@Override
 	public boolean canAccess(final BlockPos pos)
 	{
-		//TODO:
-		return true;
+		return this.slice.isBlockWithin(pos);
 	}
 
 	@Override
 	public boolean canAccess(BlockPos pos, int radius)
 	{
-		//TODO:
-		return true;
+		return this.slice.isAreaWithin(pos, radius);
 	}
 
 	@Override
 	public boolean canAccess(final int x, final int z)
 	{
-		//TODO:
-		return true;
+		return this.slice.isBlockWithin(x, 0, z);
 	}
 
 	@Override
 	public boolean canAccess(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
 	{
-		//TODO:
-		return true;
+		return this.slice.isAreaWithin(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
@@ -80,42 +73,38 @@ public class BlockAccessChunkDataContainer implements IBlockAccessExtended
 	@Override
 	public void setBlockToAir(final BlockPos pos)
 	{
-		this.container.setBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ, Blocks.AIR.getDefaultState());
+		this.slice.setBlockState(pos, Blocks.AIR.getDefaultState());
 	}
 
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state)
 	{
-		this.container.setBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ, state);
-
-		return true;
+		return this.slice.setBlockState(pos, state);
 	}
 
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state, final int flags)
 	{
-		this.container.setBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ, state);
-
-		return true;
+		return this.setBlockState(pos, state);
 	}
 
 	@Override
 	public void setTileEntity(final BlockPos pos, final TileEntity tileEntity)
 	{
-		this.container.setTileEntity(pos.toImmutable(), tileEntity);
+		this.world.setTileEntity(pos, tileEntity);
 	}
 
 	@Override
 	public void spawnEntity(Entity entity)
 	{
-		this.container.addEntity(entity);
+		this.world.spawnEntity(entity);
 	}
 
 	@Nullable
 	@Override
 	public TileEntity getTileEntity(final BlockPos pos)
 	{
-		return this.container.getTileEntity(pos);
+		return this.world.getTileEntity(pos);
 	}
 
 	@Override
@@ -127,13 +116,13 @@ public class BlockAccessChunkDataContainer implements IBlockAccessExtended
 	@Override
 	public IBlockState getBlockState(final BlockPos pos)
 	{
-		return this.container.getBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ);
+		return this.slice.getBlockState(pos);
 	}
 
 	@Override
 	public boolean isAirBlock(final BlockPos pos)
 	{
-		return this.getBlockState(pos) != Blocks.AIR.getDefaultState();
+		return this.slice.isAirBlock(pos);
 	}
 
 	@Override

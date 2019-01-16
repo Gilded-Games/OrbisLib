@@ -27,7 +27,6 @@ import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.ArrayList;
@@ -315,17 +314,28 @@ public class BakedBlueprint
 
 		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer().clone();
 
+		// TODO: Perform only once
 		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
 		{
 			IScheduleLayer layer = node.getData();
 
-			for (IBlockState state : layer.getStateRecord().getData())
+			if (layer.getStateRecord().getData().length == 0)
 			{
-				for (MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+				continue;
+			}
+
+			for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+			{
+				IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+
+				for (IBlockState predicate : layer.getStateRecord().getData())
 				{
-					if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(blocks.getBlockState(pos)))
+					if (predicate == layerState)
 					{
-						blocks.setBlockState(state, pos);
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(blocks.getBlockState(pos)))
+						{
+							blocks.setBlockState(predicate, pos);
+						}
 					}
 				}
 			}

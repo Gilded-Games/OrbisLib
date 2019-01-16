@@ -1,8 +1,5 @@
 package com.gildedgames.orbis_api.preparation.impl.util;
 
-import com.gildedgames.orbis_api.core.PlacementCondition;
-import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
-import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.preparation.impl.ChunkSegmentMask;
 import com.gildedgames.orbis_api.preparation.impl.capability.PrepChunkManager;
@@ -160,32 +157,5 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 		}
 
 		return chunk;
-	}
-
-	public boolean canGenerate(BakedBlueprint baked, BlockPos offset, final boolean checkAreaLoaded)
-	{
-		Region bakedRegion = baked.getBakedRegion();
-
-		BlockPos minReloc = bakedRegion.getMin().add(offset);
-		BlockPos maxReloc = bakedRegion.getMax().add(offset);
-
-		if (checkAreaLoaded)
-		{
-			if (!this.canAccess(minReloc.getX() - 2, minReloc.getY() - 2, minReloc.getZ() - 2,
-					maxReloc.getX() + 2, maxReloc.getY() + 2, maxReloc.getZ() + 2))
-			{
-				return false;
-			}
-		}
-
-		for (final PlacementCondition condition : baked.getDefinition().getConditions())
-		{
-			if (!condition.validate(this, baked, minReloc))
-			{
-				return false;
-			}
-		}
-
-		return true;
 	}
 }

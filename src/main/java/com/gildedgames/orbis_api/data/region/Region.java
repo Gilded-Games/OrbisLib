@@ -7,6 +7,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.Iterator;
+
 public class Region implements IMutableRegion
 {
 
@@ -340,4 +342,9 @@ public class Region implements IMutableRegion
 		return this.data;
 	}
 
+	@Override
+	public Iterator<BlockPos.MutableBlockPos> iterator()
+	{
+		return BlockPos.getAllInBoxMutable(this.min, this.max).iterator();
+	}
 }

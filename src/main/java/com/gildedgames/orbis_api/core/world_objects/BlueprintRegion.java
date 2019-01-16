@@ -15,6 +15,8 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.Iterator;
+
 public class BlueprintRegion extends AbstractRegion implements IMutableRegion, IRotateable
 {
 	protected Rotation rotation = Rotation.NONE;
@@ -179,4 +181,9 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 		return this.data;
 	}
 
+	@Override
+	public Iterator<BlockPos.MutableBlockPos> iterator()
+	{
+		return BlockPos.getAllInBoxMutable(this.min, this.max).iterator();
+	}
 }

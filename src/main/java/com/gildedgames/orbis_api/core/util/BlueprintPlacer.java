@@ -20,10 +20,10 @@ public class BlueprintPlacer
 		return BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)];
 	}
 
-	public static boolean place(final World placeWith, BakedBlueprint baked, BlockPos relocateTo, boolean checkAreaLoaded)
+	public static boolean place(final World placeWith, BakedBlueprint baked, BlockPos relocateTo)
 	{
 		final DataPrimer placeWith1 = new DataPrimer(new BlockAccessExtendedWrapper(placeWith));
-		final boolean result = placeWith1.canGenerate(baked, relocateTo, checkAreaLoaded);
+		final boolean result = placeWith1.canGenerate(baked, relocateTo);
 
 		if (result)
 		{

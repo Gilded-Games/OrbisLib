@@ -81,6 +81,8 @@ public class ChunkDataContainer
 		}
 		else
 		{
+			entity.setPos(pos);
+
 			this.tileEntities.put(pos, entity);
 		}
 	}
@@ -95,7 +97,7 @@ public class ChunkDataContainer
 		{
 			ChunkSegmentMask mask = masks[chunkY];
 
-			if (mask == null)
+			if (mask == null || !mask.wasTouched())
 			{
 				continue;
 			}

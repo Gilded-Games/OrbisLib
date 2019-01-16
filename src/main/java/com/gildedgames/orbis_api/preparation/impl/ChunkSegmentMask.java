@@ -20,6 +20,8 @@ public class ChunkSegmentMask
 
 	private final int x, y, z;
 
+	private boolean touched;
+
 	public ChunkSegmentMask(int x, int y, int z)
 	{
 		this.x = x;
@@ -30,6 +32,8 @@ public class ChunkSegmentMask
 	public void setBlock(int x, int y, int z, int b)
 	{
 		this.blocks[x << 8 | z << 4 | y] = (byte) b;
+
+		this.touched = true;
 	}
 
 	public int getBlock(int x, int y, int z)
@@ -50,5 +54,10 @@ public class ChunkSegmentMask
 	public int getZ()
 	{
 		return this.z;
+	}
+
+	public boolean wasTouched()
+	{
+		return this.touched;
 	}
 }

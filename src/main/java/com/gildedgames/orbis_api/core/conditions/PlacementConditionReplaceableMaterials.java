@@ -5,10 +5,8 @@ import com.gildedgames.orbis_api.core.PlacementCondition;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
-import com.gildedgames.orbis_api.util.mc.BlockUtil;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -36,37 +34,26 @@ public class PlacementConditionReplaceableMaterials implements PlacementConditio
 				{
 					final IBlockState blueprintBlock = container.getBlockState(x, y, z);
 
-					if (blueprintBlock.getBlock() == Blocks.STRUCTURE_VOID)
-					{
-						continue;
-					}
-
-					if (!BlockUtil.isSolid(blueprintBlock) && blueprintBlock.getMaterial() != Material.PORTAL
-							&& blueprintBlock.getMaterial() != Material.AIR)
+					if (!blueprintBlock.getMaterial().isSolid())
 					{
 						continue;
 					}
 
 					pos.setPos(offset.getX() + x, offset.getY() + y, offset.getZ() + z);
 
-					if (!access.canAccess(pos))
-					{
-						return false;
-					}
-
 					final IBlockState worldBlock = access.getBlockState(pos);
 
-					boolean validMaterial = ArrayUtils.contains(this.acceptedMaterials, worldBlock.getMaterial());
-
-					if (!BlueprintUtil.isReplaceable(worldBlock) && !validMaterial)
+					if (BlueprintUtil.isReplaceable(worldBlock) || ArrayUtils.contains(this.acceptedMaterials, worldBlock.getMaterial()))
 					{
-						return false;
+						continue;
 					}
 
-					if (blueprintBlock != worldBlock && !validMaterial)
+					if (blueprintBlock == worldBlock)
 					{
-						return false;
+						continue;
 					}
+
+					return false;
 				}
 			}
 		}

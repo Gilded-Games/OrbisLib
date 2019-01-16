@@ -167,7 +167,7 @@ public class BlockFilterLayer implements NBT
 				continue;
 			}
 
-			if (!creationData.shouldCreate(replacementBlock.getBlockState(), pos))
+			if (!creationData.shouldCreate(pos))
 			{
 				continue;
 			}
@@ -298,7 +298,7 @@ public class BlockFilterLayer implements NBT
 			return;
 		}
 
-		if (!creationData.shouldCreate(replacementBlock.getBlockState(), p))
+		if (!creationData.shouldCreate(p))
 		{
 			return;
 		}
