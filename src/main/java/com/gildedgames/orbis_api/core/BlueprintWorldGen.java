@@ -18,8 +18,6 @@ public class BlueprintWorldGen extends WorldGenerator
 
 	private BakedBlueprint baked;
 
-	private final BakedBlueprint[] cachedRotations = new BakedBlueprint[4];
-
 	public BlueprintWorldGen(final BlueprintDefinition def)
 	{
 		this.def = def;
@@ -32,19 +30,10 @@ public class BlueprintWorldGen extends WorldGenerator
 		{
 			final Rotation rotation = this.def.hasRandomRotation() ? BlueprintPlacer.getRandomRotation(rand) : Rotation.NONE;
 
-			BakedBlueprint cachedBlueprint = this.cachedRotations[rotation.ordinal()];
+			final ICreationData<CreationData> data = new CreationData(world);
+			data.rotation(rotation);
 
-			if (cachedBlueprint == null)
-			{
-				final ICreationData<CreationData> data = new CreationData(world);
-				data.rotation(rotation);
-
-				cachedBlueprint = new BakedBlueprint(this.def, data);
-
-				this.cachedRotations[rotation.ordinal()] = cachedBlueprint;
-			}
-
-			this.baked = cachedBlueprint;
+			this.baked = new BakedBlueprint(this.def, data);
 		}
 
 		// We should choose a better location for blueprints which generate at an offset
