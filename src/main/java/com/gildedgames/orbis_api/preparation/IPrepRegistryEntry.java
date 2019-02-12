@@ -4,7 +4,6 @@ import com.gildedgames.orbis_api.preparation.impl.ChunkSegmentMask;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 
 /**
  * Implementations will handle the creation of IPrepSectors.
@@ -28,9 +27,9 @@ public interface IPrepRegistryEntry<T>
 
 	IPrepSectorData createDataAndRead(World world, NBTTagCompound tag);
 
-	void threadSafeGenerateMask(T info, World world, IPrepSectorData sectorData, Biome[] biomes, ChunkSegmentMask mask, int x, int y, int z);
+	void threadSafeGenerateMask(T info, World world, IPrepSectorData sectorData, ChunkSegmentMask mask, int x, int y, int z);
 
 	IChunkMaskTransformer createMaskTransformer();
 
-	T generateChunkColumnInfo(World world, IPrepSectorData sectorData, Biome[] biomes, int chunkX, int chunkY);
+	T generateChunkColumnInfo(World world, IPrepSectorData sectorData, int chunkX, int chunkY);
 }
