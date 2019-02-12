@@ -33,11 +33,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 {
 	private int[] blocks;
 
+	private byte[] meta;
+
 	private Int2ObjectOpenHashMap<NBTTagCompound> entities = new Int2ObjectOpenHashMap<>();
 
-	private Int2ObjectOpenHashMap<IBlockState> idToState = new Int2ObjectOpenHashMap<>();
+	private Int2ObjectOpenHashMap<Block> idToBlock = new Int2ObjectOpenHashMap<>();
 
-	private Object2IntOpenHashMap<IBlockState> stateToId = new Object2IntOpenHashMap<>();
+	private Object2IntOpenHashMap<Block> blockToId = new Object2IntOpenHashMap<>();
 
 	private int width, height, length;
 
@@ -46,6 +48,28 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	private IBlockState defaultBlock;
 
 	private int nextID;
+
+	public BlockDataContainer(BlockDataContainer other, int width, int height, int length)
+	{
+		this.entities = new Int2ObjectOpenHashMap<>(this.entities);
+
+		this.defaultBlock = other.defaultBlock;
+
+		this.idToBlock = new Int2ObjectOpenHashMap<>(other.idToBlock);
+		this.blockToId = new Object2IntOpenHashMap<>(other.blockToId);
+
+		this.width = width;
+		this.height = height;
+		this.length = length;
+
+		this.blocks = new int[this.getVolume()];
+		this.meta = new byte[this.getVolume()];
+
+		this.nextID = other.nextID;
+		this.metadata = other.metadata;
+
+		Arrays.fill(this.blocks, -1);
+	}
 
 	public BlockDataContainer()
 	{
@@ -58,8 +82,11 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		this.defaultBlock = defaultBlock;
 
-		this.idToState.put(-1, this.defaultBlock);
-		this.stateToId.put(this.defaultBlock, -1);
+		this.idToBlock.put(-1, this.defaultBlock.getBlock());
+		this.blockToId.put(this.defaultBlock.getBlock(), -1);
+
+		this.blockToId.defaultReturnValue(Integer.MIN_VALUE);
+		this.idToBlock.defaultReturnValue(null);
 	}
 
 	/**
@@ -76,6 +103,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.length = length;
 
 		this.blocks = new int[this.getVolume()];
+		this.meta = new byte[this.getVolume()];
 
 		Arrays.fill(this.blocks, -1);
 	}
@@ -146,7 +174,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	public BlockDataContainer rotateCounterclockwise90()
 	{
-		BlockDataContainer container = new BlockDataContainer(this.getDefaultBlock(), this.length, this.height, this.width);
+		BlockDataContainer container = new BlockDataContainer(this, this.length, this.height, this.width);
 
 		for (int z = 0; z < this.length; z++)
 		{
@@ -177,7 +205,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	public BlockDataContainer rotateClockwise90()
 	{
-		BlockDataContainer container = new BlockDataContainer(this.getDefaultBlock(), this.length, this.height, this.width);
+		BlockDataContainer container = new BlockDataContainer(this, this.length, this.height, this.width);
 
 		for (int z = 0; z < this.length; z++)
 		{
@@ -208,7 +236,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	public BlockDataContainer rotateClockwise180()
 	{
-		BlockDataContainer container = new BlockDataContainer(this.getDefaultBlock(), this.width, this.height, this.length);
+		BlockDataContainer container = new BlockDataContainer(this, this.width, this.height, this.length);
 
 		for (int z = 0; z < this.length; z++)
 		{
@@ -239,9 +267,20 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private void copyBlockFromWithRotation(BlockDataContainer data, int otherX, int otherY, int otherZ, int thisX, int thisY, int thisZ, Rotation rotation)
 	{
-		IBlockState state = data.getBlockState(otherX, otherY, otherZ);
+		int otherI = data.getIndex(otherX, otherY, otherZ);
 
-		this.setBlockState(state.withRotation(rotation), thisX, thisY, thisZ);
+		int blockId = data.blocks[otherI];
+		int meta = data.meta[otherI];
+
+		Block block = data.idToBlock.get(blockId);
+
+		IBlockState state = block.getStateFromMeta(meta)
+				.withRotation(rotation);
+
+		int thisI = this.getIndex(thisX, thisY, thisZ);
+
+		this.blocks[thisI] = blockId;
+		this.meta[thisI] = (byte) block.getMetaFromState(state);
 	}
 
 	public boolean isOutsideOfContainer(BlockPos pos)
@@ -263,7 +302,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private IBlockState getBlockState(final int index)
 	{
-		return this.idToState.get(this.blocks[index]);
+		Block block = this.idToBlock.get(this.blocks[index]);
+
+		return block.getStateFromMeta(this.meta[index]);
 	}
 
 	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
@@ -273,23 +314,23 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private void setBlockState(final IBlockState state, final int index)
 	{
-		int value;
+		Block block = state.getBlock();
 
-		if (this.stateToId.containsKey(state))
-		{
-			value = this.stateToId.getInt(state);
-		}
-		else
+		int value = this.blockToId.getInt(block);
+
+		if (value == this.blockToId.defaultReturnValue())
 		{
 			value = this.nextID++;
 
-			this.stateToId.put(state, value);
-			this.idToState.put(value, state);
+			this.blockToId.put(block, value);
+			this.idToBlock.put(value, block);
 		}
 
-		this.blocks[index] = value;
-	}
+		byte meta = (byte) (block.getMetaFromState(state) & 0xF);
 
+		this.blocks[index] = value;
+		this.meta[index] = meta;
+	}
 
 	public void setBlockState(final IBlockState state, final BlockPos pos) throws ArrayIndexOutOfBoundsException
 	{
@@ -363,7 +404,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				IBlockState block = this.getBlockState(i);
 
 				blockId = blockToLocalId.get(blockRaw);
-				meta = block.getBlock().getMetaFromState(block);
+				meta = this.meta[i];
 
 				if (!identifiers.containsKey(blockId))
 				{
@@ -529,6 +570,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 
 		this.blocks = new int[blockComp.length];
+		this.meta = metadata;
+
 		this.entities = new Int2ObjectOpenHashMap<>();
 
 		for (int i = 0; i < blockComp.length; i++)
@@ -580,11 +623,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		final BlockDataContainer data = new BlockDataContainer();
 
 		data.blocks = new int[this.blocks.length];
+		data.meta = new byte[this.meta.length];
 
 		System.arraycopy(this.blocks, 0, data.blocks, 0, this.blocks.length);
+		System.arraycopy(this.meta, 0, data.meta, 0, this.meta.length);
 
-		data.idToState = new Int2ObjectOpenHashMap<>(this.idToState);
-		data.stateToId = new Object2IntOpenHashMap<>(this.stateToId);
+		data.idToBlock = new Int2ObjectOpenHashMap<>(this.idToBlock);
+		data.blockToId = new Object2IntOpenHashMap<>(this.blockToId);
 		data.nextID = this.nextID;
 
 		NBTTagCompound tag;

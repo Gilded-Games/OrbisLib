@@ -14,41 +14,35 @@ import net.minecraft.world.chunk.ChunkPrimer;
  *
  * Block 0 is assumed to always be air.
  */
-public class ChunkSegmentMask
+public class ChunkMask
 {
-	private final byte[] blocks = new byte[16 * 16 * 16];
+	private final byte[] blocks = new byte[16 * 256 * 16];
 
-	private final int x, y, z;
+	private final int x, z;
 
 	private boolean touched;
 
-	public ChunkSegmentMask(int x, int y, int z)
+	public ChunkMask(int x, int z)
 	{
 		this.x = x;
-		this.y = y;
 		this.z = z;
 	}
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		this.blocks[x << 8 | z << 4 | y] = (byte) b;
+		this.blocks[x << 12 | z << 8 | y] = (byte) b;
 
 		this.touched = true;
 	}
 
 	public int getBlock(int x, int y, int z)
 	{
-		return this.blocks[x << 8 | z << 4 | y];
+		return this.blocks[x << 12 | z << 8 | y];
 	}
 
 	public int getX()
 	{
 		return this.x;
-	}
-
-	public int getY()
-	{
-		return this.y;
 	}
 
 	public int getZ()

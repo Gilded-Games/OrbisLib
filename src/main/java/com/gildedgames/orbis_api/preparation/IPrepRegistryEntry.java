@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.preparation;
 
-import com.gildedgames.orbis_api.preparation.impl.ChunkSegmentMask;
+import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -27,7 +27,7 @@ public interface IPrepRegistryEntry<T>
 
 	IPrepSectorData createDataAndRead(World world, NBTTagCompound tag);
 
-	void threadSafeGenerateMask(T info, World world, IPrepSectorData sectorData, ChunkSegmentMask mask, int x, int y, int z);
+	void threadSafeGenerateMask(T info, World world, IPrepSectorData sectorData, ChunkMask mask, int x, int z);
 
 	IChunkMaskTransformer createMaskTransformer();
 

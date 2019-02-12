@@ -87,21 +87,19 @@ public class ChunkDataContainer
 		}
 	}
 
-	public static ChunkDataContainer createFromChunkSegmentMasks(World world, ChunkSegmentMask[] masks, IChunkMaskTransformer transformer, int chunkX, int chunkZ)
+	public static ChunkDataContainer createFromMask(World world, ChunkMask mask, IChunkMaskTransformer transformer, int chunkX, int chunkZ)
 	{
 		ChunkDataContainer container = new ChunkDataContainer(chunkX, chunkZ, world.provider.hasSkyLight());
 
 		BlockStateCacher cacher = new BlockStateCacher(transformer);
 
+		if (mask == null || !mask.wasTouched())
+		{
+			return container;
+		}
+
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
-			ChunkSegmentMask mask = masks[chunkY];
-
-			if (mask == null || !mask.wasTouched())
-			{
-				continue;
-			}
-
 			ExtendedBlockStorage segment = null;
 
 			for (int x = 0; x < 16; x++)
@@ -110,7 +108,7 @@ public class ChunkDataContainer
 				{
 					for (int y = 0; y < 16; y++)
 					{
-						int block = mask.getBlock(x, y, z);
+						int block = mask.getBlock(x, (chunkY * 16) + y, z);
 
 						if (block == 0)
 						{

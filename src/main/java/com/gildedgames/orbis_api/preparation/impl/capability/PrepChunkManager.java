@@ -1,11 +1,12 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
 import com.gildedgames.orbis_api.preparation.*;
-import com.gildedgames.orbis_api.preparation.impl.ChunkSegmentMask;
+import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import com.gildedgames.orbis_api.util.ChunkMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 
@@ -17,7 +18,7 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 
 	private IPrepRegistryEntry<T> registryEntry;
 
-	private final Long2ObjectOpenHashMap<ChunkSegmentMask> chunkCache = new Long2ObjectOpenHashMap<>();
+	private final Long2ObjectOpenHashMap<ChunkMask> chunkCache = new Long2ObjectOpenHashMap<>();
 
 	private final ChunkMap<T> columnCache = new ChunkMap<>();
 
@@ -40,11 +41,11 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 
 	@Nullable
 	@Override
-	public ChunkSegmentMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY, int chunkZ)
+	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkZ)
 	{
-		long key = this.getChunkKey(chunkX, chunkY, chunkZ);
+		long key = this.getChunkKey(chunkX, chunkZ);
 
-		ChunkSegmentMask mask = this.chunkCache.get(key);
+		ChunkMask mask = this.chunkCache.get(key);
 
 		if (mask != null)
 		{
@@ -53,9 +54,9 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 
 		T info = this.getChunkColumnInfo(sectorData, chunkX, chunkZ);
 
-		mask = new ChunkSegmentMask(chunkX, chunkY, chunkZ);
+		mask = new ChunkMask(chunkX, chunkZ);
 
-		this.registryEntry.threadSafeGenerateMask(info, this.world, sectorData, mask, chunkX, chunkY, chunkZ);
+		this.registryEntry.threadSafeGenerateMask(info, this.world, sectorData, mask, chunkX, chunkZ);
 
 		this.chunkCache.put(key, mask);
 
@@ -79,13 +80,9 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 		return info;
 	}
 
-	private long getChunkKey(int x, int y, int z)
+	private long getChunkKey(int x, int z)
 	{
-		long key = (x & 0xFFFFL) << 48;
-		key |= (z & 0xFFFFL) << 32;
-		key |= (y & 0xFFFFL) << 16;
-
-		return key;
+		return ChunkPos.asLong(x, z);
 	}
 
 	@Override
