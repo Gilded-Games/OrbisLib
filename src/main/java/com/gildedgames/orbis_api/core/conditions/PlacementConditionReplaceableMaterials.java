@@ -5,10 +5,10 @@ import com.gildedgames.orbis_api.core.PlacementCondition;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.util.BlueprintUtil;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
+import com.gildedgames.orbis_api.util.ArrayHelper;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class PlacementConditionReplaceableMaterials implements PlacementCondition
 {
@@ -43,7 +43,7 @@ public class PlacementConditionReplaceableMaterials implements PlacementConditio
 
 					final IBlockState worldBlock = access.getBlockState(pos);
 
-					if (BlueprintUtil.isReplaceable(worldBlock) || ArrayUtils.contains(this.acceptedMaterials, worldBlock.getMaterial()))
+					if (BlueprintUtil.isReplaceable(worldBlock) || ArrayHelper.contains(this.acceptedMaterials, worldBlock.getMaterial()))
 					{
 						continue;
 					}

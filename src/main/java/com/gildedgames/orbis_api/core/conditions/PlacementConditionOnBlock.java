@@ -4,11 +4,11 @@ import com.gildedgames.orbis_api.block.BlockDataContainer;
 import com.gildedgames.orbis_api.core.PlacementCondition;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.processing.IBlockAccessExtended;
+import com.gildedgames.orbis_api.util.ArrayHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class PlacementConditionOnBlock implements PlacementCondition
 {
@@ -47,7 +47,7 @@ public class PlacementConditionOnBlock implements PlacementCondition
 
 				pos.setPos(offset.getX() + x, offset.getY() + floorHeight - 1, offset.getZ() + z);
 
-				if (!ArrayUtils.contains(this.blocks, access.getBlockState(pos).getBlock()))
+				if (!ArrayHelper.contains(this.blocks, access.getBlockState(pos).getBlock()))
 				{
 					return false;
 				}
