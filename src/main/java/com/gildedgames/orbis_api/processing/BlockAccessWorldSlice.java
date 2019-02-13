@@ -7,7 +7,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
@@ -20,11 +19,10 @@ public class BlockAccessWorldSlice implements IBlockAccessExtended
 
 	private final WorldSlice slice;
 
-	public BlockAccessWorldSlice(final World world, final ChunkPos pos)
+	public BlockAccessWorldSlice(final WorldSlice slice)
 	{
-		this.world = world;
-
-		this.slice = new WorldSlice(this.world, pos);
+		this.world = slice.getWorld();
+		this.slice = slice;
 	}
 
 	@Nullable

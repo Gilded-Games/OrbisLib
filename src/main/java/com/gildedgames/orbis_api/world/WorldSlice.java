@@ -209,4 +209,11 @@ public class WorldSlice
 		return true;
 	}
 
+	public BlockPos getHighestBlockPos(int x, int z)
+	{
+		int y = this.world.getChunk(x >> 4, z >> 4).getHeightValue(x & 15, z & 15);
+
+		return new BlockPos(x, y, z);
+	}
+
 }
