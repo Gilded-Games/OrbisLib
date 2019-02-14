@@ -293,7 +293,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 		else
 		{
-			this.setBlockState(state, thisX, thisY, thisZ);
+			this.setBlockState(stateRotated, thisX, thisY, thisZ);
 		}
 	}
 
