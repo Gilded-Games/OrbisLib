@@ -367,9 +367,9 @@ public class BakedBlueprint
 	{
 		switch (rotation)
 		{
-			case COUNTERCLOCKWISE_90:
-				return new BlockPos(pos.getZ(), pos.getY(), -pos.getX());
 			case CLOCKWISE_90:
+				return new BlockPos(pos.getZ(), pos.getY(), -pos.getX());
+			case COUNTERCLOCKWISE_90:
 				return new BlockPos(-pos.getZ(), pos.getY(), pos.getX());
 			case CLOCKWISE_180:
 				return new BlockPos(-pos.getX(), pos.getY(), -pos.getZ());

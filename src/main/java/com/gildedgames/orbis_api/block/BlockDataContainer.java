@@ -188,7 +188,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return index % this.width;
 	}
 
-	public BlockDataContainer rotateCounterclockwise90()
+	public BlockDataContainer rotateClockwise90()
 	{
 		BlockDataContainer container = new BlockDataContainer(this, this.length, this.height, this.width);
 
@@ -219,7 +219,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return container;
 	}
 
-	public BlockDataContainer rotateClockwise90()
+	public BlockDataContainer rotateCounterclockwise90()
 	{
 		BlockDataContainer container = new BlockDataContainer(this, this.length, this.height, this.width);
 
