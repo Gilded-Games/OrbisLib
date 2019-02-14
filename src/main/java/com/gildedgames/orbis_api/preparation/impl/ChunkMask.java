@@ -16,11 +16,9 @@ import net.minecraft.world.chunk.ChunkPrimer;
  */
 public class ChunkMask
 {
-	private final byte[] blocks = new byte[16 * 256 * 16];
+	private final ChunkMaskSegment[] segments = new ChunkMaskSegment[16];
 
 	private final int x, z;
-
-	private boolean touched;
 
 	public ChunkMask(int x, int z)
 	{
@@ -30,14 +28,26 @@ public class ChunkMask
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		this.blocks[x << 12 | z << 8 | y] = (byte) b;
+		ChunkMaskSegment segment = this.segments[y >> 4];
 
-		this.touched = true;
+		if (segment == null)
+		{
+			this.segments[y >> 4] = segment = new ChunkMaskSegment();
+		}
+
+		segment.setBlock(x, y & 15, z, b);
 	}
 
 	public int getBlock(int x, int y, int z)
 	{
-		return this.blocks[x << 12 | z << 8 | y];
+		ChunkMaskSegment segment = this.segments[y >> 4];
+
+		if (segment == null)
+		{
+			return 0;
+		}
+
+		return segment.getBlock(x, y & 15, z);
 	}
 
 	public int getX()
@@ -50,8 +60,23 @@ public class ChunkMask
 		return this.z;
 	}
 
-	public boolean wasTouched()
+	public ChunkMaskSegment getSegment(int y)
 	{
-		return this.touched;
+		return this.segments[y];
+	}
+
+	public void fill(int b)
+	{
+		for (int y = 0; y < 16; y++)
+		{
+			ChunkMaskSegment segment = this.segments[y >> 4];
+
+			if (segment == null)
+			{
+				this.segments[y >> 4] = segment = new ChunkMaskSegment();
+			}
+
+			segment.fill(b);
+		}
 	}
 }

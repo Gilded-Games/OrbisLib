@@ -93,14 +93,18 @@ public class ChunkDataContainer
 
 		BlockStateCacher cacher = new BlockStateCacher(transformer);
 
-		if (mask == null || !mask.wasTouched())
-		{
-			return container;
-		}
-
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
-			ExtendedBlockStorage segment = null;
+			ChunkMaskSegment src = mask.getSegment(chunkY);
+
+			if (src == null)
+			{
+				continue;
+			}
+
+			ExtendedBlockStorage dest = new ExtendedBlockStorage(chunkY << 4, world.provider.hasSkyLight());
+
+			cacher.update(dest.data);
 
 			for (int x = 0; x < 16; x++)
 			{
@@ -108,29 +112,22 @@ public class ChunkDataContainer
 				{
 					for (int y = 0; y < 16; y++)
 					{
-						int block = mask.getBlock(x, (chunkY * 16) + y, z);
+						int block = src.getBlock(x, y, z);
 
 						if (block == 0)
 						{
 							continue;
 						}
 
-						if (segment == null)
-						{
-							segment = new ExtendedBlockStorage(chunkY << 4, world.provider.hasSkyLight());
-
-							cacher.update(segment.data);
-						}
-
 						int key = cacher.getValue(transformer, block);
 
-						segment.data.storage.setAt(y << 8 | z << 4 | x, key);
-						segment.blockRefCount++;
+						dest.data.storage.setAt(y << 8 | z << 4 | x, key);
+						dest.blockRefCount++;
 					}
 				}
 			}
 
-			container.segments[chunkY] = segment;
+			container.segments[chunkY] = dest;
 		}
 
 		return container;
