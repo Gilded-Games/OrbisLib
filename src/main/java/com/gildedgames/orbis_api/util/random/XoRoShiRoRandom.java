@@ -1,4 +1,4 @@
-package com.gildedgames.orbis_api.util;
+package com.gildedgames.orbis_api.util.random;
 
 import java.util.Random;
 
@@ -6,7 +6,7 @@ import java.util.Random;
 // import Apache Commons.
 //
 // http://xoshiro.di.unimi.it/
-public class XoShiRoRandom extends Random
+public class XoRoShiRoRandom extends Random
 {
 	private static final long serialVersionUID = 1L;
 
@@ -18,20 +18,20 @@ public class XoShiRoRandom extends Random
 	{
 		final long x;
 
-		synchronized (XoShiRoRandom.seedUniquifier)
+		synchronized (XoRoShiRoRandom.seedUniquifier)
 		{
-			x = XoShiRoRandom.seedUniquifier.nextLong();
+			x = XoRoShiRoRandom.seedUniquifier.nextLong();
 		}
 
 		return x ^ System.nanoTime();
 	}
 
-	public XoShiRoRandom()
+	public XoRoShiRoRandom()
 	{
-		this(XoShiRoRandom.randomSeed());
+		this(XoRoShiRoRandom.randomSeed());
 	}
 
-	public XoShiRoRandom(final long seed)
+	public XoRoShiRoRandom(final long seed)
 	{
 		this.setSeed(seed);
 	}
