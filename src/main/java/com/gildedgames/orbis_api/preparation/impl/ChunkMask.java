@@ -16,7 +16,7 @@ import net.minecraft.world.chunk.ChunkPrimer;
  */
 public class ChunkMask
 {
-	private final ChunkMaskSegment[] segments = new ChunkMaskSegment[16];
+	private final ChunkMaskSegment[] segments = new ChunkMaskSegment[32];
 
 	private final int x, z;
 
@@ -28,26 +28,26 @@ public class ChunkMask
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		ChunkMaskSegment segment = this.segments[y >> 4];
+		ChunkMaskSegment segment = this.segments[y >> 3];
 
 		if (segment == null)
 		{
-			this.segments[y >> 4] = segment = new ChunkMaskSegment();
+			this.segments[y >> 3] = segment = new ChunkMaskSegment();
 		}
 
-		segment.setBlock(x, y & 15, z, b);
+		segment.setBlock(x, y & 7, z, b);
 	}
 
 	public int getBlock(int x, int y, int z)
 	{
-		ChunkMaskSegment segment = this.segments[y >> 4];
+		ChunkMaskSegment segment = this.segments[y >> 3];
 
 		if (segment == null)
 		{
 			return 0;
 		}
 
-		return segment.getBlock(x, y & 15, z);
+		return segment.getBlock(x, y & 7, z);
 	}
 
 	public int getX()
@@ -67,7 +67,7 @@ public class ChunkMask
 
 	public int getMaxYSegment()
 	{
-		for (int chunkY = 15; chunkY >= 0; chunkY--)
+		for (int chunkY = 31; chunkY >= 0; chunkY--)
 		{
 			ChunkMaskSegment segment = this.segments[chunkY];
 
@@ -76,7 +76,7 @@ public class ChunkMask
 				continue;
 			}
 
-			return (chunkY * 16) + 16;
+			return (chunkY * 8);
 		}
 
 		return -1;
@@ -84,7 +84,7 @@ public class ChunkMask
 
 	public int getMinYSegment()
 	{
-		for (int chunkY = 0; chunkY < 16; chunkY++)
+		for (int chunkY = 0; chunkY < 32; chunkY++)
 		{
 			ChunkMaskSegment segment = this.segments[chunkY];
 
@@ -93,7 +93,7 @@ public class ChunkMask
 				continue;
 			}
 
-			return (chunkY * 16);
+			return (chunkY * 8);
 		}
 
 		return -1;
@@ -101,13 +101,13 @@ public class ChunkMask
 
 	public void fill(int b)
 	{
-		for (int y = 0; y < 16; y++)
+		for (int chunkY = 0; chunkY < 32; chunkY++)
 		{
-			ChunkMaskSegment segment = this.segments[y >> 4];
+			ChunkMaskSegment segment = this.segments[chunkY];
 
 			if (segment == null)
 			{
-				this.segments[y >> 4] = segment = new ChunkMaskSegment();
+				this.segments[chunkY] = segment = new ChunkMaskSegment();
 			}
 
 			segment.fill(b);
