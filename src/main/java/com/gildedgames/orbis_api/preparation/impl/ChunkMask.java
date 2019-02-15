@@ -65,6 +65,40 @@ public class ChunkMask
 		return this.segments[y];
 	}
 
+	public int getMaxYSegment()
+	{
+		for (int chunkY = 15; chunkY >= 0; chunkY--)
+		{
+			ChunkMaskSegment segment = this.segments[chunkY];
+
+			if (segment == null)
+			{
+				continue;
+			}
+
+			return (chunkY * 16) + 16;
+		}
+
+		return -1;
+	}
+
+	public int getMinYSegment()
+	{
+		for (int chunkY = 0; chunkY < 16; chunkY++)
+		{
+			ChunkMaskSegment segment = this.segments[chunkY];
+
+			if (segment == null)
+			{
+				continue;
+			}
+
+			return (chunkY * 16);
+		}
+
+		return -1;
+	}
+
 	public void fill(int b)
 	{
 		for (int y = 0; y < 16; y++)
