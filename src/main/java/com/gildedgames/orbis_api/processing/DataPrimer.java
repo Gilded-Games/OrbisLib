@@ -12,7 +12,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -66,7 +65,7 @@ public class DataPrimer
 		return true;
 	}
 
-	private void setBlockInWorld(final IBlockState state, final NBTTagCompound entityNBT, final BlockPos pos, final ICreationData<?> creationData)
+	private void setBlockInWorld(final IBlockState state, final BlockDataContainer.TileEntityEntry entity, final BlockPos pos, final ICreationData<?> creationData)
 	{
 		if (state.getMaterial() == Material.AIR && !creationData.placeAir())
 		{
@@ -80,9 +79,9 @@ public class DataPrimer
 
 		this.access.setBlockState(pos, state, 2 | 16);
 
-		if (entityNBT != null && this.access.getWorld() != null)
+		if (entity != null && this.access.getWorld() != null)
 		{
-			TileEntity te = TileEntity.create(this.access.getWorld(), entityNBT);
+			TileEntity te = TileEntity.create(this.access.getWorld(), entity.data);
 
 			this.access.setTileEntity(pos, te);
 		}
@@ -163,7 +162,7 @@ public class DataPrimer
 
 			final IBlockState block = blocks.getBlockState(x, y, z);
 
-			final NBTTagCompound entity;
+			final BlockDataContainer.TileEntityEntry entity;
 
 			if (block.getBlock().hasTileEntity(block))
 			{

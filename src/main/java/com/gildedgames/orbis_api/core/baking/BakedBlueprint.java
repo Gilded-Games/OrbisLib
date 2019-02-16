@@ -277,7 +277,7 @@ public class BakedBlueprint
 		return new ArrayList<>();
 	}
 
-	private void updateLayers()
+	private void updatePostGenReplaceLayers()
 	{
 		for (PostGenReplaceLayer postGenReplaceLayer : this.blueprintData.getPostGenReplaceLayers().values())
 		{
@@ -310,57 +310,94 @@ public class BakedBlueprint
 
 	private void updateBlocks()
 	{
+		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer();
+
 		Rotation rotation = this.creationData.getRotation();
 
-		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer().clone();
+		this.bakedBlocks = this.rotateBlocksAndApplyLayers(blocks, rotation);
 
-		// TODO: Perform only once
-		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
+		BlockPos dimensions = new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1);
+
+		this.bakedRegion = new Region(BlockPos.ORIGIN, transformedBlockPos(dimensions, rotation));
+		this.bakedRegion.add(this.creationData.getPos());
+	}
+
+	public BlockDataContainer rotateBlocksAndApplyLayers(BlockDataContainer origBlocks, Rotation rotation)
+	{
+		final RotationHandler rotater;
+
+		switch (rotation)
 		{
-			IScheduleLayer layer = node.getData();
+			case NONE:
+				rotater = new RotationHandlerIdentity();
+				break;
+			case CLOCKWISE_90:
+				rotater = new RotationHandlerClockwise90();
+				break;
+			case CLOCKWISE_180:
+				rotater = new RotationHandlerClockwise180();
+				break;
+			case COUNTERCLOCKWISE_90:
+				rotater = new RotationHandlerCounterclockwise90();
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported rotation");
+		}
+
+		final BlockPos dim = new BlockPos(origBlocks.getWidth(), origBlocks.getHeight(), origBlocks.getLength());
+		final BlockPos rotatedDim = rotater.getDimensions(dim);
+
+		final BlockDataContainer rotatedBlocks = new BlockDataContainer(origBlocks, rotatedDim.getX(), rotatedDim.getY(), rotatedDim.getZ());
+
+		final BlockPos.MutableBlockPos rotatedPos = new BlockPos.MutableBlockPos();
+
+		for (int z = 0; z < origBlocks.getLength(); z++)
+		{
+			for (int y = 0; y < origBlocks.getHeight(); y++)
+			{
+				for (int x = 0; x < origBlocks.getWidth(); x++)
+				{
+					rotater.applyTransformation(rotatedPos.setPos(x, y, z), dim);
+
+					rotatedBlocks.copyBlockStateWithRotation(origBlocks, x, y, z, rotatedPos.getX(), rotatedPos.getY(), rotatedPos.getZ(), rotation);
+				}
+			}
+		}
+
+		for (final INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
+		{
+			final IScheduleLayer layer = node.getData();
 
 			if (layer.getStateRecord().getData().length == 0)
 			{
 				continue;
 			}
 
-			for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+			for (BlockPos pos : layer.getStateRecord().getRegion())
 			{
-				IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+				final IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
 
 				for (IBlockState predicate : layer.getStateRecord().getData())
 				{
 					if (predicate == layerState)
 					{
-						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(blocks.getBlockState(pos)))
+						rotater.applyTransformation(rotatedPos.setPos(pos), dim);
+
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(rotatedBlocks.getBlockState(rotatedPos)))
 						{
-							blocks.setBlockState(predicate, pos);
+							rotatedBlocks.setBlockState(predicate, rotatedPos);
 						}
 					}
 				}
 			}
 		}
 
-		switch (rotation)
+		for (final BlockDataContainer.TileEntityEntry entry : origBlocks.getTileEntityEntries())
 		{
-			case CLOCKWISE_90:
-				this.bakedBlocks = blocks.rotateClockwise90();
-				break;
-			case COUNTERCLOCKWISE_90:
-				this.bakedBlocks = blocks.rotateCounterclockwise90();
-				break;
-			case CLOCKWISE_180:
-				this.bakedBlocks = blocks.rotateClockwise180();
-				break;
-			default:
-				this.bakedBlocks = blocks;
-				break;
+			rotatedBlocks.setTileEntity(entry.data.copy(), rotater.applyTransformation(rotatedPos.setPos(entry.pos), dim));
 		}
 
-		BlockPos dimensions = new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1);
-
-		this.bakedRegion = new Region(BlockPos.ORIGIN, transformedBlockPos(dimensions, rotation));
-		this.bakedRegion.add(this.creationData.getPos());
+		return rotatedBlocks;
 	}
 
 	private static BlockPos transformedBlockPos(BlockPos pos, Rotation rotation)
@@ -385,7 +422,7 @@ public class BakedBlueprint
 		this.updateBlocks();
 		this.updateScheduleRegions();
 
-		this.updateLayers();
+		this.updatePostGenReplaceLayers();
 	}
 
 	public ChunkPos[] getOccupiedChunks(BlockPos offset)
@@ -421,5 +458,85 @@ public class BakedBlueprint
 	public BlueprintDefinition getDefinition()
 	{
 		return this.definition;
+	}
+
+
+	private interface RotationHandler
+	{
+		BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions);
+
+		BlockPos getDimensions(BlockPos dimensions);
+	}
+
+	private static class RotationHandlerClockwise90 implements RotationHandler
+	{
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			int x = dimensions.getZ() - pos.getZ() - 1;
+			int z = pos.getX();
+
+			return pos.setPos(x, pos.getY(), z);
+		}
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return new BlockPos(dimensions.getZ(), dimensions.getY(), dimensions.getX());
+		}
+	}
+
+	private static class RotationHandlerCounterclockwise90 implements RotationHandler
+	{
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			int x = pos.getZ();
+			int z = dimensions.getX() - pos.getX() - 1;
+
+			return pos.setPos(x, pos.getY(), z);
+		}
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return new BlockPos(dimensions.getZ(), dimensions.getY(), dimensions.getX());
+		}
+	}
+
+	private static class RotationHandlerClockwise180 implements RotationHandler
+	{
+
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			int x = dimensions.getX() - pos.getX() - 1;
+			int z = dimensions.getZ() - pos.getZ() - 1;
+
+			return pos.setPos(x, pos.getY(), z);
+		}
+
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return dimensions;
+		}
+	}
+
+	private static class RotationHandlerIdentity implements RotationHandler
+	{
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			return pos;
+		}
+
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return dimensions;
+		}
 	}
 }
