@@ -394,7 +394,9 @@ public class BakedBlueprint
 
 		for (final BlockDataContainer.TileEntityEntry entry : origBlocks.getTileEntityEntries())
 		{
-			rotatedBlocks.setTileEntity(entry.data.copy(), rotater.applyTransformation(rotatedPos.setPos(entry.pos), dim));
+			rotater.applyTransformation(rotatedPos.setPos(entry.pos), dim);
+
+			rotatedBlocks.setTileEntity(entry.data.copy(), rotatedPos);
 		}
 
 		return rotatedBlocks;

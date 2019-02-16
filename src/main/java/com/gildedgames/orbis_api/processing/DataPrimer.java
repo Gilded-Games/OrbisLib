@@ -160,11 +160,11 @@ public class DataPrimer
 			int y = pos.getY() - region.getMin().getY();
 			int z = pos.getZ() - region.getMin().getZ();
 
-			final IBlockState block = blocks.getBlockState(x, y, z);
+			final IBlockState state = blocks.getBlockState(x, y, z);
 
 			final BlockDataContainer.TileEntityEntry entity;
 
-			if (block.getBlock().hasTileEntity(block))
+			if (state.getBlock().hasTileEntity(state))
 			{
 				entity = blocks.getTileEntity(x, y, z);
 			}
@@ -173,7 +173,7 @@ public class DataPrimer
 				entity = null;
 			}
 
-			this.setBlockInWorld(block, entity, pos, data);
+			this.setBlockInWorld(state, entity, pos, data);
 		}
 
 		return true;

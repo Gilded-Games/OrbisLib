@@ -152,7 +152,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 			final BlockPos tr = pos.add(-minx, -miny, -minz);
 			container.setBlockState(state, tr);
-			container.setTileEntity(world.getTileEntity(pos), pos);
+			container.setTileEntity(world.getTileEntity(pos), tr);
 		}
 		return container;
 	}
@@ -170,6 +170,17 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	private int getIndex(final int x, final int y, final int z)
 	{
 		return z + y * this.length + x * this.height * this.length;
+	}
+
+	private BlockPos fromIndex(int idx)
+	{
+		final int x = idx / (this.height * this.length);
+		idx -= (x * this.height * this.length);
+
+		final int y = idx / this.length;
+		final int z = idx % this.length;
+
+		return new BlockPos(x, y, z);
 	}
 
 	public boolean isOutsideOfContainer(BlockPos pos)
@@ -512,13 +523,21 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				}
 			}
 
-			this.setBlockState(localIdToBlock.get(finalId).getStateFromMeta(metadata[i]), i);
+			Block block = localIdToBlock.get(finalId);
+			IBlockState state = block.getStateFromMeta(metadata[i]);
 
-			NBTTagCompound entity = tileEntities.get(i);
+			this.setBlockState(state, i);
 
-			if (entity != null)
+			if (block.hasTileEntity(state))
 			{
-				this.entities.put(i, new TileEntityEntry(entity));
+				NBTTagCompound entity = tileEntities.get(i);
+
+				if (entity != null)
+				{
+					BlockPos pos = this.fromIndex(i);
+
+					this.entities.put(i, new TileEntityEntry(entity, pos));
+				}
 			}
 		}
 	}
@@ -583,15 +602,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.entities.get(this.getIndex(x, y, z));
 	}
 
-	public void setTileEntity(NBTTagCompound tileEntity, BlockPos pos)
+	public void setTileEntity(TileEntity tileEntity, BlockPos pos)
 	{
-		this.setTileEntity(tileEntity, pos.getX(), pos.getY(), pos.getZ());
+		this.setTileEntity(tileEntity.writeToNBT(new NBTTagCompound()), pos);
 	}
 
-	public void setTileEntity(NBTTagCompound tileEntity, int x, int y, int z)
+	public void setTileEntity(NBTTagCompound tileEntity, BlockPos pos)
 	{
-		BlockPos pos = new BlockPos(x, y, z);
-
 		if (tileEntity == null)
 		{
 			this.entities.remove(this.getIndex(pos));
@@ -602,19 +619,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 	}
 
-	public void setTileEntity(TileEntity entity, BlockPos translated)
-	{
-		BlockPos pos = new BlockPos(translated.getX(), translated.getY(), translated.getZ());
-
-		if (entity == null)
-		{
-			this.entities.remove(this.getIndex(pos));
-		}
-		else
-		{
-			this.entities.put(this.getIndex(pos), new TileEntityEntry(entity, pos));
-		}
-	}
 
 	public Iterable<TileEntityEntry> getTileEntityEntries()
 	{
@@ -627,22 +631,10 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		public final BlockPos pos;
 
-		public TileEntityEntry(TileEntity entity, BlockPos pos)
-		{
-			this.data = entity.writeToNBT(new NBTTagCompound());
-			this.pos = pos;
-		}
-
 		public TileEntityEntry(NBTTagCompound data, BlockPos pos)
 		{
 			this.data = data;
 			this.pos = pos;
-		}
-
-		public TileEntityEntry(NBTTagCompound data)
-		{
-			this.data = data;
-			this.pos = new BlockPos(data.getInteger("x"), data.getInteger("y"), data.getInteger("z"));
 		}
 	}
 }
