@@ -18,6 +18,10 @@ public class ChunkMask
 {
 	private final ChunkMaskSegment[] segments = new ChunkMaskSegment[32];
 
+	private int maxY = Integer.MIN_VALUE, minY = Integer.MAX_VALUE;
+
+	private boolean empty = true;
+
 	private final int x, z;
 
 	public ChunkMask(int x, int z)
@@ -28,11 +32,20 @@ public class ChunkMask
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		ChunkMaskSegment segment = this.segments[y >> 3];
+		int chunkY = y >> 3;
+
+		ChunkMaskSegment segment = this.segments[chunkY];
 
 		if (segment == null)
 		{
-			this.segments[y >> 3] = segment = new ChunkMaskSegment();
+			segment = new ChunkMaskSegment();
+
+			this.segments[chunkY] = segment;
+
+			this.maxY = Math.max(chunkY, this.maxY);
+			this.minY = Math.min(chunkY, this.minY);
+
+			this.empty = false;
 		}
 
 		segment.setBlock(x, y & 7, z, b);
@@ -67,33 +80,35 @@ public class ChunkMask
 
 	public int getMaxYSegment()
 	{
-		for (int chunkY = 31; chunkY >= 0; chunkY--)
-		{
-			ChunkMaskSegment segment = this.segments[chunkY];
-
-			if (segment == null)
-			{
-				continue;
-			}
-
-			return (chunkY * 8);
-		}
-
-		return -1;
+		return this.maxY;
 	}
 
 	public int getMinYSegment()
 	{
-		for (int chunkY = 0; chunkY < 32; chunkY++)
+		return this.minY;
+	}
+
+	public int getHighestBlock(int x, int z)
+	{
+		if (!this.empty)
 		{
-			ChunkMaskSegment segment = this.segments[chunkY];
-
-			if (segment == null)
+			for (int chunkY = this.maxY; chunkY >= this.minY; chunkY--)
 			{
-				continue;
-			}
+				ChunkMaskSegment segment = this.segments[chunkY];
 
-			return (chunkY * 8);
+				if (segment == null)
+				{
+					continue;
+				}
+
+				for (int y = 7; y >= 0; y--)
+				{
+					if (segment.getBlock(x, y, z) > 0)
+					{
+						return (chunkY * 8) + y;
+					}
+				}
+			}
 		}
 
 		return -1;
@@ -112,5 +127,10 @@ public class ChunkMask
 
 			segment.fill(b);
 		}
+
+		this.minY = 0;
+		this.maxY = 31;
+
+		this.empty = false;
 	}
 }

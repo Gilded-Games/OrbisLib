@@ -12,7 +12,5 @@ public interface IPrepChunkManager<T extends IChunkColumnInfo>
 
 	ChunkMask getChunk(IPrepSectorData sectorData, final int chunkX, final int chunkZ);
 
-	T getChunkColumnInfo(IPrepSectorData sectorData, final int chunkX, final int chunkZ);
-
 	IChunkMaskTransformer createMaskTransformer();
 }

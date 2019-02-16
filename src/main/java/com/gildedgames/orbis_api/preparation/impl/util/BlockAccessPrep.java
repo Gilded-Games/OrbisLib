@@ -61,9 +61,10 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 		int chunkX = x >> 4;
 		int chunkZ = z >> 4;
 
-		IChunkColumnInfo info = this.chunkManager.getChunkColumnInfo(this.sectorData, chunkX, chunkZ);
+		ChunkMask mask = this.chunkManager.getChunk(this.sectorData, chunkX, chunkZ);
 
-		return info.getHeight(x & 15, z & 15);
+		return mask.getHighestBlock(x & 15, z & 15);
+
 	}
 
 	@Override
