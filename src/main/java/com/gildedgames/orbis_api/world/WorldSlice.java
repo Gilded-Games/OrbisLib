@@ -93,9 +93,8 @@ public class WorldSlice
 	 *
 	 * @param pos The {@link BlockPos} of the block to replace
 	 * @param after The state of the block at {@link BlockPos} after it is replaced
-	 * @param updateLight Whether or not to perform block/sky lighting updates
 	 */
-	public void replaceBlockState(BlockPos pos, IBlockState after, boolean updateLight)
+	public void replaceBlockState(BlockPos pos, IBlockState after)
 	{
 		if (pos.getY() >= 0  && pos.getY() < 256)
 		{
@@ -107,11 +106,6 @@ public class WorldSlice
 			if (section != null)
 			{
 				section.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, after);
-
-				if (updateLight)
-				{
-					this.world.checkLight(pos);
-				}
 			}
 		}
 	}
@@ -124,7 +118,7 @@ public class WorldSlice
 
 	public boolean isAirBlock(BlockPos pos)
 	{
-		return this.getBlockState(pos).getMaterial() == Material.AIR;
+		return this.isAirBlock(pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	public boolean setBlockState(BlockPos pos, IBlockState state)
@@ -216,4 +210,8 @@ public class WorldSlice
 		return new BlockPos(x, y, z);
 	}
 
+	public boolean isAirBlock(int x, int y, int z)
+	{
+		return this.getBlockState(x, y, z).getMaterial() == Material.AIR;
+	}
 }
