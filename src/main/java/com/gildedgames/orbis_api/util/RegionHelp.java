@@ -73,8 +73,7 @@ public class RegionHelp
 		return new BlockPos(min.getX() + region.getWidth() / 2, min.getY() + region.getHeight() / 2, min.getZ() + region.getLength() / 2);
 	}
 
-	// Returns True if the two regions intersect IN 2D SPACE (!). This might need to be changed to 3D space.
-	public static boolean intersects2D(final IRegion region1, final IRegion region2)
+	public static boolean intersects3D(final IRegion region1, final IRegion region2)
 	{
 		final BlockPos min1 = region1.getMin();
 		final BlockPos min2 = region2.getMin();
@@ -83,7 +82,8 @@ public class RegionHelp
 		final BlockPos max2 = region2.getMax();
 
 		return max1.getX() >= min2.getX() && min1.getX() <= max2.getX()
-				&& max1.getZ() >= min2.getZ() && min1.getZ() <= max2.getZ();
+				&& max1.getZ() >= min2.getZ() && min1.getZ() <= max2.getZ()
+				&& max1.getY() >= min2.getY() && min1.getY() <= max2.getY();
 	}
 
 	public static boolean intersects(final IRegion region1, final IRegion region2)

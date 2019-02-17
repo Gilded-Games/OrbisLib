@@ -22,4 +22,5 @@ public class BlockDataContainerDefaultVoid extends BlockDataContainer
 	{
 		return VOID_BLOCK;
 	}
+
 }

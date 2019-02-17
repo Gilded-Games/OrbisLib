@@ -93,20 +93,17 @@ public class BlockUtil
 		return state.getBlock() == Blocks.STRUCTURE_VOID;
 	}
 
-	public static boolean isAir(final IBlockState state)
-	{
-		return state.getBlock().getMaterial(state) == Material.AIR;
-	}
-
 	public static boolean isSolid(final IBlockState state, final IBlockAccess world, final BlockPos pos)
 	{
-		return !isAir(state) && state.getBlockFaceShape(world, pos, EnumFacing.DOWN) == BlockFaceShape.SOLID
-				&& state.getBlock().getMaterial(state).isOpaque();
+		return !(state.getMaterial() == Material.AIR) && state.getBlockFaceShape(world, pos, EnumFacing.DOWN) == BlockFaceShape.SOLID
+				&& state.getMaterial().isOpaque();
 	}
 
 	public static boolean isSolid(final IBlockState state)
 	{
-		return !isAir(state) && state.getMaterial().isSolid() && state.getBlock().isOpaqueCube(state);
+		Material material = state.getMaterial();
+
+		return material.isSolid() && state.isOpaqueCube();
 	}
 
 	public static int getTopBlockHeight(final World world, int posX, int posZ)

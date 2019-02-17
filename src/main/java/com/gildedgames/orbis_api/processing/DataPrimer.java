@@ -6,20 +6,17 @@ import com.gildedgames.orbis_api.core.PlacedBlueprint;
 import com.gildedgames.orbis_api.core.PlacementCondition;
 import com.gildedgames.orbis_api.core.baking.BakedBlueprint;
 import com.gildedgames.orbis_api.core.baking.IBakedPosAction;
+import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
-import java.util.List;
 
 public class DataPrimer
 {
@@ -46,78 +43,47 @@ public class DataPrimer
 		this.access.spawnEntity(entity);
 	}
 
-	public boolean canGenerate(BakedBlueprint baked, List<PlacementCondition> conditions, BlockPos offset, final boolean checkAreaLoaded)
+	public boolean canGenerate(BakedBlueprint blueprint, BlockPos offset)
 	{
-		Region bakedRegion = baked.getBakedRegion();
+		Region region = new Region(blueprint.getBakedRegion());
+		region.add(offset);
 
-		BlockPos minReloc = bakedRegion.getMin().add(offset);
-		BlockPos maxReloc = bakedRegion.getMax().add(offset);
-
-		if (checkAreaLoaded)
+		if (!this.access.canAccess(region.getMin().getX() - 2, region.getMin().getY() - 2, region.getMin().getZ() - 2,
+				region.getMax().getX() + 2, region.getMax().getY() + 2, region.getMax().getZ() + 2))
 		{
-			if (!this.access.canAccess(minReloc.getX() - 2, minReloc.getY() - 2, minReloc.getZ() - 2,
-					maxReloc.getX() + 2, maxReloc.getY() + 2, maxReloc.getZ() + 2))
-			{
-				return false;
-			}
+			return false;
 		}
 
-		for (final PlacementCondition condition : conditions)
+		for (final PlacementCondition condition : blueprint.getDefinition().getConditions())
 		{
-			if (!condition.prePlacementResolve(this.access, minReloc))
+			if (!condition.validate(this.access, blueprint, region.getMin()))
 			{
 				return false;
-			}
-		}
-
-		BlockDataContainer container = baked.getBlockData();
-
-		BlockPos.MutableBlockPos mutatedPos = new BlockPos.MutableBlockPos();
-
-		for (final BlockPos pos : bakedRegion.getMutableBlockPosInRegion())
-		{
-			IBlockState block = container.getBlockState(
-					pos.getX() - baked.getBakedRegion().getMin().getX(),
-					pos.getY() - baked.getBakedRegion().getMin().getY(),
-					pos.getZ() - baked.getBakedRegion().getMin().getZ()
-			);
-
-			mutatedPos.setPos(pos.getX() + offset.getX(), pos.getY() + offset.getY(), pos.getZ() + offset.getZ());
-
-			for (final PlacementCondition condition : conditions)
-			{
-				if (!condition.canPlace(this.access, minReloc, block, mutatedPos))
-				{
-					return false;
-				}
 			}
 		}
 
 		return true;
 	}
 
-	public void setBlockInWorld(final IBlockState state, final NBTTagCompound entity, final BlockPos pos, final ICreationData<?> creationData)
+	private void setBlockInWorld(final IBlockState state, final BlockDataContainer.TileEntityEntry entity, final BlockPos pos, final ICreationData<?> creationData)
 	{
 		if (state.getMaterial() == Material.AIR && !creationData.placeAir())
 		{
 			return;
 		}
 
-		if (!creationData.shouldCreate(state, pos))
+		if (state.getBlock() == Blocks.STRUCTURE_VOID && !creationData.placesVoid())
 		{
 			return;
 		}
 
-		if (state.getBlock() != Blocks.STRUCTURE_VOID || creationData.placesVoid())
+		this.access.setBlockState(pos, state, 2 | 16);
+
+		if (entity != null && this.access.getWorld() != null)
 		{
-			this.access.setBlockState(pos, state, 2);
+			TileEntity te = TileEntity.create(this.access.getWorld(), entity.data);
 
-			if (entity != null && this.access.getWorld() != null)
-			{
-				TileEntity te = TileEntity.create(this.access.getWorld(), entity);
-
-				this.access.setTileEntity(pos, te);
-			}
+			this.access.setTileEntity(pos, te);
 		}
 
 		// TODO: Re-enable event.
@@ -132,46 +98,35 @@ public class DataPrimer
 			return;
 		}
 
-		for (IBakedPosAction action : baked.getBakedPosActions())
+		for (IBakedPosAction action : baked.getBakedPositionActions())
 		{
 			action.call(this);
 		}
 	}
 
-	public void place(PlacedBlueprint placed, ChunkPos chunkPos, boolean createsEntities)
+	public void place(PlacedBlueprint placed, IRegion region)
 	{
 		BakedBlueprint baked = placed.getBaked();
 
 		BlockPos offset = placed.getCreationData().getPos();
 
-		Region chunkRegion = new Region(chunkPos.getBlock(0, 0, 0), chunkPos.getBlock(15, 255, 15));
-
-		if (!this.copyBlocksIntoWorld(offset, baked, chunkRegion, placed.getCreationData()))
+		if (!this.copyBlocksIntoWorld(offset, baked, region, placed.getCreationData()))
 		{
 			return;
 		}
 
-		if (createsEntities)
+		Region intersection = placed.getRegion().fromIntersection(region);
+
+		for (IBakedPosAction action : placed.getPendingPosActions())
 		{
-			Region intersection = placed.getRegion().fromIntersection(chunkRegion);
-
-			Iterator<IBakedPosAction> it = placed.getPendingPosActions().iterator();
-
-			while (it.hasNext())
+			if (intersection.contains(action.getPos()))
 			{
-				IBakedPosAction action = it.next();
-
-				if (intersection.contains(action.getPos()))
-				{
-					action.call(this);
-
-					it.remove();
-				}
+				action.call(this);
 			}
 		}
 	}
 
-	private boolean copyBlocksIntoWorld(BlockPos offset, BakedBlueprint blueprint, Region bounds, ICreationData<?> data)
+	private boolean copyBlocksIntoWorld(BlockPos offset, BakedBlueprint blueprint, IRegion bounds, ICreationData<?> data)
 	{
 		BlockDataContainer blocks = blueprint.getBlockData();
 
@@ -194,18 +149,32 @@ public class DataPrimer
 			intersection = region;
 		}
 
-		for (BlockPos pos : BlockPos.getAllInBox(intersection.getMin(), intersection.getMax()))
+		for (BlockPos pos : BlockPos.getAllInBoxMutable(intersection.getMin(), intersection.getMax()))
 		{
+			if (!data.shouldCreate(pos))
+			{
+				continue;
+			}
+
 			int x = pos.getX() - region.getMin().getX();
 			int y = pos.getY() - region.getMin().getY();
 			int z = pos.getZ() - region.getMin().getZ();
 
-			final IBlockState block = blocks.getBlockState(x, y, z);
-			final NBTTagCompound entity = blocks.getTileEntity(x, y, z);
+			final IBlockState state = blocks.getBlockState(x, y, z);
 
-			this.setBlockInWorld(block, entity, pos, data);
+			final BlockDataContainer.TileEntityEntry entity;
+
+			if (state.getBlock().hasTileEntity(state))
+			{
+				entity = blocks.getTileEntity(x, y, z);
+			}
+			else
+			{
+				entity = null;
+			}
+
+			this.setBlockInWorld(state, entity, pos, data);
 		}
-
 
 		return true;
 	}

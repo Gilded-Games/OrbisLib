@@ -7,8 +7,7 @@ import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
@@ -469,14 +468,17 @@ public class NBTFunnel
 		this.tag.setTag(key + "_obj", writtenObjects);
 	}
 
-	public <R> void setLongMap(final String key, final TLongObjectMap<R> nbtMap,
+	public <R> void setLongMap(final String key, final Long2ObjectOpenHashMap<R> nbtMap,
 			@Nullable Function<R, NBTTagCompound> rightSetter)
 	{
 		final NBTTagList writtenKeys = new NBTTagList();
 		final NBTTagList writtenObjects = new NBTTagList();
 
-		nbtMap.forEachEntry((chunkPos, valueNBT) ->
+		nbtMap.long2ObjectEntrySet().forEach((entry) ->
 		{
+			final long chunkPos = entry.getLongKey();
+			final R valueNBT = entry.getValue();
+
 			writtenKeys.appendTag(new NBTTagLong(chunkPos));
 
 			if (rightSetter != null)
@@ -487,17 +489,15 @@ public class NBTFunnel
 			{
 				writtenObjects.appendTag(NBTHelper.write((NBT) valueNBT));
 			}
-
-			return true;
 		});
 
 		this.tag.setTag(key + "_keys", writtenKeys);
 		this.tag.setTag(key + "_obj", writtenObjects);
 	}
 
-	public <R> TLongObjectMap<R> getLongMap(final String key, @Nullable Function<NBTTagCompound, R> rightGetter)
+	public <R> Long2ObjectOpenHashMap<R> getLongMap(final String key, @Nullable Function<NBTTagCompound, R> rightGetter)
 	{
-		final TLongObjectMap<R> readObjects = new TLongObjectHashMap<>();
+		final Long2ObjectOpenHashMap<R> readObjects = new Long2ObjectOpenHashMap<>();
 
 		final NBTTagList keys = this.tag.getTagList(key + "_keys", 4);
 		final NBTTagList objects = this.tag.getTagList(key + "_obj", 10);

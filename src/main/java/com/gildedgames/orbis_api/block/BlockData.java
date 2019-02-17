@@ -17,8 +17,6 @@ import javax.annotation.Nullable;
 @Deprecated
 public class BlockData implements NBT
 {
-	private Block block;
-
 	private IBlockState blockState;
 
 	private NBTTagCompound tileEntity;
@@ -31,7 +29,7 @@ public class BlockData implements NBT
 	public BlockData(final Block block)
 	{
 		this();
-		this.block = block;
+		this.blockState = block.getDefaultState();
 	}
 
 	public BlockData(final IBlockState blockState)
@@ -48,7 +46,6 @@ public class BlockData implements NBT
 
 	public BlockData(final BlockData block)
 	{
-		this.block = block.block;
 		this.blockState = block.blockState;
 		this.tileEntity = block.tileEntity;
 	}
@@ -56,16 +53,11 @@ public class BlockData implements NBT
 	@Nullable
 	public Block getBlock()
 	{
-		return this.block;
+		return this.blockState.getBlock();
 	}
 
 	public IBlockState getBlockState()
 	{
-		if (this.block != null && this.blockState == null)
-		{
-			return this.block.getDefaultState();
-		}
-
 		return this.blockState;
 	}
 
@@ -84,7 +76,7 @@ public class BlockData implements NBT
 	{
 		tag.setBoolean("noState", this.blockState == null);
 
-		Block block = this.blockState == null ? this.block : this.blockState.getBlock();
+		Block block = this.blockState.getBlock();
 
 		final ResourceLocation identifier = OrbisAPI.services().registrar().getIdentifierFor(block);
 		short meta = (short) (this.blockState == null ? 0 : block.getMetaFromState(this.blockState));
@@ -116,12 +108,7 @@ public class BlockData implements NBT
 
 		if (noState)
 		{
-			this.block = block;
-
-			if (this.block == null)
-			{
-				this.block = Blocks.AIR;
-			}
+			this.blockState = block.getDefaultState();
 		}
 		else
 		{
@@ -133,6 +120,11 @@ public class BlockData implements NBT
 			{
 				this.blockState = Blocks.AIR.getDefaultState();
 			}
+		}
+
+		if (this.blockState == null)
+		{
+			this.blockState = Blocks.AIR.getDefaultState();
 		}
 
 		final boolean hasTileEntity = tag.getBoolean("hasTileEntity");
@@ -177,7 +169,6 @@ public class BlockData implements NBT
 
 			final BlockData b = (BlockData) obj;
 
-			builder.append(this.block, b.block);
 			builder.append(this.blockState, b.blockState);
 			builder.append(this.tileEntity, b.tileEntity);
 

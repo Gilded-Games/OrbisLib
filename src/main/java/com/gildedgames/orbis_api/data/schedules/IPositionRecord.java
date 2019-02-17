@@ -1,8 +1,8 @@
 package com.gildedgames.orbis_api.data.schedules;
 
 import com.gildedgames.orbis_api.data.region.IDimensions;
+import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.IShape;
-import net.minecraft.util.math.BlockPos;
 
 public interface IPositionRecord<DATA> extends IShape, IDimensions
 {
@@ -25,6 +25,5 @@ public interface IPositionRecord<DATA> extends IShape, IDimensions
 
 	void unmarkPos(int x, int y, int z);
 
-	Iterable<BlockPos.MutableBlockPos> getPositions(DATA data, BlockPos offset);
-
+	IRegion getRegion();
 }

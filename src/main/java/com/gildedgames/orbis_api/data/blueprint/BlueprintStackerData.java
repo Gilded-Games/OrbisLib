@@ -11,6 +11,7 @@ import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.util.io.NBTFunnel;
+import com.gildedgames.orbis_api.util.mc.BlockUtil;
 import com.gildedgames.orbis_api.world.IWorldObject;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -208,11 +209,24 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 		{
 			IScheduleLayer layer = node.getData();
 
-			for (IBlockState state : layer.getStateRecord().getData())
+			if (layer.getStateRecord().getData().length == 0)
 			{
-				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+				continue;
+			}
+
+			for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+			{
+				IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+
+				for (IBlockState predicate : layer.getStateRecord().getData())
 				{
-					chosenBottomBlocks.setBlockState(state, pos);
+					if (predicate == layerState)
+					{
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(chosenBottomBlocks.getBlockState(pos)))
+						{
+							chosenBottomBlocks.setBlockState(predicate, pos);
+						}
+					}
 				}
 			}
 		}
@@ -232,11 +246,24 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 			{
 				IScheduleLayer layer = node.getData();
 
-				for (IBlockState state : layer.getStateRecord().getData())
+				if (layer.getStateRecord().getData().length == 0)
 				{
-					for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+					continue;
+				}
+
+				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+				{
+					IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+
+					for (IBlockState predicate : layer.getStateRecord().getData())
 					{
-						blocks.setBlockState(state, pos);
+						if (predicate == layerState)
+						{
+							if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(blocks.getBlockState(pos)))
+							{
+								blocks.setBlockState(predicate, pos);
+							}
+						}
 					}
 				}
 			}
@@ -253,11 +280,24 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 		{
 			IScheduleLayer layer = node.getData();
 
-			for (IBlockState state : layer.getStateRecord().getData())
+			if (layer.getStateRecord().getData().length == 0)
 			{
-				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
+				continue;
+			}
+
+			for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+			{
+				IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+
+				for (IBlockState predicate : layer.getStateRecord().getData())
 				{
-					chosenTopBlocks.setBlockState(state, pos);
+					if (predicate == layerState)
+					{
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(chosenTopBlocks.getBlockState(pos)))
+						{
+							chosenTopBlocks.setBlockState(predicate, pos);
+						}
+					}
 				}
 			}
 		}

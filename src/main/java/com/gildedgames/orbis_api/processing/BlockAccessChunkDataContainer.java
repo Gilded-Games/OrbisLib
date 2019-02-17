@@ -1,6 +1,6 @@
 package com.gildedgames.orbis_api.processing;
 
-import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.preparation.impl.ChunkDataContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -13,16 +13,21 @@ import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
 
-public class BlockAccessBlockDataContainer implements IBlockAccessExtended
+public class BlockAccessChunkDataContainer implements IBlockAccessExtended
 {
 	private final World world;
 
-	private final BlockDataContainer container;
+	private final ChunkDataContainer container;
 
-	public BlockAccessBlockDataContainer(final World world, BlockDataContainer container)
+	private final int offsetX, offsetZ;
+
+	public BlockAccessChunkDataContainer(final World world, final ChunkDataContainer container)
 	{
 		this.world = world;
 		this.container = container;
+
+		this.offsetX = (this.container.getChunkX() * 16);
+		this.offsetZ = (this.container.getChunkZ() * 16);
 	}
 
 	@Nullable
@@ -35,54 +40,53 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public boolean canAccess(final BlockPos pos)
 	{
-		return pos.getX() >= 0 && pos.getX() < this.container.getWidth() && pos.getY() >= 0 && pos.getY() < this.container.getHeight() && pos.getZ() >= 0
-				&& pos.getZ() < this.container.getLength();
+		//TODO:
+		return true;
 	}
 
 	@Override
 	public boolean canAccess(BlockPos pos, int radius)
 	{
 		//TODO:
-		return this.canAccess(pos);
+		return true;
 	}
 
 	@Override
 	public boolean canAccess(final int x, final int z)
 	{
-		return this.canAccess(new BlockPos(x, 0, z));
+		//TODO:
+		return true;
 	}
 
 	@Override
 	public boolean canAccess(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
 	{
-		return minX >= 0 && maxX < this.container.getWidth() && minY >= 0 && maxY < this.container.getHeight() && minZ >= 0
-				&& maxZ < this.container.getLength();
+		//TODO:
+		return true;
 	}
 
 	@Override
 	public BlockPos getTopPos(final BlockPos pos)
 	{
-		//TODO: use block data container
 		return this.world.getTopSolidOrLiquidBlock(pos);
 	}
 
 	@Override
 	public int getTopY(final int x, final int z)
 	{
-		//TODO: use block data container
 		return this.world.getHeight(x, z);
 	}
 
 	@Override
 	public void setBlockToAir(final BlockPos pos)
 	{
-		this.container.setBlockState(Blocks.AIR.getDefaultState(), pos);
+		this.container.setBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ, Blocks.AIR.getDefaultState());
 	}
 
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state)
 	{
-		this.container.setBlockState(state, pos);
+		this.container.setBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ, state);
 
 		return true;
 	}
@@ -90,7 +94,7 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state, final int flags)
 	{
-		this.container.setBlockState(state, pos);
+		this.container.setBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ, state);
 
 		return true;
 	}
@@ -98,44 +102,38 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public void setTileEntity(final BlockPos pos, final TileEntity tileEntity)
 	{
-
+		this.container.setTileEntity(pos.toImmutable(), tileEntity);
 	}
 
 	@Override
 	public void spawnEntity(Entity entity)
 	{
-
-	}
-
-	@Override
-	public Biome getServerBiome(BlockPos pos)
-	{
-		return null;
+		this.container.addEntity(entity);
 	}
 
 	@Nullable
 	@Override
 	public TileEntity getTileEntity(final BlockPos pos)
 	{
-		return null;
+		return this.container.getTileEntity(pos);
 	}
 
 	@Override
 	public int getCombinedLight(final BlockPos pos, final int lightValue)
 	{
-		return 0;
+		return this.world.getCombinedLight(pos, lightValue);
 	}
 
 	@Override
 	public IBlockState getBlockState(final BlockPos pos)
 	{
-		return this.container.getBlockState(pos);
+		return this.container.getBlockState(pos.getX() - this.offsetX, pos.getY(), pos.getZ() - this.offsetZ);
 	}
 
 	@Override
 	public boolean isAirBlock(final BlockPos pos)
 	{
-		return this.getBlockState(pos) == Blocks.AIR.getDefaultState();
+		return this.getBlockState(pos) != Blocks.AIR.getDefaultState();
 	}
 
 	@Override
@@ -147,7 +145,7 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public int getStrongPower(final BlockPos pos, final EnumFacing direction)
 	{
-		return 0;
+		return this.world.getStrongPower(pos, direction);
 	}
 
 	@Override
@@ -159,6 +157,6 @@ public class BlockAccessBlockDataContainer implements IBlockAccessExtended
 	@Override
 	public boolean isSideSolid(final BlockPos pos, final EnumFacing side, final boolean _default)
 	{
-		return this.getBlockState(pos).isSideSolid(this, pos, side);
+		return this.world.isSideSolid(pos, side, _default);
 	}
 }

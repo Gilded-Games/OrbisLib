@@ -1,5 +1,6 @@
 package com.gildedgames.orbis_api.processing;
 
+import com.gildedgames.orbis_api.world.WorldSlice;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
@@ -9,20 +10,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.ChunkPrimer;
 
 import javax.annotation.Nullable;
 
-public class BlockAccessChunkPrimer implements IBlockAccessExtended
+public class BlockAccessWorldSlice implements IBlockAccessExtended
 {
 	private final World world;
 
-	private final ChunkPrimer primer;
+	private final WorldSlice slice;
 
-	public BlockAccessChunkPrimer(final World world, final ChunkPrimer primer)
+	public BlockAccessWorldSlice(final WorldSlice slice)
 	{
-		this.world = world;
-		this.primer = primer;
+		this.world = slice.getWorld();
+		this.slice = slice;
 	}
 
 	@Nullable
@@ -35,29 +35,25 @@ public class BlockAccessChunkPrimer implements IBlockAccessExtended
 	@Override
 	public boolean canAccess(final BlockPos pos)
 	{
-		//TODO:
-		return true;
+		return this.slice.isBlockWithin(pos);
 	}
 
 	@Override
 	public boolean canAccess(BlockPos pos, int radius)
 	{
-		//TODO:
-		return true;
+		return this.slice.isAreaWithin(pos, radius);
 	}
 
 	@Override
 	public boolean canAccess(final int x, final int z)
 	{
-		//TODO:
-		return true;
+		return this.slice.isBlockWithin(x, 0, z);
 	}
 
 	@Override
 	public boolean canAccess(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
 	{
-		//TODO:
-		return true;
+		return this.slice.isAreaWithin(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@Override
@@ -75,80 +71,31 @@ public class BlockAccessChunkPrimer implements IBlockAccessExtended
 	@Override
 	public void setBlockToAir(final BlockPos pos)
 	{
-		int xDif = pos.getX() % 16;
-		int zDif = pos.getZ() % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		this.primer.setBlockState(xDif, pos.getY(), zDif, Blocks.AIR.getDefaultState());
+		this.slice.setBlockState(pos, Blocks.AIR.getDefaultState());
 	}
 
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state)
 	{
-		int xDif = pos.getX() % 16;
-		int zDif = pos.getZ() % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		this.primer.setBlockState(xDif, pos.getY(), zDif, state);
-
-		return true;
+		return this.slice.setBlockState(pos, state);
 	}
 
 	@Override
 	public boolean setBlockState(final BlockPos pos, final IBlockState state, final int flags)
 	{
-		int xDif = pos.getX() % 16;
-		int zDif = pos.getZ() % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		this.primer.setBlockState(xDif, pos.getY(), zDif, state);
-
-		return true;
+		return this.setBlockState(pos, state);
 	}
 
 	@Override
 	public void setTileEntity(final BlockPos pos, final TileEntity tileEntity)
 	{
-
+		this.world.setTileEntity(pos, tileEntity);
 	}
 
 	@Override
 	public void spawnEntity(Entity entity)
 	{
-
-	}
-
-	@Override
-	public Biome getServerBiome(BlockPos pos)
-	{
-		return this.world.getBiome(pos);
+		this.world.spawnEntity(entity);
 	}
 
 	@Nullable
@@ -167,26 +114,13 @@ public class BlockAccessChunkPrimer implements IBlockAccessExtended
 	@Override
 	public IBlockState getBlockState(final BlockPos pos)
 	{
-		int xDif = pos.getX() % 16;
-		int zDif = pos.getZ() % 16;
-
-		if (xDif < 0)
-		{
-			xDif = 16 - Math.abs(xDif);
-		}
-
-		if (zDif < 0)
-		{
-			zDif = 16 - Math.abs(zDif);
-		}
-
-		return this.primer.getBlockState(xDif, pos.getY(), zDif);
+		return this.slice.getBlockState(pos);
 	}
 
 	@Override
 	public boolean isAirBlock(final BlockPos pos)
 	{
-		return this.getBlockState(pos) != Blocks.AIR.getDefaultState();
+		return this.slice.isAirBlock(pos);
 	}
 
 	@Override

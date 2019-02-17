@@ -2,10 +2,9 @@ package com.gildedgames.orbis_api.core;
 
 import com.gildedgames.orbis_api.core.registry.IOrbisDefinitionRegistry;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
-import com.gildedgames.orbis_api.processing.CenterOffsetProcessor;
-import com.google.common.collect.Lists;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class BlueprintDefinition
 {
@@ -14,11 +13,7 @@ public class BlueprintDefinition
 
 	private IOrbisDefinitionRegistry registry;
 
-	private CenterOffsetProcessor offset;
-
-	private List<PlacementCondition> conditions = Lists.newArrayList();
-
-	private List<PostPlacement> postPlacements = Lists.newArrayList();
+	private PlacementCondition[] conditions = new PlacementCondition[0];
 
 	private boolean randomRotation = true;
 
@@ -40,51 +35,18 @@ public class BlueprintDefinition
 		return this.floorHeight;
 	}
 
-	public BlueprintDefinition setPostPlacements(final PostPlacement postPlacement, final PostPlacement... postPlacements)
+	public BlueprintDefinition setConditions(final PlacementCondition... conditions)
 	{
-		this.postPlacements = Lists.newArrayList(postPlacements);
+		this.conditions = conditions;
 
-		this.postPlacements.add(postPlacement);
+		Arrays.sort(this.conditions, Comparator.comparingInt(PlacementCondition::getPriority));
 
 		return this;
 	}
 
-	public List<PostPlacement> getPostPlacements()
-	{
-		return this.postPlacements;
-	}
-
-	public BlueprintDefinition setConditions(final PlacementCondition condition, final PlacementCondition... conditions)
-	{
-		this.conditions = Lists.newArrayList(conditions);
-
-		this.conditions.add(condition);
-
-		return this;
-	}
-
-	public CenterOffsetProcessor getOffset()
-	{
-		return this.offset;
-	}
-
-	public BlueprintDefinition setOffset(final CenterOffsetProcessor offset)
-	{
-		this.offset = offset;
-
-		return this;
-	}
-
-	public List<PlacementCondition> getConditions()
+	public PlacementCondition[] getConditions()
 	{
 		return this.conditions;
-	}
-
-	public BlueprintDefinition setConditions(final PlacementCondition[] conditions)
-	{
-		this.conditions = Lists.newArrayList(conditions);
-
-		return this;
 	}
 
 	public BlueprintData getData()
@@ -119,11 +81,17 @@ public class BlueprintDefinition
 	@Override
 	public BlueprintDefinition clone()
 	{
-		final BlueprintDefinition clone = new BlueprintDefinition(this.data).setRegistry(this.registry).setOffset(this.offset)
-				.setRandomRotation(this.randomRotation);
+		return new BlueprintDefinition(this.data)
+				.setRegistry(this.registry)
+				.setRandomRotation(this.randomRotation)
+				.setConditions(this.conditions)
+				.setFloorHeight(this.floorHeight);
+	}
 
-		clone.conditions = this.conditions;
+	private BlueprintDefinition setFloorHeight(int floorHeight)
+	{
+		this.floorHeight = floorHeight;
 
-		return clone;
+		return this;
 	}
 }

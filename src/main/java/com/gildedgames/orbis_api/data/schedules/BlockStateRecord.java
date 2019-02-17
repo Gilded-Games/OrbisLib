@@ -217,40 +217,9 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getPositions(final IBlockState state, BlockPos offset)
+	public IRegion getRegion()
 	{
-		return new Iterable<BlockPos.MutableBlockPos>()
-		{
-
-			@Override
-			public Iterator<BlockPos.MutableBlockPos> iterator()
-			{
-				final Iterator<BlockPos.MutableBlockPos> iter = BlockPos
-						.getAllInBoxMutable(BlockStateRecord.this.getBoundingBox().getMin().add(offset),
-								BlockStateRecord.this.getBoundingBox().getMax().add(offset))
-						.iterator();
-
-				return new AbstractIterator<BlockPos.MutableBlockPos>()
-				{
-
-					@Override
-					protected BlockPos.MutableBlockPos computeNext()
-					{
-						while (iter.hasNext())
-						{
-							final BlockPos.MutableBlockPos next = iter.next();
-
-							if (state.equals(BlockStateRecord.this.get(next.getX() - offset.getX(), next.getY() - offset.getY(), next.getZ() - offset.getZ())))
-							{
-								return next;
-							}
-						}
-
-						return this.endOfData();
-					}
-				};
-			}
-		};
+		return this.boundingBox;
 	}
 
 	@Override

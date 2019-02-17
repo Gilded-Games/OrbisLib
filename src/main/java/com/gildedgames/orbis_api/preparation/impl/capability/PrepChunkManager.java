@@ -1,24 +1,20 @@
 package com.gildedgames.orbis_api.preparation.impl.capability;
 
-import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
-import com.gildedgames.orbis_api.preparation.IPrepChunkManager;
-import com.gildedgames.orbis_api.preparation.IPrepRegistryEntry;
-import com.gildedgames.orbis_api.preparation.IPrepSectorData;
+import com.gildedgames.orbis_api.preparation.*;
 import com.gildedgames.orbis_api.preparation.impl.ChunkMask;
 import com.gildedgames.orbis_api.util.ChunkMap;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
 
-public class PrepChunkManager implements IPrepChunkManager
+public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkManager<T>
 {
 	private World world;
 
-	private IPrepRegistryEntry registryEntry;
+	private IPrepRegistryEntry<T> registryEntry;
 
 	private final ChunkMap<ChunkMask> chunkCache = new ChunkMap<>();
 
@@ -27,7 +23,7 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	}
 
-	public PrepChunkManager(World world, IPrepRegistryEntry registryEntry)
+	public PrepChunkManager(World world, IPrepRegistryEntry<T> registryEntry)
 	{
 		this.world = world;
 		this.registryEntry = registryEntry;
@@ -41,28 +37,22 @@ public class PrepChunkManager implements IPrepChunkManager
 
 	@Nullable
 	@Override
-	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkY)
+	public ChunkMask getChunk(IPrepSectorData sectorData, int chunkX, int chunkZ)
 	{
-		synchronized (this.chunkCache)
+		ChunkMask mask = this.chunkCache.get(chunkX, chunkZ);
+
+		if (mask != null)
 		{
-			if (this.chunkCache.containsKey(chunkX, chunkY))
-			{
-				return this.chunkCache.get(chunkX, chunkY);
-			}
+			return mask;
 		}
 
-		Biome[] biomes = new Biome[256];
-		biomes = PrepChunkManager.this.world.getBiomeProvider().getBiomes(biomes, chunkX * 16, chunkY * 16, 16, 16);
+		mask = new ChunkMask(chunkX, chunkZ);
 
-		ChunkMask mask = new ChunkMask();
+		T info = this.registryEntry.generateChunkColumnInfo(this.world, sectorData, chunkX, chunkZ);
 
-		PrepChunkManager.this.registryEntry
-				.threadSafeGenerateMask(PrepChunkManager.this.world, sectorData, biomes, mask, chunkX, chunkY);
+		this.registryEntry.threadSafeGenerateMask(info, this.world, sectorData, mask, chunkX, chunkZ);
 
-		synchronized (this.chunkCache)
-		{
-			this.chunkCache.put(chunkX, chunkY, mask);
-		}
+		this.chunkCache.put(chunkX, chunkZ, mask);
 
 		return mask;
 	}

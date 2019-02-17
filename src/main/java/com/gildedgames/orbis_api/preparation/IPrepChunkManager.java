@@ -6,11 +6,11 @@ import net.minecraft.world.World;
 /**
  * Actually manages the chunks within a world.
  */
-public interface IPrepChunkManager
+public interface IPrepChunkManager<T extends IChunkColumnInfo>
 {
 	World getWorld();
 
-	ChunkMask getChunk(IPrepSectorData sectorData, final int chunkX, final int chunkY);
+	ChunkMask getChunk(IPrepSectorData sectorData, final int chunkX, final int chunkZ);
 
 	IChunkMaskTransformer createMaskTransformer();
 }

@@ -70,4 +70,11 @@ public class BlueprintUtil
 				|| BlueprintUtil.canGrowInto(state.getBlock());
 	}
 
+	public static boolean isReplaceable(final IBlockState state)
+	{
+		Material material = state.getMaterial();
+
+		return material == Material.AIR || material == Material.LEAVES || material == Material.PLANTS || material == Material.SNOW;
+	}
+
 }

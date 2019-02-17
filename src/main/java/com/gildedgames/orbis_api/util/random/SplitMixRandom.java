@@ -1,4 +1,4 @@
-package com.gildedgames.orbis_api.util;
+package com.gildedgames.orbis_api.util.random;
 
 import it.unimi.dsi.fastutil.HashCommon;
 
@@ -14,7 +14,7 @@ public class SplitMixRandom
 
 	public SplitMixRandom()
 	{
-		this(XoShiRoRandom.randomSeed());
+		this(XoRoShiRoRandom.randomSeed());
 	}
 
 	public SplitMixRandom(final long seed)

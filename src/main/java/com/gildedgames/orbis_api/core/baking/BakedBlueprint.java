@@ -1,7 +1,7 @@
 package com.gildedgames.orbis_api.core.baking;
 
-import com.gildedgames.orbis_api.OrbisAPI;
 import com.gildedgames.orbis_api.block.BlockDataContainer;
+import com.gildedgames.orbis_api.core.BlueprintDefinition;
 import com.gildedgames.orbis_api.core.ICreationData;
 import com.gildedgames.orbis_api.core.tree.ConditionLink;
 import com.gildedgames.orbis_api.core.tree.INode;
@@ -13,9 +13,6 @@ import com.gildedgames.orbis_api.core.variables.post_resolve_actions.IPostResolv
 import com.gildedgames.orbis_api.data.IDataUser;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintData;
 import com.gildedgames.orbis_api.data.blueprint.BlueprintVariable;
-import com.gildedgames.orbis_api.data.management.IData;
-import com.gildedgames.orbis_api.data.management.IDataIdentifier;
-import com.gildedgames.orbis_api.data.region.IDimensions;
 import com.gildedgames.orbis_api.data.region.IRegion;
 import com.gildedgames.orbis_api.data.region.Region;
 import com.gildedgames.orbis_api.data.schedules.IPosActionBaker;
@@ -23,27 +20,22 @@ import com.gildedgames.orbis_api.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis_api.data.schedules.PostGenReplaceLayer;
 import com.gildedgames.orbis_api.data.schedules.ScheduleRegion;
 import com.gildedgames.orbis_api.util.RotationHelp;
-import com.gildedgames.orbis_api.util.io.NBTFunnel;
 import com.gildedgames.orbis_api.util.mc.BlockUtil;
 import com.gildedgames.orbis_api.util.mc.NBT;
 import com.gildedgames.orbis_api.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.ChunkPos;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
-public class BakedBlueprint implements IDimensions
+public class BakedBlueprint
 {
-	private List<IBakedPosAction> bakedPosActions = Lists.newArrayList();
-
 	private List<ScheduleRegion> bakedScheduleRegions = Lists.newArrayList();
 
 	private LinkedList<INode<IScheduleLayer, LayerLink>> bakedScheduleLayerNodes = Lists.newLinkedList();
@@ -58,30 +50,16 @@ public class BakedBlueprint implements IDimensions
 
 	private ICreationData<?> creationData;
 
-	private BakedBlueprint()
-	{
+	private BlueprintDefinition definition;
 
-	}
-
-	public BakedBlueprint(BlueprintData blueprintData, ICreationData<?> creationData)
+	public BakedBlueprint(BlueprintDefinition definition, ICreationData<?> creationData)
 	{
-		this.blueprintData = blueprintData;
+		this.definition = definition;
+		this.blueprintData = definition.getData();
+
 		this.creationData = creationData;
 
 		this.bake();
-	}
-
-	@Override
-	public BakedBlueprint clone()
-	{
-		BakedBlueprint clone = new BakedBlueprint();
-
-		NBTTagCompound tag = new NBTTagCompound();
-
-		this.write(tag);
-		clone.read(tag);
-
-		return clone;
 	}
 
 	public ICreationData<?> getCreationData()
@@ -230,19 +208,6 @@ public class BakedBlueprint implements IDimensions
 		this.fetchValidLayers(this.blueprintData.getScheduleLayerTree().getRootNode(), this.bakedScheduleLayerNodes, Lists.newArrayList());
 	}
 
-	private boolean areParentsResolved(INode<IScheduleLayer, LayerLink> node, List<INode<IScheduleLayer, LayerLink>> resolvedNodes)
-	{
-		for (INode<IScheduleLayer, LayerLink> parent : node.getTree().get(node.getParentsIds()))
-		{
-			if (!resolvedNodes.contains(parent) || !this.areParentsResolved(parent, resolvedNodes))
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
 	private void updateScheduleRegions()
 	{
 		final Rotation rotation = this.creationData.getRotation();
@@ -265,10 +230,8 @@ public class BakedBlueprint implements IDimensions
 		}
 	}
 
-	private void updatePosActions()
+	public List<IBakedPosAction> getBakedPositionActions()
 	{
-		this.bakedPosActions.clear();
-
 		Region boundsBeforeRotateAtOrigin = new Region(new BlockPos(0, 0, 0), new BlockPos(this.blueprintData.getWidth() - 1,
 				this.blueprintData.getHeight() - 1, this.blueprintData.getLength() - 1));
 
@@ -305,16 +268,16 @@ public class BakedBlueprint implements IDimensions
 					{
 						IPosActionBaker baker = (IPosActionBaker) actionNode.getData();
 
-						List<IBakedPosAction> actions = baker.bakeActions(bounds, this.creationData.getRandom(), this.creationData.getRotation());
-
-						this.bakedPosActions.addAll(actions);
+						return baker.bakeActions(bounds, this.creationData.getRandom(), this.creationData.getRotation());
 					}
 				}
 			}
 		}
+
+		return new ArrayList<>();
 	}
 
-	private void updateLayers()
+	private void updatePostGenReplaceLayers()
 	{
 		for (PostGenReplaceLayer postGenReplaceLayer : this.blueprintData.getPostGenReplaceLayers().values())
 		{
@@ -347,41 +310,11 @@ public class BakedBlueprint implements IDimensions
 
 	private void updateBlocks()
 	{
+		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer();
+
 		Rotation rotation = this.creationData.getRotation();
 
-		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer().clone();
-
-		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
-		{
-			IScheduleLayer layer = node.getData();
-
-			for (IBlockState state : layer.getStateRecord().getData())
-			{
-				for (MutableBlockPos pos : layer.getStateRecord().getPositions(state, BlockPos.ORIGIN))
-				{
-					if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(blocks.getBlockState(pos)))
-					{
-						blocks.setBlockState(state, pos);
-					}
-				}
-			}
-		}
-
-		switch (rotation)
-		{
-			case CLOCKWISE_90:
-				this.bakedBlocks = blocks.rotateClockwise90();
-				break;
-			case COUNTERCLOCKWISE_90:
-				this.bakedBlocks = blocks.rotateCounterclockwise90();
-				break;
-			case CLOCKWISE_180:
-				this.bakedBlocks = blocks.rotateClockwise180();
-				break;
-			default:
-				this.bakedBlocks = blocks;
-				break;
-		}
+		this.bakedBlocks = this.rotateBlocksAndApplyLayers(blocks, rotation);
 
 		BlockPos dimensions = new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1);
 
@@ -389,13 +322,93 @@ public class BakedBlueprint implements IDimensions
 		this.bakedRegion.add(this.creationData.getPos());
 	}
 
+	public BlockDataContainer rotateBlocksAndApplyLayers(BlockDataContainer origBlocks, Rotation rotation)
+	{
+		final RotationHandler rotater;
+
+		switch (rotation)
+		{
+			case NONE:
+				rotater = new RotationHandlerIdentity();
+				break;
+			case CLOCKWISE_90:
+				rotater = new RotationHandlerClockwise90();
+				break;
+			case CLOCKWISE_180:
+				rotater = new RotationHandlerClockwise180();
+				break;
+			case COUNTERCLOCKWISE_90:
+				rotater = new RotationHandlerCounterclockwise90();
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported rotation");
+		}
+
+		final BlockPos dim = new BlockPos(origBlocks.getWidth(), origBlocks.getHeight(), origBlocks.getLength());
+		final BlockPos rotatedDim = rotater.getDimensions(dim);
+
+		final BlockDataContainer rotatedBlocks = new BlockDataContainer(origBlocks, rotatedDim.getX(), rotatedDim.getY(), rotatedDim.getZ());
+
+		final BlockPos.MutableBlockPos rotatedPos = new BlockPos.MutableBlockPos();
+
+		for (int z = 0; z < origBlocks.getLength(); z++)
+		{
+			for (int y = 0; y < origBlocks.getHeight(); y++)
+			{
+				for (int x = 0; x < origBlocks.getWidth(); x++)
+				{
+					rotater.applyTransformation(rotatedPos.setPos(x, y, z), dim);
+
+					rotatedBlocks.copyBlockStateWithRotation(origBlocks, x, y, z, rotatedPos.getX(), rotatedPos.getY(), rotatedPos.getZ(), rotation);
+				}
+			}
+		}
+
+		for (final INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
+		{
+			final IScheduleLayer layer = node.getData();
+
+			if (layer.getStateRecord().getData().length == 0)
+			{
+				continue;
+			}
+
+			for (BlockPos pos : layer.getStateRecord().getRegion())
+			{
+				final IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+
+				for (IBlockState predicate : layer.getStateRecord().getData())
+				{
+					if (predicate == layerState)
+					{
+						rotater.applyTransformation(rotatedPos.setPos(pos), dim);
+
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(rotatedBlocks.getBlockState(rotatedPos)))
+						{
+							rotatedBlocks.setBlockState(predicate, rotatedPos);
+						}
+					}
+				}
+			}
+		}
+
+		for (final BlockDataContainer.TileEntityEntry entry : origBlocks.getTileEntityEntries())
+		{
+			rotater.applyTransformation(rotatedPos.setPos(entry.pos), dim);
+
+			rotatedBlocks.setTileEntity(entry.data.copy(), rotatedPos);
+		}
+
+		return rotatedBlocks;
+	}
+
 	private static BlockPos transformedBlockPos(BlockPos pos, Rotation rotation)
 	{
 		switch (rotation)
 		{
-			case COUNTERCLOCKWISE_90:
-				return new BlockPos(pos.getZ(), pos.getY(), -pos.getX());
 			case CLOCKWISE_90:
+				return new BlockPos(pos.getZ(), pos.getY(), -pos.getX());
+			case COUNTERCLOCKWISE_90:
 				return new BlockPos(-pos.getZ(), pos.getY(), pos.getX());
 			case CLOCKWISE_180:
 				return new BlockPos(-pos.getX(), pos.getY(), -pos.getZ());
@@ -410,14 +423,8 @@ public class BakedBlueprint implements IDimensions
 
 		this.updateBlocks();
 		this.updateScheduleRegions();
-		this.updatePosActions();
 
-		this.updateLayers();
-	}
-
-	public List<IBakedPosAction> getBakedPosActions()
-	{
-		return this.bakedPosActions;
+		this.updatePostGenReplaceLayers();
 	}
 
 	public ChunkPos[] getOccupiedChunks(BlockPos offset)
@@ -425,61 +432,19 @@ public class BakedBlueprint implements IDimensions
 		return BlueprintUtil.getChunksInsideTemplate(this.bakedBlocks, this.bakedRegion.getMin().add(offset), Rotation.NONE);
 	}
 
-	@Override
 	public int getWidth()
 	{
 		return this.bakedRegion.getWidth();
 	}
 
-	@Override
 	public int getHeight()
 	{
 		return this.bakedRegion.getHeight();
 	}
 
-	@Override
 	public int getLength()
 	{
 		return this.bakedRegion.getLength();
-	}
-
-	@Override
-	public void write(NBTTagCompound tag)
-	{
-		NBTFunnel funnel = new NBTFunnel(tag);
-
-		funnel.set("creationData", this.getCreationData());
-
-		if (this.blueprintData != null && this.blueprintData.getMetadata() != null)
-		{
-			funnel.set("blueprintId", this.blueprintData.getMetadata().getIdentifier());
-		}
-	}
-
-	@Override
-	public void read(NBTTagCompound tag)
-	{
-		NBTFunnel funnel = new NBTFunnel(tag);
-
-		this.creationData = funnel.get("creationData");
-
-		final IDataIdentifier id = funnel.get("blueprintId");
-
-		if (id != null)
-		{
-			Optional<IData> data = OrbisAPI.services().getProjectManager().findData(id);
-
-			if (data.isPresent())
-			{
-				this.blueprintData = (BlueprintData) data.get();
-			}
-			else
-			{
-				throw new RuntimeException("Missing creationData in " + this.getClass().getName() + " : " + id);
-			}
-		}
-
-		this.bake();
 	}
 
 	public BlockDataContainer getBlockData()
@@ -490,5 +455,90 @@ public class BakedBlueprint implements IDimensions
 	public Region getBakedRegion()
 	{
 		return this.bakedRegion;
+	}
+
+	public BlueprintDefinition getDefinition()
+	{
+		return this.definition;
+	}
+
+
+	private interface RotationHandler
+	{
+		BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions);
+
+		BlockPos getDimensions(BlockPos dimensions);
+	}
+
+	private static class RotationHandlerClockwise90 implements RotationHandler
+	{
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			int x = dimensions.getZ() - pos.getZ() - 1;
+			int z = pos.getX();
+
+			return pos.setPos(x, pos.getY(), z);
+		}
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return new BlockPos(dimensions.getZ(), dimensions.getY(), dimensions.getX());
+		}
+	}
+
+	private static class RotationHandlerCounterclockwise90 implements RotationHandler
+	{
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			int x = pos.getZ();
+			int z = dimensions.getX() - pos.getX() - 1;
+
+			return pos.setPos(x, pos.getY(), z);
+		}
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return new BlockPos(dimensions.getZ(), dimensions.getY(), dimensions.getX());
+		}
+	}
+
+	private static class RotationHandlerClockwise180 implements RotationHandler
+	{
+
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			int x = dimensions.getX() - pos.getX() - 1;
+			int z = dimensions.getZ() - pos.getZ() - 1;
+
+			return pos.setPos(x, pos.getY(), z);
+		}
+
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return dimensions;
+		}
+	}
+
+	private static class RotationHandlerIdentity implements RotationHandler
+	{
+		@Override
+		public BlockPos.MutableBlockPos applyTransformation(BlockPos.MutableBlockPos pos, BlockPos dimensions)
+		{
+			return pos;
+		}
+
+
+		@Override
+		public BlockPos getDimensions(BlockPos dimensions)
+		{
+			return dimensions;
+		}
 	}
 }

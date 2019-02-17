@@ -1,6 +1,5 @@
 package com.gildedgames.orbis_api.preparation.impl;
 
-import com.gildedgames.orbis_api.preparation.IChunkMaskTransformer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.chunk.ChunkPrimer;
 
@@ -17,47 +16,121 @@ import net.minecraft.world.chunk.ChunkPrimer;
  */
 public class ChunkMask
 {
-	private byte[] mask = new byte[16 * 256 * 16];
+	private final ChunkMaskSegment[] segments = new ChunkMaskSegment[32];
+
+	private int maxY = Integer.MIN_VALUE, minY = Integer.MAX_VALUE;
+
+	private boolean empty = true;
+
+	private final int x, z;
+
+	public ChunkMask(int x, int z)
+	{
+		this.x = x;
+		this.z = z;
+	}
 
 	public void setBlock(int x, int y, int z, int b)
 	{
-		this.mask[x << 12 | z << 8 | y] = (byte) b;
+		int chunkY = y >> 3;
+
+		ChunkMaskSegment segment = this.segments[chunkY];
+
+		if (segment == null)
+		{
+			segment = new ChunkMaskSegment();
+
+			this.segments[chunkY] = segment;
+
+			this.maxY = Math.max(chunkY, this.maxY);
+			this.minY = Math.min(chunkY, this.minY);
+
+			this.empty = false;
+		}
+
+		segment.setBlock(x, y & 7, z, b);
 	}
 
 	public int getBlock(int x, int y, int z)
 	{
-		return this.mask[x << 12 | z << 8 | y];
+		ChunkMaskSegment segment = this.segments[y >> 3];
+
+		if (segment == null)
+		{
+			return 0;
+		}
+
+		return segment.getBlock(x, y & 7, z);
 	}
 
-	public int getTopBlock(int x, int z)
+	public int getX()
 	{
-		for (int y = 255; y > 0; y--)
+		return this.x;
+	}
+
+	public int getZ()
+	{
+		return this.z;
+	}
+
+	public ChunkMaskSegment getSegment(int y)
+	{
+		return this.segments[y];
+	}
+
+	public int getMaxYSegment()
+	{
+		return this.maxY;
+	}
+
+	public int getMinYSegment()
+	{
+		return this.minY;
+	}
+
+	public int getHighestBlock(int x, int z)
+	{
+		if (!this.empty)
 		{
-			if (this.getBlock(x, y, z) > 0)
+			for (int chunkY = this.maxY; chunkY >= this.minY; chunkY--)
 			{
-				return y;
+				ChunkMaskSegment segment = this.segments[chunkY];
+
+				if (segment == null)
+				{
+					continue;
+				}
+
+				for (int y = 7; y >= 0; y--)
+				{
+					if (segment.getBlock(x, y, z) > 0)
+					{
+						return (chunkY * 8) + y;
+					}
+				}
 			}
 		}
 
 		return -1;
 	}
 
-	public ChunkPrimer createChunk(ChunkPrimer primer, IChunkMaskTransformer func)
+	public void fill(int b)
 	{
-		for (int x = 0; x < 16; x++)
+		for (int chunkY = 0; chunkY < 32; chunkY++)
 		{
-			for (int z = 0; z < 16; z++)
-			{
-				for (int y = 0; y < 256; y++)
-				{
-					int raw = this.getBlock(x, y, z);
+			ChunkMaskSegment segment = this.segments[chunkY];
 
-					IBlockState state = func.remapBlock(raw);
-					primer.setBlockState(x, y, z, state);
-				}
+			if (segment == null)
+			{
+				this.segments[chunkY] = segment = new ChunkMaskSegment();
 			}
+
+			segment.fill(b);
 		}
 
-		return primer;
+		this.minY = 0;
+		this.maxY = 31;
+
+		this.empty = false;
 	}
 }
