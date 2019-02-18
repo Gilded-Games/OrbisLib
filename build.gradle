@@ -18,7 +18,12 @@ allprojects {
     targetCompatibility = 1.8
 }
 
-version = "${mod_version}"
+if (System.getenv("CI_JOB_ID") != null) {
+    version = "${minecraft_version}-${mod_version}+build-${System.getenv("CI_JOB_ID")}"
+} else {
+    version = "${minecraft_version}-${mod_version}+snapshot-${System.currentTimeMillis()}"
+}
+
 group = "com.gildedgames"
 archivesBaseName = "${mod_name}"
 
@@ -33,8 +38,8 @@ jar {
 }
 
 minecraft {
-    version = forge_version
-    mappings = forge_mappings
+    version = "$minecraft_version-$forge_version"
+    mappings = "$forge_mappings"
 
     runDir = "run"
 }
@@ -71,16 +76,15 @@ artifacts {
 }
 
 task signJar(type: SignJar, dependsOn: reobfJar) {
-    keyStore = System.getenv('GG_SIGN_KEYSTORE')
-    alias = System.getenv('GG_SIGN_ALIAS')
-    storePass = System.getenv('GG_SIGN_STORE_PASS')
-    keyPass = System.getenv('GG_SIGN_KEY_PASS')
+    keyStore = System.getenv('SIGN_KEYSTORE')
+    alias = System.getenv('SIGN_ALIAS')
+    storePass = System.getenv('SIGN_STORE_PASS')
+    keyPass = System.getenv('SIGN_KEY_PASS')
 
     inputFile = jar.archivePath
     outputFile = jar.archivePath
 }
 
-
-if (System.getenv("GRADLE_BUILD_SIGNED") == 'true') {
+if (System.getenv("SIGN_BUILD") == 'true') {
     build.dependsOn signJar
 }
