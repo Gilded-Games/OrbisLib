@@ -205,9 +205,12 @@ public class WorldSlice
 
 	public BlockPos getHighestBlockPos(int x, int z)
 	{
-		int y = this.world.getChunk(x >> 4, z >> 4).getHeightValue(x & 15, z & 15);
-
-		return new BlockPos(x, y, z);
+		return new BlockPos(x, this.getHeighestBlockValue(x, z), z);
+	}
+	
+	public int getHeighestBlockValue(int x, int z)
+	{
+		return this.world.getChunk(x >> 4, z >> 4).getHeightValue(x & 15, z & 15);
 	}
 
 	public boolean isAirBlock(int x, int y, int z)

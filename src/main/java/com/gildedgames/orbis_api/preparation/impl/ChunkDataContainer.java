@@ -5,6 +5,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BitArray;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.BlockStateContainer;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 
 public class ChunkDataContainer
 {
-	private final ExtendedBlockStorage[] segments = new ExtendedBlockStorage[16];
+	private final SegmentStorage[] segments = new SegmentStorage[16];
 
 	private final HashMap<BlockPos, TileEntity> tileEntities = new HashMap<>();
 
@@ -41,26 +42,40 @@ public class ChunkDataContainer
 
 	public IBlockState getBlockState(final int x, final int y, final int z)
 	{
-		ExtendedBlockStorage segment = this.segments[y >> 4];
+		SegmentStorage segment = this.segments[y >> 4];
 
 		if (segment == null)
 		{
 			return Blocks.AIR.getDefaultState();
 		}
 
-		return segment.get(x, y & 15, z);
+		return segment.blockStorage.get(x, y & 15, z);
 	}
 
 	public void setBlockState(final int x, final int y, final int z, final IBlockState state)
 	{
-		ExtendedBlockStorage segment = this.segments[y >> 4];
+		SegmentStorage segment = this.segments[y >> 4];
 
 		if (segment == null)
 		{
-			this.segments[y >> 4] = segment = new ExtendedBlockStorage((y >> 4) * 16, this.hasSkylight);
+			this.segments[y >> 4] = segment = new SegmentStorage((y >> 4) * 16, this.hasSkylight);
 		}
 
-		segment.set(x, y & 15, z, state);
+		segment.blockStorage.set(x, y & 15, z, state);
+
+		segment.opacity[x << 8 | z << 4 | (y & 15)] = (byte) state.getLightOpacity();
+	}
+
+	private int getBlockOpacity(int x, int y, int z)
+	{
+		SegmentStorage segment = this.segments[y >> 4];
+
+		if (segment == null)
+		{
+			return 0;
+		}
+
+		return Byte.toUnsignedInt(segment.opacity[x << 8 | z << 4 | (y & 15)]);
 	}
 
 	public void setBlockState(final BlockPos pos, final IBlockState state)
@@ -102,17 +117,19 @@ public class ChunkDataContainer
 				continue;
 			}
 
-			ExtendedBlockStorage dest = container.segments[chunkY >> 1];
+			SegmentStorage dest = container.segments[chunkY >> 1];
 
 			if (dest == null)
 			{
-				dest = new ExtendedBlockStorage((chunkY >> 1) << 4, world.provider.hasSkyLight());
+				dest = new SegmentStorage((chunkY >> 1) << 4, world.provider.hasSkyLight());
 
 				container.segments[chunkY >> 1] = dest;
 			}
 
-			cacher.update(dest.data);
+			ExtendedBlockStorage blockStorage = dest.blockStorage;
+			BitArray bitArray = blockStorage.data.storage;
 
+			cacher.update(blockStorage.data);
 
 			for (int x = 0; x < 16; x++)
 			{
@@ -129,8 +146,10 @@ public class ChunkDataContainer
 
 						int key = cacher.getValue(transformer, block);
 
-						dest.data.storage.setAt(y2 << 8 | z << 4 | x, key);
-						dest.blockRefCount++;
+						dest.opacity[x << 8 | z << 4 | y2] = 127;
+
+						bitArray.setAt(y2 << 8 | z << 4 | x, key);
+						blockStorage.blockRefCount++;
 					}
 				}
 			}
@@ -145,14 +164,14 @@ public class ChunkDataContainer
 
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
-			ExtendedBlockStorage segment = this.segments[chunkY];
+			SegmentStorage segment = this.segments[chunkY];
 
 			if (segment == null)
 			{
 				continue;
 			}
 
-			chunk.getBlockStorageArray()[chunkY] = segment;
+			chunk.getBlockStorageArray()[chunkY] = segment.blockStorage;
 		}
 
 		for (TileEntity tileEntity : this.tileEntities.values())
@@ -165,7 +184,73 @@ public class ChunkDataContainer
 			chunk.addEntity(entity);
 		}
 
+		this.prepareChunkLighting(world, chunk);
+
 		return chunk;
+	}
+
+	private void prepareChunkLighting(World world, Chunk chunk)
+	{
+		int maxY = chunk.getTopFilledSegment();
+
+		chunk.heightMapMinimum = Integer.MAX_VALUE;
+
+		for (int x = 0; x < 16; ++x)
+		{
+			for (int z = 0; z < 16; ++z)
+			{
+				chunk.precipitationHeightMap[x + (z << 4)] = -999;
+
+				for (int y = maxY + 16; y > 0; --y)
+				{
+					if (this.getBlockOpacity(x, y - 1, z) != 0)
+					{
+						chunk.heightMap[z << 4 | x] = y;
+
+						if (y < chunk.heightMapMinimum)
+						{
+							chunk.heightMapMinimum = y;
+						}
+
+						break;
+					}
+				}
+
+				if (world.provider.hasSkyLight())
+				{
+					int light = 15;
+
+					int y2 = maxY + 16 - 1;
+
+					do
+					{
+						int opacity = this.getBlockOpacity(x, y2, z);
+
+						if (opacity == 0 && light != 15)
+						{
+							opacity = 1;
+						}
+
+						light -= opacity;
+
+						if (light > 0)
+						{
+							ExtendedBlockStorage extendedblockstorage = chunk.getBlockStorageArray()[y2 >> 4];
+
+							if (extendedblockstorage != Chunk.NULL_BLOCK_STORAGE)
+							{
+								extendedblockstorage.setSkyLight(x, y2 & 15, z, light);
+							}
+						}
+
+						--y2;
+					}
+					while (y2 > 0 && light > 0);
+				}
+			}
+		}
+
+		chunk.markDirty();
 	}
 
 	public void addEntity(Entity entity)
@@ -231,6 +316,17 @@ public class ChunkDataContainer
 		{
 			Arrays.fill(this.cache, -1);
 		}
+	}
 
+	private static class SegmentStorage
+	{
+		private final ExtendedBlockStorage blockStorage;
+
+		private final byte[] opacity = new byte[16 * 16 * 16];
+
+		public SegmentStorage(int y, boolean storeSkylight)
+		{
+			this.blockStorage = new ExtendedBlockStorage(y, storeSkylight);
+		}
 	}
 }
