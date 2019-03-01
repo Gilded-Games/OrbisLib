@@ -12,29 +12,48 @@ buildscript {
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
 
-allprojects {
+compileJava {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 }
 
-if (System.getenv("CI_JOB_ID") != null) {
-    version = "${minecraft_version}-${mod_version}+build-${System.getenv("CI_JOB_ID")}"
+if (System.getenv("BUILD_NUMBER") != null) {
+    version = "${minecraft_version}-${mod_version}+build${System.getenv("BUILD_NUMBER")}"
 } else {
-    version = "${minecraft_version}-${mod_version}+snapshot-${System.currentTimeMillis()}"
+    version = "${minecraft_version}-${mod_version}-SNAPSHOT"
 }
 
 group = "com.gildedgames"
-archivesBaseName = "${mod_name}"
+
+def commonManifest = {
+    attributes 'Maven-Artifact': "${group}:${archivesBaseName}:${version}"
+    attributes 'FMLAT': 'orbis_api_at.cfg'
+}
 
 jar {
+    classifier = 'universal'
+
     from sourceSets.main.output
-    manifest {
-        attributes 'Maven-Artifact': "${group}:${archivesBaseName}:${version}"
-    }
-    manifest.mainAttributes(
-            "FMLAT": "orbis_api_at.cfg"
-    )
+
+    manifest commonManifest
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+
+    manifest commonManifest
+
+    from sourceSets.main.allSource
+}
+
+task deobfJar(type: Jar, dependsOn: reobfJar) {
+    classifier = 'dev'
+
+    manifest commonManifest
+
+    from sourceSets.main.output
 }
 
 minecraft {
@@ -42,6 +61,8 @@ minecraft {
     mappings = "$forge_mappings"
 
     runDir = "run"
+
+    makeObfSourceJar = false
 }
 
 processResources {
@@ -59,32 +80,55 @@ processResources {
     }
 }
 
-idea {
-    module {
-        inheritOutputDirs = true
+publishing {
+    publications {
+        mod(MavenPublication) {
+            artifact deobfJar
+            artifact sourcesJar
+
+            from components.java
+        }
+    }
+
+    repositories {
+        def mavenSecretsPath = System.getenv("MAVEN_SECRETS_FILE")
+
+        if (mavenSecretsPath != null) {
+            def mavenSecretsFile = file(mavenSecretsPath).newReader()
+            def mavenSecrets = new Properties()
+            mavenSecrets.load(mavenSecretsFile)
+
+            maven {
+                url = mavenSecrets.publishUrl
+
+                credentials {
+                    username = mavenSecrets.username
+                    password = mavenSecrets.password
+                }
+            }
+        }
     }
 }
 
-// We disable this because Gradle will fail to build otherwise for some reason.
-// See https://github.com/MinecraftForge/Srg2Source/issues/10
-minecraft {
-    makeObfSourceJar = false
+if (System.getenv("JARSIGN_SECRETS_FILE") != null) {
+    def secretsFile = file(System.getenv("JARSIGN_SECRETS_FILE"))
+
+    def secrets = new Properties()
+    secrets.load(secretsFile.newReader())
+
+    [jar, sourcesJar, deobfJar].each { jarTask ->
+        def task = task(jarTask.name + 'Sign', type: SignJar) {
+            keyStore = System.getenv("JARSIGN_KEYSTORE_FILE")
+            alias = secrets.alias
+            storePass = secrets.storePassword
+            keyPass = secrets.keyPassword
+
+            inputFile = jarTask.archivePath
+            outputFile = jarTask.archivePath
+        }
+
+        jarTask.finalizedBy task
+    }
 }
 
-artifacts {
-    archives jar
-}
-
-task signJar(type: SignJar, dependsOn: reobfJar) {
-    keyStore = System.getenv('SIGN_KEYSTORE')
-    alias = System.getenv('SIGN_ALIAS')
-    storePass = System.getenv('SIGN_STORE_PASS')
-    keyPass = System.getenv('SIGN_KEY_PASS')
-
-    inputFile = jar.archivePath
-    outputFile = jar.archivePath
-}
-
-if (System.getenv("SIGN_BUILD") == 'true') {
-    build.dependsOn signJar
-}
+build.dependsOn deobfJar, sourcesJar
