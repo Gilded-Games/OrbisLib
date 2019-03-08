@@ -2,17 +2,15 @@ package com.gildedgames.orbis_api.preparation.impl;
 
 import com.gildedgames.orbis_api.preparation.IPrepSector;
 import com.gildedgames.orbis_api.preparation.IPrepSectorData;
-import gnu.trove.set.TIntSet;
-import gnu.trove.set.TLongSet;
-import gnu.trove.set.hash.TIntHashSet;
-import gnu.trove.set.hash.TLongHashSet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.ChunkPos;
 
 public class PrepSector implements IPrepSector
 {
-	private final TLongSet watchingChunks = new TLongHashSet();
+	private final LongOpenHashSet watchingChunks = new LongOpenHashSet();
 
-	private final TIntSet watchingPlayers = new TIntHashSet();
+	private final IntOpenHashSet watchingPlayers = new IntOpenHashSet();
 
 	private IPrepSectorData data;
 
