@@ -156,7 +156,8 @@ public class OrbisServices implements IOrbisServices
 		{
 			this.io = new IOHelper();
 
-			final IClassSerializer s = new SimpleSerializer("orbis-lib");
+			// TODO: Change to orbis-lib without breaking old files
+			final IClassSerializer s = new SimpleSerializer("orbis_api");
 
 			IOHelper.register(s, 0, Region.class);
 			IOHelper.register(s, 1, BlueprintData.class);
