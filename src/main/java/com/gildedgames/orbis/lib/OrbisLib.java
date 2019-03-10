@@ -31,7 +31,7 @@ import java.io.File;
 @Mod.EventBusSubscriber
 public class OrbisLib
 {
-	public static final String MOD_NAME = "Orbis API";
+	public static final String MOD_NAME = "OrbisLib";
 
 	public static final String MOD_ID = "orbis-lib";
 
