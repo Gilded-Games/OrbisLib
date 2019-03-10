@@ -1,0 +1,30 @@
+package com.gildedgames.orbis.lib.data.management;
+
+import com.gildedgames.orbis.lib.util.mc.NBT;
+
+import javax.annotation.Nullable;
+import java.util.UUID;
+
+/**
+ * An object used to identify a unique data object
+ * inside of a project.
+ */
+public interface IDataIdentifier extends NBT
+{
+
+	/**
+	 * Used to identify where the data
+	 * is stored inside of the project.
+	 * @return The data id internal to the project.
+	 */
+	UUID getDataId();
+
+	/**
+	 * Might not have a project identifier if not attached
+	 * to a project.
+	 * @return The identifier of the project that this data is attached to.
+	 */
+	@Nullable
+	IProjectIdentifier getProjectIdentifier();
+
+}
