@@ -33,7 +33,7 @@ public class OrbisAPI
 {
 	public static final String MOD_NAME = "Orbis API";
 
-	public static final String MOD_ID = "orbis_api";
+	public static final String MOD_ID = "orbis-lib";
 
 	public static final String MOD_VERSION = "0.2.0";
 

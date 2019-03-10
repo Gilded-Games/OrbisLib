@@ -29,7 +29,7 @@ group = "com.gildedgames"
 
 def commonManifest = {
     attributes 'Maven-Artifact': "${group}:${archivesBaseName}:${version}"
-    attributes 'FMLAT': 'orbis_api_at.cfg'
+    attributes 'FMLAT': 'orbis-lib_at.cfg'
 }
 
 jar {
