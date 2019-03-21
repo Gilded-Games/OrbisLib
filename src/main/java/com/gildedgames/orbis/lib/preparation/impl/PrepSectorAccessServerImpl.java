@@ -20,7 +20,7 @@ import java.util.concurrent.*;
 
 public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 {
-	private static final int THREADS = Math.min(1, Runtime.getRuntime().availableProcessors() / 2);
+	private static final int THREADS = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
 	private static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Sector Access %d").build();
 
