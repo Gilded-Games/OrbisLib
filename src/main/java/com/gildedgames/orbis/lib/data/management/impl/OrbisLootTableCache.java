@@ -21,8 +21,8 @@ import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
 import net.minecraft.world.storage.loot.functions.LootFunction;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -62,7 +62,7 @@ public class OrbisLootTableCache
 		this.registeredLootTables.invalidateAll();
 	}
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public void attachReloadListener()
 	{
 		final IResourceManager resManager = Minecraft.getMinecraft().getResourceManager();
@@ -73,7 +73,7 @@ public class OrbisLootTableCache
 		}
 	}
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public static class ReloadListener implements IResourceManagerReloadListener
 	{
 		private final OrbisLootTableCache cache;

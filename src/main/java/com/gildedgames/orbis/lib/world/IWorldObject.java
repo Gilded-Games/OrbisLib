@@ -5,8 +5,8 @@ import com.gildedgames.orbis.lib.data.region.IShape;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * The most basic object the world can hold
@@ -31,7 +31,7 @@ public interface IWorldObject extends NBT
 
 	IShape getShape();
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	IWorldRenderer getRenderer();
 
 	IData getData();

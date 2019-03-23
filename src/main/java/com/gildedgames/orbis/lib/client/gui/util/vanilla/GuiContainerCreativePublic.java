@@ -31,8 +31,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class GuiContainerCreativePublic extends InventoryEffectRenderer
 {
 	/** The location of the creative inventory tabs texture */
@@ -1115,7 +1115,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		return selectedTabIndex;
 	}
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public static class ContainerCreativePublic extends Container
 	{
 		private final GuiContainerCreativePublic gui;
@@ -1231,7 +1231,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		}
 	}
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public static class CreativeSlotPublic extends Slot
 	{
 		private final Slot slot;
@@ -1395,7 +1395,7 @@ public class GuiContainerCreativePublic extends InventoryEffectRenderer
 		/*========================================= FORGE END =====================================*/
 	}
 
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	static class LockedSlot extends Slot
 	{
 		public LockedSlot(IInventory p_i47453_1_, int p_i47453_2_, int p_i47453_3_, int p_i47453_4_)

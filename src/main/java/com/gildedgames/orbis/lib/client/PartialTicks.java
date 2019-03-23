@@ -2,8 +2,8 @@ package com.gildedgames.orbis.lib.client;
 
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
 
 public class PartialTicks
 {
@@ -15,7 +15,7 @@ public class PartialTicks
 	}
 
 	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public static void onClientTick(TickEvent.RenderTickEvent event)
 	{
 		partialTicks = event.renderTickTime;
