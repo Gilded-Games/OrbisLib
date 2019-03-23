@@ -12,7 +12,7 @@ public class Text implements IText
 
 	public static final IText EMPTY = new Text(new TextComponentString(""), 1.0F);
 
-	private static final FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
+	private static final FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
 
 	private ITextComponent component;
 
@@ -63,8 +63,8 @@ public class Text implements IText
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setFloat("scale", this.scale);
-		tag.setString("text", this.component.getUnformattedText());
+		tag.putFloat("scale", this.scale);
+		tag.putString("text", this.component.getUnformattedComponentText());
 	}
 
 	@Override

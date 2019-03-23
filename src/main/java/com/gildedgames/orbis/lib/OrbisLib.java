@@ -10,12 +10,16 @@ import com.gildedgames.orbis.lib.world.instances.IInstanceRegistry;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,7 +31,7 @@ import java.io.File;
  * into their mod designs. It's recommended you create an
  * IOrbisDefinitionRegistry and register it in this API's services.
  */
-@Mod(name = OrbisLib.MOD_NAME, modid = OrbisLib.MOD_ID, version = OrbisLib.MOD_VERSION, certificateFingerprint = OrbisLib.MOD_FINGERPRINT)
+@Mod(OrbisLib.MOD_ID)
 @Mod.EventBusSubscriber
 public class OrbisLib
 {
@@ -91,11 +95,6 @@ public class OrbisLib
 		return OrbisLib.services().instances();
 	}
 
-	public static File getWorldDirectory()
-	{
-		return DimensionManager.getCurrentSaveRootDirectory();
-	}
-
 	public static ResourceLocation getResource(final String name)
 	{
 		return new ResourceLocation(OrbisLib.MOD_ID, name);
@@ -106,13 +105,13 @@ public class OrbisLib
 		return (OrbisLib.MOD_ID + ":") + name;
 	}
 
-	@Mod.EventHandler
+	@SubscribeEvent
 	public void onFMLInit(final FMLInitializationEvent event)
 	{
 		CapabilityManagerOrbisLib.init();
 	}
 
-	@Mod.EventHandler
+	@SubscribeEvent
 	public void onServerStopping(final FMLServerStoppingEvent event)
 	{
 		OrbisLib.instances().saveAllInstancesToDisk();
@@ -120,13 +119,13 @@ public class OrbisLib
 		loadedInstances = false;
 	}
 
-	@Mod.EventHandler
+	@SubscribeEvent
 	public void onServerStopped(final FMLServerStoppedEvent event)
 	{
 		OrbisLib.instances().cleanup();
 	}
 
-	@Mod.EventHandler
+	@SubscribeEvent
 	public void serverStarted(final FMLServerStartedEvent event)
 	{
 		if (!loadedInstances)
@@ -135,6 +134,12 @@ public class OrbisLib
 
 			loadedInstances = true;
 		}
+	}
+
+	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+	public static class RegistryEvents
+	{
+
 	}
 
 }

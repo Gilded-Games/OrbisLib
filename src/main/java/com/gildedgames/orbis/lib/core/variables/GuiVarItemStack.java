@@ -113,7 +113,7 @@ public class GuiVarItemStack implements IGuiVar<ItemStack, GuiItemStackChooser>
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		funnel.setStack("data", this.data);
-		tag.setString("name", this.name);
+		tag.putString("name", this.name);
 	}
 
 	@Override

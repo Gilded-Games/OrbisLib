@@ -129,8 +129,8 @@ public class GuiVarFloat implements IGuiVar<Float, GuiInput>
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setFloat("data", this.data);
-		tag.setString("name", this.name);
+		tag.putFloat("data", this.data);
+		tag.putString("name", this.name);
 	}
 
 	@Override

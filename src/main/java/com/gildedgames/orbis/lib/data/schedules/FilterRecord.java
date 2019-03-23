@@ -315,11 +315,11 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setInteger("width", this.width);
-		tag.setInteger("height", this.height);
-		tag.setInteger("length", this.length);
+		tag.putInt("width", this.width);
+		tag.putInt("height", this.height);
+		tag.putInt("length", this.length);
 
-		tag.setInteger("volume", this.volume);
+		tag.putInt("volume", this.volume);
 
 		funnel.set("boundingBox", this.boundingBox);
 
@@ -332,11 +332,11 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.width = tag.getInteger("width");
-		this.height = tag.getInteger("height");
-		this.length = tag.getInteger("length");
+		this.width = tag.getInt("width");
+		this.height = tag.getInt("height");
+		this.length = tag.getInt("length");
 
-		this.volume = tag.getInteger("volume");
+		this.volume = tag.getInt("volume");
 
 		this.boundingBox = funnel.get("boundingBox");
 

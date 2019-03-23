@@ -80,8 +80,8 @@ public class PlacedBlueprint implements NBT
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setString("registryId", this.registryId);
-		tag.setInteger("definitionId", this.definitionID);
+		tag.putString("registryId", this.registryId);
+		tag.putInt("definitionId", this.definitionID);
 
 		funnel.set("creation", this.data);
 		funnel.set("region", this.region);
@@ -95,7 +95,7 @@ public class PlacedBlueprint implements NBT
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
 		this.registryId = tag.getString("registryId");
-		this.definitionID = tag.getInteger("definitionId");
+		this.definitionID = tag.getInt("definitionId");
 
 		this.def = OrbisLib.services().findDefinitionRegistry(this.registryId).get(this.definitionID);
 

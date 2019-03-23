@@ -74,7 +74,7 @@ public class GuiItemStackChooserScreen extends GuiViewer
 	}
 
 	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
+	public boolean mouseClicked(final double mouseX, final double mouseY, final int mouseButton)
 	{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 

@@ -101,8 +101,8 @@ public class GuiVarBoolean implements IGuiVar<Boolean, GuiTickBox>
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setBoolean("data", this.data);
-		tag.setString("name", this.name);
+		tag.putBoolean("data", this.data);
+		tag.putString("name", this.name);
 	}
 
 	@Override

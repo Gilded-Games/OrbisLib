@@ -271,15 +271,15 @@ public class Region implements IMutableRegion
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setTag("min", NBTHelper.writeBlockPos(this.min));
-		tag.setTag("max", NBTHelper.writeBlockPos(this.max));
+		tag.put("min", NBTHelper.writeBlockPos(this.min));
+		tag.put("max", NBTHelper.writeBlockPos(this.max));
 	}
 
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
-		this.min = NBTHelper.readBlockPos(tag.getCompoundTag("min"));
-		this.max = NBTHelper.readBlockPos(tag.getCompoundTag("max"));
+		this.min = NBTHelper.readBlockPos(tag.getCompound("min"));
+		this.max = NBTHelper.readBlockPos(tag.getCompound("max"));
 	}
 
 	public boolean isACorner(final BlockPos pos)

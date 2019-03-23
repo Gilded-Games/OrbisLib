@@ -108,8 +108,8 @@ public abstract class AbstractShape implements IShape
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setBoolean("createFromCenter", this.createFromCenter);
-		tag.setBoolean("uniform", this.uniform);
+		tag.putBoolean("createFromCenter", this.createFromCenter);
+		tag.putBoolean("uniform", this.uniform);
 
 		funnel.set("boundingBox", this.boundingBox);
 

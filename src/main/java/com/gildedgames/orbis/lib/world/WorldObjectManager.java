@@ -57,7 +57,7 @@ public class WorldObjectManager extends WorldSavedData
 
 		if (world.isRemote)
 		{
-			if (Minecraft.getMinecraft().isIntegratedServerRunning())
+			if (Minecraft.getInstance().isIntegratedServerRunning())
 			{
 				using = DimensionManager.getWorld(world.provider.getDimension());
 
@@ -234,12 +234,12 @@ public class WorldObjectManager extends WorldSavedData
 	}
 
 	@Override
-	public void readFromNBT(final NBTTagCompound tag)
+	public void read(final NBTTagCompound tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.nextId = tag.getInteger("nextId");
-		this.dimension = tag.getInteger("dimension");
+		this.nextId = tag.getInt("nextId");
+		this.dimension = tag.getInt("dimension");
 
 		if (this.world == null)
 		{
@@ -255,12 +255,12 @@ public class WorldObjectManager extends WorldSavedData
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(final NBTTagCompound tag)
+	public NBTTagCompound write(final NBTTagCompound tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setInteger("nextId", this.nextId);
-		tag.setInteger("dimension", this.dimension);
+		tag.putInt("nextId", this.nextId);
+		tag.putInt("dimension", this.dimension);
 
 		funnel.setIntMap("objects", this.idToObject);
 

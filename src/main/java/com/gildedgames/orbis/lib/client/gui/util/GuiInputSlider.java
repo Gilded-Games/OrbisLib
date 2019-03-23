@@ -1,6 +1,7 @@
 package com.gildedgames.orbis.lib.client.gui.util;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.util.InputHelper;
 import net.minecraft.client.gui.FontRenderer;
@@ -58,7 +59,7 @@ public class GuiInputSlider extends GuiElement
 	}
 
 	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		if (mouseButton == 0 && this.state().isHoveredAndTopElement())
 		{
@@ -136,7 +137,7 @@ public class GuiInputSlider extends GuiElement
 	}
 
 	@Override
-	public void onMouseReleased(GuiElement element, final int mouseX, final int mouseY, final int state)
+	public void onMouseReleased(IGuiElement element, final double mouseX, final double mouseY, final int state)
 	{
 		this.dragging = false;
 	}

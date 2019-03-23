@@ -12,14 +12,14 @@ import com.gildedgames.orbis.lib.world.instances.PlayerInstances;
 import com.gildedgames.orbis.lib.world.instances.PlayerInstancesProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @Mod.EventBusSubscriber()
 public class CapabilityManagerOrbisLib
@@ -74,7 +74,7 @@ public class CapabilityManagerOrbisLib
 
 			final Capability.IStorage<IPlayerInstances> storage = OrbisLibCapabilities.PLAYER_INSTANCES.getStorage();
 
-			final NBTBase state = storage.writeNBT(OrbisLibCapabilities.PLAYER_INSTANCES, oldPlayer, null);
+			final INBTBase state = storage.writeNBT(OrbisLibCapabilities.PLAYER_INSTANCES, oldPlayer, null);
 
 			storage.readNBT(OrbisLibCapabilities.PLAYER_INSTANCES, newPlayer, null, state);
 		}

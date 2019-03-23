@@ -3,6 +3,7 @@ package com.gildedgames.orbis.lib.client.gui.util;
 import com.gildedgames.orbis.lib.client.gui.data.IDropdownElement;
 import com.gildedgames.orbis.lib.client.gui.util.decorators.GuiScrollable;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiState;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiStateListener;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
@@ -89,7 +90,7 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiElement
 	}
 
 	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		if (mouseButton == 0)
 		{

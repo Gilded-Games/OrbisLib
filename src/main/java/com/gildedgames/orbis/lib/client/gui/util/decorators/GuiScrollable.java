@@ -9,7 +9,8 @@ import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiEvent;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.client.rect.RectModifier;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.MainWindow;
+import net.minecraft.client.Minecraft;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
@@ -36,17 +37,17 @@ public class GuiScrollable extends GuiElement
 		@Override
 		public void onPreDraw(IGuiElement element)
 		{
-			ScaledResolution res = new ScaledResolution(GuiScrollable.this.viewer().mc());
+			MainWindow window = Minecraft.getInstance().mainWindow;
 
-			double scaleW = GuiScrollable.this.viewer().mc().displayWidth / res.getScaledWidth_double();
-			double scaleH = GuiScrollable.this.viewer().mc().displayHeight / res.getScaledHeight_double();
+			double scaleW = (double) window.getWidth() / window.getScaledWidth();
+			double scaleH = (double) window.getHeight() / window.getScaledHeight();
 
 			GL11.glEnable(GL11.GL_SCISSOR_TEST);
 
 			if (!(GuiScrollable.this.window.dim().width() < 0 || GuiScrollable.this.window.dim().height() < 0))
 			{
 				GL11.glScissor((int) ((GuiScrollable.this.window.dim().x()) * scaleW),
-						(int) (GuiScrollable.this.viewer().mc().displayHeight - (
+						(int) (window.getFramebufferHeight() - (
 								(GuiScrollable.this.window.dim().y() + GuiScrollable.this.window.dim().height()) * scaleH)),
 						(int) (GuiScrollable.this.window.dim().width() * scaleW), (int) (GuiScrollable.this.window.dim().height() * scaleH));
 			}
@@ -59,13 +60,13 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public void onMouseClicked(IGuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+		public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 		{
 
 		}
 
 		@Override
-		public boolean isMouseClickedEnabled(IGuiElement element, int mouseX, int mouseY, int mouseButton)
+		public boolean isMouseClickedEnabled(IGuiElement element, double mouseX, double mouseY, int mouseButton)
 		{
 			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
@@ -88,8 +89,7 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseClickMoveEnabled(IGuiElement element, final int mouseX, final int mouseY, final int clickedMouseButton,
-				final long timeSinceLastClick)
+		public boolean isMouseClickMoveEnabled(IGuiElement element, final double mouseX, final double mouseY, final int clickedMouseButton)
 		{
 			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
@@ -112,7 +112,7 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseReleasedEnabled(IGuiElement element, final int mouseX, final int mouseY, final int state)
+		public boolean isMouseReleasedEnabled(IGuiElement element, final double mouseX, final double mouseY, final int state)
 		{
 			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
@@ -135,7 +135,7 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseWheelEnabled(IGuiElement element, final int state)
+		public boolean isMouseWheelEnabled(IGuiElement element, final double state)
 		{
 			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
@@ -253,7 +253,7 @@ public class GuiScrollable extends GuiElement
 	}
 
 	@Override
-	public void onMouseWheel(GuiElement element, final int state)
+	public void onMouseWheel(IGuiElement element, final double state)
 	{
 		if (this.window.state().isHoveredAndTopElement())
 		{

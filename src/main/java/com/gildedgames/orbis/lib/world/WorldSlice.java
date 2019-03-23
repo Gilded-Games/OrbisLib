@@ -7,7 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.chunk.ChunkSection;
 
 public class WorldSlice
 {
@@ -15,7 +15,7 @@ public class WorldSlice
 
 	private final Chunk[] chunks;
 
-	private final ExtendedBlockStorage[] sections;
+	private final ChunkSection[] sections;
 
 	private final int offsetX, offsetZ;
 
@@ -26,7 +26,7 @@ public class WorldSlice
 		this.world = world;
 
 		this.chunks = new Chunk[3 * 3];
-		this.sections = new ExtendedBlockStorage[this.chunks.length * 16];
+		this.sections = new ChunkSection[this.chunks.length * 16];
 
 		this.offsetX = (pos.x * 16) - 16;
 		this.offsetZ = (pos.z * 16) - 16;
@@ -49,7 +49,7 @@ public class WorldSlice
 
 				for (int y = 0; y < 16; y++)
 				{
-					this.sections[z + y * 3 + x * 16 * 3] = chunk.getBlockStorageArray()[y];
+					this.sections[z + y * 3 + x * 16 * 3] = chunk.getSections()[y];
 				}
 
 			}
@@ -68,7 +68,7 @@ public class WorldSlice
 			int chunkX = (x - this.offsetX) >> 4;
 			int chunkZ = (z - this.offsetZ) >> 4;
 
-			ExtendedBlockStorage section = this.sections[chunkZ + (y >> 4) * 3 + chunkX * 16 * 3];
+			ChunkSection section = this.sections[chunkZ + (y >> 4) * 3 + chunkX * 16 * 3];
 
 			if (section != null)
 			{
@@ -101,7 +101,7 @@ public class WorldSlice
 			int chunkX = (pos.getX() - this.offsetX) >> 4;
 			int chunkZ = (pos.getZ() - this.offsetZ) >> 4;
 
-			ExtendedBlockStorage section = this.sections[chunkZ + (pos.getY() >> 4) * 3 + chunkX * 16 * 3];
+			ChunkSection section = this.sections[chunkZ + (pos.getY() >> 4) * 3 + chunkX * 16 * 3];
 
 			if (section != null)
 			{

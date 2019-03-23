@@ -12,7 +12,7 @@ import com.gildedgames.orbis.lib.world.instances.IInstanceRegistry;
 import com.google.gson.Gson;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.world.IWorld;
 
 import javax.annotation.Nullable;
 
@@ -78,5 +78,5 @@ public interface IOrbisServices
 
 	IInstanceRegistry instances();
 
-	IWorldDataManager getWorldDataManager(World world);
+	IWorldDataManager getWorldDataManager(IWorld world);
 }

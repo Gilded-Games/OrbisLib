@@ -6,15 +6,17 @@ import com.gildedgames.orbis.lib.util.mc.NBT;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.ItemMonsterPlacer;
+import net.minecraft.item.ItemSpawnEgg;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentBase;
 import net.minecraft.util.text.TextComponentTranslation;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class InventorySpawnEggs implements IInventory, NBT, IDataChild<BlueprintData>
 {
@@ -119,7 +121,7 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 	@Override
 	public boolean isItemValidForSlot(final int index, @Nonnull final ItemStack stack)
 	{
-		return stack.getItem() instanceof ItemMonsterPlacer;
+		return stack.getItem() instanceof ItemSpawnEgg;
 	}
 
 	@Override
@@ -146,9 +148,9 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 	}
 
 	@Override
-	public String getName()
+	public ITextComponent getName()
 	{
-		return "inventory.forge";
+		return new TextComponentTranslation("inventory.forge");
 	}
 
 	@Override
@@ -157,10 +159,11 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 		return false;
 	}
 
+	@Nullable
 	@Override
-	public TextComponentBase getDisplayName()
+	public ITextComponent getCustomName()
 	{
-		return new TextComponentTranslation(this.getName());
+		return null;
 	}
 
 	@Override
@@ -175,29 +178,29 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 			if (!stack.isEmpty())
 			{
 				final NBTTagCompound stackCompound = new NBTTagCompound();
-				stackCompound.setByte("Slot", (byte) i);
+				stackCompound.putByte("Slot", (byte) i);
 
-				stack.writeToNBT(stackCompound);
+				stack.write(stackCompound);
 
-				list.appendTag(stackCompound);
+				list.add(stackCompound);
 			}
 		}
 
-		output.setTag("Items", list);
+		output.put("Items", list);
 	}
 
 	@Override
 	public void read(final NBTTagCompound input)
 	{
-		final NBTTagList list = input.getTagList("Items", 10);
+		final NBTTagList list = input.getList("Items", 10);
 
-		for (int i = 0; i < list.tagCount(); i++)
+		for (int i = 0; i < list.size(); i++)
 		{
-			final NBTTagCompound compound = list.getCompoundTagAt(i);
+			final NBTTagCompound compound = list.getCompound(i);
 
 			final int slot = compound.getByte("Slot") & 255;
 
-			this.inventory.set(slot, new ItemStack(compound));
+			this.inventory.set(slot, ItemStack.read(compound));
 		}
 	}
 

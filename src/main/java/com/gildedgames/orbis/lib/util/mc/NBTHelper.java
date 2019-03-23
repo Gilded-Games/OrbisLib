@@ -5,7 +5,7 @@ import com.gildedgames.orbis.lib.util.io.IClassSerializer;
 import com.google.common.collect.AbstractIterator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
@@ -24,14 +24,14 @@ import java.util.function.Supplier;
 public class NBTHelper
 {
 
-	public static NBTTagList getTagList(final NBTTagCompound tag, final String key)
+	public static NBTTagList getList(final NBTTagCompound tag, final String key)
 	{
-		return tag.getTagList(key, 10);
+		return tag.getList(key, 10);
 	}
 
 	public static Iterable<NBTTagCompound> getIterator(final NBTTagCompound tag, final String tagListKey)
 	{
-		return getIterator(getTagList(tag, tagListKey));
+		return getIterator(getList(tag, tagListKey));
 	}
 
 	/**
@@ -52,12 +52,12 @@ public class NBTHelper
 					@Override
 					protected NBTTagCompound computeNext()
 					{
-						if (this.i >= tagList.tagCount())
+						if (this.i >= tagList.size())
 						{
 							return this.endOfData();
 						}
 
-						final NBTTagCompound tag = tagList.getCompoundTagAt(this.i);
+						final NBTTagCompound tag = tagList.getCompound(this.i);
 						this.i++;
 						return tag;
 					}
@@ -115,7 +115,7 @@ public class NBTHelper
 
 	public static ItemStack readStack(NBTTagCompound tag)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return ItemStack.EMPTY;
 		}
@@ -123,30 +123,30 @@ public class NBTHelper
 		ItemStack itemstack = new ItemStack(OrbisLib.services().registrar().findItem(new ResourceLocation(tag.getString("id"))), tag.getByte("count"),
 				tag.getShort("meta"));
 
-		if (tag.hasKey("shareTag"))
+		if (tag.contains("shareTag"))
 		{
-			itemstack.setTagCompound(tag.getCompoundTag("shareTag"));
+			itemstack.setTagCompound(tag.getCompound("shareTag"));
 		}
 
 		return itemstack;
 	}
 
-	public static NBTBase writeStack(ItemStack stack)
+	public static INBTBase writeStack(ItemStack stack)
 	{
 		final NBTTagCompound tag = new NBTTagCompound();
 
 		if (stack.isEmpty())
 		{
-			tag.setBoolean("_null", true);
+			tag.putBoolean("_null", true);
 
 			return tag;
 		}
 
-		tag.setBoolean("_null", false);
+		tag.putBoolean("_null", false);
 
-		tag.setString("id", OrbisLib.services().registrar().getIdentifierFor(stack.getItem()).toString());
-		tag.setByte("count", (byte) stack.getCount());
-		tag.setShort("meta", (short) stack.getMetadata());
+		tag.putString("id", OrbisLib.services().registrar().getIdentifierFor(stack.getItem()).toString());
+		tag.putByte("count", (byte) stack.getCount());
+		tag.putShort("meta", (short) stack.getMetadata());
 
 		NBTTagCompound nbttagcompound = null;
 
@@ -157,7 +157,7 @@ public class NBTHelper
 
 		if (nbttagcompound != null)
 		{
-			tag.setTag("shareTag", nbttagcompound);
+			tag.put("shareTag", nbttagcompound);
 		}
 
 		return tag;
@@ -165,71 +165,71 @@ public class NBTHelper
 
 	public static BlockPos readBlockPos(final NBTTagCompound tag)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return null;
 		}
 
-		return new BlockPos(tag.getInteger("x"), tag.getInteger("y"), tag.getInteger("z"));
+		return new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 	}
 
-	public static NBTBase writeBlockPos(final BlockPos pos)
+	public static INBTBase writeBlockPos(final BlockPos pos)
 	{
 		final NBTTagCompound tag = new NBTTagCompound();
 
 		if (pos == null)
 		{
-			tag.setBoolean("_null", true);
+			tag.putBoolean("_null", true);
 
 			return tag;
 		}
 
-		tag.setBoolean("_null", false);
+		tag.putBoolean("_null", false);
 
-		tag.setInteger("x", pos.getX());
-		tag.setInteger("y", pos.getY());
-		tag.setInteger("z", pos.getZ());
+		tag.putInt("x", pos.getX());
+		tag.putInt("y", pos.getY());
+		tag.putInt("z", pos.getZ());
 
 		return tag;
 	}
 
 	public static ChunkPos readChunkPos(final NBTTagCompound tag)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return null;
 		}
 
-		return new ChunkPos(tag.getInteger("x"), tag.getInteger("z"));
+		return new ChunkPos(tag.getInt("x"), tag.getInt("z"));
 	}
 
-	public static NBTBase writeChunkPos(final ChunkPos pos)
+	public static INBTBase writeChunkPos(final ChunkPos pos)
 	{
 		final NBTTagCompound tag = new NBTTagCompound();
 
 		if (pos == null)
 		{
-			tag.setBoolean("_null", true);
+			tag.putBoolean("_null", true);
 
 			return tag;
 		}
 
-		tag.setBoolean("_null", false);
+		tag.putBoolean("_null", false);
 
-		tag.setInteger("x", pos.x);
-		tag.setInteger("z", pos.z);
+		tag.putInt("x", pos.x);
+		tag.putInt("z", pos.z);
 
 		return tag;
 	}
 
 	public static double[] readDoubleArray(final NBTTagCompound tag)
 	{
-		if (tag == null || (tag.hasKey("_null") && tag.getBoolean("_null")))
+		if (tag == null || (tag.contains("_null") && tag.getBoolean("_null")))
 		{
 			return null;
 		}
 
-		final double[] array = new double[tag.getInteger("length")];
+		final double[] array = new double[tag.getInt("length")];
 
 		for (int i = 0; i < array.length; i++)
 		{
@@ -239,25 +239,25 @@ public class NBTHelper
 		return array;
 	}
 
-	public static NBTBase writeDoubleArray(final double[] array)
+	public static INBTBase writeDoubleArray(final double[] array)
 	{
 		final NBTTagCompound tag = new NBTTagCompound();
 
 		if (array == null)
 		{
-			tag.setBoolean("_null", true);
+			tag.putBoolean("_null", true);
 
 			return tag;
 		}
 
-		tag.setBoolean("_null", false);
-		tag.setInteger("length", array.length);
+		tag.putBoolean("_null", false);
+		tag.putInt("length", array.length);
 
 		int i = 0;
 
 		for (final double value : array)
 		{
-			tag.setDouble(String.valueOf(i), value);
+			tag.putDouble(String.valueOf(i), value);
 
 			i++;
 		}
@@ -306,104 +306,104 @@ public class NBTHelper
 
 		if (nbt == null)
 		{
-			tag.setBoolean("_null", true);
+			tag.putBoolean("_null", true);
 
 			return tag;
 		}
 
 		IClassSerializer serializer = OrbisLib.services().io().findSerializer(nbt);
 
-		tag.setBoolean("_null", false);
-		tag.setString("s_id", serializer.identifier());
-		tag.setInteger("id", serializer.serialize(nbt));
+		tag.putBoolean("_null", false);
+		tag.putString("s_id", serializer.identifier());
+		tag.putInt("id", serializer.serialize(nbt));
 
 		final NBTTagCompound data = new NBTTagCompound();
 
 		nbt.write(data);
 
-		tag.setTag("data", data);
+		tag.put("data", data);
 
 		return tag;
 	}
 
 	public static <T extends NBT> T readWithDefault(final World world, final NBTTagCompound tag, Supplier<T> def)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return def.get();
 		}
 
 		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
-		final int id = tag.getInteger("id");
+		final int id = tag.getInt("id");
 
 		final T obj = serializer.deserialize(world, id);
-		obj.read(tag.getCompoundTag("data"));
+		obj.read(tag.getCompound("data"));
 
 		return obj;
 	}
 
 	public static <T extends NBT> T read(final World world, final NBTTagCompound tag)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return null;
 		}
 
 		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
-		final int id = tag.getInteger("id");
+		final int id = tag.getInt("id");
 
 		final T obj = serializer.deserialize(world, id);
-		obj.read(tag.getCompoundTag("data"));
+		obj.read(tag.getCompound("data"));
 
 		return obj;
 	}
 
 	public static <T extends NBT> T readWithDefault(final NBTTagCompound tag, Supplier<T> def)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return def.get();
 		}
 
 		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
-		final int id = tag.getInteger("id");
+		final int id = tag.getInt("id");
 
 		final T obj = serializer.deserialize(id);
-		obj.read(tag.getCompoundTag("data"));
+		obj.read(tag.getCompound("data"));
 
 		return obj;
 	}
 
 	public static <T extends NBT> T read(final NBTTagCompound tag)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return null;
 		}
 
 		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
-		final int id = tag.getInteger("id");
+		final int id = tag.getInt("id");
 
 		final T obj = serializer.deserialize(id);
-		obj.read(tag.getCompoundTag("data"));
+		obj.read(tag.getCompound("data"));
 
 		return obj;
 	}
 
 	public static <T extends NBT> T loadWithoutReading(final NBTTagCompound tag)
 	{
-		if (tag == null || tag.getBoolean("_null") || !tag.hasKey("_null"))
+		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return null;
 		}
 
 		IClassSerializer serializer = OrbisLib.services().io().findSerializer(tag.getString("s_id"));
 
-		final int id = tag.getInteger("id");
+		final int id = tag.getInt("id");
 
 		return serializer.deserialize(id);
 	}

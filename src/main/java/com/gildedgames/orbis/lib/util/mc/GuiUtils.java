@@ -10,7 +10,7 @@ public class GuiUtils
 {
 	public static void drawHoveringText(List<String> textLines, int x, int y, FontRenderer font)
 	{
-		GuiScreen gui = Minecraft.getMinecraft().currentScreen;
+		GuiScreen gui = Minecraft.getInstance().currentScreen;
 
 		if (gui == null)
 		{

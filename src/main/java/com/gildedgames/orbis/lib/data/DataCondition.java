@@ -40,7 +40,7 @@ public class DataCondition implements NBT
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setFloat("weight", this.weight);
+		tag.putFloat("weight", this.weight);
 	}
 
 	@Override

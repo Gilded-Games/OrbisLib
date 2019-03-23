@@ -93,7 +93,7 @@ public class OrbisProjectManager implements IProjectManager
 
 					IData data = funnel.get("data");
 
-					tag = funnel.getTag().getCompoundTag("data").getCompoundTag("data");
+					tag = funnel.getTag().getCompound("data").getCompound("data");
 
 					data.read(tag);
 

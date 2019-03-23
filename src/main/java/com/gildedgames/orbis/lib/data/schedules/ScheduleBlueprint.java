@@ -120,7 +120,7 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setString("triggerId", this.triggerId);
+		tag.putString("triggerId", this.triggerId);
 		funnel.set("bounds", this.bounds);
 		funnel.set("palette", this.palette);
 	}

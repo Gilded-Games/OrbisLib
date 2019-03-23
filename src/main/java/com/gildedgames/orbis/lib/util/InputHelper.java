@@ -16,7 +16,7 @@ import java.util.List;
 public class InputHelper
 {
 
-	private static final Minecraft mc = Minecraft.getMinecraft();
+	private static final Minecraft mc = Minecraft.getInstance();
 
 	private static ScaledResolution resolution;
 
@@ -100,9 +100,9 @@ public class InputHelper
 			return false;
 		}
 
-		if (Minecraft.getMinecraft().currentScreen instanceof IGuiViewer)
+		if (Minecraft.getInstance().currentScreen instanceof IGuiViewer)
 		{
-			IGuiViewer viewer = (IGuiViewer) Minecraft.getMinecraft().currentScreen;
+			IGuiViewer viewer = (IGuiViewer) Minecraft.getInstance().currentScreen;
 
 			for (IGuiElement child : viewer.getAllVisibleElements())
 			{

@@ -5,7 +5,6 @@ import com.gildedgames.orbis.lib.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.util.InputHelper;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 
@@ -17,7 +16,13 @@ public class GuiButtonVanilla extends GuiElement
 	{
 		super(rect, true);
 
-		this.button = new GuiButton(0, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height(), "");
+		this.button = new GuiButton(0, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height(), "") {
+			@Override
+			public void onClick(double mouseX, double mouseY)
+			{
+				GuiButtonVanilla.this.viewer().pushActionPerformed(this);
+			}
+		};
 	}
 
 	public GuiButton getInner()
@@ -29,16 +34,6 @@ public class GuiButtonVanilla extends GuiElement
 	public void build()
 	{
 		this.state().setCanBeTopHoverElement(true);
-	}
-
-	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
-	{
-		if (this.button.mousePressed(this.viewer().mc(), mouseX, mouseY))
-		{
-			this.button.playPressSound(this.viewer().mc().getSoundHandler());
-			this.viewer().pushActionPerformed(this.button);
-		}
 	}
 
 	@Override
@@ -57,7 +52,7 @@ public class GuiButtonVanilla extends GuiElement
 		this.button.enabled = this.state().isEnabled();
 		this.button.visible = this.state().isVisible();
 
-		this.button.drawButton(Minecraft.getMinecraft(), InputHelper.getMouseX(), InputHelper.getMouseY(), PartialTicks.get());
+		this.button.render(InputHelper.getMouseX(), InputHelper.getMouseY(), PartialTicks.get());
 
 		GlStateManager.popMatrix();
 	}

@@ -127,8 +127,8 @@ public class GuiVarDouble implements IGuiVar<Double, GuiInput>
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setDouble("data", this.data);
-		tag.setString("name", this.name);
+		tag.putDouble("data", this.data);
+		tag.putString("name", this.name);
 	}
 
 	@Override

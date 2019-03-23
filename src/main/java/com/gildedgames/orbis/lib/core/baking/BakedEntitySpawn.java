@@ -59,7 +59,7 @@ public class BakedEntitySpawn implements IBakedPosAction
 		{
 			if (entity instanceof EntityLivingBase && this.egg.hasDisplayName())
 			{
-				entity.setCustomNameTag(this.egg.getDisplayName());
+				entity.setCustomName(this.egg.getDisplayName());
 			}
 
 			if (world != null)
@@ -88,8 +88,8 @@ public class BakedEntitySpawn implements IBakedPosAction
 
 		funnel.setStack("egg", this.egg);
 		funnel.setPos("pos", this.pos);
-		tag.setBoolean("customRotation", this.customRotation);
-		tag.setFloat("rotationDegrees", this.rotationDegrees);
+		tag.putBoolean("customRotation", this.customRotation);
+		tag.putFloat("rotationDegrees", this.rotationDegrees);
 	}
 
 	@Override

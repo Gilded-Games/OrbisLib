@@ -132,7 +132,7 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 
 		funnel.setPos("min", this.min);
 
-		tag.setString("rotation", this.rotation.name());
+		tag.putString("rotation", this.rotation.name());
 
 		funnel.set("state", this.data);
 	}

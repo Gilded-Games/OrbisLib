@@ -53,7 +53,7 @@ public class CylinderShape extends AbstractShape
 		funnel.setPos("viableStarts", this.start);
 		funnel.setPos("end", this.end);
 
-		tag.setBoolean("centered", this.centered);
+		tag.putBoolean("centered", this.centered);
 	}
 
 	@Override

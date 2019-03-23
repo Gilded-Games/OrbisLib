@@ -9,12 +9,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.DimensionType;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
@@ -207,7 +207,7 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 		for (final IInstanceHandler<?> handler : this.getInstanceHandlers())
 		{
-			final NBTTagCompound subTag = tag.getCompoundTag(String.valueOf(i++));
+			final NBTTagCompound subTag = tag.getCompound(String.valueOf(i++));
 
 			handler.read(subTag);
 		}
@@ -239,14 +239,14 @@ public class InstanceRegistryImpl implements IInstanceRegistry
 
 		int i = 0;
 
-		tag.setInteger("size", OrbisLib.instances().getInstanceHandlers().size());
+		tag.putInt("size", OrbisLib.instances().getInstanceHandlers().size());
 
 		for (final IInstanceHandler<?> handler : this.getInstanceHandlers())
 		{
 			final NBTTagCompound subTag = new NBTTagCompound();
 			handler.write(subTag);
 
-			tag.setTag(String.valueOf(i++), subTag);
+			tag.put(String.valueOf(i++), subTag);
 		}
 
 		NBTHelper.writeNBTToFile(tag, FILE_PATH);

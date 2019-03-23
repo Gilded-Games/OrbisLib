@@ -14,7 +14,7 @@ import com.gildedgames.orbis.lib.data.schedules.IPosActionBaker;
 import com.gildedgames.orbis.lib.data.schedules.ScheduleRegion;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
-import net.minecraft.item.ItemMonsterPlacer;
+import net.minecraft.item.ItemSpawnEgg;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
@@ -26,7 +26,7 @@ import java.util.function.Function;
 
 public class PostResolveActionSpawnEntities implements IPostResolveAction, IDataUser<ScheduleRegion>, IPosActionBaker
 {
-	private static final Function<ItemStack, Boolean> SPAWN_EGG_VALIDATOR = (itemStack -> itemStack.getItem() instanceof ItemMonsterPlacer);
+	private static final Function<ItemStack, Boolean> SPAWN_EGG_VALIDATOR = (itemStack -> itemStack.getItem() instanceof ItemSpawnEgg);
 
 	private List<IGuiVar> variables = Lists.newArrayList();
 
@@ -139,7 +139,7 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 		List<IBakedPosAction> actions = Lists.newArrayList();
 		float rotationOffset = (rotation.compareTo(Rotation.NONE) * 90.0F);
 
-		if (this.itemStackVariable.getData().getItem() instanceof ItemMonsterPlacer)
+		if (this.itemStackVariable.getData().getItem() instanceof ItemSpawnEgg)
 		{
 			for (int i = 0; i < this.itemStackVariable.getData().getCount(); i++)
 			{

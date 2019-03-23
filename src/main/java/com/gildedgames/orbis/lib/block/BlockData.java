@@ -7,6 +7,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -68,70 +69,33 @@ public class BlockData implements NBT
 
 	public IBlockState getRotatedBlockState(final Rotation rotation)
 	{
-		return this.getBlockState().withRotation(rotation);
+		return this.getBlockState().rotate(rotation);
 	}
 
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setBoolean("noState", this.blockState == null);
-
-		Block block = this.blockState.getBlock();
-
-		final ResourceLocation identifier = OrbisLib.services().registrar().getIdentifierFor(block);
-		short meta = (short) (this.blockState == null ? 0 : block.getMetaFromState(this.blockState));
-
-		tag.setString("mod", identifier.getNamespace());
-		tag.setString("name", identifier.getPath());
-		tag.setShort("meta", meta);
+		tag.put("block", NBTUtil.writeBlockState(this.blockState));
 
 		final boolean hasTileEntity = this.tileEntity != null;
-		tag.setBoolean("hasTileEntity", hasTileEntity);
+		tag.putBoolean("hasTileEntity", hasTileEntity);
 
 		if (hasTileEntity)
 		{
-			tag.setTag("tileEntity", this.tileEntity);
+			tag.put("tileEntity", this.tileEntity);
 		}
 	}
 
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
-		final boolean noState = tag.getBoolean("noState");
-
-		String mod = tag.getString("mod");
-		String name = tag.getString("name");
-
-		final Block block = OrbisLib.services().registrar().findBlock(new ResourceLocation(mod, name));
-
-		int meta = tag.getShort("meta");
-
-		if (noState)
-		{
-			this.blockState = block.getDefaultState();
-		}
-		else
-		{
-			if (block != null)
-			{
-				this.blockState = block.getStateFromMeta(meta);
-			}
-			else
-			{
-				this.blockState = Blocks.AIR.getDefaultState();
-			}
-		}
-
-		if (this.blockState == null)
-		{
-			this.blockState = Blocks.AIR.getDefaultState();
-		}
+		this.blockState = NBTUtil.readBlockState(tag.getCompound("block"));
 
 		final boolean hasTileEntity = tag.getBoolean("hasTileEntity");
 
 		if (hasTileEntity)
 		{
-			this.tileEntity = tag.getCompoundTag("tileEntity");
+			this.tileEntity = tag.getCompound("tileEntity");
 		}
 	}
 

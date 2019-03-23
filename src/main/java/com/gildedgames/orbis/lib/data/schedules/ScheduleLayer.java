@@ -241,7 +241,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		funnel.set("conditionNodeTree", this.conditionNodeTree);
 		funnel.set("postResolveActionNodeTree", this.postResolveActionNodeTree);
 
-		tag.setBoolean("visible", this.visible);
+		tag.putBoolean("visible", this.visible);
 
 		funnel.set("scheduleOptions", this.options);
 	}
@@ -270,7 +270,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 		this.conditionNodeTree.listen(this);
 		this.postResolveActionNodeTree.listen(this.postResolveListener);
 
-		if (tag.hasKey("visible"))
+		if (tag.contains("visible"))
 		{
 			this.visible = tag.getBoolean("visible");
 		}

@@ -2,7 +2,7 @@ package com.gildedgames.orbis.lib.world.instances;
 
 import com.gildedgames.orbis.lib.util.mc.BlockPosDimension;
 import com.gildedgames.orbis.lib.util.mc.NBTHelper;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -46,23 +46,23 @@ public class PlayerInstances implements IPlayerInstances
 	{
 
 		@Override
-		public NBTBase writeNBT(final Capability<IPlayerInstances> capability, final IPlayerInstances instance, final EnumFacing side)
+		public INBTBase writeNBT(final Capability<IPlayerInstances> capability, final IPlayerInstances instance, final EnumFacing side)
 		{
 			final NBTTagCompound compound = new NBTTagCompound();
 
-			compound.setTag("outside", NBTHelper.write(instance.getOutside()));
-			compound.setTag("activeInstances", NBTHelper.write(instance.getInstance()));
+			compound.put("outside", NBTHelper.write(instance.getOutside()));
+			compound.put("activeInstances", NBTHelper.write(instance.getInstance()));
 
 			return compound;
 		}
 
 		@Override
-		public void readNBT(final Capability<IPlayerInstances> capability, final IPlayerInstances instance, final EnumFacing side, final NBTBase nbt)
+		public void readNBT(final Capability<IPlayerInstances> capability, final IPlayerInstances instance, final EnumFacing side, final INBTBase nbt)
 		{
 			final NBTTagCompound compound = (NBTTagCompound) nbt;
 
-			instance.setReturnPosition(NBTHelper.read(compound.getCompoundTag("outside")));
-			instance.setInstance(NBTHelper.read(compound.getCompoundTag("activeInstances")));
+			instance.setReturnPosition(NBTHelper.read(compound.getCompound("outside")));
+			instance.setInstance(NBTHelper.read(compound.getCompound("activeInstances")));
 		}
 	}
 

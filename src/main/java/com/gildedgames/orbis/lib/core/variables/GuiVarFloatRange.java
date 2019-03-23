@@ -91,10 +91,10 @@ public class GuiVarFloatRange implements IGuiVar<Float, GuiInputSlider>
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setFloat("data", this.data);
-		tag.setFloat("min", this.min);
-		tag.setFloat("max", this.max);
-		tag.setString("name", this.name);
+		tag.putFloat("data", this.data);
+		tag.putFloat("min", this.min);
+		tag.putFloat("max", this.max);
+		tag.putString("name", this.name);
 	}
 
 	@Override

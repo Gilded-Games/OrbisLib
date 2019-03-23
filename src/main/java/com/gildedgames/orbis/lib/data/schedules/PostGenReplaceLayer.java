@@ -109,7 +109,7 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 
 		funnel.setStack("required", this.required);
 		funnel.setStack("replaced", this.replaced);
-		tag.setInteger("layerId", this.layerId);
+		tag.putInt("layerId", this.layerId);
 		funnel.set("options", this.options);
 
 		this.layer.setRequiredBlocks(BlockFilterHelper.getBlocksFromStack(this.required));
@@ -129,7 +129,7 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 
 		this.required = funnel.getStack("required");
 		this.replaced = funnel.getStack("replaced");
-		this.layerId = tag.getInteger("layerId");
+		this.layerId = tag.getInt("layerId");
 		this.options = funnel.get("options");
 		this.filter = funnel.getWithDefault("filter", () -> this.filter);
 

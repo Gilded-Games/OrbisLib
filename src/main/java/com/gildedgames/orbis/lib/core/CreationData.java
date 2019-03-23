@@ -216,24 +216,24 @@ public class CreationData implements ICreationData<CreationData>
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setTag("pos", NBTHelper.writeBlockPos(this.pos));
-		tag.setString("rotation", this.rotation.name());
-		tag.setBoolean("placeAir", this.placeAir);
-		tag.setBoolean("placesVoid", this.placesVoid);
-		tag.setBoolean("schedules", this.schedules);
-		tag.setBoolean("spawnEntities", this.spawnEntities);
-		tag.setLong("seed", this.seed);
+		tag.put("pos", NBTHelper.writeBlockPos(this.pos));
+		tag.putString("rotation", this.rotation.name());
+		tag.putBoolean("placeAir", this.placeAir);
+		tag.putBoolean("placesVoid", this.placesVoid);
+		tag.putBoolean("schedules", this.schedules);
+		tag.putBoolean("spawnEntities", this.spawnEntities);
+		tag.putLong("seed", this.seed);
 
 		if (this.world != null)
 		{
-			tag.setInteger("dimId", this.world.provider.getDimension());
+			tag.putInt("dimId", this.world.provider.getDimension());
 		}
 	}
 
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
-		this.pos = NBTHelper.readBlockPos(tag.getCompoundTag("pos"));
+		this.pos = NBTHelper.readBlockPos(tag.getCompound("pos"));
 		this.rotation = Rotation.valueOf(tag.getString("rotation"));
 		this.placeAir = tag.getBoolean("placeAir");
 		this.placesVoid = tag.getBoolean("placesVoid");
@@ -241,9 +241,9 @@ public class CreationData implements ICreationData<CreationData>
 		this.spawnEntities = tag.getBoolean("spawnEntities");
 		this.seed = tag.getLong("seed");
 
-		if (tag.hasKey("dimId"))
+		if (tag.contains("dimId"))
 		{
-			this.dimId = tag.getInteger("dimId");
+			this.dimId = tag.getInt("dimId");
 		}
 
 		this.rand = new Random(this.seed);

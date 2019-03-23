@@ -76,7 +76,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 	@Override
 	public void write(final NBTTagCompound output)
 	{
-		output.setBoolean("hasWrittenInstances", this.instances.size() > 0);
+		output.putBoolean("hasWrittenInstances", this.instances.size() > 0);
 
 		final NBTTagList tagList = new NBTTagList();
 
@@ -84,13 +84,13 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 		{
 			final T instance = entry.getValue();
 			final NBTTagCompound newTag = new NBTTagCompound();
-			newTag.setInteger("dimension", entry.getKey());
+			newTag.putInt("dimension", entry.getKey());
 
 			instance.write(newTag);
-			tagList.appendTag(newTag);
+			tagList.add(newTag);
 		}
 
-		output.setTag("instances", tagList);
+		output.put("instances", tagList);
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class InstanceHandler<T extends IInstance> implements IInstanceHandler<T>
 
 		for (final NBTTagCompound tag : NBTHelper.getIterator(input, "instances"))
 		{
-			int id = tag.getInteger("dimension");
+			int id = tag.getInt("dimension");
 
 			final T instance = this.factory.createInstance(id, this);
 			instance.read(tag);

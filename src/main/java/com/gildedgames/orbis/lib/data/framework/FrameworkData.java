@@ -432,17 +432,17 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setInteger("type", this.type.ordinal());
+		tag.putInt("type", this.type.ordinal());
 
-		tag.setInteger("width", this.width);
-		tag.setInteger("height", this.height);
-		tag.setInteger("length", this.length);
+		tag.putInt("width", this.width);
+		tag.putInt("height", this.height);
+		tag.putInt("length", this.length);
 
 		funnel.setMap("nodeToPos", this.nodeToPos, p ->
 		{
 			NBTFunnel f = new NBTFunnel(new NBTTagCompound());
 
-			f.getTag().setInteger("id", p.getKey());
+			f.getTag().putInt("id", p.getKey());
 			f.set("node", p.getValue());
 
 			return f.getTag();
@@ -454,17 +454,17 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.type = FrameworkType.values()[tag.getInteger("type")];
+		this.type = FrameworkType.values()[tag.getInt("type")];
 
-		this.width = tag.getInteger("width");
-		this.height = tag.getInteger("height");
-		this.length = tag.getInteger("length");
+		this.width = tag.getInt("width");
+		this.height = tag.getInt("height");
+		this.length = tag.getInt("length");
 
 		this.nodeToPos = funnel.getMap("nodeToPos", t ->
 		{
 			NBTFunnel f = new NBTFunnel(t);
 
-			int id = f.getTag().getInteger("id");
+			int id = f.getTag().getInt("id");
 			IFrameworkNode node = f.get("node");
 
 			return Pair.of(id, node);

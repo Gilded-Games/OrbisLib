@@ -383,9 +383,9 @@ public class BlockFilterLayer implements NBT
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setString("name", this.name);
+		tag.putString("name", this.name);
 
-		tag.setString("filterName", this.getFilterType().name());
+		tag.putString("filterName", this.getFilterType().name());
 
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

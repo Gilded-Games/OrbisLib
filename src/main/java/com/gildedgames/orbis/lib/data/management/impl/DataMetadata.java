@@ -39,7 +39,7 @@ public class DataMetadata implements IDataMetadata
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setString("name", this.name);
+		tag.putString("name", this.name);
 		funnel.set("identifier", this.identifier);
 
 		funnel.setList("dependencies", this.dependencies);

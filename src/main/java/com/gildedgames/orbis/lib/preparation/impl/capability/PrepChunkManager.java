@@ -3,7 +3,7 @@ package com.gildedgames.orbis.lib.preparation.impl.capability;
 import com.gildedgames.orbis.lib.preparation.*;
 import com.gildedgames.orbis.lib.preparation.impl.ChunkMask;
 import com.gildedgames.orbis.lib.util.ChunkMap;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -67,13 +67,13 @@ public class PrepChunkManager<T extends IChunkColumnInfo> implements IPrepChunkM
 	{
 		@Nullable
 		@Override
-		public NBTBase writeNBT(final Capability<IPrepChunkManager> capability, final IPrepChunkManager instance, final EnumFacing side)
+		public INBTBase writeNBT(final Capability<IPrepChunkManager> capability, final IPrepChunkManager instance, final EnumFacing side)
 		{
 			return null;
 		}
 
 		@Override
-		public void readNBT(final Capability<IPrepChunkManager> capability, final IPrepChunkManager instance, final EnumFacing side, final NBTBase nbt)
+		public void readNBT(final Capability<IPrepChunkManager> capability, final IPrepChunkManager instance, final EnumFacing side, final INBTBase nbt)
 		{
 
 		}

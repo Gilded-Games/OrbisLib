@@ -66,18 +66,18 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setInteger("x", this.getX());
-		tag.setInteger("y", this.getY());
-		tag.setInteger("z", this.getZ());
-		tag.setInteger("d", this.dimensionId);
+		tag.putInt("x", this.getX());
+		tag.putInt("y", this.getY());
+		tag.putInt("z", this.getZ());
+		tag.putInt("d", this.dimensionId);
 	}
 
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
-		this.x = tag.getInteger("x");
-		this.y = tag.getInteger("y");
-		this.z = tag.getInteger("z");
-		this.dimensionId = tag.getInteger("d");
+		this.x = tag.getInt("x");
+		this.y = tag.getInt("y");
+		this.z = tag.getInt("z");
+		this.dimensionId = tag.getInt("d");
 	}
 }

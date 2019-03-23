@@ -198,7 +198,7 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		funnel.setIntMap("nodes", this.nodes);
-		tag.setInteger("rootNode", this.rootNode);
+		tag.putInt("rootNode", this.rootNode);
 	}
 
 	@Override
@@ -207,7 +207,7 @@ public class NodeTree<DATA, LINK> implements NBT, INodeListener<DATA, LINK>, IDa
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		this.nodes = Maps.newLinkedHashMap(funnel.getIntMap("nodes"));
-		this.rootNode = tag.getInteger("rootNode");
+		this.rootNode = tag.getInt("rootNode");
 
 		this.nodes.values().forEach((n) -> n.setTree(this));
 		this.nodes.values().forEach((n) -> n.listen(this));

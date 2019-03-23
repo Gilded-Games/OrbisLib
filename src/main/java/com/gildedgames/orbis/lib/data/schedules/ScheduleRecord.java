@@ -164,7 +164,7 @@ public class ScheduleRecord implements IScheduleRecord
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setInteger("nextId", this.nextId);
+		tag.putInt("nextId", this.nextId);
 
 		funnel.setIntMap("schedules", this.schedules);
 	}
@@ -174,7 +174,7 @@ public class ScheduleRecord implements IScheduleRecord
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.nextId = tag.getInteger("nextId");
+		this.nextId = tag.getInt("nextId");
 
 		this.schedules = funnel.getIntMap("schedules");
 

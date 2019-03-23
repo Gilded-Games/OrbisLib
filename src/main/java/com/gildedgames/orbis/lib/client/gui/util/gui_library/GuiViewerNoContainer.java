@@ -217,7 +217,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	@Override
 	public void initGui()
 	{
-		if (Minecraft.getMinecraft().currentScreen == this)
+		if (Minecraft.getInstance().currentScreen == this)
 		{
 			super.initGui();
 		}
@@ -251,25 +251,25 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 		final float x = state.dim().x();
 		final float y = state.dim().y();
 
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 		GlStateManager.pushMatrix();
 
 		GlStateManager.disableLighting();
 
-		GlStateManager.translate(x + state.dim().originX(), y + state.dim().originY(), 0);
+		GlStateManager.translatef(x + state.dim().originX(), y + state.dim().originY(), 0);
 
-		GlStateManager.translate(state.dim().isCenteredX() ? (state.dim().width() / 2) : 0, state.dim().isCenteredY() ? (state.dim().height() / 2) : 0, 0);
+		GlStateManager.translatef(state.dim().isCenteredX() ? (state.dim().width() / 2) : 0, state.dim().isCenteredY() ? (state.dim().height() / 2) : 0, 0);
 
 		if (state.getShouldScaleRender())
 		{
-			GlStateManager.scale(state.dim().scale(), state.dim().scale(), 0);
+			GlStateManager.scalef(state.dim().scale(), state.dim().scale(), 0);
 		}
 
-		GlStateManager.rotate(state.dim().degrees(), 0.0F, 0.0F, 1.0F);
+		GlStateManager.rotatef(state.dim().degrees(), 0.0F, 0.0F, 1.0F);
 
-		GlStateManager.translate(state.dim().isCenteredX() ? -(state.dim().width() / 2) : 0, state.dim().isCenteredY() ? -(state.dim().height() / 2) : 0, 0);
+		GlStateManager.translatef(state.dim().isCenteredX() ? -(state.dim().width() / 2) : 0, state.dim().isCenteredY() ? -(state.dim().height() / 2) : 0, 0);
 
-		GlStateManager.translate(-x - state.dim().originX(), -y - state.dim().originY(), 0);
+		GlStateManager.translatef(-x - state.dim().originX(), -y - state.dim().originY(), 0);
 
 		GuiFrameUtils.applyAlpha(state);
 
@@ -302,7 +302,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	public void drawScreen(final int mouseX, final int mouseY, final float partialTicks)
+	public void render(final int mouseX, final int mouseY, final float partialTicks)
 	{
 		if (this.elementsCurrentlyBuilding.isEmpty() && this.recacheRequested)
 		{
@@ -337,22 +337,22 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 		this.drawElements();
 
 		GL11.glDisable(GL11.GL_ALPHA_TEST);
-		GlStateManager.disableAlpha();
+		GlStateManager.disableAlphaTest();
 
 		GlStateManager.popMatrix();
 
-		super.drawScreen(mouseX, mouseY, partialTicks);
+		super.render(mouseX, mouseY, partialTicks);
 
 		if (this.hoverDescription != null && this.hoverDescription.size() > 0)
 		{
-			GuiUtils.drawHoveringText(this.hoverDescription, mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);
+			GuiUtils.drawHoveringText(this.hoverDescription, mouseX, mouseY, Minecraft.getInstance().fontRenderer);
 		}
 
 		this.hoverDescription = null;
 	}
 
 	@Override
-	protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException
+	public boolean mouseClicked(final double mouseX, final double mouseY, final int mouseButton)
 	{
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 
@@ -371,29 +371,27 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	protected void mouseClickMove(final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+	public boolean mouseDragged(final double mouseX, final double mouseY, final int clickedMouseButton, double p_mouseDragged_6_, double p_mouseDragged_8_)
 	{
-		super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
-
 		this.allVisibleElements.forEach((element) ->
 		{
 			for (IGuiEvent event : element.state().getEvents())
 			{
-				if (!event.isMouseClickMoveEnabled(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick))
+				if (!event.isMouseClickMoveEnabled(element, mouseX, mouseY, clickedMouseButton))
 				{
 					return;
 				}
 			}
 
-			element.state().getEvents().forEach((event) -> event.onMouseClickMove(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick));
+			element.state().getEvents().forEach((event) -> event.onMouseClickMove(element, mouseX, mouseY, clickedMouseButton));
 		});
+
+		return super.mouseDragged(mouseX, mouseY, clickedMouseButton, p_mouseDragged_6_, p_mouseDragged_8_);
 	}
 
 	@Override
-	protected void mouseReleased(final int mouseX, final int mouseY, final int state)
+	public boolean mouseReleased(final double mouseX, final double mouseY, final int state)
 	{
-		super.mouseReleased(mouseX, mouseY, state);
-
 		this.allVisibleElements.forEach((element) ->
 		{
 			for (IGuiEvent event : element.state().getEvents())
@@ -406,48 +404,35 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 			element.state().getEvents().forEach((event) -> event.onMouseReleased(element, mouseX, mouseY, state));
 		});
+
+		return super.mouseReleased(mouseX, mouseY, state);
 	}
 
 	@Override
-	public void handleMouseInput() throws IOException
-	{
-		super.handleMouseInput();
-
-		final int state = Mouse.getEventDWheel();
-
-		if (state != 0)
-		{
-			this.onMouseWheel(state);
-		}
-	}
-
-	protected void onMouseWheel(int state)
+	public boolean mouseScrolled(double amount)
 	{
 		this.allVisibleElements.forEach((element) ->
 		{
 			for (IGuiEvent event : element.state().getEvents())
 			{
-				if (!event.isMouseWheelEnabled(element, state))
+				if (!event.isMouseWheelEnabled(element, amount))
 				{
 					return;
 				}
 			}
 
-			element.state().getEvents().forEach((event) -> event.onMouseWheel(element, state));
+			element.state().getEvents().forEach((event) -> event.onMouseWheel(element, amount));
 		});
-	}
 
-	protected void keyTypedInner(final char typedChar, final int keyCode) throws IOException
-	{
-		super.keyTyped(typedChar, keyCode);
+		return super.mouseScrolled(amount);
 	}
 
 	@Override
-	protected void keyTyped(final char typedChar, final int keyCode) throws IOException
+	public boolean charTyped(final char typedChar, final int keyCode)
 	{
 		if (!preventInnerTyping)
 		{
-			this.keyTypedInner(typedChar, keyCode);
+			return super.charTyped(typedChar, keyCode);
 		}
 
 		this.allVisibleElements.forEach((element) ->
@@ -469,18 +454,15 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	{
 		super.onGuiClosed();
 
-		this.allVisibleElements.forEach((element) ->
-		{
-			element.state().getEvents().forEach((event) -> event.onGuiClosed(element));
-		});
+		this.allVisibleElements.forEach((element) -> element.state().getEvents().forEach((event) -> event.onGuiClosed(element)));
 	}
 
 	@Override
-	public void updateScreen()
+	public void tick()
 	{
-		super.updateScreen();
+		super.tick();
 
-		this.allVisibleElements.forEach((element) -> element.state().getEvents().forEach((event) -> event.onUpdateScreen(element)));
+		this.allVisibleElements.forEach((element) -> element.state().getEvents().forEach((event) -> event.onTick(element)));
 	}
 
 	@Override

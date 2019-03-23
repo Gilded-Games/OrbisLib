@@ -1,6 +1,6 @@
 package com.gildedgames.orbis.lib.world.instances;
 
-import net.minecraft.world.DimensionType;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.Teleporter;
 import net.minecraft.world.WorldServer;
 

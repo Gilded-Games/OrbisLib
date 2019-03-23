@@ -2,6 +2,7 @@ package com.gildedgames.orbis.lib.core.variables.displays;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiViewer;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.vanilla.GuiButtonVanilla;
 import com.gildedgames.orbis.lib.client.gui.util.vanilla.GuiItemStackRender;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
@@ -70,7 +71,7 @@ public class GuiItemStackChooser extends GuiElement
 	}
 
 	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		if (this.button.state().isHoveredAndTopElement() && mouseButton == 0 && this.viewer().mc().currentScreen instanceof GuiViewer)
 		{

@@ -10,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.chunk.ChunkSection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +63,7 @@ public class ChunkDataContainer
 
 		segment.blockStorage.set(x, y & 15, z, state);
 
-		segment.opacity[x << 8 | z << 4 | (y & 15)] = (byte) state.getLightOpacity();
+		segment.opacity[x << 8 | z << 4 | (y & 15)] = (byte) state.getOpacity();
 	}
 
 	private int getBlockOpacity(int x, int y, int z)
@@ -104,7 +104,7 @@ public class ChunkDataContainer
 
 	public static ChunkDataContainer createFromMask(World world, ChunkMask mask, IChunkMaskTransformer transformer, int chunkX, int chunkZ)
 	{
-		ChunkDataContainer container = new ChunkDataContainer(chunkX, chunkZ, world.provider.hasSkyLight());
+		ChunkDataContainer container = new ChunkDataContainer(chunkX, chunkZ, world.dimension.hasSkyLight());
 
 		BlockStateCacher cacher = new BlockStateCacher(transformer);
 
@@ -121,12 +121,12 @@ public class ChunkDataContainer
 
 			if (dest == null)
 			{
-				dest = new SegmentStorage((chunkY >> 1) << 4, world.provider.hasSkyLight());
+				dest = new SegmentStorage((chunkY >> 1) << 4, world.dimension.hasSkyLight());
 
 				container.segments[chunkY >> 1] = dest;
 			}
 
-			ExtendedBlockStorage blockStorage = dest.blockStorage;
+			ChunkSection blockStorage = dest.blockStorage;
 			BitArray bitArray = blockStorage.data.storage;
 
 			cacher.update(blockStorage.data);
@@ -171,7 +171,7 @@ public class ChunkDataContainer
 				continue;
 			}
 
-			chunk.getBlockStorageArray()[chunkY] = segment.blockStorage;
+			chunk.getSections()[chunkY] = segment.blockStorage;
 		}
 
 		for (TileEntity tileEntity : this.tileEntities.values())
@@ -216,7 +216,7 @@ public class ChunkDataContainer
 					}
 				}
 
-				if (world.provider.hasSkyLight())
+				if (world.dimension.hasSkyLight())
 				{
 					int light = 15;
 
@@ -235,9 +235,9 @@ public class ChunkDataContainer
 
 						if (light > 0)
 						{
-							ExtendedBlockStorage extendedblockstorage = chunk.getBlockStorageArray()[y2 >> 4];
+							ChunkSection extendedblockstorage = chunk.getSections()[y2 >> 4];
 
-							if (extendedblockstorage != Chunk.NULL_BLOCK_STORAGE)
+							if (extendedblockstorage != Chunk.EMPTY_SECTION)
 							{
 								extendedblockstorage.setSkyLight(x, y2 & 15, z, light);
 							}
@@ -320,13 +320,13 @@ public class ChunkDataContainer
 
 	private static class SegmentStorage
 	{
-		private final ExtendedBlockStorage blockStorage;
+		private final ChunkSection blockStorage;
 
 		private final byte[] opacity = new byte[16 * 16 * 16];
 
 		public SegmentStorage(int y, boolean storeSkylight)
 		{
-			this.blockStorage = new ExtendedBlockStorage(y, storeSkylight);
+			this.blockStorage = new ChunkSection(y, storeSkylight);
 		}
 	}
 }

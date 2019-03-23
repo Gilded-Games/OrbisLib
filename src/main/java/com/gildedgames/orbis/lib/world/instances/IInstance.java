@@ -2,7 +2,7 @@ package com.gildedgames.orbis.lib.world.instances;
 
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.world.DimensionType;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.List;
 

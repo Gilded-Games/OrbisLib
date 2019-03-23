@@ -42,7 +42,7 @@ public class DataIdentifier implements IDataIdentifier
 
 		if (this.dataId != null)
 		{
-			tag.setUniqueId("dataId", this.dataId);
+			tag.putUniqueId("dataId", this.dataId);
 		}
 
 		funnel.set("projectIdentifier", this.projectIdentifier);

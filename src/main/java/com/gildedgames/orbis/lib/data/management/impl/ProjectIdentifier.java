@@ -30,8 +30,8 @@ public class ProjectIdentifier implements IProjectIdentifier
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		tag.setUniqueId("id", this.projectId);
-		tag.setString("originalCreator", this.originalCreator);
+		tag.putUniqueId("id", this.projectId);
+		tag.putString("originalCreator", this.originalCreator);
 	}
 
 	@Override

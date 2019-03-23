@@ -6,22 +6,22 @@ import net.minecraft.inventory.Slot;
 
 public interface IGuiEvent<T extends IGuiElement>
 {
-	default boolean isMouseClickedEnabled(T element, int mouseX, int mouseY, int mouseButton)
+	default boolean isMouseClickedEnabled(IGuiElement element, double mouseX, double mouseY, int mouseButton)
 	{
 		return element.state().isEnabled();
 	}
 
-	default boolean isMouseClickMoveEnabled(T element, final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+	default boolean isMouseClickMoveEnabled(T element, final double mouseX, final double mouseY, final int clickedMouseButton)
 	{
 		return element.state().isEnabled();
 	}
 
-	default boolean isMouseReleasedEnabled(T element, final int mouseX, final int mouseY, final int state)
+	default boolean isMouseReleasedEnabled(IGuiElement element, final double mouseX, final double mouseY, final int state)
 	{
 		return element.state().isEnabled();
 	}
 
-	default boolean isMouseWheelEnabled(T element, int state)
+	default boolean isMouseWheelEnabled(IGuiElement element, double state)
 	{
 		return element.state().isEnabled();
 	}
@@ -46,7 +46,7 @@ public interface IGuiEvent<T extends IGuiElement>
 
 	}
 
-	default void onUpdateScreen(T element)
+	default void onTick(T element)
 	{
 
 	}
@@ -81,22 +81,22 @@ public interface IGuiEvent<T extends IGuiElement>
 
 	}
 
-	default void onMouseWheel(T element, final int state)
+	default void onMouseWheel(IGuiElement element, final double state)
 	{
 
 	}
 
-	default void onMouseClicked(T element, final int mouseX, final int mouseY, final int mouseButton)
+	default void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 
 	}
 
-	default void onMouseClickMove(T element, final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+	default void onMouseClickMove(T element, final double mouseX, final double mouseY, final int clickedMouseButton)
 	{
 
 	}
 
-	default void onMouseReleased(T element, final int mouseX, final int mouseY, final int state)
+	default void onMouseReleased(IGuiElement element, final double mouseX, final double mouseY, final int state)
 	{
 
 	}

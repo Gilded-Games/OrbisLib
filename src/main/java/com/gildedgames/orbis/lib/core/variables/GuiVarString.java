@@ -128,9 +128,9 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setString("data", this.data);
-		tag.setString("name", this.name);
-		tag.setInteger("maxStringLength", this.maxStringLength);
+		tag.putString("data", this.data);
+		tag.putString("name", this.name);
+		tag.putInt("maxStringLength", this.maxStringLength);
 	}
 
 	@Override
@@ -138,7 +138,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 	{
 		this.data = tag.getString("data");
 		this.name = tag.getString("name");
-		this.maxStringLength = tag.getInteger("maxStringLength");
+		this.maxStringLength = tag.getInt("maxStringLength");
 	}
 
 	@Override

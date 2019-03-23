@@ -44,7 +44,7 @@ public class GuiItemStackRender extends GuiElement
 		RenderHelper.enableGUIStandardItemLighting();
 		GlStateManager.enableDepth();
 
-		Minecraft.getMinecraft().getRenderItem().renderItemIntoGUI(this.stack, (int) this.dim().x() + 1, (int) this.dim().y() + 1);
+		Minecraft.getInstance().getRenderItem().renderItemIntoGUI(this.stack, (int) this.dim().x() + 1, (int) this.dim().y() + 1);
 
 		RenderHelper.disableStandardItemLighting();
 		GlStateManager.disableRescaleNormal();
@@ -56,20 +56,20 @@ public class GuiItemStackRender extends GuiElement
 		{
 			int xOffset = (Math.max(String.valueOf(this.stack.getCount()).length() - 1, 0)) * -6;
 
-			this.viewer().getActualScreen().drawString(Minecraft.getMinecraft().fontRenderer, String.valueOf(this.stack.getCount()),
+			this.viewer().getActualScreen().drawString(Minecraft.getInstance().fontRenderer, String.valueOf(this.stack.getCount()),
 					(int) this.dim().x() + 12 + xOffset, (int) this.dim().y() + (int) this.dim().height() - 8, 0xFFFFFF);
 		}
 
 		if (this.state().isHoveredAndTopElement())
 		{
-			GuiScreen gui = Minecraft.getMinecraft().currentScreen;
+			GuiScreen gui = Minecraft.getInstance().currentScreen;
 
 			if (gui instanceof IGuiViewer)
 			{
 				IGuiViewer viewer = (IGuiViewer) gui;
 
-				viewer.setHoveredDescription(this.stack.getTooltip(Minecraft.getMinecraft().player,
-						Minecraft.getMinecraft().gameSettings.advancedItemTooltips ?
+				viewer.setHoveredDescription(this.stack.getTooltip(Minecraft.getInstance().player,
+						Minecraft.getInstance().gameSettings.advancedItemTooltips ?
 								ITooltipFlag.TooltipFlags.ADVANCED :
 								ITooltipFlag.TooltipFlags.NORMAL));
 			}

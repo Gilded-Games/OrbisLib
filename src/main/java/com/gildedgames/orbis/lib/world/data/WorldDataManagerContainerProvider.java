@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.world.data;
 
 import com.gildedgames.orbis.lib.OrbisLibCapabilities;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
@@ -10,7 +10,7 @@ import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class WorldDataManagerContainerProvider implements ICapabilitySerializable<NBTBase>
+public class WorldDataManagerContainerProvider implements ICapabilitySerializable<INBTBase>
 {
 	private final IWorldDataManagerContainer container;
 
@@ -41,13 +41,13 @@ public class WorldDataManagerContainerProvider implements ICapabilitySerializabl
 	}
 
 	@Override
-	public NBTBase serializeNBT()
+	public INBTBase serializeNBT()
 	{
 		return this.storage.writeNBT(OrbisLibCapabilities.WORLD_DATA, this.container, null);
 	}
 
 	@Override
-	public void deserializeNBT(NBTBase nbt)
+	public void deserializeNBT(INBTBase nbt)
 	{
 		this.storage.readNBT(OrbisLibCapabilities.WORLD_DATA, this.container, null, nbt);
 	}

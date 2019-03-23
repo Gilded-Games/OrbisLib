@@ -41,8 +41,8 @@ public class ProjectMetadata implements IProjectMetadata
 
 		funnel.setList("display", this.display);
 
-		tag.setBoolean("downloaded", this.downloaded);
-		tag.setBoolean("downloading", this.downloading);
+		tag.putBoolean("downloaded", this.downloaded);
+		tag.putBoolean("downloading", this.downloading);
 
 		funnel.setDate("lastChanged", this.lastChanged);
 	}

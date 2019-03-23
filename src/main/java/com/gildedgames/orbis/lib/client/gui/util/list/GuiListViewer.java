@@ -5,6 +5,7 @@ import com.gildedgames.orbis.lib.client.gui.data.list.IListNavigatorListener;
 import com.gildedgames.orbis.lib.client.gui.util.GuiAbstractButton;
 import com.gildedgames.orbis.lib.client.gui.util.GuiFactoryGeneric;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Pos2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.google.common.collect.Lists;
@@ -156,7 +157,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiElement> extends GuiElement
 	}
 
 	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		if (this.state().isEnabled() && mouseButton == 0)
 		{
@@ -232,7 +233,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiElement> extends GuiElement
 	}
 
 	@Override
-	public void onMouseWheel(GuiElement element, final int state)
+	public void onMouseWheel(IGuiElement element, final double state)
 	{
 		int oldScroll = this.currentScroll;
 

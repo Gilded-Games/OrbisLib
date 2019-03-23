@@ -2,11 +2,11 @@ package com.gildedgames.orbis.lib.client.gui.util;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiViewer;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
-import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class GuiInput extends GuiElement
 	{
 		super(rect, true);
 
-		this.field = new GuiTextField(0, Minecraft.getMinecraft().fontRenderer, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height());
+		this.field = new GuiTextField(0, Minecraft.getInstance().fontRenderer, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height());
 	}
 
 	public void listen(IGuiInputListener listener)
@@ -44,13 +44,15 @@ public class GuiInput extends GuiElement
 	@Override
 	public void build()
 	{
-		Keyboard.enableRepeatEvents(true);
+		// TODO: Do we need to enable repeat events?
+		// Keyboard.enableRepeatEvents(true);
 	}
 
 	@Override
 	public void onGuiClosed(GuiElement element)
 	{
-		Keyboard.enableRepeatEvents(false);
+		// TODO: Do we need to disable repeat events?
+		// Keyboard.enableRepeatEvents(false);
 	}
 
 	//TODO
@@ -66,7 +68,7 @@ public class GuiInput extends GuiElement
 	}*/
 
 	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		if (this.field.getVisible())
 		{
@@ -75,7 +77,7 @@ public class GuiInput extends GuiElement
 	}
 
 	@Override
-	public void onKeyTyped(GuiElement element, final char typedChar, final int keyCode)
+	public void onKeyTyped(GuiElement element, final char typedChar, final int modifiers)
 	{
 		if (keyCode == Keyboard.KEY_ESCAPE)
 		{
@@ -84,7 +86,7 @@ public class GuiInput extends GuiElement
 
 		if (this.field.getVisible())
 		{
-			this.field.textboxKeyTyped(typedChar, keyCode);
+			this.field.charTyped(typedChar, modifiers);
 
 			if (this.field.isFocused() && keyCode == Keyboard.KEY_RETURN)
 			{
@@ -114,8 +116,8 @@ public class GuiInput extends GuiElement
 	}
 
 	@Override
-	public void onUpdateScreen(GuiElement element)
+	public void onTick(GuiElement element)
 	{
-		this.field.updateCursorCounter();
+		this.field.tick();
 	}
 }

@@ -175,15 +175,15 @@ public class GuiVarBlueprintVariable implements IGuiVar<INode<BlueprintVariable,
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setString("name", this.name);
-		tag.setInteger("dataIndex", this.dataIndex);
+		tag.putString("name", this.name);
+		tag.putInt("dataIndex", this.dataIndex);
 	}
 
 	@Override
 	public void read(NBTTagCompound tag)
 	{
 		this.name = tag.getString("name");
-		this.dataIndex = tag.getInteger("dataIndex");
+		this.dataIndex = tag.getInt("dataIndex");
 	}
 
 	@Override

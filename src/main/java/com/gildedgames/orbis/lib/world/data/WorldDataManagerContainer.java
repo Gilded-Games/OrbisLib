@@ -1,6 +1,6 @@
 package com.gildedgames.orbis.lib.world.data;
 
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -80,20 +80,20 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 	{
 		@Nullable
 		@Override
-		public NBTBase writeNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side)
+		public INBTBase writeNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side)
 		{
 			NBTTagCompound tag = new NBTTagCompound();
 
 			if (instance.getLastStorageMethod() != null)
 			{
-				tag.setString("LastStorageMethod", instance.getLastStorageMethod().serializedName);
+				tag.putString("LastStorageMethod", instance.getLastStorageMethod().serializedName);
 			}
 
 			return tag;
 		}
 
 		@Override
-		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side, final NBTBase nbt)
+		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side, final INBTBase nbt)
 		{
 			String name = ((NBTTagCompound) nbt).getString("LastStorageMethod");
 

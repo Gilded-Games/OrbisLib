@@ -11,7 +11,6 @@ import com.gildedgames.orbis.lib.data.region.IDimensions;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import com.gildedgames.orbis.lib.util.mc.BlockUtil;
 import com.gildedgames.orbis.lib.world.IWorldObject;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -222,7 +221,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 				{
 					if (predicate == layerState)
 					{
-						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(chosenBottomBlocks.getBlockState(pos)))
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !chosenBottomBlocks.getBlockState(pos).isSolid())
 						{
 							chosenBottomBlocks.setBlockState(predicate, pos);
 						}
@@ -259,7 +258,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 					{
 						if (predicate == layerState)
 						{
-							if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(blocks.getBlockState(pos)))
+							if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !blocks.getBlockState(pos).isSolid())
 							{
 								blocks.setBlockState(predicate, pos);
 							}
@@ -293,7 +292,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 				{
 					if (predicate == layerState)
 					{
-						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(chosenTopBlocks.getBlockState(pos)))
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !chosenTopBlocks.getBlockState(pos).isSolid())
 						{
 							chosenTopBlocks.setBlockState(predicate, pos);
 						}

@@ -11,26 +11,25 @@ import net.minecraft.inventory.Slot;
 public class MouseInputDisabledWhenNotHovered implements IGuiEvent
 {
 	@Override
-	public boolean isMouseClickedEnabled(IGuiElement element, int mouseX, int mouseY, int mouseButton)
+	public boolean isMouseClickedEnabled(IGuiElement element, double mouseX, double mouseY, int mouseButton)
 	{
 		return element.state().isEnabled() && element.state().isHoveredAndTopElement();
 	}
 
 	@Override
-	public boolean isMouseClickMoveEnabled(IGuiElement element, final int mouseX, final int mouseY, final int clickedMouseButton,
-			final long timeSinceLastClick)
+	public boolean isMouseClickMoveEnabled(IGuiElement element, final double mouseX, final double mouseY, final int clickedMouseButton)
 	{
 		return element.state().isEnabled() && element.state().isHoveredAndTopElement();
 	}
 
 	@Override
-	public boolean isMouseReleasedEnabled(IGuiElement element, final int mouseX, final int mouseY, final int state)
+	public boolean isMouseReleasedEnabled(IGuiElement element, final double mouseX, final double mouseY, final int state)
 	{
 		return true;
 	}
 
 	@Override
-	public boolean isMouseWheelEnabled(IGuiElement element, final int state)
+	public boolean isMouseWheelEnabled(IGuiElement element, final double state)
 	{
 		return element.state().isEnabled() && element.state().isHoveredAndTopElement();
 	}

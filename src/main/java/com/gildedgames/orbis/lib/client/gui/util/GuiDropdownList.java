@@ -3,6 +3,7 @@ package com.gildedgames.orbis.lib.client.gui.util;
 import com.gildedgames.orbis.lib.client.gui.data.IDropdownElement;
 import com.gildedgames.orbis.lib.client.gui.util.decorators.GuiScrollable;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Pos2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
@@ -213,13 +214,13 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 				}
 
 				@Override
-				public void onMouseClicked(GuiTextLabel gui, final int mouseX, final int mouseY, final int mouseButton)
+				public void onMouseClicked(IGuiElement gui, final double mouseX, final double mouseY, final int mouseButton)
 				{
 					if (mouseButton == 0)
 					{
 						if (gui.state().isHoveredAndTopElement() && GuiDropdownList.this.state().isEnabled())
 						{
-							element.onClick(GuiDropdownList.this, Minecraft.getMinecraft().player);
+							element.onClick(GuiDropdownList.this, Minecraft.getInstance().player);
 
 							GuiDropdownList.this.listeners.forEach((l) -> l.onClick(element));
 						}

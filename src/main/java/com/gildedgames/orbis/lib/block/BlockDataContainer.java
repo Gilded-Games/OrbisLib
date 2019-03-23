@@ -241,7 +241,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		else
 		{
 			IBlockState state = data.idToState.get(block);
-			IBlockState stateRotated = state.withRotation(rotation);
+			IBlockState stateRotated = state.rotate(rotation);
 
 			// Avoid expensive map operations if the block hasn't changed... we know the state is already mapped
 			if (state == stateRotated)
@@ -285,9 +285,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		Int2IntOpenHashMap blockToLocalId = new Int2IntOpenHashMap();
 
-		tag.setInteger("width", this.getWidth());
-		tag.setInteger("height", this.getHeight());
-		tag.setInteger("length", this.getLength());
+		tag.putInt("width", this.getWidth());
+		tag.putInt("height", this.getHeight());
+		tag.putInt("length", this.getLength());
 
 		final byte[] blocks = new byte[this.getVolume()];
 		byte[] addBlocks = null;
@@ -386,14 +386,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 			final ResourceLocation identifier = entry.getValue();
 
-			data.setString("mod", identifier.getNamespace());
-			data.setString("name", identifier.getPath());
-			data.setInteger("id", entry.getKey());
+			data.putString("mod", identifier.getNamespace());
+			data.putString("name", identifier.getPath());
+			data.putInt("id", entry.getKey());
 
-			identifierList.appendTag(data);
+			identifierList.add(data);
 		}
 
-		tag.setTag("identifiers", identifierList);
+		tag.put("identifiers", identifierList);
 
 		/**
 		 * Saving tile entity data
@@ -404,22 +404,22 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		{
 			final NBTTagCompound data = new NBTTagCompound();
 
-			data.setTag("tileEnt", entry.getValue());
-			data.setInteger("orbisTEIndex", entry.getKey());
+			data.put("tileEnt", entry.getValue());
+			data.putInt("orbisTEIndex", entry.getKey());
 
-			tileEntityList.appendTag(data);
+			tileEntityList.add(data);
 		}
 
-		tag.setTag("tileEntities", tileEntityList);
+		tag.put("tileEntities", tileEntityList);
 
-		tag.setByteArray("blocks", blocks);
-		tag.setByteArray("metadata", metadata);
+		tag.putByteArray("blocks", blocks);
+		tag.putByteArray("metadata", metadata);
 
-		tag.setBoolean("addBlocks_null", addBlocks == null);
+		tag.putBoolean("addBlocks_null", addBlocks == null);
 
 		if (addBlocks != null)
 		{
-			tag.setByteArray("addBlocks", addBlocks);
+			tag.putByteArray("addBlocks", addBlocks);
 		}
 	}
 
@@ -429,19 +429,19 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		Int2ObjectOpenHashMap<Block> localIdToBlock = new Int2ObjectOpenHashMap<>();
 		localIdToBlock.put(-1, this.defaultBlock.getBlock());
 
-		this.width = tag.getInteger("width");
-		this.height = tag.getInteger("height");
-		this.length = tag.getInteger("length");
+		this.width = tag.getInt("width");
+		this.height = tag.getInt("height");
+		this.length = tag.getInt("length");
 
 		/** Read back identifier list so we can figure out which
 		 * ids belong to what blocks (as well as their parent mods)
 		 */
-		final NBTTagList identifierList = tag.getTagList("identifiers", 10);
+		final NBTTagList identifierList = tag.getList("identifiers", 10);
 		final Set<String> missingMods = new HashSet<>();
 
-		for (int i = 0; i < identifierList.tagCount(); i++)
+		for (int i = 0; i < identifierList.size(); i++)
 		{
-			final NBTTagCompound data = identifierList.getCompoundTagAt(i);
+			final NBTTagCompound data = identifierList.getCompound(i);
 
 			final String modname = data.getString("mod");
 			final String blockname = data.getString("name");
@@ -453,12 +453,12 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 			 */
 			if (block == null)
 			{
-				data.getInteger("id");
+				data.getInt("id");
 				missingMods.add(modname);
 			}
 			else
 			{
-				int id = data.getInteger("id");
+				int id = data.getInt("id");
 
 				localIdToBlock.put(id, block);
 			}
@@ -474,14 +474,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		 * Read back tile entities
 		 */
 		final Int2ObjectOpenHashMap<NBTTagCompound> tileEntities = new Int2ObjectOpenHashMap<>();
-		final NBTTagList tileEntityList = tag.getTagList("tileEntities", 10);
+		final NBTTagList tileEntityList = tag.getList("tileEntities", 10);
 
-		for (int i = 0; i < tileEntityList.tagCount(); i++)
+		for (int i = 0; i < tileEntityList.size(); i++)
 		{
-			final NBTTagCompound data = tileEntityList.getCompoundTagAt(i);
+			final NBTTagCompound data = tileEntityList.getCompound(i);
 
-			final NBTTagCompound tileEntData = data.getCompoundTag("tileEnt");
-			tileEntities.put(data.getInteger("orbisTEIndex"), tileEntData);
+			final NBTTagCompound tileEntData = data.getCompound("tileEnt");
+			tileEntities.put(data.getInt("orbisTEIndex"), tileEntData);
 		}
 
 		final byte[] blockComp = tag.getByteArray("blocks");
@@ -604,7 +604,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	public void setTileEntity(TileEntity tileEntity, BlockPos pos)
 	{
-		this.setTileEntity(tileEntity.writeToNBT(new NBTTagCompound()), pos);
+		this.setTileEntity(tileEntity.write(new NBTTagCompound()), pos);
 	}
 
 	public void setTileEntity(NBTTagCompound tileEntity, BlockPos pos)

@@ -174,29 +174,29 @@ public class InventoryBlockForge implements IInventoryNBT
 			if (!stack.isEmpty())
 			{
 				final NBTTagCompound stackCompound = new NBTTagCompound();
-				stackCompound.setByte("Slot", (byte) i);
+				stackCompound.putByte("Slot", (byte) i);
 
-				stack.writeToNBT(stackCompound);
+				stack.write(stackCompound);
 
-				list.appendTag(stackCompound);
+				list.add(stackCompound);
 			}
 		}
 
-		output.setTag("Items", list);
+		output.put("Items", list);
 	}
 
 	@Override
 	public void read(final NBTTagCompound input)
 	{
-		final NBTTagList list = input.getTagList("Items", 10);
+		final NBTTagList list = input.getList("Items", 10);
 
-		for (int i = 0; i < list.tagCount(); i++)
+		for (int i = 0; i < list.size(); i++)
 		{
-			final NBTTagCompound compound = list.getCompoundTagAt(i);
+			final NBTTagCompound compound = list.getCompound(i);
 
 			final int slot = compound.getByte("Slot") & 255;
 
-			this.inventory.set(slot, new ItemStack(compound));
+			this.inventory.set(slot, ItemStack.read(compound));
 		}
 	}
 

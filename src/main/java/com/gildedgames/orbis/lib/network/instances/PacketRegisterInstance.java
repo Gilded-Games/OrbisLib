@@ -37,7 +37,7 @@ public class PacketRegisterInstance implements IMessage
 		}
 		else
 		{
-			this.instance = NBTHelper.read(tag.getCompoundTag("instances"));
+			this.instance = NBTHelper.read(tag.getCompound("instances"));
 		}
 	}
 
@@ -46,15 +46,15 @@ public class PacketRegisterInstance implements IMessage
 	{
 		final NBTTagCompound tag = new NBTTagCompound();
 
-		tag.setBoolean("isNull", false);
+		tag.putBoolean("isNull", false);
 
 		if (this.instance == null)
 		{
-			tag.setBoolean("isNull", true);
+			tag.putBoolean("isNull", true);
 		}
 		else
 		{
-			tag.setTag("instances", NBTHelper.write(this.instance));
+			tag.put("instances", NBTHelper.write(this.instance));
 		}
 
 		ByteBufUtils.writeTag(buf, tag);

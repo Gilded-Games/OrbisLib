@@ -181,8 +181,8 @@ public class GuiVarDropdown<DATA extends NBT> implements IGuiVar<DATA, GuiDropdo
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setString("name", this.name);
-		tag.setInteger("dataIndex", this.dataIndex);
+		tag.putString("name", this.name);
+		tag.putInt("dataIndex", this.dataIndex);
 		funnel.set("data", this.data);
 	}
 
@@ -192,7 +192,7 @@ public class GuiVarDropdown<DATA extends NBT> implements IGuiVar<DATA, GuiDropdo
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		this.name = tag.getString("name");
-		this.dataIndex = tag.getInteger("dataIndex");
+		this.dataIndex = tag.getInt("dataIndex");
 		this.data = funnel.get("data");
 	}
 }

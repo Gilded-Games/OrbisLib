@@ -69,9 +69,9 @@ public class Entrance implements IEntrance
 
 		funnel.set("bounds", this.bounds);
 		funnel.set("pathway", this.toConnectTo);
-		tag.setString("facing", this.facing.getName());
+		tag.putString("facing", this.facing.getName());
 
-		tag.setString("triggerId", this.triggerId);
+		tag.putString("triggerId", this.triggerId);
 
 		funnel.set("conditionNodeTree", this.conditionNodeTree);
 		funnel.set("conditionGuiPos", this.conditionGuiPos, NBTFunnel.POS2D_SETTER);

@@ -38,8 +38,8 @@ public class DataCache implements IDataCache
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setString("cacheId", this.cacheId);
-		tag.setInteger("nextId", this.nextId);
+		tag.putString("cacheId", this.cacheId);
+		tag.putInt("nextId", this.nextId);
 
 		funnel.setMap("idToData", this.idToData, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
 		funnel.setMap("idToMetadata", this.idToMetadata, NBTFunnel.UUID_SETTER, NBTFunnel.setter());
@@ -51,7 +51,7 @@ public class DataCache implements IDataCache
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
 		this.cacheId = tag.getString("cacheId");
-		this.nextId = tag.getInteger("nextId");
+		this.nextId = tag.getInt("nextId");
 
 		this.idToData = funnel.getMap("idToData", NBTFunnel.UUID_GETTER, NBTFunnel.getter());
 		this.idToMetadata = funnel.getMap("idToMetadata", NBTFunnel.UUID_GETTER, NBTFunnel.getter());

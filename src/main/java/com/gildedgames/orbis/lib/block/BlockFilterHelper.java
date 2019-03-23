@@ -28,7 +28,7 @@ public class BlockFilterHelper
 				{
 					blocks.add(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), stack.getCount()));
 				}
-				else if (stack.getItem() instanceof ItemBlock || stack.getItem() instanceof ItemMultiTexture)
+				else if (stack.getItem() instanceof ItemBlock)
 				{
 					final IBlockState state = BlockUtil.getBlockState(stack);
 
@@ -40,12 +40,10 @@ public class BlockFilterHelper
 				else if (stack.getItem() == Items.LAVA_BUCKET)
 				{
 					blocks.add(new BlockDataWithConditions(Blocks.LAVA.getDefaultState(), stack.getCount()));
-					blocks.add(new BlockDataWithConditions(Blocks.FLOWING_LAVA.getDefaultState(), stack.getCount()));
 				}
 				else if (stack.getItem() == Items.WATER_BUCKET)
 				{
 					blocks.add(new BlockDataWithConditions(Blocks.WATER.getDefaultState(), stack.getCount()));
-					blocks.add(new BlockDataWithConditions(Blocks.FLOWING_WATER.getDefaultState(), stack.getCount()));
 				}
 
 				return blocks;
@@ -54,8 +52,7 @@ public class BlockFilterHelper
 			@Override
 			public boolean isCompatible(Class<? extends Item> clazz)
 			{
-				return !(ItemBlock.class.isAssignableFrom(clazz)) && !(ItemBucket.class.isAssignableFrom(clazz)) && !(ItemMultiTexture.class
-						.isAssignableFrom(clazz));
+				return !(ItemBlock.class.isAssignableFrom(clazz)) && !(ItemBucket.class.isAssignableFrom(clazz));
 			}
 		});
 	}

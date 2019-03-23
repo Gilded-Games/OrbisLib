@@ -6,7 +6,7 @@ public interface IDropdownHolder
 {
 	static IDropdownHolder get()
 	{
-		Minecraft mc = Minecraft.getMinecraft();
+		Minecraft mc = Minecraft.getInstance();
 
 		if (mc.currentScreen instanceof IDropdownHolder)
 		{

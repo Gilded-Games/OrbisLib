@@ -55,7 +55,7 @@ public class LineShape implements IShape
 		funnel.setPos("viableStarts", this.start);
 		funnel.setPos("end", this.end);
 
-		tag.setInteger("lineRadius", this.lineRadius);
+		tag.putInt("lineRadius", this.lineRadius);
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class LineShape implements IShape
 		this.start = funnel.getPos("viableStarts");
 		this.end = funnel.getPos("end");
 
-		this.lineRadius = tag.getInteger("lineRadius");
+		this.lineRadius = tag.getInt("lineRadius");
 	}
 
 	@Override

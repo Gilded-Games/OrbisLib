@@ -2,12 +2,12 @@ package com.gildedgames.orbis.lib.world.instances;
 
 import com.gildedgames.orbis.lib.OrbisLibCapabilities;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
-public class PlayerInstancesProvider implements ICapabilitySerializable<NBTBase>
+public class PlayerInstancesProvider implements ICapabilitySerializable<INBTBase>
 {
 	private final PlayerInstances.Storage storage = new PlayerInstances.Storage();
 
@@ -49,13 +49,13 @@ public class PlayerInstancesProvider implements ICapabilitySerializable<NBTBase>
 	}
 
 	@Override
-	public NBTBase serializeNBT()
+	public INBTBase serializeNBT()
 	{
 		return this.storage.writeNBT(OrbisLibCapabilities.PLAYER_INSTANCES, this.fetchCapability(), null);
 	}
 
 	@Override
-	public void deserializeNBT(final NBTBase nbt)
+	public void deserializeNBT(final INBTBase nbt)
 	{
 		this.storage.readNBT(OrbisLibCapabilities.PLAYER_INSTANCES, this.fetchCapability(), null, nbt);
 	}

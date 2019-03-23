@@ -112,9 +112,9 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setString("triggerId", this.triggerId);
+		tag.putString("triggerId", this.triggerId);
 		funnel.set("bounds", this.bounds);
-		tag.setInteger("color", this.color);
+		tag.putInt("color", this.color);
 		funnel.set("conditionNodeTree", this.conditionNodeTree);
 		funnel.set("postResolveActionNodeTree", this.postResolveActionNodeTree);
 
@@ -129,7 +129,7 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 
 		this.triggerId = tag.getString("triggerId");
 		this.bounds = funnel.get("bounds");
-		this.color = tag.getInteger("color");
+		this.color = tag.getInt("color");
 		this.conditionNodeTree = funnel.getWithDefault("conditionNodeTree", this::getConditionNodeTree);
 		this.postResolveActionNodeTree = funnel.getWithDefault("postResolveActionNodeTree", this::getPostResolveActionNodeTree);
 

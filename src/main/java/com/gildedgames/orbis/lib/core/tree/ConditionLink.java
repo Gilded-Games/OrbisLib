@@ -24,7 +24,7 @@ public class ConditionLink implements NBT
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setString("property", this.property.name());
+		tag.putString("property", this.property.name());
 	}
 
 	@Override

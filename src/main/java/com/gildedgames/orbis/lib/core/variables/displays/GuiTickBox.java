@@ -3,6 +3,7 @@ package com.gildedgames.orbis.lib.core.variables.displays;
 import com.gildedgames.orbis.lib.OrbisLib;
 import com.gildedgames.orbis.lib.client.gui.util.GuiTexture;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Pos2D;
 import com.google.common.collect.Lists;
@@ -73,7 +74,7 @@ public class GuiTickBox extends GuiElement
 	}
 
 	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		if (this.state().isHoveredAndTopElement() && mouseButton == 0)
 		{

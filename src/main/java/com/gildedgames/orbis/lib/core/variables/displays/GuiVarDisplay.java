@@ -3,6 +3,7 @@ package com.gildedgames.orbis.lib.core.variables.displays;
 import com.gildedgames.orbis.lib.client.gui.data.Text;
 import com.gildedgames.orbis.lib.client.gui.util.GuiText;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.vanilla.GuiButtonVanilla;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
@@ -136,7 +137,7 @@ public class GuiVarDisplay extends GuiElement
 	}
 
 	@Override
-	public void onMouseClicked(GuiElement element, int mouseX, int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, double mouseX, double mouseY, final int mouseButton)
 	{
 		if (this.variables != null)
 		{

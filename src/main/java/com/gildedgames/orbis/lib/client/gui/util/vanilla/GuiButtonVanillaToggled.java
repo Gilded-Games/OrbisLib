@@ -3,6 +3,7 @@ package com.gildedgames.orbis.lib.client.gui.util.vanilla;
 import com.gildedgames.orbis.lib.client.PartialTicks;
 import com.gildedgames.orbis.lib.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.util.InputHelper;
 import net.minecraft.client.Minecraft;
@@ -49,7 +50,7 @@ public class GuiButtonVanillaToggled extends GuiElement
 	}
 
 	@Override
-	public void onMouseClicked(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		if (this.button.mousePressed(this.viewer().mc(), mouseX, mouseY))
 		{
@@ -73,7 +74,7 @@ public class GuiButtonVanillaToggled extends GuiElement
 		this.button.width = (int) this.dim().width();
 		this.button.height = (int) this.dim().height();
 
-		this.button.drawButton(Minecraft.getMinecraft(), InputHelper.getMouseX(), InputHelper.getMouseY(), PartialTicks.get());
+		this.button.drawButton(Minecraft.getInstance(), InputHelper.getMouseX(), InputHelper.getMouseY(), PartialTicks.get());
 
 		if (this.id == TOGGLED_BUTTON_ID)
 		{

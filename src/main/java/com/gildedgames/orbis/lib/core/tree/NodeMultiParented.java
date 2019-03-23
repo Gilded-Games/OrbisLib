@@ -444,9 +444,9 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		tag.setInteger("nodeId", this.nodeId);
+		tag.putInt("nodeId", this.nodeId);
 		funnel.set("data", this.data);
-		tag.setBoolean("canLink", this.canLink);
+		tag.putBoolean("canLink", this.canLink);
 
 		if (this.canLink)
 		{
@@ -454,7 +454,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 			funnel.setSet("parents", this.parents, NBTFunnel.INTEGER_SETTER);
 		}
 
-		tag.setBoolean("directionless", this.isDirectionless);
+		tag.putBoolean("directionless", this.isDirectionless);
 	}
 
 	@Override
@@ -462,7 +462,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
-		this.nodeId = tag.getInteger("nodeId");
+		this.nodeId = tag.getInt("nodeId");
 		this.data = funnel.get("data");
 		this.canLink = tag.getBoolean("canLink");
 

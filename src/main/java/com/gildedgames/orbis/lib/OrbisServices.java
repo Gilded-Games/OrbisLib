@@ -58,6 +58,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -421,18 +422,18 @@ public class OrbisServices implements IOrbisServices
 
 		if (OrbisLib.isClient())
 		{
-			final ServerData data = Minecraft.getMinecraft().getCurrentServerData();
+			final ServerData data = Minecraft.getInstance().getCurrentServerData();
 
 			if (data != null)
 			{
 				this.projectManager = new OrbisProjectManager(
-						new File(Minecraft.getMinecraft().gameDir, "orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"),
+						new File(Minecraft.getInstance().gameDir, "orbis/servers/" + data.serverIP.replace(":", "_") + "/projects/"),
 						Collections.emptyList(), this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}
 			else
 			{
-				File extraProjectSourcesFile = new File(Minecraft.getMinecraft().gameDir, "orbis/extra_project_sources.json");
+				File extraProjectSourcesFile = new File(Minecraft.getInstance().gameDir, "orbis/extra_project_sources.json");
 
 				List<File> extraProjectSources = null;
 
@@ -484,7 +485,7 @@ public class OrbisServices implements IOrbisServices
 					extraProjectSources = Collections.emptyList();
 				}
 
-				this.projectManager = new OrbisProjectManager(new File(Minecraft.getMinecraft().gameDir, "orbis/local/projects/"), extraProjectSources,
+				this.projectManager = new OrbisProjectManager(new File(Minecraft.getInstance().gameDir, "orbis/local/projects/"), extraProjectSources,
 						this.mod,
 						this.archiveBaseName, OrbisProject::new);
 			}
@@ -522,9 +523,10 @@ public class OrbisServices implements IOrbisServices
 	}
 
 	@Override
-	public IWorldDataManager getWorldDataManager(World world)
+	public IWorldDataManager getWorldDataManager(IWorld world)
 	{
-		return world.getCapability(OrbisLibCapabilities.WORLD_DATA, null).get();
+		return world.getWorld().getCapability(OrbisLibCapabilities.WORLD_DATA, null)
+				.orElseThrow(NullPointerException::new).get();
 	}
 
 	@Override

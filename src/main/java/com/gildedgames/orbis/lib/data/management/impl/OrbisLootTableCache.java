@@ -12,17 +12,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IReloadableResourceManager;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.resources.IReloadableResourceManager;
+import net.minecraft.resources.IResourceManager;
+import net.minecraft.resources.IResourceManagerReloadListener;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.storage.loot.*;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
 import net.minecraft.world.storage.loot.functions.LootFunction;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -65,11 +65,11 @@ public class OrbisLootTableCache
 	@OnlyIn(Dist.CLIENT)
 	public void attachReloadListener()
 	{
-		final IResourceManager resManager = Minecraft.getMinecraft().getResourceManager();
+		final IResourceManager resManager = Minecraft.getInstance().getResourceManager();
 
 		if (resManager instanceof IReloadableResourceManager)
 		{
-			((IReloadableResourceManager) resManager).registerReloadListener(new ReloadListener(this));
+			((IReloadableResourceManager) resManager).addReloadListener(new ReloadListener(this));
 		}
 	}
 

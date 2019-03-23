@@ -28,7 +28,7 @@ public class GuiText extends GuiElement
 		}
 		else
 		{
-			FontRenderer r = Minecraft.getMinecraft().fontRenderer;
+			FontRenderer r = Minecraft.getInstance().fontRenderer;
 
 			if (this.text.component() instanceof TextComponentTranslation)
 			{

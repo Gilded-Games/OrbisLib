@@ -133,14 +133,14 @@ public class GuiVarInteger implements IGuiVar<Integer, GuiInput>, IGuiInputListe
 	@Override
 	public void write(NBTTagCompound tag)
 	{
-		tag.setInteger("data", this.data);
-		tag.setString("name", this.name);
+		tag.putInt("data", this.data);
+		tag.putString("name", this.name);
 	}
 
 	@Override
 	public void read(NBTTagCompound tag)
 	{
-		this.data = tag.getInteger("data");
+		this.data = tag.getInt("data");
 		this.name = tag.getString("name");
 	}
 

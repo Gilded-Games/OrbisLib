@@ -91,7 +91,7 @@ public class BakedLootTableApply implements IBakedPosAction
 		NBTFunnel funnel = new NBTFunnel(tag);
 
 		funnel.set("lootTable", this.lootTable);
-		tag.setLong("lootTableSeed", this.lootTableSeed);
+		tag.putLong("lootTableSeed", this.lootTableSeed);
 		funnel.setPos("pos", this.pos);
 	}
 

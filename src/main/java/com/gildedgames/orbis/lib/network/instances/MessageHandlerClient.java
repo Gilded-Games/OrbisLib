@@ -32,7 +32,7 @@ public abstract class MessageHandlerClient<REQ extends IMessage, RES extends IMe
 	@OnlyIn(Dist.CLIENT)
 	public RES onMessage(final REQ message, final MessageContext ctx)
 	{
-		final Minecraft mc = Minecraft.getMinecraft();
+		final Minecraft mc = Minecraft.getInstance();
 
 		if (this.executesOnGameThread)
 		{
@@ -82,11 +82,11 @@ public abstract class MessageHandlerClient<REQ extends IMessage, RES extends IMe
 			{
 				final IMessageMultipleParts messageParts = (IMessageMultipleParts) this.message;
 
-				this.handler.processPart(this.message, messageParts, Minecraft.getMinecraft().player);
+				this.handler.processPart(this.message, messageParts, Minecraft.getInstance().player);
 			}
 			else
 			{
-				this.handler.onMessage(this.message, Minecraft.getMinecraft().player);
+				this.handler.onMessage(this.message, Minecraft.getInstance().player);
 			}
 		}
 	}

@@ -20,7 +20,6 @@ import com.gildedgames.orbis.lib.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis.lib.data.schedules.PostGenReplaceLayer;
 import com.gildedgames.orbis.lib.data.schedules.ScheduleRegion;
 import com.gildedgames.orbis.lib.util.RotationHelp;
-import com.gildedgames.orbis.lib.util.mc.BlockUtil;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.gildedgames.orbis.lib.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
@@ -383,7 +382,7 @@ public class BakedBlueprint
 					{
 						rotater.applyTransformation(rotatedPos.setPos(pos), dim);
 
-						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !BlockUtil.isSolid(rotatedBlocks.getBlockState(rotatedPos)))
+						if (layer.getOptions().getReplacesSolidBlocksVar().getData() || !rotatedBlocks.getBlockState(rotatedPos).isSolid())
 						{
 							rotatedBlocks.setBlockState(predicate, rotatedPos);
 						}
