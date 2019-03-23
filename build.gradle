@@ -1,23 +1,24 @@
 buildscript {
     repositories {
-        jcenter()
         maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
+            url 'https://files.minecraftforge.net/maven'
         }
+        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = "com.gildedgames"
+archivesBaseName = "orbis_lib"
 
 if (System.getenv("BUILD_NUMBER") != null) {
     version = "${minecraft_version}-${mod_version}+build${System.getenv("BUILD_NUMBER")}"
@@ -25,88 +26,61 @@ if (System.getenv("BUILD_NUMBER") != null) {
     version = "${minecraft_version}-${mod_version}-SNAPSHOT"
 }
 
-group = "com.gildedgames"
-
-def commonManifest = {
-    attributes 'Maven-Artifact': "${group}:${archivesBaseName}:${version}"
-    attributes 'FMLAT': 'orbis-lib_at.cfg'
-}
-
-jar {
-    classifier = 'universal'
-
-    from sourceSets.main.output
-
-    manifest commonManifest
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-
-    manifest commonManifest
-
-    from sourceSets.main.allSource
-}
-
-task deobfJar(type: Jar, dependsOn: reobfJar) {
-    classifier = 'dev'
-
-    manifest commonManifest
-
-    from sourceSets.main.output
+dependencies {
+    minecraft "net.minecraftforge:forge:$minecraft_version-$forge_version"
 }
 
 minecraft {
-    version = "$minecraft_version-$forge_version"
-    mappings = "$forge_mappings"
+    mappings channel: mcp_mappings_channel, version: mcp_mappings_version
 
-    runDir = "run"
+    runs {
+        client {
+            workingDirectory project.file('run')
 
-    makeObfSourceJar = false
-}
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
-processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
 
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        expand 'version': project.version, 'mcversion': project.minecraft.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-}
-
-publishing {
-    publications {
-        mod(MavenPublication) {
-            artifact deobfJar
-            artifact sourcesJar
-
-            from components.java
-        }
-    }
-
-    repositories {
-        def mavenSecretsPath = System.getenv("MAVEN_SECRETS_FILE")
-
-        if (mavenSecretsPath != null) {
-            def mavenSecretsFile = file(mavenSecretsPath).newReader()
-            def mavenSecrets = new Properties()
-            mavenSecrets.load(mavenSecretsFile)
-
-            maven {
-                url = mavenSecrets.publishUrl
-
-                credentials {
-                    username = mavenSecrets.username
-                    password = mavenSecrets.password
+            mods {
+                aether {
+                    source sourceSets.main
                 }
             }
         }
+
+        server {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                aether {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+jar {
+    from sourceSets.main.output
+
+    manifest {
+        attributes([
+                "Specification-Title": "examplemod",
+                "Specification-Vendor": "examplemodsareus",
+                "Specification-Version": "1",
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" :"examplemodsareus",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
     }
 }
 
@@ -116,7 +90,7 @@ if (System.getenv("JARSIGN_SECRETS_FILE") != null) {
     def secrets = new Properties()
     secrets.load(secretsFile.newReader())
 
-    [jar, sourcesJar, deobfJar].each { jarTask ->
+    [jar].each { jarTask ->
         def task = task(jarTask.name + 'Sign', type: SignJar) {
             keyStore = System.getenv("JARSIGN_KEYSTORE_FILE")
             alias = secrets.alias
@@ -130,5 +104,3 @@ if (System.getenv("JARSIGN_SECRETS_FILE") != null) {
         jarTask.finalizedBy task
     }
 }
-
-build.dependsOn deobfJar, sourcesJar
