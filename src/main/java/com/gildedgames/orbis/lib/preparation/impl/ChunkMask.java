@@ -1,6 +1,7 @@
 package com.gildedgames.orbis.lib.preparation.impl;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 /**
@@ -30,6 +31,11 @@ public class ChunkMask
 		this.z = z;
 	}
 
+	public void setBlock(BlockPos pos, int b)
+	{
+		this.setBlock(pos.getX(), pos.getY(), pos.getZ(), b);
+	}
+
 	public void setBlock(int x, int y, int z, int b)
 	{
 		int chunkY = y >> 3;
@@ -49,6 +55,11 @@ public class ChunkMask
 		}
 
 		segment.setBlock(x, y & 7, z, b);
+	}
+
+	public int getBlock(BlockPos pos)
+	{
+		return this.getBlock(pos.getX() & 15, pos.getY(), pos.getZ() & 15);
 	}
 
 	public int getBlock(int x, int y, int z)

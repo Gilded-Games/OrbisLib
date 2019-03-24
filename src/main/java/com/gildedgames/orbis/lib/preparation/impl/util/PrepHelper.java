@@ -3,9 +3,10 @@ package com.gildedgames.orbis.lib.preparation.impl.util;
 import com.gildedgames.orbis.lib.OrbisLibCapabilities;
 import com.gildedgames.orbis.lib.preparation.IPrepManager;
 import com.gildedgames.orbis.lib.preparation.IPrepSector;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -13,32 +14,20 @@ public class PrepHelper
 {
 	/**
 	 * Helper method which returns the {@link IPrepManager) for a world, or throws
-	 * an {@link RuntimeException} if it does not exist.
+	 * an {@link NoSuchElementException} if it does not exist.
 	 *
 	 * @param world The world
 	 * @return The {@link IPrepManager} belonging to the world
 	 */
-	@Nullable
-	public static IPrepManager getManager(World world)
+	public static IPrepManager getManager(IWorld world)
 	{
-		IPrepManager access = null;
-
-		if (world.hasCapability(OrbisLibCapabilities.PREP_MANAGER, null))
-		{
-			access = world.getCapability(OrbisLibCapabilities.PREP_MANAGER, null);
-		}
-
-		return access;
+		return world.getWorld().getCapability(OrbisLibCapabilities.PREP_MANAGER, null)
+				.orElseThrow(NoSuchElementException::new);
 	}
 
 	public static IPrepSector getSector(World world, int chunkX, int chunkY)
 	{
 		IPrepManager manager = PrepHelper.getManager(world);
-
-		if (manager == null)
-		{
-			return null;
-		}
 
 		try
 		{

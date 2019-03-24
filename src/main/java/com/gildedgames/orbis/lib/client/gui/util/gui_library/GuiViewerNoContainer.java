@@ -1,6 +1,5 @@
 package com.gildedgames.orbis.lib.client.gui.util.gui_library;
 
-import com.gildedgames.orbis.lib.OrbisLib;
 import com.gildedgames.orbis.lib.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis.lib.util.InputHelper;
 import com.gildedgames.orbis.lib.util.mc.ContainerGeneric;
@@ -10,14 +9,12 @@ import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.inventory.Container;
-import org.lwjgl.input.Mouse;
+import net.minecraft.util.text.ITextComponent;
 import org.lwjgl.opengl.GL11;
 
-import java.io.IOException;
 import java.util.*;
 
 public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiViewer
@@ -40,7 +37,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 	private Map<IGuiElement, List<IGuiElement>> subListCache = Maps.newHashMap();
 
-	private List<String> hoverDescription;
+	private List<ITextComponent> hoverDescription;
 
 	public GuiViewerNoContainer(IGuiElement viewing)
 	{
@@ -79,7 +76,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	public void setHoveredDescription(List<String> desc)
+	public void setHoveredDescription(List<ITextComponent> desc)
 	{
 		this.hoverDescription = desc;
 	}
@@ -185,19 +182,6 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	public void pushActionPerformed(GuiButton button)
-	{
-		try
-		{
-			this.actionPerformed(button);
-		}
-		catch (IOException e)
-		{
-			OrbisLib.LOGGER.info(e);
-		}
-	}
-
-	@Override
 	public GuiScreen getActualScreen()
 	{
 		return this;
@@ -234,7 +218,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 	public abstract void build(IGuiContext context);
 
-	private void drawElement(IGuiElement element, boolean debugDimRendering)
+	private void drawElement(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		IGuiState state = element.state();
 
@@ -243,7 +227,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 			return;
 		}
 
-		if (debugDimRendering)
+		if (false)
 		{
 			Gui.drawRect((int) state.dim().x(), (int) state.dim().y(), (int) state.dim().maxX(), (int) state.dim().maxY(), Integer.MAX_VALUE);
 		}
@@ -280,7 +264,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 		for (IGuiEvent event : state.getEvents())
 		{
-			event.onDraw(element);
+			event.onDraw(element, mouseX, mouseY, partialTicks);
 		}
 
 		for (IGuiEvent event : state.getEvents())
@@ -291,13 +275,13 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 		GlStateManager.popMatrix();
 	}
 
-	protected void drawElements()
+	private void drawElements(int mouseX, int mouseY, float partialTicks)
 	{
 		for (IGuiElement element : this.allVisibleElements)
 		{
 			element.state().updateState();
 
-			this.drawElement(element, false);
+			this.drawElement(element, mouseX, mouseY, partialTicks);
 		}
 	}
 
@@ -334,7 +318,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 		InputHelper.markHoveredAndTopElements(this, false);
 
-		this.drawElements();
+		this.drawElements(mouseX, mouseY, partialTicks);
 
 		GL11.glDisable(GL11.GL_ALPHA_TEST);
 		GlStateManager.disableAlphaTest();
@@ -354,8 +338,6 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	@Override
 	public boolean mouseClicked(final double mouseX, final double mouseY, final int mouseButton)
 	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
 		this.allVisibleElements.forEach((element) ->
 		{
 			for (IGuiEvent event : element.state().getEvents())
@@ -368,25 +350,8 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 			element.state().getEvents().forEach((event) -> event.onMouseClicked(element, mouseX, mouseY, mouseButton));
 		});
-	}
 
-	@Override
-	public boolean mouseDragged(final double mouseX, final double mouseY, final int clickedMouseButton, double p_mouseDragged_6_, double p_mouseDragged_8_)
-	{
-		this.allVisibleElements.forEach((element) ->
-		{
-			for (IGuiEvent event : element.state().getEvents())
-			{
-				if (!event.isMouseClickMoveEnabled(element, mouseX, mouseY, clickedMouseButton))
-				{
-					return;
-				}
-			}
-
-			element.state().getEvents().forEach((event) -> event.onMouseClickMove(element, mouseX, mouseY, clickedMouseButton));
-		});
-
-		return super.mouseDragged(mouseX, mouseY, clickedMouseButton, p_mouseDragged_6_, p_mouseDragged_8_);
+		return super.mouseClicked(mouseX, mouseY, mouseButton);
 	}
 
 	@Override
@@ -447,6 +412,32 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 			element.state().getEvents().forEach((event) -> event.onKeyTyped(element, typedChar, keyCode));
 		});
+
+		return true;
+	}
+
+	@Override
+	public boolean keyPressed(int key, int scanCode, int modifiers)
+	{
+		if (!preventInnerTyping)
+		{
+			return super.keyPressed(key, scanCode, modifiers);
+		}
+
+		this.allVisibleElements.forEach((element) ->
+		{
+			for (IGuiEvent event : element.state().getEvents())
+			{
+				if (!event.isKeyboardEnabled(element))
+				{
+					return;
+				}
+			}
+
+			element.state().getEvents().forEach((event) -> event.onKeyPressed(element, key, scanCode, modifiers));
+		});
+
+		return true;
 	}
 
 	@Override
@@ -469,17 +460,6 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	public void setWorldAndResolution(final Minecraft mc, final int width, final int height)
 	{
 		super.setWorldAndResolution(mc, width, height);
-	}
-
-	@Override
-	protected void actionPerformed(final GuiButton button) throws IOException
-	{
-		super.actionPerformed(button);
-
-		this.allVisibleElements.forEach((element) ->
-		{
-			element.state().getEvents().forEach((event) -> event.onActionPerformed(element, button));
-		});
 	}
 
 	@Override

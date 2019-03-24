@@ -96,7 +96,7 @@ public class GuiTickBox extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		this.pressed.state().setVisible(this.ticked);
 	}

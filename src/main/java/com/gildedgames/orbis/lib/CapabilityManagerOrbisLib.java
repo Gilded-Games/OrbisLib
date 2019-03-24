@@ -59,18 +59,18 @@ public class CapabilityManagerOrbisLib
 
 		if (event.getObject() instanceof EntityPlayer)
 		{
-			event.addCapability(OrbisLib.getResource("PlayerInstances"), new PlayerInstancesProvider((EntityPlayer) event.getObject()));
+			event.addCapability(OrbisLib.getResource("PlayerInstances"), new PlayerInstancesProvider());
 		}
 	}
 
 	@SubscribeEvent
 	public static void onPlayerClone(final PlayerEvent.Clone event)
 	{
-		final IPlayerInstances oldPlayer = OrbisLib.instances().getPlayer(event.getOriginal());
+		final IPlayerInstances oldPlayer = OrbisLib.instances().getPlayerInstanceData(event.getOriginal());
 
 		if (oldPlayer != null)
 		{
-			final IPlayerInstances newPlayer = OrbisLib.instances().getPlayer((EntityPlayer) event.getEntity());
+			final IPlayerInstances newPlayer = OrbisLib.instances().getPlayerInstanceData((EntityPlayer) event.getEntity());
 
 			final Capability.IStorage<IPlayerInstances> storage = OrbisLibCapabilities.PLAYER_INSTANCES.getStorage();
 

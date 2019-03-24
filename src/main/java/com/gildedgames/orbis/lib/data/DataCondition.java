@@ -2,7 +2,6 @@ package com.gildedgames.orbis.lib.data;
 
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Random;
@@ -17,12 +16,12 @@ public class DataCondition implements NBT
 		super();
 	}
 
-	public boolean isMet(final Random random, final World world)
+	public boolean isMet(final Random random)
 	{
 		return random.nextFloat() <= this.weight;
 	}
 
-	public boolean isMet(final float randomValue, final float chanceSum, final Random random, final World world)
+	public boolean isMet(final float randomValue, final float chanceSum)
 	{
 		return randomValue <= this.weight + chanceSum;
 	}

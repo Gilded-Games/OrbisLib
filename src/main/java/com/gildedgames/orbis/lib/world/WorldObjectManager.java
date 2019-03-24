@@ -4,12 +4,14 @@ import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.MapStorage;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.world.storage.WorldSavedDataStorage;
 import net.minecraftforge.common.DimensionManager;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Collection;
 import java.util.List;
@@ -39,9 +41,11 @@ public class WorldObjectManager extends WorldSavedData
 		super(DATA_NAME);
 	}
 
-	public WorldObjectManager(final String s)
+	public WorldObjectManager(final String s, final World world)
 	{
 		super(s);
+
+		this.world = world;
 	}
 
 	public WorldObjectManager(final World world)
@@ -53,37 +57,35 @@ public class WorldObjectManager extends WorldSavedData
 
 	public static WorldObjectManager get(final World world)
 	{
-		World using;
+		DimensionType type = world.getDimension().getType();
 
-		if (world.isRemote)
-		{
-			if (Minecraft.getInstance().isIntegratedServerRunning())
-			{
-				using = DimensionManager.getWorld(world.provider.getDimension());
+		World using = null;
 
-				if (using == null)
-				{
-					using = world;
-				}
-			}
-			else
-			{
-				using = world;
-			}
-		}
-		else
+		MinecraftServer server = world.getServer();
+
+		if (server != null)
 		{
-			using = world.getMinecraftServer().getWorld(world.provider.getDimension());
+			using = DimensionManager.getWorld(server, type, false, false);
 		}
 
-		final MapStorage storage = using.getPerWorldStorage();
-		WorldObjectManager instance = (WorldObjectManager) storage.getOrLoadData(WorldObjectManager.class, DATA_NAME);
+		if (using == null)
+		{
+			using = world;
+		}
+
+		Validate.notNull(using, "World must not be null");
+
+		final WorldSavedDataStorage storage = using.getSavedDataStorage();
+
+		Validate.notNull(storage, "WorldSavedDataStorage must not be null");
+
+		WorldObjectManager instance = storage.get(type, (s) -> new WorldObjectManager(s, world), DATA_NAME);
 
 		if (instance == null)
 		{
 			instance = new WorldObjectManager(world);
 
-			storage.setData(DATA_NAME, instance);
+			storage.set(type, DATA_NAME, instance);
 		}
 
 		return instance;
@@ -240,11 +242,6 @@ public class WorldObjectManager extends WorldSavedData
 
 		this.nextId = tag.getInt("nextId");
 		this.dimension = tag.getInt("dimension");
-
-		if (this.world == null)
-		{
-			this.world = DimensionManager.getWorld(this.dimension);
-		}
 
 		this.idToObject = HashBiMap.create(funnel.getIntMap(this.world, "objects"));
 

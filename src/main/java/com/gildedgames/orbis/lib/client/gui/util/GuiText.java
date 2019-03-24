@@ -1,6 +1,7 @@
 package com.gildedgames.orbis.lib.client.gui.util;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.util.mc.IText;
 import net.minecraft.client.Minecraft;
@@ -54,7 +55,7 @@ public class GuiText extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		if (this.text != null)
 		{
@@ -62,7 +63,7 @@ public class GuiText extends GuiElement
 					(int) (this.state().getAlpha() * 255));
 
 			this.viewer().getActualScreen()
-					.drawString(this.viewer().fontRenderer(), this.text.component().getUnformattedText(), (int) this.dim().x(), (int) this.dim().y(), color);
+					.drawString(this.viewer().fontRenderer(), this.text.component().getUnformattedComponentText(), (int) this.dim().x(), (int) this.dim().y(), color);
 		}
 	}
 }

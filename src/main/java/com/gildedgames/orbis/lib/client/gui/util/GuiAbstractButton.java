@@ -108,14 +108,14 @@ public class GuiAbstractButton extends GuiElement
 	}
 
 	@Override
-	public void onHoverEnter(GuiElement element)
+	public void onHoverEnter(IGuiElement element)
 	{
 		this.defaultState.state().setVisible(false);
 		this.hoveredState.state().setVisible(true);
 	}
 
 	@Override
-	public void onHoverExit(GuiElement element)
+	public void onHoverExit(IGuiElement element)
 	{
 		if (!this.selected)
 		{
@@ -125,7 +125,7 @@ public class GuiAbstractButton extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		if (this.disabledState != null)
 		{

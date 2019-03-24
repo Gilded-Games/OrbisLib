@@ -2,10 +2,8 @@ package com.gildedgames.orbis.lib.core.baking;
 
 import com.gildedgames.orbis.lib.processing.DataPrimer;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import com.gildedgames.orbis.lib.util.mc.EntityUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemMonsterPlacer;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.ItemSpawnEgg;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
@@ -51,22 +49,8 @@ public class BakedEntitySpawn implements IBakedPosAction
 	{
 		World world = primer.getWorld();
 
-		Entity entity = EntityUtil
-				.spawnCreature(primer, world, ItemMonsterPlacer.getNamedIdFrom(this.egg), (double) this.pos.getX() + 0.5D, (double) this.pos.getY(),
-						(double) this.pos.getZ() + 0.5, this.customRotation, this.rotationDegrees);
-
-		if (entity != null)
-		{
-			if (entity instanceof EntityLivingBase && this.egg.hasDisplayName())
-			{
-				entity.setCustomName(this.egg.getDisplayName());
-			}
-
-			if (world != null)
-			{
-				ItemMonsterPlacer.applyItemEntityDataToEntity(world, null, this.egg, entity);
-			}
-		}
+		EntityType<?> type = ((ItemSpawnEgg) this.egg.getItem()).getType(this.egg.getTag());
+		type.spawn(world, this.egg, null, this.pos, false, false);
 	}
 
 	@Override

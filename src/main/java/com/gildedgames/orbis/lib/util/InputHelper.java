@@ -8,8 +8,6 @@ import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.client.rect.RectHolder;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScaledResolution;
-import org.lwjgl.input.Mouse;
 
 import java.util.List;
 
@@ -18,16 +16,14 @@ public class InputHelper
 
 	private static final Minecraft mc = Minecraft.getInstance();
 
-	private static ScaledResolution resolution;
-
-	public static int getMouseX()
+	public static double getMouseX()
 	{
-		return (Mouse.getEventX() * getScreenWidth() / mc.displayWidth);
+		return (mc.mouseHelper.getMouseX() * getScreenWidth() / mc.mainWindow.getWidth());
 	}
 
-	public static int getMouseY()
+	public static double getMouseY()
 	{
-		return (getScreenHeight() - Mouse.getEventY() * getScreenHeight() / mc.displayHeight - 1);
+		return (getScreenHeight() - mc.mouseHelper.getMouseY() * getScreenHeight() / mc.mainWindow.getHeight() - 1);
 	}
 
 	private static boolean isHovered(final Rect dim)
@@ -41,23 +37,14 @@ public class InputHelper
 				.height();
 	}
 
-	public static void refreshResolution()
-	{
-		resolution = new ScaledResolution(mc);
-	}
-
 	public static int getScreenWidth()
 	{
-		refreshResolution();
-
-		return resolution.getScaledWidth();
+		return mc.mainWindow.getScaledWidth();
 	}
 
 	public static int getScreenHeight()
 	{
-		refreshResolution();
-
-		return resolution.getScaledHeight();
+		return mc.mainWindow.getScaledHeight();
 	}
 
 	private static boolean isHovered(final List<IGuiElement> elements, IGuiElement ignore)
@@ -177,24 +164,24 @@ public class InputHelper
 		}
 	}
 
-	public static float getScaleFactor()
+	public static double getScaleFactor()
 	{
-		return resolution.getScaleFactor();
+		return mc.mainWindow.getGuiScaleFactor();
 	}
 
 	public static Pos2D getCenter()
 	{
-		return Pos2D.flush(InputHelper.getScreenWidth() / 2, InputHelper.getScreenHeight() / 2);
+		return Pos2D.flush(InputHelper.getScreenWidth() / 2.0f, InputHelper.getScreenHeight() / 2.0f);
 	}
 
 	public static Pos2D getBottomCenter()
 	{
-		return InputHelper.getCenter().clone().addY(InputHelper.getScreenHeight() / 2).flush();
+		return InputHelper.getCenter().clone().addY(InputHelper.getScreenHeight() / 2.0f).flush();
 	}
 
 	public static Pos2D getBottomRight()
 	{
-		return InputHelper.getBottomCenter().clone().addX(InputHelper.getScreenWidth() / 2).flush();
+		return InputHelper.getBottomCenter().clone().addX(InputHelper.getScreenWidth() / 2.0f).flush();
 	}
 
 	public static Pos2D getBottomLeft()
@@ -204,7 +191,7 @@ public class InputHelper
 
 	public static Pos2D getCenterLeft()
 	{
-		return InputHelper.getCenter().clone().addX(-InputHelper.getScreenWidth() / 2).flush();
+		return InputHelper.getCenter().clone().addX(-InputHelper.getScreenWidth() / 2.0f).flush();
 	}
 
 	public static Pos2D getCenterRight()
@@ -214,12 +201,12 @@ public class InputHelper
 
 	public static Pos2D getTopCenter()
 	{
-		return InputHelper.getCenter().clone().addY(-InputHelper.getScreenHeight() / 2).flush();
+		return InputHelper.getCenter().clone().addY(-InputHelper.getScreenHeight() / 2.0f).flush();
 	}
 
 	public static Pos2D getTopLeft()
 	{
-		return InputHelper.getTopCenter().clone().addX(-InputHelper.getScreenWidth() / 2).flush();
+		return InputHelper.getTopCenter().clone().addX(-InputHelper.getScreenWidth() / 2.0f).flush();
 	}
 
 	public static Pos2D getTopRight()

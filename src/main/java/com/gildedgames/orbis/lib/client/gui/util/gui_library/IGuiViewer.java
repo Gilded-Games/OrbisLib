@@ -2,23 +2,21 @@ package com.gildedgames.orbis.lib.client.gui.util.gui_library;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.Collection;
 import java.util.List;
 
 public interface IGuiViewer
 {
-	void setHoveredDescription(List<String> desc);
+	void setHoveredDescription(List<ITextComponent> desc);
 
 	void notifyGlobalContextChange();
 
 	void notifyBuildingStarted(IGuiElement element);
 
 	void notifyBuildingFinished(IGuiElement element);
-
-	void pushActionPerformed(GuiButton button);
 
 	GuiScreen getActualScreen();
 

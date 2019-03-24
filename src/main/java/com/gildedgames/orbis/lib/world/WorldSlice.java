@@ -1,15 +1,23 @@
 package com.gildedgames.orbis.lib.world;
 
+import com.gildedgames.orbis.lib.processing.IBlockAccess;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.EnumLightType;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.gen.Heightmap;
 
-public class WorldSlice
+import javax.annotation.Nullable;
+
+public class WorldSlice implements IBlockAccess
 {
 	private final World world;
 
@@ -38,7 +46,8 @@ public class WorldSlice
 				int chunkX = pos.x + x - 1;
 				int chunkZ = pos.z + z - 1;
 
-				Chunk chunk = world.getChunkProvider().getLoadedChunk(chunkX, chunkZ);
+				// TODO: Investigate load and generate parameters
+				Chunk chunk = world.getChunkProvider().getChunk(chunkX, chunkZ, false, false);
 
 				if (chunk == null)
 				{
@@ -56,9 +65,23 @@ public class WorldSlice
 		}
 	}
 
+	@Nullable
+	@Override
+	public TileEntity getTileEntity(BlockPos pos)
+	{
+		return null;
+	}
+
+	@Override
 	public IBlockState getBlockState(BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	@Override
+	public IFluidState getFluidState(BlockPos pos)
+	{
+		return null;
 	}
 
 	public IBlockState getBlockState(int x, int y, int z)
@@ -110,40 +133,8 @@ public class WorldSlice
 		}
 	}
 
-
-	public World getWorld()
-	{
-		return this.world;
-	}
-
-	public boolean isAirBlock(BlockPos pos)
-	{
-		return this.isAirBlock(pos.getX(), pos.getY(), pos.getZ());
-	}
-
-	public boolean setBlockState(BlockPos pos, IBlockState state)
-	{
-		if (pos.getY() >= 0  && pos.getY() < 256)
-		{
-			int chunkX = (pos.getX() - this.offsetX) >> 4;
-			int chunkZ = (pos.getZ() - this.offsetZ) >> 4;
-
-			Chunk chunk = this.chunks[(chunkX * 3) + chunkZ];
-
-			if (chunk == null)
-			{
-				return false;
-			}
-
-			chunk.setBlockState(pos, state);
-
-			return true;
-		}
-
-		return false;
-	}
-
-	public boolean isAreaWithin(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+	@Override
+	public boolean isAreaLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
 	{
 		if (minY < 0 || minY > 255)
 		{
@@ -174,47 +165,82 @@ public class WorldSlice
 		return true;
 	}
 
-	public boolean isAreaWithin(BlockPos pos, int radius)
+	@Override
+	public World getWorld()
 	{
-		return this.isAreaWithin(pos.getX() - radius, pos.getY() - radius, pos.getZ() - radius,
-				pos.getX() + radius, pos.getY() + radius, pos.getZ() + radius);
+		return this.world;
 	}
 
-	public boolean isBlockWithin(BlockPos pos)
+	@Override
+	public void setTileEntity(BlockPos pos, TileEntity te)
 	{
-		return this.isBlockWithin(pos.getX(), pos.getY(), pos.getZ());
+		this.world.setTileEntity(pos, te);
 	}
 
-	public boolean isBlockWithin(int x, int y, int z)
+	public boolean isAirBlock(BlockPos pos)
 	{
-		if (y < 0 || y > 255)
+		return this.isAirBlock(pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	public boolean setBlockState(BlockPos pos, IBlockState state)
+	{
+		if (pos.getY() >= 0  && pos.getY() < 256)
 		{
-			return false;
+			int chunkX = (pos.getX() - this.offsetX) >> 4;
+			int chunkZ = (pos.getZ() - this.offsetZ) >> 4;
+
+			Chunk chunk = this.chunks[(chunkX * 3) + chunkZ];
+
+			if (chunk == null)
+			{
+				return false;
+			}
+
+			chunk.setBlockState(pos, state, false /** TODO: what is this? **/);
+
+			return true;
 		}
 
-		int chunkX = (x - this.offsetX) >> 4;
-		int chunkZ = (z - this.offsetZ) >> 4;
-
-		if (chunkX < 0 || chunkX > 2 || chunkZ < 0 || chunkZ > 2)
-		{
-			return false;
-		}
-
-		return true;
+		return false;
 	}
 
-	public BlockPos getHighestBlockPos(int x, int z)
+	public int getHeight(Heightmap.Type type, int x, int z)
 	{
-		return new BlockPos(x, this.getHeighestBlockValue(x, z), z);
-	}
-	
-	public int getHeighestBlockValue(int x, int z)
-	{
-		return this.world.getChunk(x >> 4, z >> 4).getHeightValue(x & 15, z & 15);
+		return this.world.getChunk(x >> 4, z >> 4).getHeightmap(type).getHeight(x & 15, z & 15);
 	}
 
 	public boolean isAirBlock(int x, int y, int z)
 	{
 		return this.getBlockState(x, y, z).getMaterial() == Material.AIR;
+	}
+
+	@Override
+	public boolean setBlockState(BlockPos pos, IBlockState newState, int flags)
+	{
+		return this.setBlockState(pos, newState);
+	}
+
+	@Override
+	public boolean spawnEntity(Entity entityIn)
+	{
+		return this.world.spawnEntity(entityIn);
+	}
+
+	@Override
+	public boolean removeBlock(BlockPos pos)
+	{
+		return this.world.removeBlock(pos);
+	}
+
+	@Override
+	public void setLightFor(EnumLightType type, BlockPos pos, int lightValue)
+	{
+		this.world.setLightFor(type, pos, lightValue);
+	}
+
+	@Override
+	public boolean destroyBlock(BlockPos pos, boolean dropBlock)
+	{
+		return this.setBlockState(pos, Blocks.AIR.getDefaultState());
 	}
 }

@@ -1,13 +1,13 @@
 package com.gildedgames.orbis.lib.core;
 
 import com.gildedgames.orbis.lib.core.baking.BakedBlueprint;
-import com.gildedgames.orbis.lib.processing.IBlockAccessExtended;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 
 public interface PlacementCondition
 {
 
-	boolean validate(IBlockAccessExtended access, BakedBlueprint blueprint, BlockPos offset);
+	boolean validate(IBlockReader access, BakedBlueprint blueprint, BlockPos offset);
 
 	int getPriority();
 }

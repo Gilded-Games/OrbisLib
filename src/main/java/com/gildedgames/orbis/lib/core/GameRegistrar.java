@@ -31,42 +31,12 @@ public class GameRegistrar
 
 	public Block findBlock(final ResourceLocation identifier)
 	{
-		final String modId = identifier.getNamespace();
-		final String name = identifier.getPath();
-
-		if (modId.equals("minecraft") || modId.equals(""))
-		{
-			return Block.getBlockFromName(name);
-		}
-
 		return this.blockRegistry.getValue(identifier);
 	}
 
 	public Item findItem(final ResourceLocation identifier)
 	{
-		final String modId = identifier.getNamespace();
-
-		if (modId.equals("minecraft") || modId.equals(""))
-		{
-			return Item.getByNameOrId(identifier.toString());
-		}
-
 		return this.itemRegistry.getValue(identifier);
-	}
-
-	public int getBlockId(final Block block)
-	{
-		return Block.getIdFromBlock(block);
-	}
-
-	public IBlockState getStateFromMeta(final Block block, final int meta)
-	{
-		return block.getStateFromMeta(meta);
-	}
-
-	public IBlockState getStateFromId(final int id)
-	{
-		return Block.getStateById(id);
 	}
 
 	public int getStateId(final IBlockState blockState)

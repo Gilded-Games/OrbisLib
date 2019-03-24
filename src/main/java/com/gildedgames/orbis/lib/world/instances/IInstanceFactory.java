@@ -1,14 +1,13 @@
 package com.gildedgames.orbis.lib.world.instances;
 
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.Teleporter;
-import net.minecraft.world.WorldServer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ModDimension;
 
 public interface IInstanceFactory<T extends IInstance>
 {
-	T createInstance(int dimId, IInstanceHandler instanceHandler);
+	T createInstance();
 
-	DimensionType dimensionType();
+	ResourceLocation getUniqueName();
 
-	Teleporter getTeleporter(WorldServer worldIn);
+	ModDimension getDimensionType();
 }

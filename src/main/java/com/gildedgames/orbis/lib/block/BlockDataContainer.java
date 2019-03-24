@@ -1,7 +1,5 @@
 package com.gildedgames.orbis.lib.block;
 
-import com.gildedgames.orbis.lib.OrbisLib;
-import com.gildedgames.orbis.lib.core.exceptions.OrbisMissingModsException;
 import com.gildedgames.orbis.lib.data.management.IData;
 import com.gildedgames.orbis.lib.data.management.IDataMetadata;
 import com.gildedgames.orbis.lib.data.management.impl.DataMetadata;
@@ -10,25 +8,22 @@ import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.IShape;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.gildedgames.orbis.lib.world.IWorldObject;
-import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 
 public class BlockDataContainer implements NBT, IDimensions, IData
 {
@@ -36,23 +31,10 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private Int2ObjectOpenHashMap<TileEntityEntry> entities = new Int2ObjectOpenHashMap<>();
 
-	private Int2ObjectOpenHashMap<IBlockState> idToState = new Int2ObjectOpenHashMap<>();
+	private Int2ObjectOpenHashMap<IBlockState> paletteKeys = new Int2ObjectOpenHashMap<>();
 
-	private Object2IntOpenCustomHashMap<IBlockState> stateToId =
-			new Object2IntOpenCustomHashMap<>(new Hash.Strategy<IBlockState>()
-			{
-				@Override
-				public int hashCode(IBlockState o)
-				{
-					return System.identityHashCode(o);
-				}
-
-				@Override
-				public boolean equals(IBlockState a, IBlockState b)
-				{
-					return a == b;
-				}
-			});
+	private Object2IntOpenCustomHashMap<IBlockState> paletteValues =
+			new Object2IntOpenCustomHashMap<>(Util.identityHashStrategy());
 
 	private int width, height, length;
 
@@ -68,8 +50,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		this.defaultBlock = other.defaultBlock;
 
-		this.idToState = new Int2ObjectOpenHashMap<>(other.idToState);
-		this.stateToId = new Object2IntOpenCustomHashMap<>(other.stateToId, other.stateToId.strategy());
+		this.paletteKeys = new Int2ObjectOpenHashMap<>(other.paletteKeys);
+		this.paletteValues = new Object2IntOpenCustomHashMap<>(other.paletteValues, other.paletteValues.strategy());
 
 		this.width = width;
 		this.height = height;
@@ -79,8 +61,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		this.nextID = other.nextID;
 		this.metadata = other.metadata;
-
-		Arrays.fill(this.blocks, -1);
 	}
 
 	public BlockDataContainer()
@@ -99,11 +79,11 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		this.defaultBlock = defaultBlock;
 
-		this.idToState.put(-1, this.defaultBlock);
-		this.stateToId.put(this.defaultBlock, -1);
+		this.paletteKeys.put(0, this.defaultBlock);
+		this.paletteValues.put(this.defaultBlock, 0);
 
-		this.stateToId.defaultReturnValue(Integer.MIN_VALUE);
-		this.idToState.defaultReturnValue(null);
+		this.paletteValues.defaultReturnValue(Integer.MIN_VALUE);
+		this.paletteKeys.defaultReturnValue(null);
 	}
 
 	/**
@@ -120,8 +100,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.length = length;
 
 		this.blocks = new int[this.getVolume()];
-
-		Arrays.fill(this.blocks, -1);
 	}
 
 	public BlockDataContainer(IBlockState defaultBlock, final IRegion region)
@@ -202,7 +180,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private IBlockState getBlockState(final int index)
 	{
-		return this.idToState.get(this.blocks[index]);
+		return this.paletteKeys.get(this.blocks[index]);
 	}
 
 	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
@@ -212,14 +190,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private void setBlockState(final IBlockState state, final int index)
 	{
-		int value = this.stateToId.getInt(state);
+		int value = this.paletteValues.getInt(state);
 
-		if (value == this.stateToId.defaultReturnValue())
+		if (value == this.paletteValues.defaultReturnValue())
 		{
 			value = this.nextID++;
 
-			this.stateToId.put(state, value);
-			this.idToState.put(value, state);
+			this.paletteValues.put(state, value);
+			this.paletteKeys.put(value, state);
 		}
 
 		this.blocks[index] = value;
@@ -240,7 +218,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 		else
 		{
-			IBlockState state = data.idToState.get(block);
+			IBlockState state = data.paletteKeys.get(block);
 			IBlockState stateRotated = state.rotate(rotation);
 
 			// Avoid expensive map operations if the block hasn't changed... we know the state is already mapped
@@ -281,10 +259,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	@Override
 	public void write(final NBTTagCompound tag)
 	{
-		int nextLocalId = 0;
-
-		Int2IntOpenHashMap blockToLocalId = new Int2IntOpenHashMap();
-
 		tag.putInt("width", this.getWidth());
 		tag.putInt("height", this.getHeight());
 		tag.putInt("length", this.getLength());
@@ -292,7 +266,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		final byte[] blocks = new byte[this.getVolume()];
 		byte[] addBlocks = null;
 
-		final byte[] metadata = new byte[this.getVolume()];
+		Int2IntOpenHashMap paletteRemapper = new Int2IntOpenHashMap();
+		paletteRemapper.put(0, 0); // The default block is never remapped
 
 		/**
 		 * Create maps to compress data written
@@ -300,44 +275,38 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		 * be writing an integer and the map will point us to the appropriate
 		 * ResourceLocation when reading back
 		 */
-		final Int2ObjectOpenHashMap<ResourceLocation> identifiers = new Int2ObjectOpenHashMap<>();
+		final ArrayList<IBlockState> identifiers = new ArrayList<>();
+		identifiers.add(this.defaultBlock);
+
 		final Int2ObjectOpenHashMap<NBTTagCompound> tileEntities = new Int2ObjectOpenHashMap<>();
 
 		for (int i = 0; i < this.blocks.length; i++)
 		{
-			IBlockState state;
+			IBlockState state = this.getBlockState(i);
+
+			int paletteId = this.blocks[i];
 
 			int blockId;
-			int meta;
 
-			if (this.blocks[i] >= 0)
+			if (paletteId >= 0)
 			{
-				int blockRaw = this.blocks[i];
-
-				if (!blockToLocalId.containsKey(blockRaw))
+				if (!paletteRemapper.containsKey(paletteId))
 				{
-					int id = nextLocalId++;
+					blockId = identifiers.size();
 
-					blockToLocalId.put(blockRaw, id);
+					paletteRemapper.put(paletteId, blockId);
+					identifiers.add(state);
 				}
-
-				state = this.getBlockState(i);
-				blockId = blockToLocalId.get(blockRaw);
-				meta = state.getBlock().getMetaFromState(state);
-
-				if (!identifiers.containsKey(blockId))
+				else
 				{
-					ResourceLocation identifier = OrbisLib.services().registrar().getIdentifierFor(state.getBlock());
-
-					identifiers.put(blockId, identifier);
+					blockId = paletteRemapper.get(paletteId);
 				}
 			}
 			else
 			{
 				state = this.defaultBlock;
 
-				blockId = -1;
-				meta = this.getDefaultBlock().getBlock().getMetaFromState(this.getDefaultBlock());
+				blockId = 0;
 			}
 
 			if (blockId > 255)
@@ -362,9 +331,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 			}
 
 			blocks[i] = (byte) blockId;
-			metadata[i] = (byte) meta;
 
-			if (state.getBlock().hasTileEntity(state))
+			if (state.hasTileEntity())
 			{
 				final TileEntityEntry tileEntity = this.entities.get(i);
 
@@ -378,22 +346,20 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		/**
 		 * Saving the identifier map for later reference
 		 */
-		final NBTTagList identifierList = new NBTTagList();
+		final NBTTagList identifiersNbt = new NBTTagList();
 
-		for (final Map.Entry<Integer, ResourceLocation> entry : identifiers.entrySet())
+		for (IBlockState state : identifiers)
 		{
-			final NBTTagCompound data = new NBTTagCompound();
+			// Don't serialize the default key
+			if (state == this.defaultBlock)
+			{
+				continue;
+			}
 
-			final ResourceLocation identifier = entry.getValue();
-
-			data.putString("mod", identifier.getNamespace());
-			data.putString("name", identifier.getPath());
-			data.putInt("id", entry.getKey());
-
-			identifierList.add(data);
+			identifiersNbt.add(NBTUtil.writeBlockState(state));
 		}
 
-		tag.put("identifiers", identifierList);
+		tag.put("identifiers", identifiersNbt);
 
 		/**
 		 * Saving tile entity data
@@ -413,7 +379,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		tag.put("tileEntities", tileEntityList);
 
 		tag.putByteArray("blocks", blocks);
-		tag.putByteArray("metadata", metadata);
 
 		tag.putBoolean("addBlocks_null", addBlocks == null);
 
@@ -426,8 +391,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	@Override
 	public void read(final NBTTagCompound tag)
 	{
-		Int2ObjectOpenHashMap<Block> localIdToBlock = new Int2ObjectOpenHashMap<>();
-		localIdToBlock.put(-1, this.defaultBlock.getBlock());
+		Int2ObjectOpenHashMap<IBlockState> localIdToBlock = new Int2ObjectOpenHashMap<>();
+		localIdToBlock.put(0, this.defaultBlock);
 
 		this.width = tag.getInt("width");
 		this.height = tag.getInt("height");
@@ -437,37 +402,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		 * ids belong to what blocks (as well as their parent mods)
 		 */
 		final NBTTagList identifierList = tag.getList("identifiers", 10);
-		final Set<String> missingMods = new HashSet<>();
+
+		int start = localIdToBlock.size();
 
 		for (int i = 0; i < identifierList.size(); i++)
 		{
-			final NBTTagCompound data = identifierList.getCompound(i);
+			final IBlockState state = NBTUtil.readBlockState(identifierList.getCompound(i));
 
-			final String modname = data.getString("mod");
-			final String blockname = data.getString("name");
-
-			final Block block = OrbisLib.services().registrar().findBlock(new ResourceLocation(modname, blockname));
-
-			/**
-			 * Add to missing mods list if we can't find the block with our registrar
-			 */
-			if (block == null)
-			{
-				data.getInt("id");
-				missingMods.add(modname);
-			}
-			else
-			{
-				int id = data.getInt("id");
-
-				localIdToBlock.put(id, block);
-			}
-		}
-
-		if (!missingMods.isEmpty())
-		{
-			// TODO: Add modId missing parameter, currently empty
-			throw new OrbisMissingModsException("Failed loading BlockDataContainer", missingMods, "");
+			localIdToBlock.put(start + i, state);
 		}
 
 		/**
@@ -485,7 +427,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 
 		final byte[] blockComp = tag.getByteArray("blocks");
-		final byte[] metadata = tag.getByteArray("metadata");
 		final byte[] addBlocks = tag.getBoolean("addBlocks_null") ? null : tag.getByteArray("addBlocks");
 
 		if (blockComp.length != this.getVolume())
@@ -523,12 +464,11 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				}
 			}
 
-			Block block = localIdToBlock.get(finalId);
-			IBlockState state = block.getStateFromMeta(metadata[i]);
+			IBlockState state = localIdToBlock.get(finalId);
 
 			this.setBlockState(state, i);
 
-			if (block.hasTileEntity(state))
+			if (state.hasTileEntity())
 			{
 				NBTTagCompound entity = tileEntities.get(i);
 
@@ -557,8 +497,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 		System.arraycopy(this.blocks, 0, data.blocks, 0, this.blocks.length);
 
-		data.idToState = new Int2ObjectOpenHashMap<>(this.idToState);
-		data.stateToId = new Object2IntOpenCustomHashMap<>(this.stateToId, this.stateToId.strategy());
+		data.paletteKeys = new Int2ObjectOpenHashMap<>(this.paletteKeys);
+		data.paletteValues = new Object2IntOpenCustomHashMap<>(this.paletteValues, this.paletteValues.strategy());
 
 		data.nextID = this.nextID;
 		data.metadata = this.metadata;

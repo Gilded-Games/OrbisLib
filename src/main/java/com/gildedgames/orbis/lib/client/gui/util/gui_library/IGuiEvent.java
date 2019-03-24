@@ -1,17 +1,8 @@
 package com.gildedgames.orbis.lib.client.gui.util.gui_library;
 
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Slot;
-
-public interface IGuiEvent<T extends IGuiElement>
+public interface IGuiEvent
 {
 	default boolean isMouseClickedEnabled(IGuiElement element, double mouseX, double mouseY, int mouseButton)
-	{
-		return element.state().isEnabled();
-	}
-
-	default boolean isMouseClickMoveEnabled(T element, final double mouseX, final double mouseY, final int clickedMouseButton)
 	{
 		return element.state().isEnabled();
 	}
@@ -21,62 +12,57 @@ public interface IGuiEvent<T extends IGuiElement>
 		return element.state().isEnabled();
 	}
 
-	default boolean isMouseWheelEnabled(IGuiElement element, double state)
+	default boolean isMouseWheelEnabled(IGuiElement element, double scroll)
 	{
 		return element.state().isEnabled();
 	}
 
-	default boolean isHandleMouseClickEnabled(T element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
+	default boolean isKeyboardEnabled(IGuiElement element)
 	{
 		return element.state().isEnabled();
 	}
 
-	default boolean isKeyboardEnabled(T element)
-	{
-		return element.state().isEnabled();
-	}
-
-	default boolean canBeHovered(T element)
+	default boolean canBeHovered(IGuiElement element)
 	{
 		return true;
 	}
 
-	default void onGlobalContextChanged(T element)
+	default void onGlobalContextChanged(IGuiElement element)
 	{
 
 	}
 
-	default void onTick(T element)
+	default void onTick(IGuiElement element)
 	{
 
 	}
 
-	default void onHovered(T element)
+	default void onHovered(IGuiElement element)
 	{
 
 	}
 
-	default void onHoverEnter(T element)
+	default void onHoverEnter(IGuiElement element)
 	{
 
 	}
 
-	default void onHoverExit(T element)
+	default void onHoverExit(IGuiElement element)
 	{
 
 	}
 
-	default void onPreDraw(T element)
+	default void onPreDraw(IGuiElement element)
 	{
 
 	}
 
-	default void onPostDraw(T element)
+	default void onPostDraw(IGuiElement element)
 	{
 
 	}
 
-	default void onDraw(T element)
+	default void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 
 	}
@@ -91,38 +77,24 @@ public interface IGuiEvent<T extends IGuiElement>
 
 	}
 
-	default void onMouseClickMove(T element, final double mouseX, final double mouseY, final int clickedMouseButton)
-	{
-
-	}
-
 	default void onMouseReleased(IGuiElement element, final double mouseX, final double mouseY, final int state)
 	{
 
 	}
 
-	default void onKeyTyped(T element, final char typedChar, final int keyCode)
+	default void onKeyTyped(IGuiElement element, final char typedChar, final int keyCode)
 	{
 
 	}
 
-	default void onActionPerformed(T element, final GuiButton button)
+	default void onGuiClosed(IGuiElement element)
 	{
 
 	}
 
-	default void onDrawGuiContainerBackgroundLayer(T element, final float partialTicks, final int mouseX, final int mouseY)
+	default void onKeyPressed(IGuiElement element, int key, int scanCode, int modifiers)
 	{
 
 	}
 
-	default void onHandleMouseClick(T element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
-	{
-
-	}
-
-	default void onGuiClosed(T element)
-	{
-
-	}
 }

@@ -11,7 +11,7 @@ public class GlUtil
 
 	public static void drawLine(double x1, double y1, double x2, double y2, int r, int g, int b, int alpha, float lineWidth)
 	{
-		GlStateManager.glLineWidth(lineWidth);
+		GlStateManager.lineWidth(lineWidth);
 
 		GlStateManager.disableLighting();
 		GlStateManager.disableTexture2D();
@@ -26,7 +26,7 @@ public class GlUtil
 
 		GlStateManager.enableTexture2D();
 
-		GlStateManager.glLineWidth(1.0F);
+		GlStateManager.lineWidth(1.0F);
 	}
 
 }

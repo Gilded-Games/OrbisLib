@@ -3,12 +3,14 @@ package com.gildedgames.orbis.lib.util.mc;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.text.ITextComponent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GuiUtils
 {
-	public static void drawHoveringText(List<String> textLines, int x, int y, FontRenderer font)
+	public static void drawHoveringText(List<ITextComponent> textLines, int x, int y, FontRenderer font)
 	{
 		GuiScreen gui = Minecraft.getInstance().currentScreen;
 
@@ -17,6 +19,15 @@ public class GuiUtils
 			return;
 		}
 
-		net.minecraftforge.fml.client.config.GuiUtils.drawHoveringText(textLines, x, y, gui.width, gui.height, -1, font);
+		// TODO: Avoid allocation here
+		List<String> strings = new ArrayList<>(textLines.size());
+
+		for (ITextComponent component : textLines)
+		{
+			strings.add(component.toString());
+		}
+
+		// TODO: Don't use Forge's internal classes!!
+		net.minecraftforge.fml.client.config.GuiUtils.drawHoveringText(strings, x, y, gui.width, gui.height, -1, font);
 	}
 }

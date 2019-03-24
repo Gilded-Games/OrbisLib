@@ -1,6 +1,7 @@
 package com.gildedgames.orbis.lib.client.gui.util;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.repeat_methods.ITextureRepeatMethod;
 import com.gildedgames.orbis.lib.client.gui.util.repeat_methods.TextureUV;
 import com.gildedgames.orbis.lib.client.rect.Rect;
@@ -124,7 +125,7 @@ public class GuiTextureRepeatable extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		GlStateManager.pushMatrix();
 

@@ -3,7 +3,6 @@ package com.gildedgames.orbis.lib.block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.Random;
@@ -15,7 +14,6 @@ public enum BlockFilterType
 			{
 				@Override
 				public boolean filter(EntityPlayer player, BlockPos pos, final IBlockState blockToFilter, final List<BlockDataWithConditions> requiredBlocks,
-						final World world,
 						final Random random)
 				{
 					return true;
@@ -26,7 +24,6 @@ public enum BlockFilterType
 			{
 				@Override
 				public boolean filter(EntityPlayer player, BlockPos pos, final IBlockState blockToFilter, final List<BlockDataWithConditions> blackListedBlocks,
-						final World world,
 						final Random random)
 				{
 					for (final BlockDataWithConditions block : blackListedBlocks)
@@ -45,12 +42,11 @@ public enum BlockFilterType
 			{
 				@Override
 				public boolean filter(EntityPlayer player, BlockPos pos, final IBlockState blockToFilter, final List<BlockDataWithConditions> requiredBlocks,
-						final World world,
 						final Random random)
 				{
 					for (final BlockDataWithConditions block : requiredBlocks)
 					{
-						if ((block.getBlock() == blockToFilter.getBlock() && block.getRequiredCondition().isMet(random, world)))
+						if ((block.getBlock() == blockToFilter.getBlock() && block.getRequiredCondition().isMet(random)))
 						{
 							return true;
 						}
@@ -61,7 +57,6 @@ public enum BlockFilterType
 
 			};
 
-	public abstract boolean filter(EntityPlayer player, BlockPos pos, IBlockState blockToFilter, List<BlockDataWithConditions> originalBlocks, World world,
-			Random random);
+	public abstract boolean filter(EntityPlayer player, BlockPos pos, IBlockState blockToFilter, List<BlockDataWithConditions> originalBlocks, Random random);
 
 }

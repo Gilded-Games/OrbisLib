@@ -1,6 +1,7 @@
 package com.gildedgames.orbis.lib.client.gui.util.vanilla;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiViewer;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import net.minecraft.client.Minecraft;
@@ -38,19 +39,19 @@ public class GuiItemStackRender extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		GlStateManager.enableRescaleNormal();
 		RenderHelper.enableGUIStandardItemLighting();
-		GlStateManager.enableDepth();
+		GlStateManager.enableDepthTest();
 
-		Minecraft.getInstance().getRenderItem().renderItemIntoGUI(this.stack, (int) this.dim().x() + 1, (int) this.dim().y() + 1);
+		Minecraft.getInstance().getItemRenderer().renderItemIntoGUI(this.stack, (int) this.dim().x() + 1, (int) this.dim().y() + 1);
 
 		RenderHelper.disableStandardItemLighting();
 		GlStateManager.disableRescaleNormal();
 
 		GlStateManager.pushMatrix();
-		GlStateManager.translate(0.0F, 0.0F, 300.0F);
+		GlStateManager.translatef(0.0F, 0.0F, 300.0F);
 
 		if (this.stack.getCount() > 1)
 		{

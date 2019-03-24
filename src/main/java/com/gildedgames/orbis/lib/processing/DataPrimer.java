@@ -20,9 +20,9 @@ import javax.annotation.Nullable;
 
 public class DataPrimer
 {
-	private final IBlockAccessExtended access;
+	private final World access;
 
-	public DataPrimer(final IBlockAccessExtended primer)
+	public DataPrimer(final World primer)
 	{
 		this.access = primer;
 	}
@@ -31,11 +31,6 @@ public class DataPrimer
 	public World getWorld()
 	{
 		return this.access.getWorld();
-	}
-
-	public IBlockAccessExtended getAccess()
-	{
-		return this.access;
 	}
 
 	public void spawn(Entity entity)
@@ -48,8 +43,8 @@ public class DataPrimer
 		Region region = new Region(blueprint.getBakedRegion());
 		region.add(offset);
 
-		if (!this.access.canAccess(region.getMin().getX() - 2, region.getMin().getY() - 2, region.getMin().getZ() - 2,
-				region.getMax().getX() + 2, region.getMax().getY() + 2, region.getMax().getZ() + 2))
+		if (!this.access.isAreaLoaded(region.getMin().getX() - 2, region.getMin().getY() - 2, region.getMin().getZ() - 2,
+				region.getMax().getX() + 2, region.getMax().getY() + 2, region.getMax().getZ() + 2, true))
 		{
 			return false;
 		}
@@ -81,9 +76,7 @@ public class DataPrimer
 
 		if (entity != null && this.access.getWorld() != null)
 		{
-			TileEntity te = TileEntity.create(this.access.getWorld(), entity.data);
-
-			this.access.setTileEntity(pos, te);
+			this.access.setTileEntity(pos, TileEntity.create(entity.data));
 		}
 
 		// TODO: Re-enable event.

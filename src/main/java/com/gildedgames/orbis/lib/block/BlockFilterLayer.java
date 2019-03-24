@@ -102,14 +102,14 @@ public class BlockFilterLayer implements NBT
 		this.blockFilterType = blockFilterType;
 	}
 
-	private BlockDataWithConditions getRandom(final Random random, final World world)
+	private BlockDataWithConditions getRandom(final Random random)
 	{
 		final float randomValue = random.nextFloat() * this.totalBlockChance();
 		float chanceSum = 0.0f;
 
 		for (final BlockDataWithConditions block : this.replacementBlocks)
 		{
-			if (block.getReplaceCondition().isMet(randomValue, chanceSum, random, world))
+			if (block.getReplaceCondition().isMet(randomValue, chanceSum))
 			{
 				return block;
 			}
@@ -120,23 +120,21 @@ public class BlockFilterLayer implements NBT
 		return null;
 	}
 
-	public IBlockState getSample(final World world, final Random rand, final IBlockState state)
+	public IBlockState getSample(final Random rand, final IBlockState state)
 	{
-		final BlockDataWithConditions replacementBlock = this.getRandom(rand, world);
+		final BlockDataWithConditions replacementBlock = this.getRandom(rand);
 
 		return replacementBlock.getBlockState();
 	}
 
 	public void apply(Iterable<BlockPos.MutableBlockPos> positions, BlockDataContainer container, ICreationData<?> creationData, IFilterOptions options)
 	{
-		World world = creationData.getWorld();
-
 		if (this.condition == null)
 		{
 			this.condition = new DataCondition();
 		}
 
-		if (!this.condition.isMet(creationData.getRandom(), world) || this.replacementBlocks.isEmpty())
+		if (!this.condition.isMet(creationData.getRandom()) || this.replacementBlocks.isEmpty())
 		{
 			return;
 		}
@@ -145,24 +143,24 @@ public class BlockFilterLayer implements NBT
 
 		if (!options.getChoosesPerBlockVar().getData())
 		{
-			replacementBlock = this.getRandom(creationData.getRandom(), world);
+			replacementBlock = this.getRandom(creationData.getRandom());
 		}
 
 		for (final BlockPos.MutableBlockPos pos : positions)
 		{
 			final IBlockState state = container.getBlockState(pos);
 
-			if (!this.getFilterType().filter(creationData.getCreator(), pos, state, this.requiredBlocks, world, creationData.getRandom()))
+			if (!this.getFilterType().filter(creationData.getCreator(), pos, state, this.requiredBlocks, creationData.getRandom()))
 			{
 				continue;
 			}
 
 			if (options.getChoosesPerBlockVar().getData())
 			{
-				replacementBlock = this.getRandom(creationData.getRandom(), world);
+				replacementBlock = this.getRandom(creationData.getRandom());
 			}
 
-			if (replacementBlock == null || !replacementBlock.getReplaceCondition().isMet(creationData.getRandom(), world))
+			if (replacementBlock == null || !replacementBlock.getReplaceCondition().isMet(creationData.getRandom()))
 			{
 				continue;
 			}
@@ -203,7 +201,7 @@ public class BlockFilterLayer implements NBT
 			this.condition = new DataCondition();
 		}
 
-		if (!this.condition.isMet(creationData.getRandom(), world) || this.replacementBlocks.isEmpty())
+		if (!this.condition.isMet(creationData.getRandom()) || this.replacementBlocks.isEmpty())
 		{
 			return;
 		}
@@ -225,7 +223,7 @@ public class BlockFilterLayer implements NBT
 
 		if (!options.getChoosesPerBlockVar().getData())
 		{
-			replacementBlock = this.getRandom(creationData.getRandom(), world);
+			replacementBlock = this.getRandom(creationData.getRandom());
 		}
 
 		final BlockPos min = creationData.getPos();
@@ -281,7 +279,7 @@ public class BlockFilterLayer implements NBT
 		{
 			state = world.getBlockState(without);
 
-			if (!this.getFilterType().filter(creationData.getCreator(), p, state, this.requiredBlocks, world, creationData.getRandom()))
+			if (!this.getFilterType().filter(creationData.getCreator(), p, state, this.requiredBlocks, creationData.getRandom()))
 			{
 				return;
 			}
@@ -289,11 +287,11 @@ public class BlockFilterLayer implements NBT
 
 		if (options.getChoosesPerBlockVar().getData())
 		{
-			replacementBlock = this.getRandom(creationData.getRandom(), world);
+			replacementBlock = this.getRandom(creationData.getRandom());
 		}
 
 		if (replacementBlock == null || !replacementBlock.getReplaceCondition()
-				.isMet(creationData.getRandom(), world))
+				.isMet(creationData.getRandom()))
 		{
 			return;
 		}
@@ -313,7 +311,7 @@ public class BlockFilterLayer implements NBT
 
 				if (!this.getFilterType()
 						.filter(creationData.getCreator(), BlockPos.ORIGIN, posState == null ? Blocks.AIR.getDefaultState() : posState,
-								this.requiredBlocks, world, creationData.getRandom()))
+								this.requiredBlocks, creationData.getRandom()))
 				{
 					return;
 				}
@@ -348,7 +346,7 @@ public class BlockFilterLayer implements NBT
 
 				if (replacementBlock.getTileEntity() != null)
 				{
-					world.setTileEntity(c, TileEntity.create(world, replacementBlock.getTileEntity()));
+					world.setTileEntity(c, TileEntity.create(replacementBlock.getTileEntity()));
 				}
 			}
 		}

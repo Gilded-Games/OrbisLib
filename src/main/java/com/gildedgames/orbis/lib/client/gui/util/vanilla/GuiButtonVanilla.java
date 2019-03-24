@@ -1,10 +1,9 @@
 package com.gildedgames.orbis.lib.client.gui.util.vanilla;
 
-import com.gildedgames.orbis.lib.client.PartialTicks;
 import com.gildedgames.orbis.lib.client.gui.util.GuiFrameUtils;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
-import com.gildedgames.orbis.lib.util.InputHelper;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 
@@ -12,7 +11,7 @@ public class GuiButtonVanilla extends GuiElement
 {
 	private final GuiButton button;
 
-	public GuiButtonVanilla(final Rect rect)
+	public GuiButtonVanilla(final Rect rect, Runnable runnable)
 	{
 		super(rect, true);
 
@@ -20,7 +19,7 @@ public class GuiButtonVanilla extends GuiElement
 			@Override
 			public void onClick(double mouseX, double mouseY)
 			{
-				GuiButtonVanilla.this.viewer().pushActionPerformed(this);
+				runnable.run();
 			}
 		};
 	}
@@ -37,7 +36,7 @@ public class GuiButtonVanilla extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		GlStateManager.pushMatrix();
 
@@ -52,7 +51,7 @@ public class GuiButtonVanilla extends GuiElement
 		this.button.enabled = this.state().isEnabled();
 		this.button.visible = this.state().isVisible();
 
-		this.button.render(InputHelper.getMouseX(), InputHelper.getMouseY(), PartialTicks.get());
+		this.button.render(mouseX, mouseY, partialTicks);
 
 		GlStateManager.popMatrix();
 	}

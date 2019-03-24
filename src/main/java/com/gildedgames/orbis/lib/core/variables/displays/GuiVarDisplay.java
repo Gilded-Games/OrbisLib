@@ -109,8 +109,8 @@ public class GuiVarDisplay extends GuiElement
 
 		currentY += 5;
 
-		this.apply = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x(0).y(currentY).height(20).flush());
-		this.reset = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x((this.dim().width() / 2) + 4).y(currentY).height(20).flush());
+		this.apply = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x(0).y(currentY).height(20).flush(), this::updateVariableData);
+		this.reset = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x((this.dim().width() / 2) + 4).y(currentY).height(20).flush(), this::resetVariableData);
 
 		this.apply.getInner().displayString = "Apply";
 		this.reset.getInner().displayString = "Reset";
@@ -126,30 +126,13 @@ public class GuiVarDisplay extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		if (this.refreshRequests > 0)
 		{
 			this.display(this.contents, this.displayTitle);
 
 			this.refreshRequests--;
-		}
-	}
-
-	@Override
-	public void onMouseClicked(IGuiElement element, double mouseX, double mouseY, final int mouseButton)
-	{
-		if (this.variables != null)
-		{
-			if (this.apply.state().isHoveredAndTopElement() && mouseButton == 0)
-			{
-				this.updateVariableData();
-			}
-
-			if (this.reset.state().isHoveredAndTopElement() && mouseButton == 0)
-			{
-				this.resetVariableData();
-			}
 		}
 	}
 

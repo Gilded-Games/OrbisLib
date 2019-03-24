@@ -32,7 +32,7 @@ public class GuiScrollable extends GuiElement
 
 	private GuiTexture scrollKnob, scrollBar;
 
-	private IGuiEvent<IGuiElement> scissorEvent = new IGuiEvent<IGuiElement>()
+	private IGuiEvent scissorEvent = new IGuiEvent()
 	{
 		@Override
 		public void onPreDraw(IGuiElement element)
@@ -89,29 +89,6 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseClickMoveEnabled(IGuiElement element, final double mouseX, final double mouseY, final int clickedMouseButton)
-		{
-			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
-
-			if (!enabled)
-			{
-				for (IGuiEvent event : element.state().getEvents())
-				{
-					if (event instanceof IInputEnabledOutsideBounds)
-					{
-						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
-
-						input.onMouseClickMoveOutsideBounds(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
-
-						return false;
-					}
-				}
-			}
-
-			return enabled;
-		}
-
-		@Override
 		public boolean isMouseReleasedEnabled(IGuiElement element, final double mouseX, final double mouseY, final int state)
 		{
 			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
@@ -135,7 +112,7 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseWheelEnabled(IGuiElement element, final double state)
+		public boolean isMouseWheelEnabled(IGuiElement element, final double scroll)
 		{
 			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
@@ -147,30 +124,7 @@ public class GuiScrollable extends GuiElement
 					{
 						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
 
-						input.onMouseWheelOutsideBounds(element, state);
-					}
-				}
-			}
-
-			return enabled;
-		}
-
-		@Override
-		public boolean isHandleMouseClickEnabled(IGuiElement element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
-		{
-			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
-
-			if (!enabled)
-			{
-				for (IGuiEvent event : element.state().getEvents())
-				{
-					if (event instanceof IInputEnabledOutsideBounds)
-					{
-						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
-
-						input.onHandleMouseClickOutsideBounds(element, slotIn, slotId, mouseButton, type);
-
-						return false;
+						input.onMouseWheelOutsideBounds(element, scroll);
 					}
 				}
 			}
@@ -231,7 +185,7 @@ public class GuiScrollable extends GuiElement
 	}
 
 	@Override
-	public void onGlobalContextChanged(GuiElement element)
+	public void onGlobalContextChanged(IGuiElement element)
 	{
 		for (IGuiElement child : GuiLibHelper.getAllChildrenRecursivelyFor(this))
 		{
@@ -240,7 +194,7 @@ public class GuiScrollable extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		if (this.dim().height() >= this.decorated.dim().height())
 		{
@@ -285,22 +239,22 @@ public class GuiScrollable extends GuiElement
 
 	public interface IInputEnabledOutsideBounds<T extends IGuiElement>
 	{
-		default void onMouseClickedOutsideBounds(T element, final int mouseX, final int mouseY, final int mouseButton)
+		default void onMouseClickedOutsideBounds(T element, final double mouseX, final double mouseY, final int mouseButton)
 		{
 
 		}
 
-		default void onMouseClickMoveOutsideBounds(T element, final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+		default void onMouseClickMoveOutsideBounds(T element, final double mouseX, final double mouseY, final int clickedMouseButton)
 		{
 
 		}
 
-		default void onMouseReleasedOutsideBounds(T element, final int mouseX, final int mouseY, final int state)
+		default void onMouseReleasedOutsideBounds(T element, final double mouseX, final double mouseY, final int state)
 		{
 
 		}
 
-		default void onMouseWheelOutsideBounds(T element, final int state)
+		default void onMouseWheelOutsideBounds(T element, final double scroll)
 		{
 
 		}
@@ -316,7 +270,7 @@ public class GuiScrollable extends GuiElement
 		}
 	}
 
-	public static class InputEnabledOutsideBounds<T extends IGuiElement> implements IGuiEvent<T>, IInputEnabledOutsideBounds<T>
+	public static class InputEnabledOutsideBounds<T extends IGuiElement> implements IGuiEvent, IInputEnabledOutsideBounds<T>
 	{
 
 	}

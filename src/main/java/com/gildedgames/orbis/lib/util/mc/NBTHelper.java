@@ -8,11 +8,12 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.INBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -66,9 +67,9 @@ public class NBTHelper
 		};
 	}
 
-	public static NBTTagCompound readNBTFromFile(final String fileName)
+	public static NBTTagCompound readNBTFromFile(final MinecraftServer server, final String fileName)
 	{
-		return readNBTFromFile(new File(DimensionManager.getCurrentSaveRootDirectory(), fileName));
+		return readNBTFromFile(new File(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory(), fileName));
 	}
 
 	public static NBTTagCompound readNBTFromFile(final File file)
@@ -89,9 +90,9 @@ public class NBTHelper
 		return null;
 	}
 
-	public static void writeNBTToFile(final NBTTagCompound tag, final String fileName)
+	public static void writeNBTToFile(final MinecraftServer server, final NBTTagCompound tag, final String fileName)
 	{
-		writeNBTToFile(tag, new File(DimensionManager.getCurrentSaveRootDirectory(), fileName));
+		writeNBTToFile(tag, new File(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory(), fileName));
 	}
 
 	public static void writeNBTToFile(final NBTTagCompound tag, final File file)
@@ -120,12 +121,13 @@ public class NBTHelper
 			return ItemStack.EMPTY;
 		}
 
-		ItemStack itemstack = new ItemStack(OrbisLib.services().registrar().findItem(new ResourceLocation(tag.getString("id"))), tag.getByte("count"),
-				tag.getShort("meta"));
+		ItemStack itemstack = new ItemStack(OrbisLib.services().registrar().findItem(new ResourceLocation(tag.getString("id"))));
+		itemstack.setCount(tag.getByte("count"));
+		itemstack.setDamage(tag.getShort("damage"));
 
-		if (tag.contains("shareTag"))
+		if (tag.contains("data"))
 		{
-			itemstack.setTagCompound(tag.getCompound("shareTag"));
+			itemstack.setTag(tag.getCompound("data"));
 		}
 
 		return itemstack;
@@ -146,21 +148,16 @@ public class NBTHelper
 
 		tag.putString("id", OrbisLib.services().registrar().getIdentifierFor(stack.getItem()).toString());
 		tag.putByte("count", (byte) stack.getCount());
-		tag.putShort("meta", (short) stack.getMetadata());
+		tag.putShort("damage", (short) stack.getDamage());
 
-		NBTTagCompound nbttagcompound = null;
+		NBTTagCompound data = stack.getTag();
 
-		if (stack.getItem().isDamageable() || stack.getItem().getShareTag())
+		if (data != null)
 		{
-			nbttagcompound = stack.getItem().getNBTShareTag(stack);
+			data.put("data", data);
 		}
 
-		if (nbttagcompound != null)
-		{
-			tag.put("shareTag", nbttagcompound);
-		}
-
-		return tag;
+		return data;
 	}
 
 	public static BlockPos readBlockPos(final NBTTagCompound tag)

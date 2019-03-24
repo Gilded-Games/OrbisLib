@@ -2,7 +2,8 @@ package com.gildedgames.orbis.lib.preparation.impl;
 
 import com.gildedgames.orbis.lib.preparation.IPrepManager;
 import com.gildedgames.orbis.lib.preparation.impl.util.PrepHelper;
-import net.minecraft.world.World;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.IWorld;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -12,39 +13,29 @@ public class PrepTasks
 	@SubscribeEvent
 	public static void onChunkLoaded(final ChunkEvent.Load event)
 	{
-		final World world = event.getWorld();
+		final IWorld world = event.getWorld();
+		final ChunkPos pos = event.getChunk().getPos();
 
 		IPrepManager manager = PrepHelper.getManager(world);
-
-		if (manager != null)
-		{
-			manager.getAccess().onChunkLoaded(event.getChunk().x, event.getChunk().z);
-		}
+		manager.getAccess().onChunkLoaded(pos.x, pos.z);
 	}
 
 	@SubscribeEvent
 	public static void onChunkUnloaded(final ChunkEvent.Unload event)
 	{
-		final World world = event.getWorld();
+		final IWorld world = event.getWorld();
+		final ChunkPos pos = event.getChunk().getPos();
 
 		IPrepManager manager = PrepHelper.getManager(world);
-
-		if (manager != null)
-		{
-			manager.getAccess().onChunkUnloaded(event.getChunk().x, event.getChunk().z);
-		}
+		manager.getAccess().onChunkUnloaded(pos.x, pos.z);
 	}
 
 	@SubscribeEvent
 	public static void onWorldTick(final TickEvent.WorldTickEvent event)
 	{
-		final World world = event.world;
+		final IWorld world = event.world;
 
 		IPrepManager manager = PrepHelper.getManager(world);
-
-		if (manager != null)
-		{
-			manager.getAccess().update();
-		}
+		manager.getAccess().update();
 	}
 }

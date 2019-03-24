@@ -15,7 +15,8 @@ public class BlockUtil
 	{
 		if (stack.getItem() instanceof ItemBlock)
 		{
-			return ((ItemBlock) stack.getItem()).getBlock().getStateFromMeta(stack.getItemDamage());
+			// TODO: Probably not adequate...
+			return ((ItemBlock) stack.getItem()).getBlock().getDefaultState();
 		}
 
 		return null;

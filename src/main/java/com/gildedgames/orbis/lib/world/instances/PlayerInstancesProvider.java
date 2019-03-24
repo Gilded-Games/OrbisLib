@@ -1,63 +1,51 @@
 package com.gildedgames.orbis.lib.world.instances;
 
 import com.gildedgames.orbis.lib.OrbisLibCapabilities;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.INBTBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.LazyOptional;
+
+import java.util.NoSuchElementException;
 
 public class PlayerInstancesProvider implements ICapabilitySerializable<INBTBase>
 {
 	private final PlayerInstances.Storage storage = new PlayerInstances.Storage();
 
-	private final EntityPlayer player;
+	private LazyOptional<PlayerInstances> capability;
 
-	private PlayerInstances capability;
-
-	public PlayerInstancesProvider(final EntityPlayer player)
+	public PlayerInstancesProvider()
 	{
-		this.player = player;
-	}
-
-	private PlayerInstances fetchCapability()
-	{
-		if (this.capability == null)
-		{
-			this.capability = new PlayerInstances();
-		}
-
-		return this.capability;
+		this.capability = LazyOptional.of(PlayerInstances::new);
 	}
 
 	@Override
-	public boolean hasCapability(final Capability<?> capability, final EnumFacing facing)
+	public <T> LazyOptional<T> getCapability(final Capability<T> capability, final EnumFacing facing)
 	{
-		return capability == OrbisLibCapabilities.PLAYER_INSTANCES;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked" /* joy... */)
-	public <T> T getCapability(final Capability<T> capability, final EnumFacing facing)
-	{
-		if (this.hasCapability(capability, facing))
+		if (capability == OrbisLibCapabilities.PLAYER_INSTANCES)
 		{
-			return (T) this.fetchCapability();
+			return this.capability.cast();
 		}
 
-		return null;
+		return LazyOptional.empty();
+	}
+
+	private PlayerInstances unwrap()
+	{
+		return this.capability.orElseThrow(NoSuchElementException::new);
 	}
 
 	@Override
 	public INBTBase serializeNBT()
 	{
-		return this.storage.writeNBT(OrbisLibCapabilities.PLAYER_INSTANCES, this.fetchCapability(), null);
+		return this.storage.writeNBT(OrbisLibCapabilities.PLAYER_INSTANCES, this.unwrap(), null);
 	}
 
 	@Override
 	public void deserializeNBT(final INBTBase nbt)
 	{
-		this.storage.readNBT(OrbisLibCapabilities.PLAYER_INSTANCES, this.fetchCapability(), null, nbt);
+		this.storage.readNBT(OrbisLibCapabilities.PLAYER_INSTANCES, this.unwrap(), null, nbt);
 	}
 
 }

@@ -174,7 +174,7 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 				}
 
 				@Override
-				public void onHoverEnter(GuiTextLabel gui)
+				public void onHoverEnter(IGuiElement gui)
 				{
 					if (GuiDropdownList.this.subLists.containsKey(element))
 					{
@@ -193,7 +193,7 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 				}
 
 				@Override
-				public void onHoverExit(GuiTextLabel gui)
+				public void onHoverExit(IGuiElement gui)
 				{
 					if (GuiDropdownList.this.subLists.containsKey(element))
 					{
@@ -208,7 +208,7 @@ public class GuiDropdownList<ELEMENT extends IDropdownElement> extends GuiElemen
 				}
 
 				@Override
-				public void onMouseClickedOutsideBounds(GuiTextLabel gui, final int mouseX, final int mouseY, final int mouseButton)
+				public void onMouseClickedOutsideBounds(GuiTextLabel gui, final double mouseX, final double mouseY, final int mouseButton)
 				{
 					this.onMouseClicked(gui, mouseX, mouseY, mouseButton);
 				}

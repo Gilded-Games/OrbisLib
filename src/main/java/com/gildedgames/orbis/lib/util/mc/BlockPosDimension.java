@@ -2,12 +2,13 @@ package com.gildedgames.orbis.lib.util.mc;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 {
 
-	private int dimensionId;
+	private DimensionType dimension;
 
 	@SuppressWarnings("unused")
 	private BlockPosDimension()
@@ -15,21 +16,21 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 
 	}
 
-	public BlockPosDimension(final BlockPos pos, final int dimensionId)
+	public BlockPosDimension(final BlockPos pos, final DimensionType dimension)
 	{
-		this(pos.getX(), pos.getY(), pos.getZ(), dimensionId);
+		this(pos.getX(), pos.getY(), pos.getZ(), dimension);
 	}
 
-	public BlockPosDimension(final int x, final int y, final int z, final int dimensionId)
+	public BlockPosDimension(final int x, final int y, final int z, final DimensionType dimension)
 	{
 		super(x, y, z);
 
-		this.dimensionId = dimensionId;
+		this.dimension = dimension;
 	}
 
-	public int getDim()
+	public DimensionType getDimension()
 	{
-		return this.dimensionId;
+		return this.dimension;
 	}
 
 	@Override
@@ -44,7 +45,7 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 		{
 			final BlockPosDimension dungeonPosition = (BlockPosDimension) object;
 			return dungeonPosition.getX() == this.getX() && dungeonPosition.getY() == this.getY() && dungeonPosition.getZ() == this.getZ()
-					&& dungeonPosition.dimensionId == this.dimensionId;
+					&& dungeonPosition.dimension == this.dimension;
 		}
 
 		return false;
@@ -58,7 +59,7 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 		builder.append(this.getX());
 		builder.append(this.getY());
 		builder.append(this.getZ());
-		builder.append(this.dimensionId);
+		builder.append(this.dimension);
 
 		return builder.toHashCode();
 	}
@@ -69,7 +70,7 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 		tag.putInt("x", this.getX());
 		tag.putInt("y", this.getY());
 		tag.putInt("z", this.getZ());
-		tag.putInt("d", this.dimensionId);
+		tag.putInt("d", this.dimension.getId());
 	}
 
 	@Override
@@ -78,6 +79,6 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 		this.x = tag.getInt("x");
 		this.y = tag.getInt("y");
 		this.z = tag.getInt("z");
-		this.dimensionId = tag.getInt("d");
+		this.dimension = DimensionType.getById(tag.getInt("d"));
 	}
 }

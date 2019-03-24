@@ -3,7 +3,6 @@ package com.gildedgames.orbis.lib.core.util;
 import com.gildedgames.orbis.lib.data.region.IDimensions;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
-import com.gildedgames.orbis.lib.processing.IBlockAccessExtended;
 import com.gildedgames.orbis.lib.util.RotationHelp;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -11,6 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.IBlockReader;
 
 public class BlueprintUtil
 {
@@ -62,11 +62,11 @@ public class BlueprintUtil
 		return material == Material.AIR || material == Material.LEAVES || material == Material.PLANTS || material == Material.SNOW;
 	}
 
-	public static boolean isReplaceable(final IBlockAccessExtended world, final BlockPos pos)
+	public static boolean isReplaceable(final IBlockReader world, final BlockPos pos)
 	{
 		final IBlockState state = world.getBlockState(pos);
 
-		return state.getBlock().isAir(state, world, pos) || state.getBlock().isLeaves(state, world, pos)
+		return state.getBlock().isAir(state, world, pos) || state.getMaterial() == Material.LEAVES
 				|| BlueprintUtil.canGrowInto(state.getBlock());
 	}
 

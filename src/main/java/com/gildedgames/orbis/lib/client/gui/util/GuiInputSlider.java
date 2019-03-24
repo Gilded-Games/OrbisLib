@@ -3,7 +3,6 @@ package com.gildedgames.orbis.lib.client.gui.util;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
-import com.gildedgames.orbis.lib.util.InputHelper;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
@@ -13,11 +12,11 @@ import java.text.DecimalFormat;
 
 public class GuiInputSlider extends GuiElement
 {
-	protected static final ResourceLocation BUTTON_TEXTURES = new ResourceLocation("textures/gui/widgets.png");
+	private static final ResourceLocation BUTTON_TEXTURES = new ResourceLocation("textures/gui/widgets.png");
 
 	private final float minValue, maxValue;
 
-	public boolean dragging, hovered;
+	private boolean dragging, hovered;
 
 	private String displayString;
 
@@ -63,44 +62,25 @@ public class GuiInputSlider extends GuiElement
 	{
 		if (mouseButton == 0 && this.state().isHoveredAndTopElement())
 		{
-			this.sliderValue = (InputHelper.getMouseX() - (this.dim().x() + 4)) / (this.dim().width() - 8);
+			this.sliderValue = ((int) mouseX - (this.dim().x() + 4)) / (this.dim().width() - 8);
 			this.sliderValue = MathHelper.clamp(this.sliderValue, 0.0F, 1.0F);
 
 			this.dragging = true;
 		}
 	}
 
-	protected int getHoverState(boolean mouseOver)
-	{
-		int i = 1;
-
-		if (this.state().isEnabled())
-		{
-			i = 0;
-		}
-		else if (mouseOver)
-		{
-			i = 2;
-		}
-
-		return i;
-	}
-
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		FontRenderer fontrenderer = this.viewer().mc().fontRenderer;
 		this.viewer().mc().getTextureManager().bindTexture(BUTTON_TEXTURES);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		this.hovered =
-				InputHelper.getMouseX() >= this.dim().x() && InputHelper.getMouseY() >= this.dim().y() && InputHelper.getMouseX() < this.dim().x() + this.dim()
-						.width()
-						&& InputHelper.getMouseY() < this.dim().y() + this.dim().height();
+		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+		this.hovered = mouseX >= this.dim().x() && mouseX < this.dim().x() + this.dim().width()
+				&& mouseY >= this.dim().y() && mouseY < this.dim().y() + this.dim().height();
 
 		GlStateManager.enableBlend();
-		GlStateManager
-				.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE,
-						GlStateManager.DestFactor.ZERO);
+		GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+				GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 		GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 		this.viewer().getActualScreen().drawTexturedModalRect(this.dim().x(), this.dim().y(), 0, 46, (int) (this.dim().width() / 2), (int) this.dim().height());
 		this.viewer().getActualScreen().drawTexturedModalRect(this.dim().x() + this.dim().width() / 2, this.dim().y(), (int) (200 - this.dim().width() / 2), 46,
@@ -122,14 +102,14 @@ public class GuiInputSlider extends GuiElement
 
 		if (this.dragging)
 		{
-			this.sliderValue = (InputHelper.getMouseX() - (this.dim().x() + 4)) / (this.dim().width() - 8);
+			this.sliderValue = (mouseX - (this.dim().x() + 4)) / (this.dim().width() - 8);
 			this.sliderValue = MathHelper.clamp(this.sliderValue, 0.0F, 1.0F);
 
 			this.displayString = String.valueOf(this.df.format(this.sliderValue * this.maxValue));
 		}
 
 		this.viewer().mc().getTextureManager().bindTexture(BUTTON_TEXTURES);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 		this.viewer().getActualScreen()
 				.drawTexturedModalRect(this.dim().x() + (int) (this.sliderValue * (this.dim().width() - 8)), this.dim().y(), 0, 66, 4, 20);
 		this.viewer().getActualScreen()

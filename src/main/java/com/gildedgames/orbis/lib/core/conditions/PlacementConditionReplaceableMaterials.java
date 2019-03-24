@@ -4,11 +4,11 @@ import com.gildedgames.orbis.lib.block.BlockDataContainer;
 import com.gildedgames.orbis.lib.core.PlacementCondition;
 import com.gildedgames.orbis.lib.core.baking.BakedBlueprint;
 import com.gildedgames.orbis.lib.core.util.BlueprintUtil;
-import com.gildedgames.orbis.lib.processing.IBlockAccessExtended;
 import com.gildedgames.orbis.lib.util.ArrayHelper;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 
 public class PlacementConditionReplaceableMaterials implements PlacementCondition
 {
@@ -20,7 +20,7 @@ public class PlacementConditionReplaceableMaterials implements PlacementConditio
 	}
 
 	@Override
-	public boolean validate(IBlockAccessExtended access, BakedBlueprint blueprint, BlockPos offset)
+	public boolean validate(IBlockReader access, BakedBlueprint blueprint, BlockPos offset)
 	{
 		BlockDataContainer container = blueprint.getBlockData();
 

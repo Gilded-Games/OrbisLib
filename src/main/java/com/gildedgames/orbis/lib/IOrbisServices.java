@@ -4,11 +4,9 @@ import com.gildedgames.orbis.lib.core.GameRegistrar;
 import com.gildedgames.orbis.lib.core.registry.IOrbisDefinitionRegistry;
 import com.gildedgames.orbis.lib.data.management.IProject;
 import com.gildedgames.orbis.lib.data.management.IProjectManager;
-import com.gildedgames.orbis.lib.data.management.impl.OrbisLootTableCache;
-import com.gildedgames.orbis.lib.network.INetworkMultipleParts;
 import com.gildedgames.orbis.lib.preparation.IPrepRegistry;
 import com.gildedgames.orbis.lib.world.data.IWorldDataManager;
-import com.gildedgames.orbis.lib.world.instances.IInstanceRegistry;
+import com.gildedgames.orbis.lib.world.instances.IInstanceManager;
 import com.google.gson.Gson;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
@@ -21,11 +19,7 @@ public interface IOrbisServices
 
 	Gson getGson();
 
-	OrbisLootTableCache lootTableCache();
-
 	IPrepRegistry sectors();
-
-	INetworkMultipleParts network();
 
 	void listen(IOrbisServicesListener listener);
 
@@ -76,7 +70,7 @@ public interface IOrbisServices
 
 	void stopProjectManager();
 
-	IInstanceRegistry instances();
+	IInstanceManager instances();
 
 	IWorldDataManager getWorldDataManager(IWorld world);
 }

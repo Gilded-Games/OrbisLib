@@ -34,34 +34,27 @@ import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.data.schedules.*;
 import com.gildedgames.orbis.lib.data.shapes.*;
 import com.gildedgames.orbis.lib.inventory.InventorySpawnEggs;
-import com.gildedgames.orbis.lib.network.INetworkMultipleParts;
-import com.gildedgames.orbis.lib.network.NetworkMultipleParts;
-import com.gildedgames.orbis.lib.network.instances.PacketRegisterDimension;
-import com.gildedgames.orbis.lib.network.instances.PacketRegisterInstance;
-import com.gildedgames.orbis.lib.network.instances.PacketUnregisterDimension;
 import com.gildedgames.orbis.lib.preparation.IPrepRegistry;
 import com.gildedgames.orbis.lib.preparation.impl.PrepRegistry;
 import com.gildedgames.orbis.lib.util.io.IClassSerializer;
 import com.gildedgames.orbis.lib.util.io.SimpleSerializer;
 import com.gildedgames.orbis.lib.util.mc.BlockPosDimension;
 import com.gildedgames.orbis.lib.world.data.IWorldDataManager;
-import com.gildedgames.orbis.lib.world.instances.IInstanceRegistry;
-import com.gildedgames.orbis.lib.world.instances.InstanceRegistryImpl;
+import com.gildedgames.orbis.lib.world.instances.IInstanceManager;
+import com.gildedgames.orbis.lib.world.instances.InstanceManagerImpl;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.common.thread.EffectiveSide;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -91,9 +84,7 @@ public class OrbisServices implements IOrbisServices
 
 	private IOHelper io;
 
-	private INetworkMultipleParts network;
-
-	private IInstanceRegistry instancesRegistry = new InstanceRegistryImpl();
+	private IInstanceManager instancesRegistry;
 
 	private Object mod;
 
@@ -101,26 +92,23 @@ public class OrbisServices implements IOrbisServices
 
 	private IPrepRegistry sectors = new PrepRegistry();
 
-	private OrbisLootTableCache lootTableCache = new OrbisLootTableCache();
-
 	private boolean scanAndCacheProjectsOnStartup;
 
 	private Gson gson;
 
 	public OrbisServices()
 	{
-		this.network = new NetworkMultipleParts(OrbisLib.MOD_ID);
-
-		this.network.reg(PacketRegisterDimension.Handler.class, PacketRegisterDimension.class, Side.CLIENT);
-		this.network.reg(PacketUnregisterDimension.Handler.class, PacketUnregisterDimension.class, Side.CLIENT);
-		this.network.reg(PacketRegisterInstance.Handler.class, PacketRegisterInstance.class, Side.CLIENT);
-
 		this.gson = new GsonBuilder()
 				.registerTypeAdapter(IProjectIdentifier.class, new GenericSerializer<IProjectIdentifier>(ProjectIdentifier.class))
 				.registerTypeAdapter(IDataIdentifier.class, new GenericSerializer<IDataIdentifier>(DataIdentifier.class))
 				.registerTypeAdapter(IDataMetadata.class, new GenericSerializer<IDataMetadata>(DataMetadata.class))
 				.registerTypeAdapter(IProjectMetadata.class, new GenericSerializer<IProjectMetadata>(ProjectMetadata.class))
 				.create();
+	}
+
+	public void init(MinecraftServer server)
+	{
+		this.instancesRegistry = new InstanceManagerImpl(server);
 	}
 
 	@Nullable
@@ -374,21 +362,9 @@ public class OrbisServices implements IOrbisServices
 	}
 
 	@Override
-	public OrbisLootTableCache lootTableCache()
-	{
-		return this.lootTableCache;
-	}
-
-	@Override
 	public IPrepRegistry sectors()
 	{
 		return this.sectors;
-	}
-
-	@Override
-	public INetworkMultipleParts network()
-	{
-		return this.network;
 	}
 
 	@Override
@@ -420,7 +396,7 @@ public class OrbisServices implements IOrbisServices
 			return;
 		}
 
-		if (OrbisLib.isClient())
+		if (EffectiveSide.get() == LogicalSide.CLIENT)
 		{
 			final ServerData data = Minecraft.getInstance().getCurrentServerData();
 
@@ -447,9 +423,7 @@ public class OrbisServices implements IOrbisServices
 
 							try
 							{
-								List<String> sources = this.gson.fromJson(reader, new TypeToken<List<String>>()
-								{
-								}.getType());
+								String[] sources = this.gson.fromJson(reader, String[].class);
 
 								OrbisLib.LOGGER.info("Succesfully loaded extra_project_sources.json:");
 
@@ -470,7 +444,7 @@ public class OrbisServices implements IOrbisServices
 							}
 							catch (JsonSyntaxException | JsonIOException e)
 							{
-								OrbisLib.LOGGER.error("Could not load extra_project_sources.json, syntax error or IO exception.");
+								OrbisLib.LOGGER.error("Could not load extra_project_sources.json", e);
 								extraProjectSources = Collections.emptyList();
 							}
 						}
@@ -493,7 +467,7 @@ public class OrbisServices implements IOrbisServices
 
 		if (this.projectManager == null)
 		{
-			this.projectManager = new OrbisProjectManager(new File(DimensionManager.getCurrentSaveRootDirectory(), "orbis/projects/"), Collections.emptyList(),
+			this.projectManager = new OrbisProjectManager(new File(Minecraft.getInstance().gameDir, "orbis/projects/"), Collections.emptyList(),
 					this.mod,
 					this.archiveBaseName, OrbisProject::new);
 		}
@@ -517,7 +491,7 @@ public class OrbisServices implements IOrbisServices
 	}
 
 	@Override
-	public IInstanceRegistry instances()
+	public IInstanceManager instances()
 	{
 		return this.instancesRegistry;
 	}

@@ -63,7 +63,7 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 				this.lastStorageMethod = WorldDataStorageMethod.FLAT;
 			}
 
-			File dir = new File(world.getSaveHandler().getWorldDirectory(), (world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
+			File dir = new File(world.getDimension().getType().getDirectory(world.getSaveHandler().getWorldDirectory()) ,"data/orbis");
 
 			if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
 			{

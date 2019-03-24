@@ -15,7 +15,6 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
-import java.io.IOException;
 import java.util.List;
 
 public class GuiItemStackChooserScreen extends GuiViewer
@@ -54,7 +53,11 @@ public class GuiItemStackChooserScreen extends GuiViewer
 
 			if (this.chooser.getVarItemStack().getStackValidator() == null || this.chooser.getVarItemStack().getStackValidator().apply(stack))
 			{
-				ItemStackButton button = new ItemStackButton(Pos2D.flush(7 + (validIndex % 9) * 18, 7 + (validIndex / 9) * 18), stack);
+				ItemStackButton button = new ItemStackButton(Pos2D.flush(7 + (validIndex % 9) * 18, 7 + (validIndex / 9) * 18), stack, () -> {
+					this.chooser.setChosenStack(stack);
+
+					this.mc.displayGuiScreen(this.getPreviousViewer().getActualScreen());
+				});
 
 				stack_inventory.context().addChildren(button);
 
@@ -64,7 +67,8 @@ public class GuiItemStackChooserScreen extends GuiViewer
 			}
 		}
 
-		this.back = new GuiButtonVanilla(Dim2D.build().pos(center).center(true).addY(60).width(80).height(20).flush());
+		this.back = new GuiButtonVanilla(Dim2D.build().pos(center).center(true).addY(60).width(80).height(20).flush(),
+				() -> this.mc.displayGuiScreen(this.getPreviousViewer().getActualScreen()));
 
 		this.back.getInner().displayString = I18n.format("orbis.gui.back");
 
@@ -73,36 +77,18 @@ public class GuiItemStackChooserScreen extends GuiViewer
 		this.back.state().setCanBeTopHoverElement(true);
 	}
 
-	@Override
-	public boolean mouseClicked(final double mouseX, final double mouseY, final int mouseButton)
-	{
-		super.mouseClicked(mouseX, mouseY, mouseButton);
-
-		if (this.back.state().isHoveredAndTopElement() && mouseButton == 0)
-		{
-			this.mc.displayGuiScreen(this.getPreviousViewer().getActualScreen());
-		}
-
-		for (ItemStackButton button : this.buttons)
-		{
-			if (button.state().isHoveredAndTopElement() && mouseButton == 0)
-			{
-				this.chooser.setChosenStack(button.getStack());
-
-				this.mc.displayGuiScreen(this.getPreviousViewer().getActualScreen());
-			}
-		}
-	}
-
 	public class ItemStackButton extends GuiElement
 	{
 		private ItemStack stack;
 
-		public ItemStackButton(Pos2D pos, ItemStack stack)
+		private Runnable runnable;
+
+		public ItemStackButton(Pos2D pos, ItemStack stack, Runnable runnable)
 		{
 			super(Dim2D.build().width(20).height(20).pos(pos).flush(), false);
 
 			this.stack = stack;
+			this.runnable = runnable;
 		}
 
 		public ItemStack getStack()
@@ -113,7 +99,7 @@ public class GuiItemStackChooserScreen extends GuiViewer
 		@Override
 		public void build()
 		{
-			GuiButtonVanilla button = new GuiButtonVanilla(Dim2D.build().width(20).height(20).flush());
+			GuiButtonVanilla button = new GuiButtonVanilla(Dim2D.build().width(20).height(20).flush(), this.runnable);
 
 			GuiItemStackRender stackRender = new GuiItemStackRender(Dim2D.flush());
 

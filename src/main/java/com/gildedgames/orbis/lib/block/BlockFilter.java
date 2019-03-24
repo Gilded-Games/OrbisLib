@@ -54,7 +54,7 @@ public class BlockFilter implements NBT
 		{
 			if (layer != null)
 			{
-				sample = layer.getSample(world, rand, state);
+				sample = layer.getSample(rand, state);
 			}
 		}
 

@@ -5,13 +5,17 @@ import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiViewer;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.google.common.collect.Lists;
+import net.minecraft.client.KeyboardListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 
 public class GuiInput extends GuiElement
 {
+	private final KeyboardListener keyboardListener;
+
 	private final GuiTextField field;
 
 	private List<IGuiInputListener> listeners = Lists.newArrayList();
@@ -21,6 +25,7 @@ public class GuiInput extends GuiElement
 		super(rect, true);
 
 		this.field = new GuiTextField(0, Minecraft.getInstance().fontRenderer, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height());
+		this.keyboardListener = Minecraft.getInstance().keyboardListener;
 	}
 
 	public void listen(IGuiInputListener listener)
@@ -44,15 +49,13 @@ public class GuiInput extends GuiElement
 	@Override
 	public void build()
 	{
-		// TODO: Do we need to enable repeat events?
-		// Keyboard.enableRepeatEvents(true);
+		this.keyboardListener.enableRepeatEvents(true);
 	}
 
 	@Override
-	public void onGuiClosed(GuiElement element)
+	public void onGuiClosed(IGuiElement element)
 	{
-		// TODO: Do we need to disable repeat events?
-		// Keyboard.enableRepeatEvents(false);
+		this.keyboardListener.enableRepeatEvents(false);
 	}
 
 	//TODO
@@ -77,18 +80,25 @@ public class GuiInput extends GuiElement
 	}
 
 	@Override
-	public void onKeyTyped(GuiElement element, final char typedChar, final int modifiers)
+	public void onKeyTyped(IGuiElement element, final char typedChar, final int modifiers)
 	{
-		if (keyCode == Keyboard.KEY_ESCAPE)
+		if (this.field.isFocused() && this.field.getVisible())
+		{
+			this.field.charTyped(typedChar, modifiers);
+		}
+	}
+
+	@Override
+	public void onKeyPressed(IGuiElement element, int key, int scanCode, int modifiers)
+	{
+		if (key == GLFW.GLFW_KEY_ESCAPE)
 		{
 			this.getInner().setFocused(false);
 		}
 
 		if (this.field.getVisible())
 		{
-			this.field.charTyped(typedChar, modifiers);
-
-			if (this.field.isFocused() && keyCode == Keyboard.KEY_RETURN)
+			if (this.field.isFocused() && key == GLFW.GLFW_KEY_ENTER)
 			{
 				this.listeners.forEach(IGuiInputListener::onPressEnter);
 			}
@@ -96,7 +106,7 @@ public class GuiInput extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		if (this.getInner().isFocused())
 		{
@@ -111,12 +121,12 @@ public class GuiInput extends GuiElement
 
 		if (this.field.getVisible())
 		{
-			this.field.drawTextBox();
+			this.field.drawTextField(mouseX, mouseY, partialTicks);
 		}
 	}
 
 	@Override
-	public void onTick(GuiElement element)
+	public void onTick(IGuiElement element)
 	{
 		this.field.tick();
 	}

@@ -1,6 +1,7 @@
 package com.gildedgames.orbis.lib.client.gui.util;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.util.mc.GlUtil;
 
@@ -38,7 +39,7 @@ public class GuiLine extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		GlUtil.drawLine(this.dim().x() + this.x1, this.dim().y() + this.y1, this.dim().x() + this.x2, this.dim().y() + this.y2, this.r, this.g, this.b,
 				this.alpha, this.thickness);

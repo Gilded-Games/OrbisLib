@@ -2,6 +2,7 @@ package com.gildedgames.orbis.lib.client.gui.util;
 
 import com.gildedgames.orbis.lib.client.gui.data.Text;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -48,7 +49,7 @@ public class GuiTextLabel extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(IGuiElement element, int mouseX, int mouseY, float partialTicks)
 	{
 		GlStateManager.pushMatrix();
 
@@ -89,9 +90,9 @@ public class GuiTextLabel extends GuiElement
 		final float f7 = (float) (endColor & 255) / 255.0F;
 		GlStateManager.disableTexture2D();
 		GlStateManager.enableBlend();
-		GlStateManager.disableAlpha();
+		GlStateManager.disableAlphaTest();
 		GlStateManager
-				.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE,
+				.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE,
 						GlStateManager.DestFactor.ZERO);
 		GlStateManager.shadeModel(7425);
 		final Tessellator tessellator = Tessellator.getInstance();
@@ -104,7 +105,7 @@ public class GuiTextLabel extends GuiElement
 		tessellator.draw();
 		GlStateManager.shadeModel(7424);
 		GlStateManager.disableBlend();
-		GlStateManager.enableAlpha();
+		GlStateManager.enableAlphaTest();
 		GlStateManager.enableTexture2D();
 	}
 }

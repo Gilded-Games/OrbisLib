@@ -3,7 +3,7 @@ package com.gildedgames.orbis.lib.client.gui.util.gui_library;
 import com.gildedgames.orbis.lib.client.rect.ModDim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 
-public class GuiElement implements IGuiElement, IGuiEvent<GuiElement>
+public class GuiElement implements IGuiElement, IGuiEvent
 {
 	private IGuiContext context;
 

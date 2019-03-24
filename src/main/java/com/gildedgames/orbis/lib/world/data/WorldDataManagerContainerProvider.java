@@ -6,49 +6,48 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.NoSuchElementException;
 
 public class WorldDataManagerContainerProvider implements ICapabilitySerializable<INBTBase>
 {
-	private final IWorldDataManagerContainer container;
+	private final LazyOptional<IWorldDataManagerContainer> container;
 
 	private final WorldDataManagerContainer.Storage storage = new WorldDataManagerContainer.Storage();
 
 	public WorldDataManagerContainerProvider(World world)
 	{
-		this.container = new WorldDataManagerContainer(world);
-	}
-
-	@Override
-	public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing)
-	{
-		return capability == OrbisLibCapabilities.WORLD_DATA;
+		this.container = LazyOptional.of(() -> new WorldDataManagerContainer(world));
 	}
 
 	@Nullable
 	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing)
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing)
 	{
-		if (this.hasCapability(capability, facing))
+		if (capability == OrbisLibCapabilities.WORLD_DATA)
 		{
-			return (T) this.container;
+			return this.container.cast();
 		}
 
 		return null;
 	}
 
+	private IWorldDataManagerContainer unwrap()
+	{
+		return this.container.orElseThrow(NoSuchElementException::new);
+	}
 	@Override
 	public INBTBase serializeNBT()
 	{
-		return this.storage.writeNBT(OrbisLibCapabilities.WORLD_DATA, this.container, null);
+		return this.storage.writeNBT(OrbisLibCapabilities.WORLD_DATA, this.unwrap(), null);
 	}
 
 	@Override
 	public void deserializeNBT(INBTBase nbt)
 	{
-		this.storage.readNBT(OrbisLibCapabilities.WORLD_DATA, this.container, null, nbt);
+		this.storage.readNBT(OrbisLibCapabilities.WORLD_DATA, this.unwrap(), null, nbt);
 	}
 }

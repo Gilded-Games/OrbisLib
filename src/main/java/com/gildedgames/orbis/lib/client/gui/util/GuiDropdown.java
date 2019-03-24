@@ -103,7 +103,7 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiElement
 	}
 
 	@Override
-	public void onMouseClickedOutsideBounds(GuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+	public void onMouseClickedOutsideBounds(GuiElement element, final double mouseX, final double mouseY, final int mouseButton)
 	{
 		this.onMouseClicked(element, mouseX, mouseY, mouseButton);
 

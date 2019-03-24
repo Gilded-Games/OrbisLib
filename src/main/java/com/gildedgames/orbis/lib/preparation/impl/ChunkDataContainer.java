@@ -1,24 +1,25 @@
 package com.gildedgames.orbis.lib.preparation.impl;
 
 import com.gildedgames.orbis.lib.preparation.IChunkMaskTransformer;
+import com.gildedgames.orbis.lib.processing.IBlockAccess;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BitArray;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumLightType;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.BlockStateContainer;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
-public class ChunkDataContainer
+public class ChunkDataContainer implements IBlockAccess
 {
-	private final SegmentStorage[] segments = new SegmentStorage[16];
+	private final ChunkSection[] segments = new ChunkSection[16];
 
 	private final HashMap<BlockPos, TileEntity> tileEntities = new HashMap<>();
 
@@ -35,59 +36,68 @@ public class ChunkDataContainer
 		this.hasSkylight = hasSkylight;
 	}
 
+	@Override
 	public IBlockState getBlockState(final BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
 	}
 
+	@Override
+	public IFluidState getFluidState(BlockPos pos)
+	{
+		return null;
+	}
+
 	public IBlockState getBlockState(final int x, final int y, final int z)
 	{
-		SegmentStorage segment = this.segments[y >> 4];
+		ChunkSection segment = this.segments[y >> 4];
 
 		if (segment == null)
 		{
 			return Blocks.AIR.getDefaultState();
 		}
 
-		return segment.blockStorage.get(x, y & 15, z);
+		return segment.get(x, y & 15, z);
 	}
 
-	public void setBlockState(final int x, final int y, final int z, final IBlockState state)
+	public boolean setBlockState(final int x, final int y, final int z, final IBlockState state)
 	{
-		SegmentStorage segment = this.segments[y >> 4];
+		ChunkSection segment = this.segments[y >> 4];
 
 		if (segment == null)
 		{
-			this.segments[y >> 4] = segment = new SegmentStorage((y >> 4) * 16, this.hasSkylight);
+			this.segments[y >> 4] = segment = new ChunkSection((y >> 4) * 16, this.hasSkylight);
 		}
 
-		segment.blockStorage.set(x, y & 15, z, state);
+		segment.set(x, y & 15, z, state);
 
-		segment.opacity[x << 8 | z << 4 | (y & 15)] = (byte) state.getOpacity();
+		return true;
 	}
 
-	private int getBlockOpacity(int x, int y, int z)
+	public boolean setBlockState(final BlockPos pos, final IBlockState state)
 	{
-		SegmentStorage segment = this.segments[y >> 4];
-
-		if (segment == null)
-		{
-			return 0;
-		}
-
-		return Byte.toUnsignedInt(segment.opacity[x << 8 | z << 4 | (y & 15)]);
+		return this.setBlockState(pos.getX(), pos.getY(), pos.getZ(), state);
 	}
 
-	public void setBlockState(final BlockPos pos, final IBlockState state)
-	{
-		this.setBlockState(pos.getX(), pos.getY(), pos.getZ(), state);
-	}
-
+	@Override
 	public TileEntity getTileEntity(BlockPos pos)
 	{
 		return this.tileEntities.get(pos);
 	}
 
+	@Override
+	public boolean isAreaLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public World getWorld()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void setTileEntity(BlockPos pos, TileEntity entity)
 	{
 		if (entity == null)
@@ -106,8 +116,6 @@ public class ChunkDataContainer
 	{
 		ChunkDataContainer container = new ChunkDataContainer(chunkX, chunkZ, world.dimension.hasSkyLight());
 
-		BlockStateCacher cacher = new BlockStateCacher(transformer);
-
 		for (int chunkY = 0; chunkY < 32; chunkY++)
 		{
 			ChunkMaskSegment src = mask.getSegment(chunkY);
@@ -117,19 +125,14 @@ public class ChunkDataContainer
 				continue;
 			}
 
-			SegmentStorage dest = container.segments[chunkY >> 1];
+			ChunkSection dest = container.segments[chunkY >> 1];
 
 			if (dest == null)
 			{
-				dest = new SegmentStorage((chunkY >> 1) << 4, world.dimension.hasSkyLight());
+				dest = new ChunkSection((chunkY >> 1) << 4, world.dimension.hasSkyLight());
 
 				container.segments[chunkY >> 1] = dest;
 			}
-
-			ChunkSection blockStorage = dest.blockStorage;
-			BitArray bitArray = blockStorage.data.storage;
-
-			cacher.update(blockStorage.data);
 
 			for (int x = 0; x < 16; x++)
 			{
@@ -144,12 +147,7 @@ public class ChunkDataContainer
 							continue;
 						}
 
-						int key = cacher.getValue(transformer, block);
-
-						dest.opacity[x << 8 | z << 4 | y2] = 127;
-
-						bitArray.setAt(y2 << 8 | z << 4 | x, key);
-						blockStorage.blockRefCount++;
+						dest.set(x, y2, z, transformer.getBlockState(block));
 					}
 				}
 			}
@@ -160,18 +158,18 @@ public class ChunkDataContainer
 
 	public Chunk createChunk(World world, int chunkX, int chunkZ)
 	{
-		Chunk chunk = new Chunk(world, chunkX, chunkZ);
+		Chunk chunk = new Chunk(world, chunkX, chunkZ, new Biome[256]);
 
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
-			SegmentStorage segment = this.segments[chunkY];
+			ChunkSection segment = this.segments[chunkY];
 
 			if (segment == null)
 			{
 				continue;
 			}
 
-			chunk.getSections()[chunkY] = segment.blockStorage;
+			chunk.getSections()[chunkY] = segment;
 		}
 
 		for (TileEntity tileEntity : this.tileEntities.values())
@@ -184,73 +182,9 @@ public class ChunkDataContainer
 			chunk.addEntity(entity);
 		}
 
-		this.prepareChunkLighting(world, chunk);
+		chunk.generateSkylightMap();
 
 		return chunk;
-	}
-
-	private void prepareChunkLighting(World world, Chunk chunk)
-	{
-		int maxY = chunk.getTopFilledSegment();
-
-		chunk.heightMapMinimum = Integer.MAX_VALUE;
-
-		for (int x = 0; x < 16; ++x)
-		{
-			for (int z = 0; z < 16; ++z)
-			{
-				chunk.precipitationHeightMap[x + (z << 4)] = -999;
-
-				for (int y = maxY + 16; y > 0; --y)
-				{
-					if (this.getBlockOpacity(x, y - 1, z) != 0)
-					{
-						chunk.heightMap[z << 4 | x] = y;
-
-						if (y < chunk.heightMapMinimum)
-						{
-							chunk.heightMapMinimum = y;
-						}
-
-						break;
-					}
-				}
-
-				if (world.dimension.hasSkyLight())
-				{
-					int light = 15;
-
-					int y2 = maxY + 16 - 1;
-
-					do
-					{
-						int opacity = this.getBlockOpacity(x, y2, z);
-
-						if (opacity == 0 && light != 15)
-						{
-							opacity = 1;
-						}
-
-						light -= opacity;
-
-						if (light > 0)
-						{
-							ChunkSection extendedblockstorage = chunk.getSections()[y2 >> 4];
-
-							if (extendedblockstorage != Chunk.EMPTY_SECTION)
-							{
-								extendedblockstorage.setSkyLight(x, y2 & 15, z, light);
-							}
-						}
-
-						--y2;
-					}
-					while (y2 > 0 && light > 0);
-				}
-			}
-		}
-
-		chunk.markDirty();
 	}
 
 	public void addEntity(Entity entity)
@@ -268,65 +202,33 @@ public class ChunkDataContainer
 		return this.chunkZ;
 	}
 
-	private static class BlockStateCacher
+	@Override
+	public boolean setBlockState(BlockPos pos, IBlockState newState, int flags)
 	{
-		private final int[] cache;
-
-		private BlockStateContainer container;
-
-		public BlockStateCacher(IChunkMaskTransformer transformer)
-		{
-			this.cache = new int[transformer.getBlockCount()];
-		}
-
-		public void update(BlockStateContainer container)
-		{
-			this.container = container;
-
-			this.reset();
-		}
-
-		public int getValue(IChunkMaskTransformer transformer, int index)
-		{
-			if (this.container == null)
-			{
-				throw new IllegalStateException("Not yet initialized");
-			}
-
-			int state = this.cache[index];
-
-			if (state < 0)
-			{
-				int bits = this.container.bits;
-
-				state = this.container.palette.idFor(transformer.getBlockState(index));
-
-				if (bits != this.container.bits)
-				{
-					this.reset();
-				}
-
-				this.cache[index] = state;
-			}
-
-			return state;
-		}
-
-		private void reset()
-		{
-			Arrays.fill(this.cache, -1);
-		}
+		throw new UnsupportedOperationException();
 	}
 
-	private static class SegmentStorage
+	@Override
+	public boolean spawnEntity(Entity entityIn)
 	{
-		private final ChunkSection blockStorage;
+		throw new UnsupportedOperationException();
+	}
 
-		private final byte[] opacity = new byte[16 * 16 * 16];
+	@Override
+	public boolean removeBlock(BlockPos pos)
+	{
+		throw new UnsupportedOperationException();
+	}
 
-		public SegmentStorage(int y, boolean storeSkylight)
-		{
-			this.blockStorage = new ChunkSection(y, storeSkylight);
-		}
+	@Override
+	public void setLightFor(EnumLightType type, BlockPos pos, int lightValue)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean destroyBlock(BlockPos pos, boolean dropBlock)
+	{
+		return this.setBlockState(pos, Blocks.AIR.getDefaultState());
 	}
 }

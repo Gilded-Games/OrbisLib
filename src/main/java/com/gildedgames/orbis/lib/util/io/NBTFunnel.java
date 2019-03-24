@@ -1,6 +1,5 @@
 package com.gildedgames.orbis.lib.util.io;
 
-import com.gildedgames.orbis.lib.OrbisLib;
 import com.gildedgames.orbis.lib.client.rect.Pos2D;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.gildedgames.orbis.lib.util.mc.NBTHelper;
@@ -8,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
@@ -32,31 +30,9 @@ import java.util.function.Supplier;
 public class NBTFunnel
 {
 
-	public static Function<IBlockState, NBTTagCompound> BLOCKSTATE_SETTER = state ->
-	{
-		NBTTagCompound t = new NBTTagCompound();
+	public static Function<IBlockState, NBTTagCompound> BLOCKSTATE_SETTER = NBTUtil::writeBlockState;
 
-		final ResourceLocation identifier = OrbisLib.services().registrar().getIdentifierFor(state.getBlock());
-		short meta = (short) (state.getBlock().getMetaFromState(state));
-
-		t.putString("mod", identifier.getNamespace());
-		t.putString("name", identifier.getPath());
-		t.putShort("meta", meta);
-
-		return t;
-	};
-
-	public static Function<NBTTagCompound, IBlockState> BLOCKSTATE_GETTER = tag ->
-	{
-		String mod = tag.getString("mod");
-		String name = tag.getString("name");
-
-		final Block block = OrbisLib.services().registrar().findBlock(new ResourceLocation(mod, name));
-
-		int meta = tag.getShort("meta");
-
-		return block.getStateFromMeta(meta);
-	};
+	public static Function<NBTTagCompound, IBlockState> BLOCKSTATE_GETTER = NBTUtil::readBlockState;
 
 	public static Function<ItemStack, NBTTagCompound> STACK_SETTER = o ->
 	{
@@ -413,8 +389,8 @@ public class NBTFunnel
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			final int intKey = keys.getIntAt(i);
-			final String data = objects.getStringTagAt(i);
+			final int intKey = keys.getInt(i);
+			final String data = objects.getString(i);
 
 			readObjects.put(intKey, data);
 		}
@@ -431,7 +407,7 @@ public class NBTFunnel
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			final String stringKey = keys.getStringTagAt(i);
+			final String stringKey = keys.getString(i);
 			final NBTTagCompound data = objects.getCompound(i);
 
 			readObjects.put(stringKey, world == null ? NBTHelper.read(data) : NBTHelper.read(world, data));
@@ -641,7 +617,7 @@ public class NBTFunnel
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			final int intKey = keys.getIntAt(i);
+			final int intKey = keys.getInt(i);
 			final NBTTagCompound data = objects.getCompound(i);
 
 			readObjects.put(intKey, world == null ? NBTHelper.read(data) : NBTHelper.read(world, data));
@@ -778,7 +754,7 @@ public class NBTFunnel
 		{
 			final NBTTagCompound data = nbtList.getCompound(i);
 
-			readObjects.add(new ItemStack(data));
+			readObjects.add(ItemStack.read(data));
 		}
 
 		return readObjects;
@@ -913,7 +889,7 @@ public class NBTFunnel
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			readObjects.add(nbtList.getStringTagAt(i));
+			readObjects.add(nbtList.getString(i));
 		}
 
 		return readObjects;
@@ -1031,7 +1007,7 @@ public class NBTFunnel
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			readObjects[i] = nbtList.getStringTagAt(i);
+			readObjects[i] = nbtList.getString(i);
 		}
 
 		return readObjects;
@@ -1049,7 +1025,7 @@ public class NBTFunnel
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			readObjects[i] = nbtList.getStringTagAt(i);
+			readObjects[i] = nbtList.getString(i);
 		}
 
 		return readObjects;
@@ -1092,7 +1068,7 @@ public class NBTFunnel
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			readObjects[i] = nbtList.getIntAt(i);
+			readObjects[i] = nbtList.getInt(i);
 		}
 
 		return readObjects;

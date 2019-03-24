@@ -6,7 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.Random;
 
@@ -27,7 +27,7 @@ public class CreationData implements ICreationData<CreationData>
 
 	private boolean placeAir = true, schedules = false, placesVoid = false, spawnEntities = true;
 
-	private int dimId;
+	private DimensionType dimension;
 
 	protected CreationData()
 	{
@@ -80,7 +80,7 @@ public class CreationData implements ICreationData<CreationData>
 
 		if (this.world != null)
 		{
-			this.dimId = this.world.provider.getDimension();
+			this.dimension = this.world.getDimension().getType();
 		}
 
 		return this;
@@ -145,11 +145,6 @@ public class CreationData implements ICreationData<CreationData>
 	@Override
 	public World getWorld()
 	{
-		if (this.world == null)
-		{
-			this.world = DimensionManager.getWorld(this.dimId);
-		}
-
 		return this.world;
 	}
 
@@ -226,7 +221,7 @@ public class CreationData implements ICreationData<CreationData>
 
 		if (this.world != null)
 		{
-			tag.putInt("dimId", this.world.provider.getDimension());
+			tag.putInt("dimId", this.dimension.getId());
 		}
 	}
 
@@ -243,7 +238,7 @@ public class CreationData implements ICreationData<CreationData>
 
 		if (tag.contains("dimId"))
 		{
-			this.dimId = tag.getInt("dimId");
+			this.dimension = DimensionType.getById(tag.getInt("dimId"));
 		}
 
 		this.rand = new Random(this.seed);

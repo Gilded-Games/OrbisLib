@@ -34,8 +34,8 @@ public class Graph<NODE, EDGE>
 	{
 		this.edges.remove(edge1);
 		Tuple<NODE, NODE> nodes = this.edge_conn.get(edge1);
-		this.connections.get(nodes.getFirst()).remove(edge1);
-		this.connections.get(nodes.getSecond()).remove(edge1);
+		this.connections.get(nodes.getA()).remove(edge1);
+		this.connections.get(nodes.getB()).remove(edge1);
 		this.edge_conn.remove(edge1);
 	}
 
@@ -62,13 +62,13 @@ public class Graph<NODE, EDGE>
 	public NODE getOpposite(NODE node, EDGE edge)
 	{
 		Tuple<NODE, NODE> nodes = this.edge_conn.get(edge);
-		if (nodes.getFirst() == node)
+		if (nodes.getA() == node)
 		{
-			return nodes.getSecond();
+			return nodes.getB();
 		}
-		if (nodes.getSecond() == node)
+		if (nodes.getB() == node)
 		{
-			return nodes.getFirst();
+			return nodes.getA();
 		}
 		return null;
 	}

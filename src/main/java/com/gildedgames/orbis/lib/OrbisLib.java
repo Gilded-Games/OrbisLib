@@ -1,29 +1,19 @@
 package com.gildedgames.orbis.lib;
 
-import com.gildedgames.orbis.lib.client.PartialTicks;
-import com.gildedgames.orbis.lib.network.INetworkMultipleParts;
 import com.gildedgames.orbis.lib.preparation.IPrepRegistry;
 import com.gildedgames.orbis.lib.preparation.impl.PrepTasks;
 import com.gildedgames.orbis.lib.world.WorldObjectManagerEvents;
 import com.gildedgames.orbis.lib.world.data.WorldDataManagerContainerEvents;
-import com.gildedgames.orbis.lib.world.instances.IInstanceRegistry;
+import com.gildedgames.orbis.lib.world.instances.IInstanceManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.File;
 
 /**
  * This OrbisLib allows mod developers to integrate
@@ -45,21 +35,12 @@ public class OrbisLib
 
 	public static final Logger LOGGER = LogManager.getLogger("OrbisLib");
 
-	@Mod.Instance(OrbisLib.MOD_ID)
-	public static OrbisLib INSTANCE;
+	private static OrbisServices services;
 
-	private static IOrbisServices services;
-
-	private static boolean loadedInstances;
-
-	public static boolean isClient()
+	@SubscribeEvent
+	private void setup(FMLCommonSetupEvent e)
 	{
-		return FMLCommonHandler.instance().getSide().isClient();
-	}
-
-	public static boolean isServer()
-	{
-		return FMLCommonHandler.instance().getSide().isServer();
+		CapabilityManagerOrbisLib.init();
 	}
 
 	public static IOrbisServices services()
@@ -72,7 +53,6 @@ public class OrbisLib
 
 			MinecraftForge.EVENT_BUS.register(WorldObjectManagerEvents.class);
 			MinecraftForge.EVENT_BUS.register(WorldDataManagerContainerEvents.class);
-			MinecraftForge.EVENT_BUS.register(PartialTicks.class);
 
 			MinecraftForge.EVENT_BUS.register(PrepTasks.class);
 		}
@@ -85,12 +65,7 @@ public class OrbisLib
 		return OrbisLib.services().sectors();
 	}
 
-	public static INetworkMultipleParts network()
-	{
-		return OrbisLib.services().network();
-	}
-
-	public static IInstanceRegistry instances()
+	public static IInstanceManager instances()
 	{
 		return OrbisLib.services().instances();
 	}
@@ -106,40 +81,16 @@ public class OrbisLib
 	}
 
 	@SubscribeEvent
-	public void onFMLInit(final FMLInitializationEvent event)
-	{
-		CapabilityManagerOrbisLib.init();
-	}
-
-	@SubscribeEvent
 	public void onServerStopping(final FMLServerStoppingEvent event)
 	{
 		OrbisLib.instances().saveAllInstancesToDisk();
-
-		loadedInstances = false;
-	}
-
-	@SubscribeEvent
-	public void onServerStopped(final FMLServerStoppedEvent event)
-	{
-		OrbisLib.instances().cleanup();
 	}
 
 	@SubscribeEvent
 	public void serverStarted(final FMLServerStartedEvent event)
 	{
-		if (!loadedInstances)
-		{
-			instances().loadAllInstancesFromDisk();
+		services.init(event.getServer());
 
-			loadedInstances = true;
-		}
+		OrbisLib.instances().loadAllInstancesFromDisk();
 	}
-
-	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-	public static class RegistryEvents
-	{
-
-	}
-
 }

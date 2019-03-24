@@ -3,20 +3,18 @@ package com.gildedgames.orbis.lib.preparation.impl.util;
 import com.gildedgames.orbis.lib.preparation.*;
 import com.gildedgames.orbis.lib.preparation.impl.ChunkMask;
 import com.gildedgames.orbis.lib.preparation.impl.capability.PrepChunkManager;
-import com.gildedgames.orbis.lib.processing.IBlockAccessExtended;
+import com.gildedgames.orbis.lib.processing.IBlockAccess;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumLightType;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
-import net.minecraft.world.biome.Biome;
 
 import javax.annotation.Nullable;
 
-public abstract class BlockAccessPrep implements IBlockAccessExtended
+public class BlockAccessPrep implements IBlockAccess
 {
 	protected IChunkMaskTransformer transformer;
 
@@ -37,6 +35,12 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 	}
 
 	@Override
+	public boolean isAreaLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+	{
+		return true;
+	}
+
+	@Override
 	@Nullable
 	public World getWorld()
 	{
@@ -44,108 +48,14 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 	}
 
 	@Override
-	public boolean canAccess(BlockPos pos, int radius)
-	{
-		return true;
-	}
-
-	@Override
-	public BlockPos getTopPos(BlockPos pos)
-	{
-		return new BlockPos(pos.getX(), this.getTopY(pos.getX(), pos.getZ()), pos.getZ());
-	}
-
-	@Override
-	public int getTopY(int x, int z)
-	{
-		int chunkX = x >> 4;
-		int chunkZ = z >> 4;
-
-		ChunkMask mask = this.chunkManager.getChunk(this.sectorData, chunkX, chunkZ);
-
-		return mask.getHighestBlock(x & 15, z & 15);
-
-	}
-
-	@Override
-	public void setBlockToAir(BlockPos pos)
+	public void setTileEntity(BlockPos pos, TileEntity te)
 	{
 
 	}
 
-	@Override
-	public boolean setBlockState(BlockPos pos, IBlockState state)
+	protected ChunkMask getChunk(BlockPos pos)
 	{
-		return false;
-	}
-
-	@Override
-	public boolean setBlockState(BlockPos pos, IBlockState state, int flags)
-	{
-		return false;
-	}
-
-	@Override
-	public void setTileEntity(BlockPos pos, TileEntity tileEntity)
-	{
-
-	}
-
-	@Override
-	public void spawnEntity(Entity entity)
-	{
-
-	}
-
-	@Nullable
-	@Override
-	public TileEntity getTileEntity(BlockPos pos)
-	{
-		return null;
-	}
-
-	@Override
-	public int getCombinedLight(BlockPos pos, int lightValue)
-	{
-		return 0;
-	}
-
-	@Override
-	public IBlockState getBlockState(BlockPos pos)
-	{
-		ChunkMask chunk = this.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
-
-		return this.transformer.getBlockState(chunk.getBlock(pos.getX() & 15, pos.getY(), pos.getZ() & 15));
-	}
-
-	@Override
-	public boolean isAirBlock(BlockPos pos)
-	{
-		return this.getBlockState(pos).getBlock() == Blocks.AIR;
-	}
-
-	@Override
-	public Biome getBiome(BlockPos pos)
-	{
-		return this.world.getBiome(pos);
-	}
-
-	@Override
-	public int getStrongPower(BlockPos pos, EnumFacing direction)
-	{
-		return 0;
-	}
-
-	@Override
-	public WorldType getWorldType()
-	{
-		return null;
-	}
-
-	@Override
-	public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default)
-	{
-		return false;
+		return this.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
 	}
 
 	protected ChunkMask getChunk(int x, int z)
@@ -158,5 +68,54 @@ public abstract class BlockAccessPrep implements IBlockAccessExtended
 		}
 
 		return chunk;
+	}
+
+	@Nullable
+	@Override
+	public TileEntity getTileEntity(BlockPos pos)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IBlockState getBlockState(BlockPos pos)
+	{
+		return this.transformer.getBlockState(this.getChunk(pos).getBlock(pos));
+	}
+
+	@Override
+	public IFluidState getFluidState(BlockPos pos)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean setBlockState(BlockPos pos, IBlockState newState, int flags)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean spawnEntity(Entity entityIn)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean removeBlock(BlockPos pos)
+	{
+		return false;
+	}
+
+	@Override
+	public void setLightFor(EnumLightType type, BlockPos pos, int lightValue)
+	{
+
+	}
+
+	@Override
+	public boolean destroyBlock(BlockPos pos, boolean dropBlock)
+	{
+		return false;
 	}
 }

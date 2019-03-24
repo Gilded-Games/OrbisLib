@@ -2,7 +2,6 @@ package com.gildedgames.orbis.lib.core.variables.displays;
 
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiViewer;
-import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.vanilla.GuiButtonVanilla;
 import com.gildedgames.orbis.lib.client.gui.util.vanilla.GuiItemStackRender;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
@@ -54,7 +53,12 @@ public class GuiItemStackChooser extends GuiElement
 	@Override
 	public void build()
 	{
-		this.button = new GuiButtonVanilla(Dim2D.build().flush());
+		this.button = new GuiButtonVanilla(Dim2D.build().flush(), () -> {
+			if (this.viewer().mc().currentScreen instanceof GuiViewer)
+			{
+				this.viewer().mc().displayGuiScreen(new GuiItemStackChooserScreen((GuiViewer) this.viewer().mc().currentScreen, this));
+			}
+		});
 
 		this.button.getInner().displayString = I18n.format("orbis.gui.choose_itemstack");
 
@@ -68,14 +72,5 @@ public class GuiItemStackChooser extends GuiElement
 		this.context().addChildren(this.button, this.stackRender);
 
 		this.button.state().setCanBeTopHoverElement(true);
-	}
-
-	@Override
-	public void onMouseClicked(IGuiElement element, final double mouseX, final double mouseY, final int mouseButton)
-	{
-		if (this.button.state().isHoveredAndTopElement() && mouseButton == 0 && this.viewer().mc().currentScreen instanceof GuiViewer)
-		{
-			this.viewer().mc().displayGuiScreen(new GuiItemStackChooserScreen((GuiViewer) this.viewer().mc().currentScreen, this));
-		}
 	}
 }

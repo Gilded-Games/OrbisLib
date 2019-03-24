@@ -168,8 +168,8 @@ public class FDGDNode extends BlueprintRegion
 			final Tuple<Map<FDGDEdge, IEntrance>, Integer> result = this.bestEntrances(edgesL, entrances, 0, 0, best);
 			if (result != null)
 			{
-				bestResult = result.getFirst();
-				best = result.getSecond();
+				bestResult = result.getA();
+				best = result.getB();
 				bestRotation = rotation;
 			}
 		}
@@ -210,7 +210,7 @@ public class FDGDNode extends BlueprintRegion
 		//			throw new FailedToGenerateException("Was not able to find a suitable connection assignment.");
 		else
 		{
-			for (final Entry<FDGDEdge, IEntrance> edge : result.getFirst().entrySet())
+			for (final Entry<FDGDEdge, IEntrance> edge : result.getA().entrySet())
 			{
 				edge.getKey().setConnection(this, edge.getValue());
 			}
@@ -227,7 +227,7 @@ public class FDGDNode extends BlueprintRegion
 	 */
 	private boolean isValidConnectionAssignment(Tuple<Map<FDGDEdge, IEntrance>, Integer> solution)
 	{
-		Map<FDGDEdge, IEntrance> assignment = solution.getFirst();
+		Map<FDGDEdge, IEntrance> assignment = solution.getA();
 		for (FDGDEdge edge : assignment.keySet())
 		{
 			FDGDNode n = edge.getOpposite(this);
@@ -315,15 +315,15 @@ public class FDGDNode extends BlueprintRegion
 			final Tuple<Map<FDGDEdge, IEntrance>, Integer> result = this.bestEntrances(edges, copy, edgeIndex + 1, newCost, best);
 			if (result != null)
 			{
-				result.getFirst().put(edge, entrance);
+				result.getA().put(edge, entrance);
 				if (this.isValidConnectionAssignment(result))
 				{
 					bestInDepth = result;
-					best = result.getSecond();
+					best = result.getB();
 				}
 				else
 				{
-					result.getFirst().remove(edge);
+					result.getA().remove(edge);
 				}
 			}
 		}

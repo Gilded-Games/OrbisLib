@@ -12,14 +12,14 @@ public class GuiFrameUtils
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager
-				.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO,
+				.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO,
 						GlStateManager.DestFactor.ONE);
 
 		GL11.glEnable(GL11.GL_ALPHA_TEST);
 
-		GlStateManager.enableAlpha();
+		GlStateManager.enableAlphaTest();
 
-		GlStateManager.color(1.0F, 1.0F, 1.0F, state.getAlpha());
+		GlStateManager.color4f(1.0F, 1.0F, 1.0F, state.getAlpha());
 	}
 
 	public static int changeAlpha(int origColor, int userInputedAlpha)

@@ -237,7 +237,7 @@ public class GuiListViewer<NODE, NODE_GUI extends GuiElement> extends GuiElement
 	{
 		int oldScroll = this.currentScroll;
 
-		this.currentScroll = Math.max(0, Math.min(this.maxScroll, this.currentScroll - (state / 120)));
+		this.currentScroll = Math.max(0, Math.min(this.maxScroll, this.currentScroll - ((int) state / 120)));
 
 		this.refreshNodes();
 

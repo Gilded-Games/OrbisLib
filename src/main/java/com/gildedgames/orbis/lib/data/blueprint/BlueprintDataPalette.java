@@ -49,7 +49,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 		return this.idToConditions;
 	}
 
-	public BlueprintData fetchRandom(final World world, final Random rand)
+	public BlueprintData fetchRandom(final Random rand)
 	{
 		final float randomValue = rand.nextFloat() * this.totalChance();
 		float chanceSum = 0.0f;
@@ -58,7 +58,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 		{
 			final DataCondition condition = pair.getValue();
 
-			if (condition.isMet(randomValue, chanceSum, rand, world))
+			if (condition.isMet(randomValue, chanceSum))
 			{
 				return this.data.get(pair.getKey());
 			}
@@ -221,7 +221,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 	@Override
 	public BlueprintData get(World world, Random random)
 	{
-		return this.fetchRandom(world, random);
+		return this.fetchRandom(random);
 	}
 
 	@Override

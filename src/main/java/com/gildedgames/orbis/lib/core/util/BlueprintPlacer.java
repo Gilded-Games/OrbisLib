@@ -1,7 +1,6 @@
 package com.gildedgames.orbis.lib.core.util;
 
 import com.gildedgames.orbis.lib.core.baking.BakedBlueprint;
-import com.gildedgames.orbis.lib.processing.BlockAccessExtendedWrapper;
 import com.gildedgames.orbis.lib.processing.DataPrimer;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -22,7 +21,7 @@ public class BlueprintPlacer
 
 	public static boolean place(final World placeWith, BakedBlueprint baked, BlockPos relocateTo)
 	{
-		final DataPrimer placeWith1 = new DataPrimer(new BlockAccessExtendedWrapper(placeWith));
+		final DataPrimer placeWith1 = new DataPrimer(placeWith);
 		final boolean result = placeWith1.canGenerate(baked, relocateTo);
 
 		if (result)
