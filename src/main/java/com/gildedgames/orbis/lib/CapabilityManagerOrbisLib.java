@@ -21,7 +21,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber()
+@Mod.EventBusSubscriber
 public class CapabilityManagerOrbisLib
 {
 	public static void init()
@@ -36,13 +36,13 @@ public class CapabilityManagerOrbisLib
 	{
 		final World world = event.getObject();
 
-		event.addCapability(OrbisLib.getResource("WorldData"), new WorldDataManagerContainerProvider(event.getObject()));
+		event.addCapability(OrbisLib.getResource("world_data"), new WorldDataManagerContainerProvider(event.getObject()));
 
 		for (IPrepRegistryEntry entry : OrbisLib.sectors().getEntries())
 		{
 			if (entry.shouldAttachTo(world))
 			{
-				event.addCapability(OrbisLib.getResource("PrepManagerPool"), new PrepManagerStorageProvider(world, entry));
+				event.addCapability(OrbisLib.getResource("prep_manager_storage"), new PrepManagerStorageProvider(world, entry));
 
 				break;
 			}
@@ -59,7 +59,7 @@ public class CapabilityManagerOrbisLib
 
 		if (event.getObject() instanceof EntityPlayer)
 		{
-			event.addCapability(OrbisLib.getResource("PlayerInstances"), new PlayerInstancesProvider());
+			event.addCapability(OrbisLib.getResource("player_instances"), new PlayerInstancesProvider());
 		}
 	}
 

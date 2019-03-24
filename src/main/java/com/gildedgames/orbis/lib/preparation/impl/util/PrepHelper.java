@@ -5,6 +5,7 @@ import com.gildedgames.orbis.lib.preparation.IPrepManager;
 import com.gildedgames.orbis.lib.preparation.IPrepSector;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -19,15 +20,14 @@ public class PrepHelper
 	 * @param world The world
 	 * @return The {@link IPrepManager} belonging to the world
 	 */
-	public static IPrepManager getManager(IWorld world)
+	public static LazyOptional<IPrepManager> getManager(IWorld world)
 	{
-		return world.getWorld().getCapability(OrbisLibCapabilities.PREP_MANAGER, null)
-				.orElseThrow(NoSuchElementException::new);
+		return world.getWorld().getCapability(OrbisLibCapabilities.PREP_MANAGER, null);
 	}
 
 	public static IPrepSector getSector(World world, int chunkX, int chunkY)
 	{
-		IPrepManager manager = PrepHelper.getManager(world);
+		IPrepManager manager = PrepHelper.getManager(world).orElseThrow(NoSuchElementException::new);
 
 		try
 		{
@@ -41,7 +41,7 @@ public class PrepHelper
 
 	public static boolean isSectorLoaded(World world, int chunkX, int chunkY)
 	{
-		IPrepManager manager = PrepHelper.getManager(world);
+		IPrepManager manager = PrepHelper.getManager(world).orElseThrow(NoSuchElementException::new);
 
 		return isSectorLoaded(manager, chunkX, chunkY);
 	}

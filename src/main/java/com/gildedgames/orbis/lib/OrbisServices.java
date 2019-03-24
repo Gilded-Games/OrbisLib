@@ -53,6 +53,7 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IWorld;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
 import org.apache.commons.io.IOUtils;
@@ -109,6 +110,18 @@ public class OrbisServices implements IOrbisServices
 	public void init(MinecraftServer server)
 	{
 		this.instancesRegistry = new InstanceManagerImpl(server);
+		this.instancesRegistry.loadAllInstancesFromDisk();
+
+		MinecraftForge.EVENT_BUS.register(this.instancesRegistry);
+	}
+
+	public void shutdown(MinecraftServer server)
+	{
+		this.instancesRegistry.saveAllInstancesToDisk();
+
+		MinecraftForge.EVENT_BUS.unregister(this.instancesRegistry);
+
+		this.instancesRegistry = null;
 	}
 
 	@Nullable

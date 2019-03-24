@@ -10,8 +10,9 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -25,38 +26,34 @@ import org.apache.logging.log4j.Logger;
 @Mod.EventBusSubscriber
 public class OrbisLib
 {
-	public static final String MOD_NAME = "OrbisLib";
-
 	public static final String MOD_ID = "orbis-lib";
-
-	public static final String MOD_VERSION = "0.2.0";
-
-	public static final String MOD_FINGERPRINT = "db341c083b1b8ce9160a769b569ef6737b3f4cdf";
 
 	public static final Logger LOGGER = LogManager.getLogger("OrbisLib");
 
 	private static OrbisServices services;
 
+	public OrbisLib()
+	{
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+
+		MinecraftForge.EVENT_BUS.register(this);
+	}
+
 	@SubscribeEvent
-	private void setup(FMLCommonSetupEvent e)
+	public void setup(FMLCommonSetupEvent e)
 	{
 		CapabilityManagerOrbisLib.init();
+
+		OrbisLib.services = new OrbisServices();
+
+		MinecraftForge.EVENT_BUS.register(WorldObjectManagerEvents.class);
+		MinecraftForge.EVENT_BUS.register(WorldDataManagerContainerEvents.class);
+
+		MinecraftForge.EVENT_BUS.register(PrepTasks.class);
 	}
 
 	public static IOrbisServices services()
 	{
-		if (OrbisLib.services == null)
-		{
-			OrbisLib.services = new OrbisServices();
-
-			MinecraftForge.EVENT_BUS.register(OrbisLib.services().instances());
-
-			MinecraftForge.EVENT_BUS.register(WorldObjectManagerEvents.class);
-			MinecraftForge.EVENT_BUS.register(WorldDataManagerContainerEvents.class);
-
-			MinecraftForge.EVENT_BUS.register(PrepTasks.class);
-		}
-
 		return OrbisLib.services;
 	}
 
@@ -87,10 +84,14 @@ public class OrbisLib
 	}
 
 	@SubscribeEvent
-	public void serverStarted(final FMLServerStartedEvent event)
+	public void serverStarting(final FMLServerStartingEvent event)
 	{
 		services.init(event.getServer());
+	}
 
-		OrbisLib.instances().loadAllInstancesFromDisk();
+	@SubscribeEvent
+	public void serverStopping(final FMLServerStoppingEvent event)
+	{
+		services.shutdown(event.getServer());
 	}
 }

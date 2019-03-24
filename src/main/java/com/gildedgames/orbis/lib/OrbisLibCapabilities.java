@@ -5,7 +5,9 @@ import com.gildedgames.orbis.lib.world.data.IWorldDataManagerContainer;
 import com.gildedgames.orbis.lib.world.instances.IPlayerInstances;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.fml.common.Mod;
 
+@Mod.EventBusSubscriber
 public class OrbisLibCapabilities
 {
 	@CapabilityInject(IPlayerInstances.class)

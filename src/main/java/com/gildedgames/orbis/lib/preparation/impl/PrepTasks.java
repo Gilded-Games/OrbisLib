@@ -1,6 +1,5 @@
 package com.gildedgames.orbis.lib.preparation.impl;
 
-import com.gildedgames.orbis.lib.preparation.IPrepManager;
 import com.gildedgames.orbis.lib.preparation.impl.util.PrepHelper;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.IWorld;
@@ -16,8 +15,7 @@ public class PrepTasks
 		final IWorld world = event.getWorld();
 		final ChunkPos pos = event.getChunk().getPos();
 
-		IPrepManager manager = PrepHelper.getManager(world);
-		manager.getAccess().onChunkLoaded(pos.x, pos.z);
+		PrepHelper.getManager(world).ifPresent((manager) -> manager.getAccess().onChunkLoaded(pos.x, pos.z));
 	}
 
 	@SubscribeEvent
@@ -26,8 +24,7 @@ public class PrepTasks
 		final IWorld world = event.getWorld();
 		final ChunkPos pos = event.getChunk().getPos();
 
-		IPrepManager manager = PrepHelper.getManager(world);
-		manager.getAccess().onChunkUnloaded(pos.x, pos.z);
+		PrepHelper.getManager(world).ifPresent((manager) -> manager.getAccess().onChunkUnloaded(pos.x, pos.z));
 	}
 
 	@SubscribeEvent
@@ -35,7 +32,6 @@ public class PrepTasks
 	{
 		final IWorld world = event.world;
 
-		IPrepManager manager = PrepHelper.getManager(world);
-		manager.getAccess().update();
+		PrepHelper.getManager(world).ifPresent((manager) -> manager.getAccess().update());
 	}
 }

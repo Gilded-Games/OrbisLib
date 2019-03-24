@@ -32,7 +32,7 @@ public class WorldDataManagerContainerProvider implements ICapabilitySerializabl
 			return this.container.cast();
 		}
 
-		return null;
+		return LazyOptional.empty();
 	}
 
 	private IWorldDataManagerContainer unwrap()
