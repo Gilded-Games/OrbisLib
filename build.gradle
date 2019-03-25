@@ -127,7 +127,7 @@ if (System.getenv("JARSIGN_SECRETS_FILE") != null) {
             outputFile = jarTask.archivePath
         }
 
-        jarTask.finalizedBy task
+        build.dependsOn task
     }
 }
 
