@@ -79,38 +79,6 @@ public class WorldSlice
 		return this.defaultBlockState;
 	}
 
-	/**
-	 * This method is intended to be used when you are doing "check and replace" generation. Rather than
-	 * performing an additional fetch operation, we can avoid it entirely. Care must be taken to ensure
-	 * that {@param before} is the block previously queried at the same {@param pos} using
-	 * {@link WorldSlice#getBlockState(BlockPos)}.
-	 *
-	 * It is also possible to control whether or not replacing the block should prompt a lighting
-	 * update.
-	 *
-	 * You should NEVER use this method if you are replacing an air block. Only use it if the block
-	 * you are replacing is non-air.
-	 *
-	 * @param pos The {@link BlockPos} of the block to replace
-	 * @param after The state of the block at {@link BlockPos} after it is replaced
-	 */
-	public void replaceBlockState(BlockPos pos, IBlockState after)
-	{
-		if (pos.getY() >= 0  && pos.getY() < 256)
-		{
-			int chunkX = (pos.getX() - this.offsetX) >> 4;
-			int chunkZ = (pos.getZ() - this.offsetZ) >> 4;
-
-			ExtendedBlockStorage section = this.sections[chunkZ + (pos.getY() >> 4) * 3 + chunkX * 16 * 3];
-
-			if (section != null)
-			{
-				section.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, after);
-			}
-		}
-	}
-
-
 	public World getWorld()
 	{
 		return this.world;
@@ -135,7 +103,12 @@ public class WorldSlice
 				return false;
 			}
 
-			chunk.setBlockState(pos, state);
+			IBlockState prev = chunk.setBlockState(pos, state);
+
+			if (prev != null && prev != state)
+			{
+				this.world.notifyBlockUpdate(pos, prev, state, 1 | 2 | 16);
+			}
 
 			return true;
 		}
