@@ -17,7 +17,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'gradle build'
+                sh 'gradle build --no-daemon'
             }
         }
 
@@ -34,7 +34,7 @@ pipeline {
             }
 
             steps {
-                sh 'gradle publish'
+                sh 'gradle publish --no-daemon'
             }
         }
     }
