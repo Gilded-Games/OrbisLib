@@ -129,8 +129,6 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 		if (data != null)
 		{
 			sector = new PrepSector(data);
-
-			OrbisLib.LOGGER.info("Loaded Sector (" + sectorX + ", " + sectorZ + ") from disk");
 		}
 		else
 		{
@@ -277,8 +275,6 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 				if (sector.getDormantTicks() > 20 * 60 * 5)
 				{
-					OrbisLib.LOGGER.info("Unloading Sector (" + sector.getData().getSectorX() + ", " + sector.getData().getSectorY() + ")");
-
 					removal.add(sector);
 				}
 			}
@@ -317,7 +313,8 @@ public class PrepSectorAccessServerImpl implements IPrepSectorAccess, IWorldData
 
 			if (sector.getSectorX() != sectorX || sector.getSectorY() != sectorY)
 			{
-				throw new IOException("Sector has wrong coordinates on disk");
+				throw new IOException(String.format("Sector has wrong coordinates on disk! (expected [%s, %s], found [%s, %s])",
+						sectorX, sectorY, sector.getSectorX(), sector.getSectorY()));
 			}
 
 			return sector;
