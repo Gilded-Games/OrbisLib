@@ -7,15 +7,28 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.text.TextComponentTranslation;
 
+import java.util.function.Function;
+
 public class GuiText extends GuiElement
 {
 	private IText text;
+
+	private Function<String, String> textMutator;
+
+	private String raw;
 
 	public GuiText(final Rect rect, final IText text)
 	{
 		super(rect, true);
 
 		this.setText(text);
+	}
+
+	public void setTextMutator(final Function<String, String> textMutator)
+	{
+		this.textMutator = textMutator;
+
+		this.setText(this.text);
 	}
 
 	public void setText(final IText component)
@@ -28,11 +41,11 @@ public class GuiText extends GuiElement
 		}
 		else
 		{
-			FontRenderer r = Minecraft.getMinecraft().fontRenderer;
+			final FontRenderer r = Minecraft.getMinecraft().fontRenderer;
 
 			if (this.text.component() instanceof TextComponentTranslation)
 			{
-				TextComponentTranslation trans = (TextComponentTranslation) this.text.component();
+				final TextComponentTranslation trans = (TextComponentTranslation) this.text.component();
 
 				if (trans.getKey() == null)
 				{
@@ -42,8 +55,15 @@ public class GuiText extends GuiElement
 
 			String text = this.text.component().getFormattedText();
 
+			if (this.textMutator != null)
+			{
+				text = this.textMutator.apply(text);
+			}
+
 			this.dim().mod().scale(this.text.scale()).width(r.getStringWidth(text) * this.text.scale()).height(r.FONT_HEIGHT)
 					.flush();
+
+			this.raw = text;
 		}
 	}
 
@@ -54,15 +74,15 @@ public class GuiText extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(final GuiElement element)
 	{
 		if (this.text != null)
 		{
-			int color = GuiFrameUtils.changeAlpha(16777215,
+			final int color = GuiFrameUtils.changeAlpha(16777215,
 					(int) (this.state().getAlpha() * 255));
 
 			this.viewer().getActualScreen()
-					.drawString(this.viewer().fontRenderer(), this.text.component().getUnformattedText(), (int) this.dim().x(), (int) this.dim().y(), color);
+					.drawString(this.viewer().fontRenderer(), this.raw, (int) this.dim().x(), (int) this.dim().y(), color);
 		}
 	}
 }

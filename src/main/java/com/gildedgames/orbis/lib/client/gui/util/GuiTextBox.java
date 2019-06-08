@@ -11,6 +11,7 @@ import net.minecraft.util.text.TextComponentString;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public class GuiTextBox extends GuiElement
 {
@@ -19,12 +20,19 @@ public class GuiTextBox extends GuiElement
 
 	private IText[] text;
 
+	private Function<String, String> textMutator;
+
 	public GuiTextBox(final Rect dim, final boolean centerFormat, final IText... text)
 	{
 		super(dim, true);
 
 		this.text = text;
 		this.centerFormat = centerFormat;
+	}
+
+	public void setTextMutator(final Function<String, String> textMutator)
+	{
+		this.textMutator = textMutator;
 	}
 
 	public void setText(final IText... text)
@@ -51,7 +59,14 @@ public class GuiTextBox extends GuiElement
 				continue;
 			}
 
-			final String[] strings = t.component().getFormattedText().split(System.lineSeparator() + "|\\\\n");
+			String formatted = t.component().getFormattedText();
+
+			if (this.textMutator != null)
+			{
+				formatted = this.textMutator.apply(formatted);
+			}
+
+			final String[] strings = formatted.split(System.lineSeparator() + "|\\\\n");
 
 			final List<String> stringList = new ArrayList<>(strings.length);
 			Collections.addAll(stringList, strings);
@@ -87,13 +102,13 @@ public class GuiTextBox extends GuiElement
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(final GuiElement element)
 	{
-		for (IGuiElement c : this.context().getChildren())
+		for (final IGuiElement c : this.context().getChildren())
 		{
 			if (c instanceof GuiText)
 			{
-				GuiText text = (GuiText) c;
+				final GuiText text = (GuiText) c;
 
 				text.state().setAlpha(this.state().getAlpha());
 			}
