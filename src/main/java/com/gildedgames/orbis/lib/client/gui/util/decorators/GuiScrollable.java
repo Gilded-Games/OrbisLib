@@ -2,10 +2,7 @@ package com.gildedgames.orbis.lib.client.gui.util.decorators;
 
 import com.gildedgames.orbis.lib.OrbisLib;
 import com.gildedgames.orbis.lib.client.gui.util.GuiTexture;
-import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
-import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiLibHelper;
-import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
-import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiEvent;
+import com.gildedgames.orbis.lib.client.gui.util.gui_library.*;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.client.rect.RectModifier;
@@ -23,59 +20,69 @@ public class GuiScrollable extends GuiElement
 
 	private static final ResourceLocation SCROLL_BAR = OrbisLib.getResource("list/scroll_bar.png");
 
-	private IGuiElement window, pane;
+	private final IGuiElement window;
 
-	private float scroll;
+	private final IGuiElement pane;
 
-	private IGuiElement decorated;
+	private final IGuiElement decorated;
 
-	private GuiTexture scrollKnob, scrollBar;
+	private final boolean scrollBarOnRightSide;
 
-	private IGuiEvent<IGuiElement> scissorEvent = new IGuiEvent<IGuiElement>()
+	private final IGuiEvent<IGuiElement> scissorEvent = new IGuiEvent<IGuiElement>()
 	{
 		@Override
-		public void onPreDraw(IGuiElement element)
+		public void onPreDraw(final IGuiElement element)
 		{
-			ScaledResolution res = new ScaledResolution(GuiScrollable.this.viewer().mc());
+			final ScaledResolution res = new ScaledResolution(GuiScrollable.this.viewer().mc());
+			final IGuiViewer viewer = GuiScrollable.this.viewer();
 
-			double scaleW = GuiScrollable.this.viewer().mc().displayWidth / res.getScaledWidth_double();
-			double scaleH = GuiScrollable.this.viewer().mc().displayHeight / res.getScaledHeight_double();
+			final double scaleW = viewer.mc().displayWidth / res.getScaledWidth_double();
+			final double scaleH = viewer.mc().displayHeight / res.getScaledHeight_double();
+
+			final IGuiElement window = GuiScrollable.this.window;
+			final boolean rightBar = GuiScrollable.this.scrollBarOnRightSide;
+			final double scrollBarWidth = GuiScrollable.this.scrollBar.dim().width();
+
+			final double windowWidth = window.dim().width();
+			final double windowHeight = window.dim().height();
+
+			final int scissorX = (int) ((window.dim().x()) * scaleW);
+			final int scissorY = (int) (viewer.mc().displayHeight - ((window.dim().y() + window.dim().height()) * scaleH));
+			final int scissorWidth = (int) ((window.dim().width() - (rightBar ? scrollBarWidth : 0)) * scaleW);
+			final int scissorHeight = (int) (window.dim().height() * scaleH);
 
 			GL11.glEnable(GL11.GL_SCISSOR_TEST);
 
-			if (!(GuiScrollable.this.window.dim().width() < 0 || GuiScrollable.this.window.dim().height() < 0))
+			if (!(windowWidth < 0 || windowHeight < 0))
 			{
-				GL11.glScissor((int) ((GuiScrollable.this.window.dim().x()) * scaleW),
-						(int) (GuiScrollable.this.viewer().mc().displayHeight - (
-								(GuiScrollable.this.window.dim().y() + GuiScrollable.this.window.dim().height()) * scaleH)),
-						(int) (GuiScrollable.this.window.dim().width() * scaleW), (int) (GuiScrollable.this.window.dim().height() * scaleH));
+				GL11.glScissor(scissorX, scissorY, scissorWidth, scissorHeight);
 			}
 		}
 
 		@Override
-		public void onPostDraw(IGuiElement element)
+		public void onPostDraw(final IGuiElement element)
 		{
 			GL11.glDisable(GL11.GL_SCISSOR_TEST);
 		}
 
 		@Override
-		public void onMouseClicked(IGuiElement element, final int mouseX, final int mouseY, final int mouseButton)
+		public void onMouseClicked(final IGuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 		{
 
 		}
 
 		@Override
-		public boolean isMouseClickedEnabled(IGuiElement element, int mouseX, int mouseY, int mouseButton)
+		public boolean isMouseClickedEnabled(final IGuiElement element, final int mouseX, final int mouseY, final int mouseButton)
 		{
-			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+			final boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
 			if (!enabled)
 			{
-				for (IGuiEvent event : element.state().getEvents())
+				for (final IGuiEvent event : element.state().getEvents())
 				{
 					if (event instanceof IInputEnabledOutsideBounds)
 					{
-						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+						final IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
 
 						input.onMouseClickedOutsideBounds(element, mouseX, mouseY, mouseButton);
 
@@ -88,18 +95,18 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseClickMoveEnabled(IGuiElement element, final int mouseX, final int mouseY, final int clickedMouseButton,
+		public boolean isMouseClickMoveEnabled(final IGuiElement element, final int mouseX, final int mouseY, final int clickedMouseButton,
 				final long timeSinceLastClick)
 		{
-			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+			final boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
 			if (!enabled)
 			{
-				for (IGuiEvent event : element.state().getEvents())
+				for (final IGuiEvent event : element.state().getEvents())
 				{
 					if (event instanceof IInputEnabledOutsideBounds)
 					{
-						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+						final IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
 
 						input.onMouseClickMoveOutsideBounds(element, mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
 
@@ -112,17 +119,17 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseReleasedEnabled(IGuiElement element, final int mouseX, final int mouseY, final int state)
+		public boolean isMouseReleasedEnabled(final IGuiElement element, final int mouseX, final int mouseY, final int state)
 		{
-			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+			final boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
 			if (!enabled)
 			{
-				for (IGuiEvent event : element.state().getEvents())
+				for (final IGuiEvent event : element.state().getEvents())
 				{
 					if (event instanceof IInputEnabledOutsideBounds)
 					{
-						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+						final IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
 
 						input.onMouseReleasedOutsideBounds(element, mouseX, mouseY, state);
 
@@ -135,17 +142,17 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isMouseWheelEnabled(IGuiElement element, final int state)
+		public boolean isMouseWheelEnabled(final IGuiElement element, final int state)
 		{
-			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+			final boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
 			if (!enabled)
 			{
-				for (IGuiEvent event : element.state().getEvents())
+				for (final IGuiEvent event : element.state().getEvents())
 				{
 					if (event instanceof IInputEnabledOutsideBounds)
 					{
-						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+						final IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
 
 						input.onMouseWheelOutsideBounds(element, state);
 					}
@@ -156,17 +163,17 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean isHandleMouseClickEnabled(IGuiElement element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
+		public boolean isHandleMouseClickEnabled(final IGuiElement element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
 		{
-			boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
+			final boolean enabled = element == GuiScrollable.this.window || GuiScrollable.this.window.state().isHovered();
 
 			if (!enabled)
 			{
-				for (IGuiEvent event : element.state().getEvents())
+				for (final IGuiEvent event : element.state().getEvents())
 				{
 					if (event instanceof IInputEnabledOutsideBounds)
 					{
-						IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
+						final IInputEnabledOutsideBounds input = (IInputEnabledOutsideBounds) event;
 
 						input.onHandleMouseClickOutsideBounds(element, slotIn, slotId, mouseButton, type);
 
@@ -179,9 +186,9 @@ public class GuiScrollable extends GuiElement
 		}
 
 		@Override
-		public boolean canBeHovered(IGuiElement element)
+		public boolean canBeHovered(final IGuiElement element)
 		{
-			for (IGuiEvent event : element.state().getEvents())
+			for (final IGuiEvent event : element.state().getEvents())
 			{
 				if (event instanceof IInputEnabledOutsideBounds)
 				{
@@ -196,19 +203,35 @@ public class GuiScrollable extends GuiElement
 		}
 	};
 
-	public GuiScrollable(IGuiElement decorated, Rect pane)
+	private float scroll;
+
+	private GuiTexture scrollKnob, scrollBar;
+
+	public GuiScrollable(final IGuiElement decorated, final Rect pane)
+	{
+		this(decorated, pane, false);
+	}
+
+	public GuiScrollable(final IGuiElement decorated, final Rect pane, final boolean scrollBarOnRightSide)
 	{
 		super(pane, true);
+
+		this.scrollBarOnRightSide = scrollBarOnRightSide;
 
 		this.dim().mod().x(decorated.dim().x()).y(decorated.dim().y()).flush();
 
 		this.decorated = decorated;
 
 		this.window = new GuiElement(Dim2D.build().width(0).x(0).y(0).flush(), false);
-		this.pane = new GuiElement(Dim2D.build().x(16).y(0).flush(), false);
+		this.pane = new GuiElement(Dim2D.build().x(this.scrollBarOnRightSide ? 0 : 16).y(0).flush(), false);
 
 		this.window.dim().add("scrollableArea", this, RectModifier.ModifierType.AREA);
 		this.pane.dim().add("scrollableArea", this, RectModifier.ModifierType.AREA);
+	}
+
+	public float getScrollBarWidth()
+	{
+		return this.scrollBar.dim().width();
 	}
 
 	@Override
@@ -223,6 +246,12 @@ public class GuiScrollable extends GuiElement
 		this.scrollKnob = new GuiTexture(Dim2D.build().width(12).height(15).x(1).y(1).flush(), SCROLL_KNOB);
 		this.scrollBar = new GuiTexture(Dim2D.build().width(14).flush(), SCROLL_BAR);
 
+		if (this.scrollBarOnRightSide)
+		{
+			this.scrollBar.dim().mod().x(this.dim().width() - this.scrollBar.dim().width()).flush();
+			this.scrollKnob.dim().mod().x(this.scrollBar.dim().x() + 1).flush();
+		}
+
 		this.scrollBar.dim().add("scrollableHeight", this, RectModifier.ModifierType.HEIGHT);
 
 		this.context().addChildren(this.window, this.pane, this.scrollBar, this.scrollKnob);
@@ -231,16 +260,16 @@ public class GuiScrollable extends GuiElement
 	}
 
 	@Override
-	public void onGlobalContextChanged(GuiElement element)
+	public void onGlobalContextChanged(final GuiElement element)
 	{
-		for (IGuiElement child : GuiLibHelper.getAllChildrenRecursivelyFor(this))
+		for (final IGuiElement child : GuiLibHelper.getAllChildrenRecursivelyFor(this.decorated))
 		{
 			child.state().addEvent(this.scissorEvent);
 		}
 	}
 
 	@Override
-	public void onDraw(GuiElement element)
+	public void onDraw(final GuiElement element)
 	{
 		if (this.dim().height() >= this.decorated.dim().height())
 		{
@@ -253,22 +282,22 @@ public class GuiScrollable extends GuiElement
 	}
 
 	@Override
-	public void onMouseWheel(GuiElement element, final int state)
+	public void onMouseWheel(final GuiElement element, final int state)
 	{
 		if (this.window.state().isHoveredAndTopElement())
 		{
-			float prevScroll = this.scroll;
+			final float prevScroll = this.scroll;
 
 			this.scroll -= (float) (state / 120) * 10.0F;
 
 			this.scroll = Math.max(0.0F, Math.min(this.decorated.dim().height() - this.dim().height(), this.scroll));
 
 			this.pane.dim().mod().addY(prevScroll - this.scroll).flush();
-			float height = this.decorated.dim().height() - this.dim().height();
+			final float height = this.decorated.dim().height() - this.dim().height();
 
-			float percent = this.scroll <= 0.0F ? 0.0F : this.scroll / height;
+			final float percent = this.scroll <= 0.0F ? 0.0F : this.scroll / height;
 
-			float y = Math.max(0.0F, (percent * this.dim().height()) - this.scrollKnob.dim().height());
+			final float y = Math.max(0.0F, (percent * this.dim().height()) - this.scrollKnob.dim().height());
 
 			this.scrollKnob.dim().mod().y(Math.min(this.dim().height() - this.scrollKnob.dim().height() - 1, y + 1)).flush();
 		}
@@ -285,32 +314,33 @@ public class GuiScrollable extends GuiElement
 
 	public interface IInputEnabledOutsideBounds<T extends IGuiElement>
 	{
-		default void onMouseClickedOutsideBounds(T element, final int mouseX, final int mouseY, final int mouseButton)
+		default void onMouseClickedOutsideBounds(final T element, final int mouseX, final int mouseY, final int mouseButton)
 		{
 
 		}
 
-		default void onMouseClickMoveOutsideBounds(T element, final int mouseX, final int mouseY, final int clickedMouseButton, final long timeSinceLastClick)
+		default void onMouseClickMoveOutsideBounds(final T element, final int mouseX, final int mouseY, final int clickedMouseButton,
+				final long timeSinceLastClick)
 		{
 
 		}
 
-		default void onMouseReleasedOutsideBounds(T element, final int mouseX, final int mouseY, final int state)
+		default void onMouseReleasedOutsideBounds(final T element, final int mouseX, final int mouseY, final int state)
 		{
 
 		}
 
-		default void onMouseWheelOutsideBounds(T element, final int state)
+		default void onMouseWheelOutsideBounds(final T element, final int state)
 		{
 
 		}
 
-		default void onHandleMouseClickOutsideBounds(T element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
+		default void onHandleMouseClickOutsideBounds(final T element, final Slot slotIn, final int slotId, final int mouseButton, final ClickType type)
 		{
 
 		}
 
-		default boolean shouldHoverOutsideBounds(T element)
+		default boolean shouldHoverOutsideBounds(final T element)
 		{
 			return false;
 		}
