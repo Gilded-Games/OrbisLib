@@ -52,27 +52,20 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 
 	private IWorldDataManager createDataManager(World world)
 	{
-		if (world.isRemote)
+		if (this.lastStorageMethod == null)
 		{
-			return new WorldDataManagerNOOP();
+			this.lastStorageMethod = WorldDataStorageMethod.FLAT;
+		}
+
+		File dir = new File(world.getSaveHandler().getWorldDirectory(), (world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
+
+		if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
+		{
+			return new WorldDataManagerFlat(dir);
 		}
 		else
 		{
-			if (this.lastStorageMethod == null)
-			{
-				this.lastStorageMethod = WorldDataStorageMethod.FLAT;
-			}
-
-			File dir = new File(world.getSaveHandler().getWorldDirectory(), (world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
-
-			if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
-			{
-				return new WorldDataManagerFlat(dir);
-			}
-			else
-			{
-				throw new IllegalStateException("Don't know how to initialize '" + this.lastStorageMethod.serializedName + "' storage");
-			}
+			throw new IllegalStateException("Don't know how to initialize '" + this.lastStorageMethod.serializedName + "' storage");
 		}
 	}
 

@@ -39,8 +39,6 @@ import com.gildedgames.orbis.lib.network.NetworkMultipleParts;
 import com.gildedgames.orbis.lib.network.instances.PacketRegisterDimension;
 import com.gildedgames.orbis.lib.network.instances.PacketRegisterInstance;
 import com.gildedgames.orbis.lib.network.instances.PacketUnregisterDimension;
-import com.gildedgames.orbis.lib.preparation.IPrepRegistry;
-import com.gildedgames.orbis.lib.preparation.impl.PrepRegistry;
 import com.gildedgames.orbis.lib.util.io.IClassSerializer;
 import com.gildedgames.orbis.lib.util.io.SimpleSerializer;
 import com.gildedgames.orbis.lib.util.mc.BlockPosDimension;
@@ -97,8 +95,6 @@ public class OrbisServices implements IOrbisServices
 	private Object mod;
 
 	private String archiveBaseName;
-
-	private IPrepRegistry sectors = new PrepRegistry();
 
 	private OrbisLootTableCache lootTableCache = new OrbisLootTableCache();
 
@@ -376,12 +372,6 @@ public class OrbisServices implements IOrbisServices
 	public OrbisLootTableCache lootTableCache()
 	{
 		return this.lootTableCache;
-	}
-
-	@Override
-	public IPrepRegistry sectors()
-	{
-		return this.sectors;
 	}
 
 	@Override

@@ -9,12 +9,18 @@ public class WorldDataManagerContainerEvents
 	@SubscribeEvent
 	public static void onWorldSave(WorldEvent.Save event)
 	{
-		OrbisLib.services().getWorldDataManager(event.getWorld()).flush();
+		if (!event.getWorld().isRemote)
+		{
+			OrbisLib.services().getWorldDataManager(event.getWorld()).flush();
+		}
 	}
 
 	@SubscribeEvent
 	public static void onWorldUnload(WorldEvent.Unload event)
 	{
-		OrbisLib.services().getWorldDataManager(event.getWorld()).close();
+		if (!event.getWorld().isRemote)
+		{
+			OrbisLib.services().getWorldDataManager(event.getWorld()).close();
+		}
 	}
 }

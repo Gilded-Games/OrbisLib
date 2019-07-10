@@ -6,7 +6,6 @@ import com.gildedgames.orbis.lib.data.management.IProject;
 import com.gildedgames.orbis.lib.data.management.IProjectManager;
 import com.gildedgames.orbis.lib.data.management.impl.OrbisLootTableCache;
 import com.gildedgames.orbis.lib.network.INetworkMultipleParts;
-import com.gildedgames.orbis.lib.preparation.IPrepRegistry;
 import com.gildedgames.orbis.lib.world.data.IWorldDataManager;
 import com.gildedgames.orbis.lib.world.instances.IInstanceRegistry;
 import com.google.gson.Gson;
@@ -22,8 +21,6 @@ public interface IOrbisServices
 	Gson getGson();
 
 	OrbisLootTableCache lootTableCache();
-
-	IPrepRegistry sectors();
 
 	INetworkMultipleParts network();
 

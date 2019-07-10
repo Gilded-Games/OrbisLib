@@ -1,9 +1,5 @@
 package com.gildedgames.orbis.lib;
 
-import com.gildedgames.orbis.lib.preparation.IPrepManager;
-import com.gildedgames.orbis.lib.preparation.IPrepRegistryEntry;
-import com.gildedgames.orbis.lib.preparation.impl.capability.PrepManager;
-import com.gildedgames.orbis.lib.preparation.impl.capability.PrepManagerStorageProvider;
 import com.gildedgames.orbis.lib.world.data.IWorldDataManagerContainer;
 import com.gildedgames.orbis.lib.world.data.WorldDataManagerContainer;
 import com.gildedgames.orbis.lib.world.data.WorldDataManagerContainerProvider;
@@ -27,7 +23,6 @@ public class CapabilityManagerOrbisLib
 	public static void init()
 	{
 		CapabilityManager.INSTANCE.register(IPlayerInstances.class, new PlayerInstances.Storage(), PlayerInstances::new);
-		CapabilityManager.INSTANCE.register(IPrepManager.class, new PrepManager.Storage(), PrepManager::new);
 		CapabilityManager.INSTANCE.register(IWorldDataManagerContainer.class, new WorldDataManagerContainer.Storage(), WorldDataManagerContainer::new);
 	}
 
@@ -36,17 +31,12 @@ public class CapabilityManagerOrbisLib
 	{
 		final World world = event.getObject();
 
-		event.addCapability(OrbisLib.getResource("WorldData"), new WorldDataManagerContainerProvider(event.getObject()));
-
-		for (IPrepRegistryEntry entry : OrbisLib.sectors().getEntries())
+		if (world.isRemote)
 		{
-			if (entry.shouldAttachTo(world))
-			{
-				event.addCapability(OrbisLib.getResource("PrepManagerPool"), new PrepManagerStorageProvider(world, entry));
-
-				break;
-			}
+			return;
 		}
+
+		event.addCapability(OrbisLib.getResource("WorldData"), new WorldDataManagerContainerProvider(event.getObject()));
 	}
 
 	@SubscribeEvent
