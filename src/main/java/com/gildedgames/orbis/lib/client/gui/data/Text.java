@@ -3,14 +3,14 @@ package com.gildedgames.orbis.lib.client.gui.data;
 import com.gildedgames.orbis.lib.util.mc.IText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 
 public class Text implements IText
 {
 
-	public static final IText EMPTY = new Text(new TextComponentString(""), 1.0F);
+	public static final IText EMPTY = new Text(new StringTextComponent(""), 1.0F);
 
 	private static final FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
 
@@ -61,16 +61,16 @@ public class Text implements IText
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.putFloat("scale", this.scale);
 		tag.putString("text", this.component.getUnformattedComponentText());
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.scale = tag.getFloat("Scale");
-		this.component = new TextComponentString(tag.getString("text"));
+		this.component = new StringTextComponent(tag.getString("text"));
 	}
 }

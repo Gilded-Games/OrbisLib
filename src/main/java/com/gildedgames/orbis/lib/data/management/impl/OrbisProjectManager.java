@@ -14,7 +14,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -70,7 +70,7 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				try
 				{
-					final NBTTagCompound tag = new NBTTagCompound();
+					final CompoundNBT tag = new CompoundNBT();
 					final NBTFunnel funnel = new NBTFunnel(tag);
 
 					funnel.set("data", data);
@@ -88,7 +88,7 @@ public class OrbisProjectManager implements IProjectManager
 			{
 				try
 				{
-					NBTTagCompound tag = CompressedStreamTools.readCompressed(input);
+					CompoundNBT tag = CompressedStreamTools.readCompressed(input);
 					NBTFunnel funnel = new NBTFunnel(tag);
 
 					IData data = funnel.get("data");

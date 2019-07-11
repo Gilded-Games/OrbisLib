@@ -3,9 +3,10 @@ package com.gildedgames.orbis.lib.core.baking;
 import com.gildedgames.orbis.lib.processing.DataPrimer;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.ItemSpawnEgg;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -49,8 +50,8 @@ public class BakedEntitySpawn implements IBakedPosAction
 	{
 		World world = primer.getWorld();
 
-		EntityType<?> type = ((ItemSpawnEgg) this.egg.getItem()).getType(this.egg.getTag());
-		type.spawn(world, this.egg, null, this.pos, false, false);
+		EntityType<?> type = ((SpawnEggItem) this.egg.getItem()).getType(this.egg.getTag());
+		type.spawn(world, this.egg, null, this.pos, SpawnReason.STRUCTURE, false, false);
 	}
 
 	@Override
@@ -66,7 +67,7 @@ public class BakedEntitySpawn implements IBakedPosAction
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -77,7 +78,7 @@ public class BakedEntitySpawn implements IBakedPosAction
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.data.management.impl;
 
 import com.gildedgames.orbis.lib.data.management.IProjectIdentifier;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -28,14 +28,14 @@ public class ProjectIdentifier implements IProjectIdentifier
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.putUniqueId("id", this.projectId);
 		tag.putString("originalCreator", this.originalCreator);
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.projectId = tag.getUniqueId("id");
 		this.originalCreator = tag.getString("originalCreator");

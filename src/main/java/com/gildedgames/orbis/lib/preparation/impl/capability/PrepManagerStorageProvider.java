@@ -3,7 +3,7 @@ package com.gildedgames.orbis.lib.preparation.impl.capability;
 import com.gildedgames.orbis.lib.OrbisLibCapabilities;
 import com.gildedgames.orbis.lib.preparation.IPrepManager;
 import com.gildedgames.orbis.lib.preparation.IPrepRegistryEntry;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -22,7 +22,7 @@ public class PrepManagerStorageProvider implements ICapabilityProvider
 	}
 
 	@Override
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing)
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
 	{
 		return capability == OrbisLibCapabilities.PREP_MANAGER ? this.value.cast() : LazyOptional.empty();
 	}

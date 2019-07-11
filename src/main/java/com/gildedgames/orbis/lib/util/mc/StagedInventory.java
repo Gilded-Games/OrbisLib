@@ -2,7 +2,7 @@ package com.gildedgames.orbis.lib.util.mc;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -25,14 +25,14 @@ public class StagedInventory<I extends IInventory>
 
 	private String locatorId;
 
-	private EntityPlayer player;
+	private PlayerEntity player;
 
 	private StagedInventory()
 	{
 
 	}
 
-	public StagedInventory(EntityPlayer player, final Supplier<I> inventorySupplier, final Locator locator, final String locatorId)
+	public StagedInventory(PlayerEntity player, final Supplier<I> inventorySupplier, final Locator locator, final String locatorId)
 	{
 		this.player = player;
 
@@ -104,6 +104,6 @@ public class StagedInventory<I extends IInventory>
 
 	public interface Locator
 	{
-		StagedInventory locate(EntityPlayer player);
+		StagedInventory locate(PlayerEntity player);
 	}
 }

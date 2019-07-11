@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.data;
 
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Random;
@@ -37,13 +37,13 @@ public class DataCondition implements NBT
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.putFloat("weight", this.weight);
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.weight = tag.getFloat("weight");
 	}

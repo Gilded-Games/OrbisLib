@@ -4,7 +4,7 @@ import com.gildedgames.orbis.lib.data.management.IDataIdentifier;
 import com.gildedgames.orbis.lib.data.management.IProjectIdentifier;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.gson.annotations.SerializedName;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -36,7 +36,7 @@ public class DataIdentifier implements IDataIdentifier
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -49,7 +49,7 @@ public class DataIdentifier implements IDataIdentifier
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

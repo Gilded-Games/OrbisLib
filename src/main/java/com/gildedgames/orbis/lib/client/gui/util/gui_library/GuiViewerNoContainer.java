@@ -6,18 +6,18 @@ import com.gildedgames.orbis.lib.util.mc.ContainerGeneric;
 import com.gildedgames.orbis.lib.util.mc.GuiUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.inventory.Container;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.util.text.ITextComponent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 
-public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiViewer
+public abstract class GuiViewerNoContainer extends Screen implements IGuiViewer
 {
 	private static boolean preventInnerTyping = false;
 
@@ -39,22 +39,9 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 	private List<ITextComponent> hoverDescription;
 
-	public GuiViewerNoContainer(IGuiElement viewing)
+	public GuiViewerNoContainer(ITextComponent title, IGuiElement viewing, IGuiViewer prevViewer)
 	{
-		super();
-
-		this.previousViewer = null;
-		this.viewing = viewing;
-	}
-
-	public GuiViewerNoContainer(IGuiElement viewing, IGuiViewer prevViewer)
-	{
-		this(viewing, prevViewer, new ContainerGeneric());
-	}
-
-	public GuiViewerNoContainer(IGuiElement viewing, IGuiViewer prevViewer, final Container inventorySlotsIn)
-	{
-		super();
+		super(title);
 
 		this.previousViewer = prevViewer;
 		this.viewing = viewing;
@@ -129,13 +116,13 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	@Override
 	public Minecraft mc()
 	{
-		return this.mc;
+		return this.minecraft;
 	}
 
 	@Override
 	public FontRenderer fontRenderer()
 	{
-		return this.fontRenderer;
+		return this.font;
 	}
 
 	@Override
@@ -182,7 +169,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	public GuiScreen getActualScreen()
+	public Screen getActualScreen()
 	{
 		return this;
 	}
@@ -193,17 +180,17 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	public void drawDefaultBackground()
+	public void renderBackground()
 	{
 
 	}
 
 	@Override
-	public void initGui()
+	public void init()
 	{
 		if (Minecraft.getInstance().currentScreen == this)
 		{
-			super.initGui();
+			super.init();
 		}
 
 		if (!this.viewing.state().hasBuilt())
@@ -229,7 +216,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 		if (false)
 		{
-			Gui.drawRect((int) state.dim().x(), (int) state.dim().y(), (int) state.dim().maxX(), (int) state.dim().maxY(), Integer.MAX_VALUE);
+			AbstractGui.fill((int) state.dim().x(), (int) state.dim().y(), (int) state.dim().maxX(), (int) state.dim().maxY(), Integer.MAX_VALUE);
 		}
 
 		final float x = state.dim().x();
@@ -311,7 +298,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 
 		if (this.drawDefaultBackground)
 		{
-			super.drawDefaultBackground();
+			super.renderBackground();
 		}
 
 		GlStateManager.pushMatrix();
@@ -373,8 +360,9 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 		return super.mouseReleased(mouseX, mouseY, state);
 	}
 
+	// TODO: It's not clear what parameter is what. Research!
 	@Override
-	public boolean mouseScrolled(double amount)
+	public boolean mouseScrolled(double p_mouseScrolled_1_, double p_mouseScrolled_3_, double amount)
 	{
 		this.allVisibleElements.forEach((element) ->
 		{
@@ -389,7 +377,7 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 			element.state().getEvents().forEach((event) -> event.onMouseWheel(element, amount));
 		});
 
-		return super.mouseScrolled(amount);
+		return super.mouseScrolled(p_mouseScrolled_1_, p_mouseScrolled_3_, amount);
 	}
 
 	@Override
@@ -441,9 +429,9 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	public void onGuiClosed()
+	public void onClose()
 	{
-		super.onGuiClosed();
+		super.onClose();
 
 		this.allVisibleElements.forEach((element) -> element.state().getEvents().forEach((event) -> event.onGuiClosed(element)));
 	}
@@ -457,15 +445,9 @@ public abstract class GuiViewerNoContainer extends GuiScreen implements IGuiView
 	}
 
 	@Override
-	public void setWorldAndResolution(final Minecraft mc, final int width, final int height)
+	public void resize(final Minecraft mcIn, final int w, final int h)
 	{
-		super.setWorldAndResolution(mc, width, height);
-	}
-
-	@Override
-	public void onResize(final Minecraft mcIn, final int w, final int h)
-	{
-		super.onResize(mcIn, w, h);
+		super.resize(mcIn, w, h);
 
 		this.allVisibleElements.forEach((element) -> element.state().dim().refreshModifiedState());
 	}

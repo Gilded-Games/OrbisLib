@@ -3,8 +3,8 @@ package com.gildedgames.orbis.lib.block;
 import com.gildedgames.orbis.lib.data.DataCondition;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class BlockDataWithConditions extends BlockData
@@ -25,7 +25,7 @@ public class BlockDataWithConditions extends BlockData
 		this.replaceCondition.setWeight(weight);
 	}
 
-	public BlockDataWithConditions(final IBlockState state, final float weight)
+	public BlockDataWithConditions(final BlockState state, final float weight)
 	{
 		super(state);
 
@@ -58,7 +58,7 @@ public class BlockDataWithConditions extends BlockData
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		super.write(tag);
 
@@ -69,7 +69,7 @@ public class BlockDataWithConditions extends BlockData
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		super.read(tag);
 

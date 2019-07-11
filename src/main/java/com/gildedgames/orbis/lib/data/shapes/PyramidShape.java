@@ -4,7 +4,7 @@ import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.IShape;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -18,7 +18,7 @@ public class PyramidShape extends AbstractShape
 
 	private boolean centered;
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private BlockPos renderMin, renderMax;
 
@@ -47,7 +47,7 @@ public class PyramidShape extends AbstractShape
 	}
 
 	@Override
-	public void writeShape(final NBTTagCompound tag)
+	public void writeShape(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -58,7 +58,7 @@ public class PyramidShape extends AbstractShape
 	}
 
 	@Override
-	public void readShape(final NBTTagCompound tag)
+	public void readShape(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -148,7 +148,7 @@ public class PyramidShape extends AbstractShape
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null)
 		{

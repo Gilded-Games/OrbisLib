@@ -1,10 +1,10 @@
 package com.gildedgames.orbis.lib.preparation;
 
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 
 public interface IChunkMaskTransformer
 {
-	IBlockState getBlockState(int key);
+	BlockState getBlockState(int key);
 
 	int getBlockCount();
 }

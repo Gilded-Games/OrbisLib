@@ -9,7 +9,7 @@ import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiStateListener;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.client.rect.RectModifier;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiElement
 		implements IDropdownListListener<ELEMENT>, IGuiStateListener, GuiScrollable.IInputEnabledOutsideBounds<GuiElement>
@@ -73,7 +73,7 @@ public class GuiDropdown<ELEMENT extends IDropdownElement> extends GuiElement
 		}
 
 		this.chosenLabel = new GuiTextLabel(Dim2D.build().height(18).flush(),
-				this.chosen == null ? new TextComponentTranslation("orbis.gui.none_chosen") : this.chosen.text());
+				this.chosen == null ? new TranslationTextComponent("orbis.gui.none_chosen") : this.chosen.text());
 
 		this.chosenLabel.dim().add("dropdownWidth", this, RectModifier.ModifierType.WIDTH);
 

@@ -129,7 +129,7 @@ public class RegionHelp
 
 	public static boolean contains(final IDimensions region, final float x, final float y, final float z)
 	{
-		final BlockPos min = BlockPos.ORIGIN;
+		final BlockPos min = BlockPos.ZERO;
 		final BlockPos max = new BlockPos(region.getWidth() - 1, region.getHeight() - 1, region.getLength() - 1);
 		return x <= max.getX() && x >= min.getX() && y <= max.getY() && y >= min.getY() && z <= max.getZ() && z >= min.getZ();
 	}

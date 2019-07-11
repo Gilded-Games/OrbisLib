@@ -1,8 +1,9 @@
 package com.gildedgames.orbis.lib.world.data;
 
 import com.gildedgames.orbis.lib.OrbisLibCapabilities;
-import net.minecraft.nbt.INBTBase;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.Direction;
+import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
@@ -12,20 +13,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.NoSuchElementException;
 
-public class WorldDataManagerContainerProvider implements ICapabilitySerializable<INBTBase>
+public class WorldDataManagerContainerProvider implements ICapabilitySerializable<INBT>
 {
 	private final LazyOptional<IWorldDataManagerContainer> container;
 
 	private final WorldDataManagerContainer.Storage storage = new WorldDataManagerContainer.Storage();
 
-	public WorldDataManagerContainerProvider(World world)
+	public WorldDataManagerContainerProvider(ServerWorld world)
 	{
 		this.container = LazyOptional.of(() -> new WorldDataManagerContainer(world));
 	}
 
 	@Nullable
 	@Override
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing)
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing)
 	{
 		if (capability == OrbisLibCapabilities.WORLD_DATA)
 		{
@@ -40,13 +41,13 @@ public class WorldDataManagerContainerProvider implements ICapabilitySerializabl
 		return this.container.orElseThrow(NoSuchElementException::new);
 	}
 	@Override
-	public INBTBase serializeNBT()
+	public INBT serializeNBT()
 	{
 		return this.storage.writeNBT(OrbisLibCapabilities.WORLD_DATA, this.unwrap(), null);
 	}
 
 	@Override
-	public void deserializeNBT(INBTBase nbt)
+	public void deserializeNBT(INBT nbt)
 	{
 		this.storage.readNBT(OrbisLibCapabilities.WORLD_DATA, this.unwrap(), null, nbt);
 	}

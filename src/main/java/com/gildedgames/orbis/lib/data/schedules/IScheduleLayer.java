@@ -11,7 +11,7 @@ import com.gildedgames.orbis.lib.data.IDataChild;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
 import com.gildedgames.orbis.lib.data.region.IDimensions;
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 
 import javax.annotation.Nonnull;
 
@@ -33,7 +33,7 @@ public interface IScheduleLayer extends NBT, IDataChild<BlueprintData>
 
 	void setNodeParent(INode<IScheduleLayer, LayerLink> nodeParent);
 
-	IPositionRecord<IBlockState> getStateRecord();
+	IPositionRecord<BlockState> getStateRecord();
 
 	IScheduleRecord getScheduleRecord();
 

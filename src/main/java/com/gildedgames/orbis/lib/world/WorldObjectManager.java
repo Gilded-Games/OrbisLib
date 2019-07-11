@@ -4,12 +4,13 @@ import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.WorldSavedData;
-import net.minecraft.world.storage.WorldSavedDataStorage;
 import net.minecraftforge.common.DimensionManager;
 import org.apache.commons.lang3.Validate;
 
@@ -59,7 +60,7 @@ public class WorldObjectManager extends WorldSavedData
 	{
 		DimensionType type = world.getDimension().getType();
 
-		World using = null;
+		ServerWorld using = null;
 
 		MinecraftServer server = world.getServer();
 
@@ -70,22 +71,22 @@ public class WorldObjectManager extends WorldSavedData
 
 		if (using == null)
 		{
-			using = world;
+			using = (ServerWorld) world;
 		}
 
 		Validate.notNull(using, "World must not be null");
 
-		final WorldSavedDataStorage storage = using.getSavedDataStorage();
+		final DimensionSavedDataManager storage = using.getSavedData();
 
 		Validate.notNull(storage, "WorldSavedDataStorage must not be null");
 
-		WorldObjectManager instance = storage.get(type, (s) -> new WorldObjectManager(s, world), DATA_NAME);
+		WorldObjectManager instance = storage.get(() -> new WorldObjectManager(DATA_NAME, world), DATA_NAME);
 
 		if (instance == null)
 		{
 			instance = new WorldObjectManager(world);
 
-			storage.set(type, DATA_NAME, instance);
+			storage.set(instance);
 		}
 
 		return instance;
@@ -236,7 +237,7 @@ public class WorldObjectManager extends WorldSavedData
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -252,7 +253,7 @@ public class WorldObjectManager extends WorldSavedData
 	}
 
 	@Override
-	public NBTTagCompound write(final NBTTagCompound tag)
+	public CompoundNBT write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

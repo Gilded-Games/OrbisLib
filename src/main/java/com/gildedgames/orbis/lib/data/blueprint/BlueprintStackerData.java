@@ -12,8 +12,8 @@ import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.data.schedules.IScheduleLayer;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.world.IWorldObject;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -85,7 +85,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 		width = Math.max(width, this.bottom.getLargestWidth());
 		length = Math.max(length, this.bottom.getLargestLength());
 
-		this.largestDim = new Region(BlockPos.ORIGIN, new BlockPos(width - 1, height - 1, length - 1));
+		this.largestDim = new Region(BlockPos.ZERO, new BlockPos(width - 1, height - 1, length - 1));
 	}
 
 	@Override
@@ -119,7 +119,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -129,7 +129,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -213,11 +213,11 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 				continue;
 			}
 
-			for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+			for (BlockPos pos : layer.getStateRecord().getRegion())
 			{
-				IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+				BlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
 
-				for (IBlockState predicate : layer.getStateRecord().getData())
+				for (BlockState predicate : layer.getStateRecord().getData())
 				{
 					if (predicate == layerState)
 					{
@@ -250,11 +250,11 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 					continue;
 				}
 
-				for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+				for (BlockPos pos : layer.getStateRecord().getRegion())
 				{
-					IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+					BlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
 
-					for (IBlockState predicate : layer.getStateRecord().getData())
+					for (BlockState predicate : layer.getStateRecord().getData())
 					{
 						if (predicate == layerState)
 						{
@@ -284,11 +284,11 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 				continue;
 			}
 
-			for (BlockPos.MutableBlockPos pos : layer.getStateRecord().getRegion())
+			for (BlockPos pos : layer.getStateRecord().getRegion())
 			{
-				IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+				BlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
 
-				for (IBlockState predicate : layer.getStateRecord().getData())
+				for (BlockState predicate : layer.getStateRecord().getData())
 				{
 					if (predicate == layerState)
 					{
@@ -315,7 +315,7 @@ public class BlueprintStackerData implements IData, IDataHolder<BlockDataContain
 			{
 				for (int z = 0; z < from.getLength(); z++)
 				{
-					IBlockState block = from.getBlockState(x, y, z);
+					BlockState block = from.getBlockState(x, y, z);
 
 					into.setBlockState(block, x + xOffset, y + yOffset, z + zOffset);
 				}

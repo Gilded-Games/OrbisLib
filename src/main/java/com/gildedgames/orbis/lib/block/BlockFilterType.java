@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.block;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public enum BlockFilterType
 	ALL
 			{
 				@Override
-				public boolean filter(EntityPlayer player, BlockPos pos, final IBlockState blockToFilter, final List<BlockDataWithConditions> requiredBlocks,
+				public boolean filter(PlayerEntity player, BlockPos pos, final BlockState blockToFilter, final List<BlockDataWithConditions> requiredBlocks,
 						final Random random)
 				{
 					return true;
@@ -23,7 +23,7 @@ public enum BlockFilterType
 	ALL_EXCEPT
 			{
 				@Override
-				public boolean filter(EntityPlayer player, BlockPos pos, final IBlockState blockToFilter, final List<BlockDataWithConditions> blackListedBlocks,
+				public boolean filter(PlayerEntity player, BlockPos pos, final BlockState blockToFilter, final List<BlockDataWithConditions> blackListedBlocks,
 						final Random random)
 				{
 					for (final BlockDataWithConditions block : blackListedBlocks)
@@ -41,7 +41,7 @@ public enum BlockFilterType
 	ONLY
 			{
 				@Override
-				public boolean filter(EntityPlayer player, BlockPos pos, final IBlockState blockToFilter, final List<BlockDataWithConditions> requiredBlocks,
+				public boolean filter(PlayerEntity player, BlockPos pos, final BlockState blockToFilter, final List<BlockDataWithConditions> requiredBlocks,
 						final Random random)
 				{
 					for (final BlockDataWithConditions block : requiredBlocks)
@@ -57,6 +57,6 @@ public enum BlockFilterType
 
 			};
 
-	public abstract boolean filter(EntityPlayer player, BlockPos pos, IBlockState blockToFilter, List<BlockDataWithConditions> originalBlocks, Random random);
+	public abstract boolean filter(PlayerEntity player, BlockPos pos, BlockState blockToFilter, List<BlockDataWithConditions> originalBlocks, Random random);
 
 }

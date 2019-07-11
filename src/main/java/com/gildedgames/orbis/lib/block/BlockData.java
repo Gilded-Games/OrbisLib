@@ -3,12 +3,11 @@ package com.gildedgames.orbis.lib.block;
 import com.gildedgames.orbis.lib.OrbisLib;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -18,9 +17,9 @@ import javax.annotation.Nullable;
 @Deprecated
 public class BlockData implements NBT
 {
-	private IBlockState blockState;
+	private BlockState blockState;
 
-	private NBTTagCompound tileEntity;
+	private CompoundNBT tileEntity;
 
 	public BlockData()
 	{
@@ -33,13 +32,13 @@ public class BlockData implements NBT
 		this.blockState = block.getDefaultState();
 	}
 
-	public BlockData(final IBlockState blockState)
+	public BlockData(final BlockState blockState)
 	{
 		this();
 		this.blockState = blockState;
 	}
 
-	public BlockData(final IBlockState blockState, final NBTTagCompound tileEntity)
+	public BlockData(final BlockState blockState, final CompoundNBT tileEntity)
 	{
 		this(blockState);
 		this.tileEntity = tileEntity;
@@ -57,23 +56,23 @@ public class BlockData implements NBT
 		return this.blockState.getBlock();
 	}
 
-	public IBlockState getBlockState()
+	public BlockState getBlockState()
 	{
 		return this.blockState;
 	}
 
-	public NBTTagCompound getTileEntity()
+	public CompoundNBT getTileEntity()
 	{
 		return this.tileEntity;
 	}
 
-	public IBlockState getRotatedBlockState(final Rotation rotation)
+	public BlockState getRotatedBlockState(final Rotation rotation)
 	{
 		return this.getBlockState().rotate(rotation);
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.put("block", NBTUtil.writeBlockState(this.blockState));
 
@@ -87,7 +86,7 @@ public class BlockData implements NBT
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.blockState = NBTUtil.readBlockState(tag.getCompound("block"));
 

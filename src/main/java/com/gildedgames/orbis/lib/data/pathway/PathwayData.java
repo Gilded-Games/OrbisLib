@@ -3,7 +3,7 @@ package com.gildedgames.orbis.lib.data.pathway;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,14 +42,14 @@ public class PathwayData implements NBT
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 		funnel.setList("blueprints", this.pieces);
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 		this.pieces = funnel.getList("blueprints");

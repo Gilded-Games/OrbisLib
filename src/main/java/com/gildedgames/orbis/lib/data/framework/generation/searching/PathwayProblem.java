@@ -13,7 +13,7 @@ import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.RegionHelp;
 import com.gildedgames.orbis.lib.util.RotationHelp;
 import com.google.common.collect.Lists;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -217,7 +217,7 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 			return true;
 		}
 
-		for (BlockPos.MutableBlockPos pos : node.getShapeData())
+		for (BlockPos pos : node.getShapeData())
 		{
 			if (!this.world.isAirBlock(pos))
 			{
@@ -257,14 +257,14 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 			{
 				for (IEntrance e : d.entrances())
 				{
-					for (EnumFacing side : e.getFacing().getFacings())
+					for (Direction side : e.getFacing().getFacings())
 					{
-						if (side == EnumFacing.DOWN)
+						if (side == Direction.DOWN)
 						{
 							hasDown = true;
 						}
 
-						if (side == EnumFacing.UP)
+						if (side == Direction.UP)
 						{
 							hasUp = true;
 						}

@@ -9,7 +9,7 @@ import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
@@ -103,7 +103,7 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -123,7 +123,7 @@ public class PostGenReplaceLayer implements NBT, IDataChild<BlueprintData>
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

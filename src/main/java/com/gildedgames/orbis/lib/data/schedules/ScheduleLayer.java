@@ -9,8 +9,8 @@ import com.gildedgames.orbis.lib.data.region.IDimensions;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.google.common.collect.Lists;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -19,7 +19,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 {
 	private IDimensions dimensions;
 
-	private IPositionRecord<IBlockState> stateRecord;
+	private IPositionRecord<BlockState> stateRecord;
 
 	private IScheduleRecord scheduleRecord = new ScheduleRecord();
 
@@ -137,7 +137,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	}
 
 	@Override
-	public IPositionRecord<IBlockState> getStateRecord()
+	public IPositionRecord<BlockState> getStateRecord()
 	{
 		return this.stateRecord;
 	}
@@ -227,7 +227,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -247,7 +247,7 @@ public class ScheduleLayer implements IScheduleLayer, INodeTreeListener<IGuiCond
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

@@ -1,6 +1,6 @@
 package com.gildedgames.orbis.lib.util.mc;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 /**
  * Helper interface for NBT-serializable objects.
@@ -8,14 +8,14 @@ import net.minecraft.nbt.NBTTagCompound;
 public interface NBT
 {
 	/**
-	 * Writes this object's state to a {@link NBTTagCompound}
+	 * Writes this object's state to a {@link CompoundNBT}
 	 * @param tag The tag to write to
 	 */
-	void write(NBTTagCompound tag);
+	void write(CompoundNBT tag);
 
 	/**
-	 * Reads this object's state from a {@link NBTTagCompound}
+	 * Reads this object's state from a {@link CompoundNBT}
 	 * @param tag The tag to write to
 	 */
-	void read(NBTTagCompound tag);
+	void read(CompoundNBT tag);
 }

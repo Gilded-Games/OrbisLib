@@ -6,8 +6,8 @@ import com.gildedgames.orbis.lib.core.variables.displays.GuiTickBox;
 import com.gildedgames.orbis.lib.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,12 +16,12 @@ import java.util.function.Supplier;
 public class GuiVarBoolean implements IGuiVar<Boolean, GuiTickBox>
 {
 	public static final List<DropdownElementWithData<Supplier<IGuiVarCompareExpression>>> COMPARE_EXPRESSIONS = Lists.newArrayList(
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.equals_true"), EqualsTrue::new),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.equals_false"), EqualsFalse::new)
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.equals_true"), EqualsTrue::new),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.equals_false"), EqualsFalse::new)
 	);
 
 	public static final List<DropdownElementWithData<Supplier<IGuiVarMutateExpression>>> MUTATE_EXPRESSIONS = Lists.newArrayList(
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.set"), Set::new)
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.set"), Set::new)
 	);
 
 	private boolean data;
@@ -99,14 +99,14 @@ public class GuiVarBoolean implements IGuiVar<Boolean, GuiTickBox>
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		tag.putBoolean("data", this.data);
 		tag.putString("name", this.name);
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		this.data = tag.getBoolean("data");
 		this.name = tag.getString("name");
@@ -149,13 +149,13 @@ public class GuiVarBoolean implements IGuiVar<Boolean, GuiTickBox>
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 
 		}
@@ -198,13 +198,13 @@ public class GuiVarBoolean implements IGuiVar<Boolean, GuiTickBox>
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 
 		}
@@ -250,7 +250,7 @@ public class GuiVarBoolean implements IGuiVar<Boolean, GuiTickBox>
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -258,7 +258,7 @@ public class GuiVarBoolean implements IGuiVar<Boolean, GuiTickBox>
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 

@@ -9,8 +9,8 @@ import com.gildedgames.orbis.lib.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +100,7 @@ public class GuiVarDropdown<DATA extends NBT> implements IGuiVar<DATA, GuiDropdo
 
 		this.elements.forEach((elementName) ->
 		{
-			IDropdownElement element = new DropdownElement(new TextComponentTranslation(elementName));
+			IDropdownElement element = new DropdownElement(new TranslationTextComponent(elementName));
 
 			elements.add(element);
 		});
@@ -177,7 +177,7 @@ public class GuiVarDropdown<DATA extends NBT> implements IGuiVar<DATA, GuiDropdo
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -187,7 +187,7 @@ public class GuiVarDropdown<DATA extends NBT> implements IGuiVar<DATA, GuiDropdo
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

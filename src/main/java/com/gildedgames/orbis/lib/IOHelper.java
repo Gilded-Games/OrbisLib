@@ -7,7 +7,7 @@ import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.gildedgames.orbis.lib.util.mc.NBTHelper;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
 
 public class IOHelper implements IClassSerializerRegistry
@@ -25,17 +25,17 @@ public class IOHelper implements IClassSerializerRegistry
 		s.register(id, clazz, new Instantiator<>(clazz));
 	}
 
-	public NBTTagCompound write(final NBT nbt)
+	public CompoundNBT write(final NBT nbt)
 	{
 		return NBTHelper.write(nbt);
 	}
 
-	public <T extends NBT> T read(final NBTTagCompound tag)
+	public <T extends NBT> T read(final CompoundNBT tag)
 	{
 		return NBTHelper.read(tag);
 	}
 
-	public <T extends NBT> T read(final World world, final NBTTagCompound tag)
+	public <T extends NBT> T read(final World world, final CompoundNBT tag)
 	{
 		return NBTHelper.read(world, tag);
 	}

@@ -5,8 +5,8 @@ import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.RotationHelp;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -64,13 +64,13 @@ public class BlueprintUtil
 
 	public static boolean isReplaceable(final IBlockReader world, final BlockPos pos)
 	{
-		final IBlockState state = world.getBlockState(pos);
+		final BlockState state = world.getBlockState(pos);
 
 		return state.getBlock().isAir(state, world, pos) || state.getMaterial() == Material.LEAVES
 				|| BlueprintUtil.canGrowInto(state.getBlock());
 	}
 
-	public static boolean isReplaceable(final IBlockState state)
+	public static boolean isReplaceable(final BlockState state)
 	{
 		Material material = state.getMaterial();
 

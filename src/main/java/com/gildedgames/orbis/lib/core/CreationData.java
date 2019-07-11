@@ -1,8 +1,8 @@
 package com.gildedgames.orbis.lib.core;
 
 import com.gildedgames.orbis.lib.util.mc.NBTHelper;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -17,11 +17,11 @@ public class CreationData implements ICreationData<CreationData>
 
 	private long seed;
 
-	private BlockPos pos = BlockPos.ORIGIN;
+	private BlockPos pos = BlockPos.ZERO;
 
 	private World world;
 
-	private EntityPlayer creator;
+	private PlayerEntity creator;
 
 	private Rotation rotation = Rotation.NONE;
 
@@ -50,7 +50,7 @@ public class CreationData implements ICreationData<CreationData>
 		this.rand = new Random(seed);
 	}
 
-	public CreationData(final World world, final EntityPlayer creator)
+	public CreationData(final World world, final PlayerEntity creator)
 	{
 		this(world);
 
@@ -105,7 +105,7 @@ public class CreationData implements ICreationData<CreationData>
 	}
 
 	@Override
-	public CreationData creator(final EntityPlayer creator)
+	public CreationData creator(final PlayerEntity creator)
 	{
 		this.creator = creator;
 
@@ -161,7 +161,7 @@ public class CreationData implements ICreationData<CreationData>
 	}
 
 	@Override
-	public EntityPlayer getCreator()
+	public PlayerEntity getCreator()
 	{
 		return this.creator;
 	}
@@ -209,7 +209,7 @@ public class CreationData implements ICreationData<CreationData>
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.put("pos", NBTHelper.writeBlockPos(this.pos));
 		tag.putString("rotation", this.rotation.name());
@@ -226,7 +226,7 @@ public class CreationData implements ICreationData<CreationData>
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.pos = NBTHelper.readBlockPos(tag.getCompound("pos"));
 		this.rotation = Rotation.valueOf(tag.getString("rotation"));

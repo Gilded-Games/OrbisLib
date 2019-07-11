@@ -6,7 +6,7 @@ import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.IText;
 import com.google.common.collect.Lists;
 import com.google.gson.annotations.SerializedName;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class DataMetadata implements IDataMetadata
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -47,7 +47,7 @@ public class DataMetadata implements IDataMetadata
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

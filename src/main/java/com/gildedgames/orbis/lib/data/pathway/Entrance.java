@@ -8,7 +8,7 @@ import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
 import com.gildedgames.orbis.lib.data.framework.interfaces.EnumFacingMultiple;
 import com.gildedgames.orbis.lib.data.region.IMutableRegion;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class Entrance implements IEntrance
 {
@@ -63,7 +63,7 @@ public class Entrance implements IEntrance
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -78,7 +78,7 @@ public class Entrance implements IEntrance
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

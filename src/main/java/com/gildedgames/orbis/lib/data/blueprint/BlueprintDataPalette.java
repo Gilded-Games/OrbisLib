@@ -9,7 +9,7 @@ import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.google.common.collect.Maps;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -137,7 +137,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 			length = Math.max(length, blueprint.getLength());
 		}
 
-		this.largestDim = new Region(BlockPos.ORIGIN, new BlockPos(width - 1, height - 1, length - 1));
+		this.largestDim = new Region(BlockPos.ZERO, new BlockPos(width - 1, height - 1, length - 1));
 	}
 
 	public void add(final BlueprintData data, final DataCondition condition)
@@ -174,7 +174,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -182,7 +182,7 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

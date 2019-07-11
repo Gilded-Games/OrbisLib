@@ -4,7 +4,7 @@ import com.gildedgames.orbis.lib.client.gui.data.DropdownElementWithData;
 import com.gildedgames.orbis.lib.client.gui.util.GuiInputSlider;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.core.variables.displays.GuiVarDisplay;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -89,7 +89,7 @@ public class GuiVarFloatRange implements IGuiVar<Float, GuiInputSlider>
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		tag.putFloat("data", this.data);
 		tag.putFloat("min", this.min);
@@ -98,7 +98,7 @@ public class GuiVarFloatRange implements IGuiVar<Float, GuiInputSlider>
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		this.data = tag.getFloat("data");
 		this.min = tag.getFloat("min");

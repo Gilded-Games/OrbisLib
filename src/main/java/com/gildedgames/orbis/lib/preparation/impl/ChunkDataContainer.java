@@ -2,13 +2,13 @@ package com.gildedgames.orbis.lib.preparation.impl;
 
 import com.gildedgames.orbis.lib.preparation.IChunkMaskTransformer;
 import com.gildedgames.orbis.lib.processing.IBlockAccess;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.fluid.IFluidState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumLightType;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -37,7 +37,7 @@ public class ChunkDataContainer implements IBlockAccess
 	}
 
 	@Override
-	public IBlockState getBlockState(final BlockPos pos)
+	public BlockState getBlockState(final BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
 	}
@@ -48,7 +48,7 @@ public class ChunkDataContainer implements IBlockAccess
 		return null;
 	}
 
-	public IBlockState getBlockState(final int x, final int y, final int z)
+	public BlockState getBlockState(final int x, final int y, final int z)
 	{
 		ChunkSection segment = this.segments[y >> 4];
 
@@ -60,13 +60,13 @@ public class ChunkDataContainer implements IBlockAccess
 		return segment.get(x, y & 15, z);
 	}
 
-	public boolean setBlockState(final int x, final int y, final int z, final IBlockState state)
+	public boolean setBlockState(final int x, final int y, final int z, final BlockState state)
 	{
 		ChunkSection segment = this.segments[y >> 4];
 
 		if (segment == null)
 		{
-			this.segments[y >> 4] = segment = new ChunkSection((y >> 4) * 16, this.hasSkylight);
+			this.segments[y >> 4] = segment = new ChunkSection((y >> 4) * 16);
 		}
 
 		segment.set(x, y & 15, z, state);
@@ -74,9 +74,23 @@ public class ChunkDataContainer implements IBlockAccess
 		return true;
 	}
 
-	public boolean setBlockState(final BlockPos pos, final IBlockState state)
+	@Override
+	public boolean setBlockState(BlockPos pos, BlockState state, int flags)
 	{
 		return this.setBlockState(pos.getX(), pos.getY(), pos.getZ(), state);
+	}
+
+	@Override
+	public boolean removeBlock(BlockPos pos, boolean isMoving)
+	{
+		// TODO: Implement liquids
+		return this.setBlockState(pos, Blocks.AIR.getDefaultState(), 0);
+	}
+
+	@Override
+	public boolean destroyBlock(BlockPos pos, boolean dropBlock)
+	{
+		return this.setBlockState(pos, Blocks.AIR.getDefaultState(), 0);
 	}
 
 	@Override
@@ -129,7 +143,7 @@ public class ChunkDataContainer implements IBlockAccess
 
 			if (dest == null)
 			{
-				dest = new ChunkSection((chunkY >> 1) << 4, world.dimension.hasSkyLight());
+				dest = new ChunkSection((chunkY >> 1) << 4);
 
 				container.segments[chunkY >> 1] = dest;
 			}
@@ -156,9 +170,9 @@ public class ChunkDataContainer implements IBlockAccess
 		return container;
 	}
 
-	public Chunk createChunk(World world, int chunkX, int chunkZ)
+	public Chunk createChunk(World world, ChunkPos chunkPos)
 	{
-		Chunk chunk = new Chunk(world, chunkX, chunkZ, new Biome[256]);
+		Chunk chunk = new Chunk(world, chunkPos, new Biome[256]);
 
 		for (int chunkY = 0; chunkY < 16; chunkY++)
 		{
@@ -182,14 +196,18 @@ public class ChunkDataContainer implements IBlockAccess
 			chunk.addEntity(entity);
 		}
 
-		chunk.generateSkylightMap();
+//		TODO: What happened to generateSkylightMap?
+//		chunk.generateSkylightMap();
 
 		return chunk;
 	}
 
-	public void addEntity(Entity entity)
+	@Override
+	public boolean addEntity(Entity entity)
 	{
 		this.entities.add(entity);
+
+		return true;
 	}
 
 	public int getChunkX()
@@ -200,35 +218,4 @@ public class ChunkDataContainer implements IBlockAccess
 	public int getChunkZ()
 	{
 		return this.chunkZ;
-	}
-
-	@Override
-	public boolean setBlockState(BlockPos pos, IBlockState newState, int flags)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean spawnEntity(Entity entityIn)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean removeBlock(BlockPos pos)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void setLightFor(EnumLightType type, BlockPos pos, int lightValue)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean destroyBlock(BlockPos pos, boolean dropBlock)
-	{
-		return this.setBlockState(pos, Blocks.AIR.getDefaultState());
-	}
-}
+	}}

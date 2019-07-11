@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.util.mc;
 
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 

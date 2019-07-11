@@ -1,6 +1,6 @@
 package com.gildedgames.orbis.lib.util.mc;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -65,7 +65,7 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.putInt("x", this.getX());
 		tag.putInt("y", this.getY());
@@ -74,7 +74,7 @@ public class BlockPosDimension extends BlockPos.MutableBlockPos implements NBT
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.x = tag.getInt("x");
 		this.y = tag.getInt("y");

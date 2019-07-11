@@ -7,7 +7,7 @@ import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -399,7 +399,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	{
 		NodeMultiParented<DATA, LINK> clone = new NodeMultiParented<>();
 
-		NBTTagCompound tag = new NBTTagCompound();
+		CompoundNBT tag = new CompoundNBT();
 
 		this.write(tag);
 		clone.read(tag);
@@ -440,7 +440,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -458,7 +458,7 @@ public class NodeMultiParented<DATA extends NBT, LINK extends NBT> implements IN
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

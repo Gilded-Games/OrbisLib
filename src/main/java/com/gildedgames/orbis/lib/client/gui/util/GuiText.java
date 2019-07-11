@@ -6,7 +6,7 @@ import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.util.mc.IText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public class GuiText extends GuiElement
 {
@@ -31,9 +31,9 @@ public class GuiText extends GuiElement
 		{
 			FontRenderer r = Minecraft.getInstance().fontRenderer;
 
-			if (this.text.component() instanceof TextComponentTranslation)
+			if (this.text.component() instanceof TranslationTextComponent)
 			{
-				TextComponentTranslation trans = (TextComponentTranslation) this.text.component();
+				TranslationTextComponent trans = (TranslationTextComponent) this.text.component();
 
 				if (trans.getKey() == null)
 				{

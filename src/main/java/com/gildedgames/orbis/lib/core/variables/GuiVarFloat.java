@@ -7,8 +7,8 @@ import com.gildedgames.orbis.lib.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis.lib.core.variables.var_comparators.*;
 import com.gildedgames.orbis.lib.core.variables.var_mutators.*;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -17,24 +17,24 @@ import java.util.function.Supplier;
 public class GuiVarFloat implements IGuiVar<Float, GuiInput>
 {
 	public static final List<DropdownElementWithData<Supplier<IGuiVarCompareExpression>>> COMPARE_EXPRESSIONS = Lists.newArrayList(
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.equals"), () -> new NumberEquals<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.doesnt_equal"),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.equals"), () -> new NumberEquals<>(new GuiVarFloat("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.doesnt_equal"),
 					() -> new NumberDoesntEqual<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.greater_than"),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.greater_than"),
 					() -> new NumberGreaterThan<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.less_than"), () -> new NumberLessThan<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.greater_than_or_equal"),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.less_than"), () -> new NumberLessThan<>(new GuiVarFloat("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.greater_than_or_equal"),
 					() -> new NumberGreaterThanOrEqual<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.less_than_or_equal"),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.less_than_or_equal"),
 					() -> new NumberLessThanOrEqual<>(new GuiVarFloat("orbis.gui.value")))
 	);
 
 	public static final List<DropdownElementWithData<Supplier<IGuiVarMutateExpression>>> MUTATE_EXPRESSIONS = Lists.newArrayList(
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.set"), () -> new NumberSet<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.increase"), () -> new NumberIncrease<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.decrease"), () -> new NumberDecrease<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.multiply"), () -> new NumberMultiply<>(new GuiVarFloat("orbis.gui.value"))),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.divide"), () -> new NumberDivide<>(new GuiVarFloat("orbis.gui.value")))
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.set"), () -> new NumberSet<>(new GuiVarFloat("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.increase"), () -> new NumberIncrease<>(new GuiVarFloat("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.decrease"), () -> new NumberDecrease<>(new GuiVarFloat("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.multiply"), () -> new NumberMultiply<>(new GuiVarFloat("orbis.gui.value"))),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.divide"), () -> new NumberDivide<>(new GuiVarFloat("orbis.gui.value")))
 	);
 
 	private float data;
@@ -127,14 +127,14 @@ public class GuiVarFloat implements IGuiVar<Float, GuiInput>
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		tag.putFloat("data", this.data);
 		tag.putString("name", this.name);
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		this.data = tag.getFloat("data");
 		this.name = tag.getString("name");

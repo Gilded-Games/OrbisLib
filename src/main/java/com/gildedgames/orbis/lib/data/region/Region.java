@@ -3,7 +3,7 @@ package com.gildedgames.orbis.lib.data.region;
 import com.gildedgames.orbis.lib.util.RegionHelp;
 import com.gildedgames.orbis.lib.util.RotationHelp;
 import com.gildedgames.orbis.lib.util.mc.NBTHelper;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
@@ -16,7 +16,7 @@ public class Region implements IMutableRegion
 
 	private BlockPos min, max;
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private boolean dataChanged;
 
@@ -49,7 +49,7 @@ public class Region implements IMutableRegion
 
 	public Region(final IDimensions dimensions)
 	{
-		this.setBounds(BlockPos.ORIGIN, new BlockPos(dimensions.getWidth() - 1, dimensions.getHeight() - 1, dimensions.getLength() - 1));
+		this.setBounds(BlockPos.ZERO, new BlockPos(dimensions.getWidth() - 1, dimensions.getHeight() - 1, dimensions.getLength() - 1));
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class Region implements IMutableRegion
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterable<BlockPos.MutableBlockPos> getMutableBlockPosInRegion()
+	public Iterable<BlockPos> getMutableBlockPosInRegion()
 	{
 		return BlockPos.getAllInBoxMutable(this.min, this.max);
 	}
@@ -269,14 +269,14 @@ public class Region implements IMutableRegion
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.put("min", NBTHelper.writeBlockPos(this.min));
 		tag.put("max", NBTHelper.writeBlockPos(this.max));
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.min = NBTHelper.readBlockPos(tag.getCompound("min"));
 		this.max = NBTHelper.readBlockPos(tag.getCompound("max"));
@@ -312,7 +312,7 @@ public class Region implements IMutableRegion
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> createShapeData()
+	public Iterable<BlockPos> createShapeData()
 	{
 		return BlockPos.getAllInBoxMutable(this.min, this.max);
 	}
@@ -332,7 +332,7 @@ public class Region implements IMutableRegion
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null || this.dataChanged)
 		{
@@ -343,7 +343,7 @@ public class Region implements IMutableRegion
 	}
 
 	@Override
-	public Iterator<BlockPos.MutableBlockPos> iterator()
+	public Iterator<BlockPos> iterator()
 	{
 		return BlockPos.getAllInBoxMutable(this.min, this.max).iterator();
 	}

@@ -5,7 +5,7 @@ import com.gildedgames.orbis.lib.data.framework.interfaces.IFrameworkNode;
 import com.gildedgames.orbis.lib.data.pathway.PathwayData;
 import com.gildedgames.orbis.lib.data.region.IMutableRegion;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.Collection;
 
@@ -60,14 +60,14 @@ public class FrameworkNode implements IFrameworkNode
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 		funnel.set("schedule", this.schedule);
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 		this.schedule = funnel.get("schedule");

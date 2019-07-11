@@ -5,8 +5,8 @@ import com.gildedgames.orbis.lib.core.PlacementCondition;
 import com.gildedgames.orbis.lib.core.baking.BakedBlueprint;
 import com.gildedgames.orbis.lib.util.ArrayHelper;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 
@@ -32,7 +32,7 @@ public class PlacementConditionOnBlock implements PlacementCondition
 		{
 			for (int z = 0; z < container.getLength(); z++)
 			{
-				IBlockState blueprintBlock = container.getBlockState(x, floorHeight, z);
+				BlockState blueprintBlock = container.getBlockState(x, floorHeight, z);
 
 				if (blueprintBlock.getBlock() == Blocks.AIR || blueprintBlock.getBlock() == Blocks.STRUCTURE_VOID)
 				{

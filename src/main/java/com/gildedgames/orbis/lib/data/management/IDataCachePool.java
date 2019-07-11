@@ -1,6 +1,6 @@
 package com.gildedgames.orbis.lib.data.management;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.Optional;
 
@@ -53,13 +53,13 @@ public interface IDataCachePool
 	 * NBTTagCompound. Used to send over packets.
 	 * @return The cache's data.
 	 */
-	NBTTagCompound writeCacheData();
+	CompoundNBT writeCacheData();
 
 	/**
 	 * Reads the NBTTagCompound for its cache
 	 * data, should be created from writeCacheData().
 	 * @param tag The cache data being read.
 	 */
-	void readCacheData(NBTTagCompound tag);
+	void readCacheData(CompoundNBT tag);
 
 }

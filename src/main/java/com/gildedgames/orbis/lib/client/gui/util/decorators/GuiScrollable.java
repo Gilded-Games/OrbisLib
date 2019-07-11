@@ -11,8 +11,8 @@ import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.client.rect.RectModifier;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.ClickType;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 

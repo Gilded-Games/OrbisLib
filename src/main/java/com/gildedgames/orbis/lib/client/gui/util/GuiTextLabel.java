@@ -5,8 +5,8 @@ import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.text.ITextComponent;
@@ -88,7 +88,7 @@ public class GuiTextLabel extends GuiElement
 		final float f5 = (float) (endColor >> 16 & 255) / 255.0F;
 		final float f6 = (float) (endColor >> 8 & 255) / 255.0F;
 		final float f7 = (float) (endColor & 255) / 255.0F;
-		GlStateManager.disableTexture2D();
+		GlStateManager.disableTexture();
 		GlStateManager.enableBlend();
 		GlStateManager.disableAlphaTest();
 		GlStateManager
@@ -106,6 +106,6 @@ public class GuiTextLabel extends GuiElement
 		GlStateManager.shadeModel(7424);
 		GlStateManager.disableBlend();
 		GlStateManager.enableAlphaTest();
-		GlStateManager.enableTexture2D();
+		GlStateManager.enableTexture();
 	}
 }

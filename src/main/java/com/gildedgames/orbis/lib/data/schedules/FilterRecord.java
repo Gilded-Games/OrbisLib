@@ -7,7 +7,7 @@ import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
@@ -27,7 +27,7 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 
 	private IRegion boundingBox;
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private FilterRecord()
 	{
@@ -40,7 +40,7 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 		this.height = height;
 		this.length = length;
 
-		this.boundingBox = new Region(BlockPos.ORIGIN, new BlockPos(this.width - 1, this.height - 1, this.length - 1));
+		this.boundingBox = new Region(BlockPos.ZERO, new BlockPos(this.width - 1, this.height - 1, this.length - 1));
 
 		this.createMarkedPositions();
 	}
@@ -223,25 +223,24 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> createShapeData()
+	public Iterable<BlockPos> createShapeData()
 	{
-		return new Iterable<BlockPos.MutableBlockPos>()
+		return new Iterable<BlockPos>()
 		{
-
 			@Override
-			public Iterator<BlockPos.MutableBlockPos> iterator()
+			public Iterator<BlockPos> iterator()
 			{
-				final Iterator<BlockPos.MutableBlockPos> iter = FilterRecord.this.getBoundingBox().createShapeData().iterator();
+				final Iterator<BlockPos> iter = FilterRecord.this.getBoundingBox().createShapeData().iterator();
 
-				return new AbstractIterator<BlockPos.MutableBlockPos>()
+				return new AbstractIterator<BlockPos>()
 				{
 
 					@Override
-					protected BlockPos.MutableBlockPos computeNext()
+					protected BlockPos computeNext()
 					{
 						while (iter.hasNext())
 						{
-							final BlockPos.MutableBlockPos next = iter.next();
+							final BlockPos next = iter.next();
 
 							if (FilterRecord.this.contains(next.getX(), next.getY(), next.getZ()))
 							{
@@ -257,7 +256,7 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null)
 		{
@@ -311,7 +310,7 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -328,7 +327,7 @@ public class FilterRecord implements IPositionRecord<BlockFilter>
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

@@ -14,7 +14,7 @@ import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.world.IWorldObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -369,7 +369,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	{
 		final FrameworkData data = new FrameworkData();
 
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		this.write(tag);
 
@@ -428,7 +428,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -440,7 +440,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 
 		funnel.setMap("nodeToPos", this.nodeToPos, p ->
 		{
-			NBTFunnel f = new NBTFunnel(new NBTTagCompound());
+			NBTFunnel f = new NBTFunnel(new CompoundNBT());
 
 			f.getTag().putInt("id", p.getKey());
 			f.set("node", p.getValue());
@@ -450,7 +450,7 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

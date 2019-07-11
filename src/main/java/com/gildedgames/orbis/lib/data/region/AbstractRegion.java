@@ -8,7 +8,7 @@ import net.minecraft.util.math.BlockPos;
 public abstract class AbstractRegion implements IRegion
 {
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private boolean dataChanged;
 
@@ -20,13 +20,13 @@ public abstract class AbstractRegion implements IRegion
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> createShapeData()
+	public Iterable<BlockPos> createShapeData()
 	{
 		return BlockPos.getAllInBoxMutable(this.getMin(), this.getMax());
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null || this.dataChanged)
 		{

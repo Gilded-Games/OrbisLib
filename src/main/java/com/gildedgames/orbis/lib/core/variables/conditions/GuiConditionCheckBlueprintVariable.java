@@ -13,7 +13,7 @@ import com.gildedgames.orbis.lib.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.List;
 import java.util.Random;
@@ -148,7 +148,7 @@ public class GuiConditionCheckBlueprintVariable implements IGuiCondition, IDataU
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -158,7 +158,7 @@ public class GuiConditionCheckBlueprintVariable implements IGuiCondition, IDataU
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

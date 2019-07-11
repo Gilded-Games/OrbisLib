@@ -7,8 +7,8 @@ import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,16 +17,16 @@ import java.util.function.Supplier;
 public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListener
 {
 	public static final List<DropdownElementWithData<Supplier<IGuiVarCompareExpression>>> COMPARE_EXPRESSIONS = Lists.newArrayList(
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.equals"), Equals::new),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.doesnt_equal"), DoesntEqual::new),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.contains"), Contains::new)
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.equals"), Equals::new),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.doesnt_equal"), DoesntEqual::new),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.contains"), Contains::new)
 	);
 
 	public static final List<DropdownElementWithData<Supplier<IGuiVarMutateExpression>>> MUTATE_EXPRESSIONS = Lists.newArrayList(
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.set"), Set::new),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.concatenate"), Concatenate::new),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.replace"), Replace::new),
-			new DropdownElementWithData<>(new TextComponentTranslation("orbis.gui.clear"), Clear::new)
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.set"), Set::new),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.concatenate"), Concatenate::new),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.replace"), Replace::new),
+			new DropdownElementWithData<>(new TranslationTextComponent("orbis.gui.clear"), Clear::new)
 	);
 
 	private String data = "";
@@ -126,7 +126,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		tag.putString("data", this.data);
 		tag.putString("name", this.name);
@@ -134,7 +134,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		this.data = tag.getString("data");
 		this.name = tag.getString("name");
@@ -190,7 +190,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -198,7 +198,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -250,7 +250,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -258,7 +258,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -315,7 +315,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -323,7 +323,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -375,7 +375,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -383,7 +383,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -435,7 +435,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -443,7 +443,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -503,7 +503,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -512,7 +512,7 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 			NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -558,13 +558,13 @@ public class GuiVarString implements IGuiVar<String, GuiInput>, IGuiInputListene
 		}
 
 		@Override
-		public void write(NBTTagCompound tag)
+		public void write(CompoundNBT tag)
 		{
 
 		}
 
 		@Override
-		public void read(NBTTagCompound tag)
+		public void read(CompoundNBT tag)
 		{
 
 		}

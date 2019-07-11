@@ -4,10 +4,10 @@ import com.gildedgames.orbis.lib.OrbisLib;
 import com.gildedgames.orbis.lib.util.io.IClassSerializer;
 import com.google.common.collect.AbstractIterator;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.INBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.*;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -25,12 +25,12 @@ import java.util.function.Supplier;
 public class NBTHelper
 {
 
-	public static NBTTagList getList(final NBTTagCompound tag, final String key)
+	public static ListNBT getList(final CompoundNBT tag, final String key)
 	{
 		return tag.getList(key, 10);
 	}
 
-	public static Iterable<NBTTagCompound> getIterator(final NBTTagCompound tag, final String tagListKey)
+	public static Iterable<CompoundNBT> getIterator(final CompoundNBT tag, final String tagListKey)
 	{
 		return getIterator(getList(tag, tagListKey));
 	}
@@ -39,26 +39,26 @@ public class NBTHelper
 	 * Get the iterator for a taglist in an NBTTagCompound.
 	 * Simply a nice shortcut method.
 	 */
-	public static Iterable<NBTTagCompound> getIterator(final NBTTagList tagList)
+	public static Iterable<CompoundNBT> getIterator(final ListNBT tagList)
 	{
-		return new Iterable<NBTTagCompound>()
+		return new Iterable<CompoundNBT>()
 		{
 			@Override
-			public Iterator<NBTTagCompound> iterator()
+			public Iterator<CompoundNBT> iterator()
 			{
-				return new AbstractIterator<NBTTagCompound>()
+				return new AbstractIterator<CompoundNBT>()
 				{
 					private int i = 0;
 
 					@Override
-					protected NBTTagCompound computeNext()
+					protected CompoundNBT computeNext()
 					{
 						if (this.i >= tagList.size())
 						{
 							return this.endOfData();
 						}
 
-						final NBTTagCompound tag = tagList.getCompound(this.i);
+						final CompoundNBT tag = tagList.getCompound(this.i);
 						this.i++;
 						return tag;
 					}
@@ -67,12 +67,12 @@ public class NBTHelper
 		};
 	}
 
-	public static NBTTagCompound readNBTFromFile(final MinecraftServer server, final String fileName)
+	public static CompoundNBT readNBTFromFile(final MinecraftServer server, final String fileName)
 	{
-		return readNBTFromFile(new File(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory(), fileName));
+		return readNBTFromFile(new File(server.getWorld(DimensionType.field_223227_a_).getSaveHandler().getWorldDirectory(), fileName));
 	}
 
-	public static NBTTagCompound readNBTFromFile(final File file)
+	public static CompoundNBT readNBTFromFile(final File file)
 	{
 		try
 		{
@@ -90,12 +90,12 @@ public class NBTHelper
 		return null;
 	}
 
-	public static void writeNBTToFile(final MinecraftServer server, final NBTTagCompound tag, final String fileName)
+	public static void writeNBTToFile(final MinecraftServer server, final CompoundNBT tag, final String fileName)
 	{
-		writeNBTToFile(tag, new File(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory(), fileName));
+		writeNBTToFile(tag, new File(server.getWorld(DimensionType.field_223227_a_).getSaveHandler().getWorldDirectory(), fileName));
 	}
 
-	public static void writeNBTToFile(final NBTTagCompound tag, final File file)
+	public static void writeNBTToFile(final CompoundNBT tag, final File file)
 	{
 		file.mkdirs();
 		final File tmpFile = new File(file.getParentFile(), file.getName() + ".tmp");
@@ -114,7 +114,7 @@ public class NBTHelper
 		}
 	}
 
-	public static ItemStack readStack(NBTTagCompound tag)
+	public static ItemStack readStack(CompoundNBT tag)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -133,9 +133,9 @@ public class NBTHelper
 		return itemstack;
 	}
 
-	public static INBTBase writeStack(ItemStack stack)
+	public static INBT writeStack(ItemStack stack)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		if (stack.isEmpty())
 		{
@@ -150,7 +150,7 @@ public class NBTHelper
 		tag.putByte("count", (byte) stack.getCount());
 		tag.putShort("damage", (short) stack.getDamage());
 
-		NBTTagCompound data = stack.getTag();
+		CompoundNBT data = stack.getTag();
 
 		if (data != null)
 		{
@@ -160,7 +160,7 @@ public class NBTHelper
 		return data;
 	}
 
-	public static BlockPos readBlockPos(final NBTTagCompound tag)
+	public static BlockPos readBlockPos(final CompoundNBT tag)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -170,9 +170,9 @@ public class NBTHelper
 		return new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 	}
 
-	public static INBTBase writeBlockPos(final BlockPos pos)
+	public static INBT writeBlockPos(final BlockPos pos)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		if (pos == null)
 		{
@@ -190,7 +190,7 @@ public class NBTHelper
 		return tag;
 	}
 
-	public static ChunkPos readChunkPos(final NBTTagCompound tag)
+	public static ChunkPos readChunkPos(final CompoundNBT tag)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -200,9 +200,9 @@ public class NBTHelper
 		return new ChunkPos(tag.getInt("x"), tag.getInt("z"));
 	}
 
-	public static INBTBase writeChunkPos(final ChunkPos pos)
+	public static INBT writeChunkPos(final ChunkPos pos)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		if (pos == null)
 		{
@@ -219,7 +219,7 @@ public class NBTHelper
 		return tag;
 	}
 
-	public static double[] readDoubleArray(final NBTTagCompound tag)
+	public static double[] readDoubleArray(final CompoundNBT tag)
 	{
 		if (tag == null || (tag.contains("_null") && tag.getBoolean("_null")))
 		{
@@ -236,9 +236,9 @@ public class NBTHelper
 		return array;
 	}
 
-	public static INBTBase writeDoubleArray(final double[] array)
+	public static INBT writeDoubleArray(final double[] array)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		if (array == null)
 		{
@@ -267,9 +267,9 @@ public class NBTHelper
 	 * @param nbt
 	 * @return
 	 */
-	public static NBTTagCompound writeRaw(final NBT nbt)
+	public static CompoundNBT writeRaw(final NBT nbt)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		nbt.write(tag);
 
@@ -283,7 +283,7 @@ public class NBTHelper
 
 	public static <T extends NBT> T clone(World world, T nbt)
 	{
-		NBTTagCompound tag = new NBTTagCompound();
+		CompoundNBT tag = new CompoundNBT();
 
 		nbt.write(tag);
 
@@ -297,9 +297,9 @@ public class NBTHelper
 		return obj;
 	}
 
-	public static NBTTagCompound write(final NBT nbt)
+	public static CompoundNBT write(final NBT nbt)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		if (nbt == null)
 		{
@@ -314,7 +314,7 @@ public class NBTHelper
 		tag.putString("s_id", serializer.identifier());
 		tag.putInt("id", serializer.serialize(nbt));
 
-		final NBTTagCompound data = new NBTTagCompound();
+		final CompoundNBT data = new CompoundNBT();
 
 		nbt.write(data);
 
@@ -323,7 +323,7 @@ public class NBTHelper
 		return tag;
 	}
 
-	public static <T extends NBT> T readWithDefault(final World world, final NBTTagCompound tag, Supplier<T> def)
+	public static <T extends NBT> T readWithDefault(final World world, final CompoundNBT tag, Supplier<T> def)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -340,7 +340,7 @@ public class NBTHelper
 		return obj;
 	}
 
-	public static <T extends NBT> T read(final World world, final NBTTagCompound tag)
+	public static <T extends NBT> T read(final World world, final CompoundNBT tag)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -357,7 +357,7 @@ public class NBTHelper
 		return obj;
 	}
 
-	public static <T extends NBT> T readWithDefault(final NBTTagCompound tag, Supplier<T> def)
+	public static <T extends NBT> T readWithDefault(final CompoundNBT tag, Supplier<T> def)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -374,7 +374,7 @@ public class NBTHelper
 		return obj;
 	}
 
-	public static <T extends NBT> T read(final NBTTagCompound tag)
+	public static <T extends NBT> T read(final CompoundNBT tag)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -391,7 +391,7 @@ public class NBTHelper
 		return obj;
 	}
 
-	public static <T extends NBT> T loadWithoutReading(final NBTTagCompound tag)
+	public static <T extends NBT> T loadWithoutReading(final CompoundNBT tag)
 	{
 		if (tag == null || tag.getBoolean("_null") || !tag.contains("_null"))
 		{

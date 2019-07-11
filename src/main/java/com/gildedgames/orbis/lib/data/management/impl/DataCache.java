@@ -5,7 +5,7 @@ import com.gildedgames.orbis.lib.data.management.IDataCache;
 import com.gildedgames.orbis.lib.data.management.IDataMetadata;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Maps;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -34,7 +34,7 @@ public class DataCache implements IDataCache
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -46,7 +46,7 @@ public class DataCache implements IDataCache
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

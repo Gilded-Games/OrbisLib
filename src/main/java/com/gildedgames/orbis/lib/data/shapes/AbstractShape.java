@@ -5,7 +5,7 @@ import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.IShape;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.AbstractIterator;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -60,24 +60,23 @@ public abstract class AbstractShape implements IShape
 	}
 
 	@Override
-	public final Iterable<BlockPos.MutableBlockPos> createShapeData()
+	public final Iterable<BlockPos> createShapeData()
 	{
-		return new Iterable<BlockPos.MutableBlockPos>()
+		return new Iterable<BlockPos>()
 		{
-
 			@Override
-			public Iterator<BlockPos.MutableBlockPos> iterator()
+			public Iterator<BlockPos> iterator()
 			{
-				final Iterator<BlockPos.MutableBlockPos> iter = AbstractShape.this.getBoundingBox().createShapeData().iterator();
-				return new AbstractIterator<BlockPos.MutableBlockPos>()
+				final Iterator<BlockPos> iter = AbstractShape.this.getBoundingBox().createShapeData().iterator();
+				return new AbstractIterator<BlockPos>()
 				{
 
 					@Override
-					protected BlockPos.MutableBlockPos computeNext()
+					protected BlockPos computeNext()
 					{
 						while (iter.hasNext())
 						{
-							final BlockPos.MutableBlockPos next = iter.next();
+							final BlockPos next = iter.next();
 
 							if (AbstractShape.this.contains(next.getX(), next.getY(), next.getZ()))
 							{
@@ -104,7 +103,7 @@ public abstract class AbstractShape implements IShape
 	}
 
 	@Override
-	public final void write(final NBTTagCompound tag)
+	public final void write(final CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -116,10 +115,10 @@ public abstract class AbstractShape implements IShape
 		this.writeShape(tag);
 	}
 
-	public abstract void writeShape(NBTTagCompound tag);
+	public abstract void writeShape(CompoundNBT tag);
 
 	@Override
-	public final void read(final NBTTagCompound tag)
+	public final void read(final CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -131,7 +130,7 @@ public abstract class AbstractShape implements IShape
 		this.readShape(tag);
 	}
 
-	public abstract void readShape(NBTTagCompound tag);
+	public abstract void readShape(CompoundNBT tag);
 
 	public abstract BlockPos getRenderBoxMin();
 

@@ -8,15 +8,15 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.world.WorldEvent;
@@ -49,7 +49,7 @@ public class InstanceManagerImpl implements IInstanceManager
 	}
 
 	@Override
-	public IPlayerInstances getPlayerInstanceData(final EntityPlayer player)
+	public IPlayerInstances getPlayerInstanceData(final PlayerEntity player)
 	{
 		return player.getCapability(OrbisLibCapabilities.PLAYER_INSTANCES, null)
 				.orElseThrow(NullPointerException::new);
@@ -60,7 +60,7 @@ public class InstanceManagerImpl implements IInstanceManager
 	{
 		T instance = factory.createInstance();
 
-		DimensionType type = DimensionManager.registerDimension(factory.getUniqueName(), factory.getDimensionType(), null);
+		DimensionType type = DimensionManager.registerDimension(factory.getUniqueName(), factory.getDimensionType(), null, instance.getHasSkylight());
 
 		this.registeredInstances.put(factory, instance);
 		this.registeredDimensions.put(instance, type);
@@ -73,7 +73,7 @@ public class InstanceManagerImpl implements IInstanceManager
 	@Override
 	public <T extends IInstance> void destroyInstance(IInstanceFactory<T> factory, IInstance instance)
 	{
-		WorldServer world = this.getWorldForInstance(instance);
+		ServerWorld world = this.getWorldForInstance(instance);
 
 		if (world != null)
 		{
@@ -110,7 +110,7 @@ public class InstanceManagerImpl implements IInstanceManager
 
 		for (IInstance instance : this.deletionQueue)
 		{
-			WorldServer world = this.getWorldForInstance(instance);
+			ServerWorld world = this.getWorldForInstance(instance);
 
 			if (world == null)
 			{
@@ -131,7 +131,7 @@ public class InstanceManagerImpl implements IInstanceManager
 		return type;
 	}
 
-	private WorldServer getWorldForInstance(IInstance instance)
+	private ServerWorld getWorldForInstance(IInstance instance)
 	{
 		return DimensionManager.getWorld(this.server, this.getDimensionTypeForInstance(instance), false, false);
 	}
@@ -141,8 +141,8 @@ public class InstanceManagerImpl implements IInstanceManager
 		OrbisLib.LOGGER.info("Dimension " + type + " queued for deletion");
 
 		MinecraftServer server = this.server;
-		server.addScheduledTask(() -> {
-			File file = type.getDirectory(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory());
+		server.runAsync(() -> {
+			File file = type.getDirectory(server.getWorld(DimensionType.field_223227_a_).getSaveHandler().getWorldDirectory());
 
 			if (!file.isDirectory())
 			{
@@ -182,7 +182,7 @@ public class InstanceManagerImpl implements IInstanceManager
 	@Override
 	public void loadAllInstancesFromDisk()
 	{
-		final NBTTagCompound tag = NBTHelper.readNBTFromFile(this.server, FILE_PATH);
+		final CompoundNBT tag = NBTHelper.readNBTFromFile(this.server, FILE_PATH);
 
 		if (tag == null)
 		{
@@ -197,11 +197,11 @@ public class InstanceManagerImpl implements IInstanceManager
 			{
 				if (factory.getUniqueName().equals(name))
 				{
-					NBTTagList list = tag.getList(key, 10);
+					ListNBT list = tag.getList(key, 10);
 
 					for (int i = 0; i < list.size(); i++)
 					{
-						NBTTagCompound nbt = list.getCompound(i);
+						CompoundNBT nbt = list.getCompound(i);
 
 						IInstance instance = factory.createInstance();
 						instance.read(nbt.getCompound("Data"));
@@ -218,18 +218,18 @@ public class InstanceManagerImpl implements IInstanceManager
 	@Override
 	public void saveAllInstancesToDisk()
 	{
-		final NBTTagCompound root = new NBTTagCompound();
+		final CompoundNBT root = new CompoundNBT();
 
 		for (final IInstanceFactory<? extends IInstance> factory : this.registeredInstances.keys())
 		{
-			NBTTagList list = new NBTTagList();
+			ListNBT list = new ListNBT();
 
 			for (IInstance instance : this.registeredInstances.get(factory))
 			{
-				NBTTagCompound data = new NBTTagCompound();
+				CompoundNBT data = new CompoundNBT();
 				instance.write(data);
 
-				NBTTagCompound tag = new NBTTagCompound();
+				CompoundNBT tag = new CompoundNBT();
 				tag.putInt("Dimension", this.getDimensionTypeForInstance(instance).getId());
 				tag.put("Data", data);
 
@@ -272,14 +272,14 @@ public class InstanceManagerImpl implements IInstanceManager
 //	}
 
 	@Override
-	public World teleportPlayerToInstance(final IInstance instance, final EntityPlayerMP player)
+	public World teleportPlayerToInstance(final IInstance instance, final ServerPlayerEntity player)
 	{
 		final MinecraftServer server = player.getServer();
 
 		final DimensionType registeredDimension = this.getDimensionTypeForInstance(instance);
 
-		final WorldServer fromWorld = player.getServerWorld();
-		final WorldServer toWorld = DimensionManager.getWorld(server, registeredDimension, false, true);
+		final ServerWorld fromWorld = player.getServerWorld();
+		final ServerWorld toWorld = DimensionManager.getWorld(server, registeredDimension, false, true);
 
 		if (toWorld == null)
 		{
@@ -295,7 +295,7 @@ public class InstanceManagerImpl implements IInstanceManager
 		}
 
 		final PlayerList playerList = server.getPlayerList();
-		playerList.transferEntityToWorld(player, player.dimension, fromWorld, toWorld);
+		playerList.recreatePlayerEntity(player, player.dimension, true);
 
 		player.timeUntilPortal = player.getPortalCooldown();
 
@@ -308,7 +308,7 @@ public class InstanceManagerImpl implements IInstanceManager
 	}
 
 	@Override
-	public void returnPlayerFromInstance(final EntityPlayerMP player)
+	public void returnPlayerFromInstance(final ServerPlayerEntity player)
 	{
 		final IPlayerInstances hook = OrbisLib.instances().getPlayerInstanceData(player);
 
@@ -318,11 +318,11 @@ public class InstanceManagerImpl implements IInstanceManager
 
 			final BlockPosDimension pos = hook.getOutside();
 
-			final WorldServer fromWorld = player.getServerWorld();
-			final WorldServer toWorld = DimensionManager.getWorld(server, pos.getDimension(), false, false);
+			final ServerWorld fromWorld = player.getServerWorld();
+			final ServerWorld toWorld = DimensionManager.getWorld(server, pos.getDimension(), false, false);
 
 			final PlayerList playerList = server.getPlayerList();
-			playerList.transferEntityToWorld(player, player.dimension, fromWorld, toWorld);
+			playerList.recreatePlayerEntity(player, player.dimension, true);
 
 			player.timeUntilPortal = player.getPortalCooldown();
 
@@ -337,7 +337,7 @@ public class InstanceManagerImpl implements IInstanceManager
 	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void onPlayerTravel(PlayerEvent.PlayerChangedDimensionEvent event)
 	{
-		final EntityPlayer player = event.getPlayer();
+		final PlayerEntity player = event.getPlayer();
 		final IPlayerInstances hook = this.getPlayerInstanceData(player);
 
 		if (hook.getInstance() != null)
@@ -350,7 +350,7 @@ public class InstanceManagerImpl implements IInstanceManager
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event)
 	{
-		EntityPlayer player = event.getPlayer();
+		PlayerEntity player = event.getPlayer();
 		World world = player.getEntityWorld();
 
 		if (world.isRemote() || !world.getDimension().canRespawnHere())

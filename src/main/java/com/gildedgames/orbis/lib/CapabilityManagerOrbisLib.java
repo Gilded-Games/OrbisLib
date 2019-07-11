@@ -11,8 +11,9 @@ import com.gildedgames.orbis.lib.world.instances.IPlayerInstances;
 import com.gildedgames.orbis.lib.world.instances.PlayerInstances;
 import com.gildedgames.orbis.lib.world.instances.PlayerInstancesProvider;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.INBTBase;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.INBT;
+import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -36,7 +37,10 @@ public class CapabilityManagerOrbisLib
 	{
 		final World world = event.getObject();
 
-		event.addCapability(OrbisLib.getResource("world_data"), new WorldDataManagerContainerProvider(event.getObject()));
+		if (!event.getObject().isRemote())
+		{
+			event.addCapability(OrbisLib.getResource("world_data"), new WorldDataManagerContainerProvider((ServerWorld) event.getObject()));
+		}
 
 		for (IPrepRegistryEntry entry : OrbisLib.sectors().getEntries())
 		{
@@ -57,7 +61,7 @@ public class CapabilityManagerOrbisLib
 			return;
 		}
 
-		if (event.getObject() instanceof EntityPlayer)
+		if (event.getObject() instanceof PlayerEntity)
 		{
 			event.addCapability(OrbisLib.getResource("player_instances"), new PlayerInstancesProvider());
 		}
@@ -70,11 +74,11 @@ public class CapabilityManagerOrbisLib
 
 		if (oldPlayer != null)
 		{
-			final IPlayerInstances newPlayer = OrbisLib.instances().getPlayerInstanceData((EntityPlayer) event.getEntity());
+			final IPlayerInstances newPlayer = OrbisLib.instances().getPlayerInstanceData((PlayerEntity) event.getEntity());
 
 			final Capability.IStorage<IPlayerInstances> storage = OrbisLibCapabilities.PLAYER_INSTANCES.getStorage();
 
-			final INBTBase state = storage.writeNBT(OrbisLibCapabilities.PLAYER_INSTANCES, oldPlayer, null);
+			final INBT state = storage.writeNBT(OrbisLibCapabilities.PLAYER_INSTANCES, oldPlayer, null);
 
 			storage.readNBT(OrbisLibCapabilities.PLAYER_INSTANCES, newPlayer, null, state);
 		}

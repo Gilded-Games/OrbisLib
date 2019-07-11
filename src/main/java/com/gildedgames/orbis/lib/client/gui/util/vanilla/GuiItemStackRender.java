@@ -4,9 +4,9 @@ import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiViewer;
 import com.gildedgames.orbis.lib.client.rect.Rect;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
@@ -63,7 +63,7 @@ public class GuiItemStackRender extends GuiElement
 
 		if (this.state().isHoveredAndTopElement())
 		{
-			GuiScreen gui = Minecraft.getInstance().currentScreen;
+			Screen gui = Minecraft.getInstance().currentScreen;
 
 			if (gui instanceof IGuiViewer)
 			{

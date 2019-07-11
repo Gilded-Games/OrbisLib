@@ -13,10 +13,10 @@ import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.gildedgames.orbis.lib.world.WorldObjectUtils;
 import com.google.common.collect.Lists;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -120,14 +120,14 @@ public class BlockFilterLayer implements NBT
 		return null;
 	}
 
-	public IBlockState getSample(final Random rand, final IBlockState state)
+	public BlockState getSample(final Random rand, final BlockState state)
 	{
 		final BlockDataWithConditions replacementBlock = this.getRandom(rand);
 
 		return replacementBlock.getBlockState();
 	}
 
-	public void apply(Iterable<BlockPos.MutableBlockPos> positions, BlockDataContainer container, ICreationData<?> creationData, IFilterOptions options)
+	public void apply(Iterable<BlockPos> positions, BlockDataContainer container, ICreationData<?> creationData, IFilterOptions options)
 	{
 		if (this.condition == null)
 		{
@@ -146,9 +146,9 @@ public class BlockFilterLayer implements NBT
 			replacementBlock = this.getRandom(creationData.getRandom());
 		}
 
-		for (final BlockPos.MutableBlockPos pos : positions)
+		for (final BlockPos pos : positions)
 		{
-			final IBlockState state = container.getBlockState(pos);
+			final BlockState state = container.getBlockState(pos);
 
 			if (!this.getFilterType().filter(creationData.getCreator(), pos, state, this.requiredBlocks, creationData.getRandom()))
 			{
@@ -179,7 +179,7 @@ public class BlockFilterLayer implements NBT
 			{
 				container.setBlockState(replacementBlock.getBlockState(), pos);
 
-				NBTTagCompound entity = replacementBlock.getTileEntity();
+				CompoundNBT entity = replacementBlock.getTileEntity();
 
 				if (entity != null)
 				{
@@ -248,7 +248,7 @@ public class BlockFilterLayer implements NBT
 		}
 		else
 		{
-			for (final BlockPos.MutableBlockPos iterPos : shape.getShapeData())
+			for (final BlockPos iterPos : shape.getShapeData())
 			{
 				this.applyInner(world, iterPos,
 						replacementBlock, intersect, holder,
@@ -273,7 +273,7 @@ public class BlockFilterLayer implements NBT
 			schedZ = without.getZ() - intersect.getBoundingBox().getMin().getZ() + creationData.getPos().getZ() - shape.getBoundingBox().getMin().getZ();
 		}
 
-		final IBlockState state;
+		final BlockState state;
 
 		if (!creationData.schedules())
 		{
@@ -303,14 +303,14 @@ public class BlockFilterLayer implements NBT
 
 		if (creationData.schedules() && holder != null)
 		{
-			IPositionRecord<IBlockState> record = holder.getCurrentScheduleLayerNode().getData().getStateRecord();
+			IPositionRecord<BlockState> record = holder.getCurrentScheduleLayerNode().getData().getStateRecord();
 
 			if (schedX >= 0 && schedY >= 0 && schedZ >= 0 && schedX < record.getWidth() && schedY < record.getHeight() && schedZ < record.getLength())
 			{
-				IBlockState posState = holder.getCurrentScheduleLayerNode().getData().getStateRecord().get(schedX, schedY, schedZ);
+				BlockState posState = holder.getCurrentScheduleLayerNode().getData().getStateRecord().get(schedX, schedY, schedZ);
 
 				if (!this.getFilterType()
-						.filter(creationData.getCreator(), BlockPos.ORIGIN, posState == null ? Blocks.AIR.getDefaultState() : posState,
+						.filter(creationData.getCreator(), BlockPos.ZERO, posState == null ? Blocks.AIR.getDefaultState() : posState,
 								this.requiredBlocks, creationData.getRandom()))
 				{
 					return;
@@ -379,7 +379,7 @@ public class BlockFilterLayer implements NBT
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.putString("name", this.name);
 
@@ -394,7 +394,7 @@ public class BlockFilterLayer implements NBT
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		this.name = tag.getString("name");
 

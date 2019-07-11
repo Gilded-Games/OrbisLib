@@ -218,7 +218,7 @@ public class FrameworkAlgorithm implements IFrameworkAlgorithm
 			if (data != null)
 			{
 				//TODO: Proper tolerance dist
-				final FDGDNode newNode = new FDGDNode(data, BlockPos.ORIGIN, 0);
+				final FDGDNode newNode = new FDGDNode(data, BlockPos.ZERO, 0);
 				this.fdgdGraph.addVertex(newNode);
 				nodeLookup.put(node, newNode);
 			}

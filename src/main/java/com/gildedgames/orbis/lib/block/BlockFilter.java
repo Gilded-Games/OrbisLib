@@ -7,9 +7,9 @@ import com.gildedgames.orbis.lib.data.schedules.IFilterOptions;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.google.common.collect.Lists;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -46,9 +46,9 @@ public class BlockFilter implements NBT
 		this.addAll(layers);
 	}
 
-	public IBlockState getSample(final World world, final Random rand, final IBlockState state)
+	public BlockState getSample(final World world, final Random rand, final BlockState state)
 	{
-		IBlockState sample = Blocks.AIR.getDefaultState();
+		BlockState sample = Blocks.AIR.getDefaultState();
 
 		for (final BlockFilterLayer layer : this.filters)
 		{
@@ -61,7 +61,7 @@ public class BlockFilter implements NBT
 		return sample;
 	}
 
-	public void apply(Iterable<BlockPos.MutableBlockPos> positions, BlockDataContainer container, ICreationData creationData, IFilterOptions options)
+	public void apply(Iterable<BlockPos> positions, BlockDataContainer container, ICreationData creationData, IFilterOptions options)
 	{
 		for (final BlockFilterLayer layer : this.filters)
 		{
@@ -105,7 +105,7 @@ public class BlockFilter implements NBT
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -113,7 +113,7 @@ public class BlockFilter implements NBT
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

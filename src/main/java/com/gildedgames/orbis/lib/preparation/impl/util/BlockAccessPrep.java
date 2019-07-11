@@ -4,12 +4,11 @@ import com.gildedgames.orbis.lib.preparation.*;
 import com.gildedgames.orbis.lib.preparation.impl.ChunkMask;
 import com.gildedgames.orbis.lib.preparation.impl.capability.PrepChunkManager;
 import com.gildedgames.orbis.lib.processing.IBlockAccess;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumLightType;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -74,11 +73,11 @@ public class BlockAccessPrep implements IBlockAccess
 	@Override
 	public TileEntity getTileEntity(BlockPos pos)
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
-	public IBlockState getBlockState(BlockPos pos)
+	public BlockState getBlockState(BlockPos pos)
 	{
 		return this.transformer.getBlockState(this.getChunk(pos).getBlock(pos));
 	}
@@ -86,35 +85,30 @@ public class BlockAccessPrep implements IBlockAccess
 	@Override
 	public IFluidState getFluidState(BlockPos pos)
 	{
-		throw new UnsupportedOperationException();
+		// TODO: Implement liquids
+		return null;
 	}
 
 	@Override
-	public boolean setBlockState(BlockPos pos, IBlockState newState, int flags)
+	public boolean setBlockState(BlockPos pos, BlockState newState, int flags)
 	{
 		return false;
 	}
 
 	@Override
-	public boolean spawnEntity(Entity entityIn)
+	public boolean removeBlock(BlockPos pos, boolean isMoving)
 	{
 		return false;
-	}
-
-	@Override
-	public boolean removeBlock(BlockPos pos)
-	{
-		return false;
-	}
-
-	@Override
-	public void setLightFor(EnumLightType type, BlockPos pos, int lightValue)
-	{
-
 	}
 
 	@Override
 	public boolean destroyBlock(BlockPos pos, boolean dropBlock)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean addEntity(Entity entityIn)
 	{
 		return false;
 	}

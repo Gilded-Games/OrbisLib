@@ -3,9 +3,9 @@ package com.gildedgames.orbis.lib.block;
 import com.gildedgames.orbis.lib.OrbisLib;
 import com.gildedgames.orbis.lib.util.mc.BlockUtil;
 import com.google.common.collect.Lists;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.Items;
 import net.minecraft.item.*;
 
 import java.util.Collections;
@@ -28,9 +28,9 @@ public class BlockFilterHelper
 				{
 					blocks.add(new BlockDataWithConditions(Blocks.AIR.getDefaultState(), stack.getCount()));
 				}
-				else if (stack.getItem() instanceof ItemBlock)
+				else if (stack.getItem() instanceof BlockItem)
 				{
-					final IBlockState state = BlockUtil.getBlockState(stack);
+					final BlockState state = BlockUtil.getBlockState(stack);
 
 					if (state != null)
 					{
@@ -52,7 +52,7 @@ public class BlockFilterHelper
 			@Override
 			public boolean isCompatible(Class<? extends Item> clazz)
 			{
-				return !(ItemBlock.class.isAssignableFrom(clazz)) && !(ItemBucket.class.isAssignableFrom(clazz));
+				return !(BlockItem.class.isAssignableFrom(clazz)) && !(BucketItem.class.isAssignableFrom(clazz));
 			}
 		});
 	}
@@ -129,7 +129,7 @@ public class BlockFilterHelper
 
 		for (final ItemStack stack : stacks)
 		{
-			final IBlockState state = BlockUtil.getBlockState(stack);
+			final BlockState state = BlockUtil.getBlockState(stack);
 
 			final BlockDataWithConditions block = new BlockDataWithConditions(state, stack.getCount());
 
@@ -215,7 +215,7 @@ public class BlockFilterHelper
 
 	public static BlockFilterLayer getNewVoidLayer()
 	{
-		final IBlockState state = Blocks.STRUCTURE_VOID.getDefaultState();
+		final BlockState state = Blocks.STRUCTURE_VOID.getDefaultState();
 
 		final BlockFilterLayer layer = new BlockFilterLayer();
 

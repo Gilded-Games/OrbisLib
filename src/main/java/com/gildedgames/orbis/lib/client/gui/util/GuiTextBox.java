@@ -6,7 +6,7 @@ import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.util.mc.IText;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,11 +67,11 @@ public class GuiTextBox extends GuiElement
 					if (this.centerFormat)
 					{
 						textElement = new GuiText(Dim2D.build().pos(halfWidth, textHeight).centerX(true).flush(),
-								new Text(new TextComponentString(s), t.scale()));
+								new Text(new StringTextComponent(s), t.scale()));
 					}
 					else
 					{
-						textElement = new GuiText(Dim2D.build().pos(0, textHeight).flush(), new Text(new TextComponentString(s), t.scale()));
+						textElement = new GuiText(Dim2D.build().pos(0, textHeight).flush(), new Text(new StringTextComponent(s), t.scale()));
 					}
 
 					textElement.state().setAlpha(this.state().getAlpha());

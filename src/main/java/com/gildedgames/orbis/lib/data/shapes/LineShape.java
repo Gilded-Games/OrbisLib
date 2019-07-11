@@ -6,7 +6,7 @@ import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.LineHelp;
 import com.gildedgames.orbis.lib.util.RotationHelp;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -21,7 +21,7 @@ public class LineShape implements IShape
 
 	private int lineRadius;
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private LineShape(final World world)
 	{
@@ -42,13 +42,13 @@ public class LineShape implements IShape
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> createShapeData()
+	public Iterable<BlockPos> createShapeData()
 	{
 		return LineHelp.createLinePositions(this.lineRadius, this.start, this.end);
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -59,7 +59,7 @@ public class LineShape implements IShape
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -101,7 +101,7 @@ public class LineShape implements IShape
 	{
 		boolean flag = false;
 
-		for (final BlockPos.MutableBlockPos pos : this.getShapeData())
+		for (final BlockPos pos : this.getShapeData())
 		{
 			if (pos.getX() == x && pos.getY() == y && pos.getZ() == z)
 			{
@@ -120,7 +120,7 @@ public class LineShape implements IShape
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null)
 		{

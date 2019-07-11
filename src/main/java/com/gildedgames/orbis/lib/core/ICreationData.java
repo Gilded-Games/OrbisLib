@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.core;
 
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -22,7 +22,7 @@ public interface ICreationData<SELF extends ICreationData> extends NBT
 
 	SELF seed(long seed);
 
-	SELF creator(EntityPlayer creator);
+	SELF creator(PlayerEntity creator);
 
 	SELF placesAir(boolean placeAir);
 
@@ -46,7 +46,7 @@ public interface ICreationData<SELF extends ICreationData> extends NBT
 	Rotation getRotation();
 
 	@Nullable
-	EntityPlayer getCreator();
+	PlayerEntity getCreator();
 
 	boolean placeAir();
 

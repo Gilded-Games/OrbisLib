@@ -8,9 +8,9 @@ import java.util.List;
 public class LineHelp
 {
 
-	public static Iterable<BlockPos.MutableBlockPos> createLinePositions(final int lineRadius, final BlockPos start, final BlockPos end)
+	public static Iterable<BlockPos> createLinePositions(final int lineRadius, final BlockPos start, final BlockPos end)
 	{
-		final List<BlockPos.MutableBlockPos> lineData = new ArrayList<>();
+		final List<BlockPos> lineData = new ArrayList<>();
 
 		for (int lineX = -lineRadius + 1; lineX < lineRadius - (lineRadius == 1 ? 0 : 1); lineX++)
 		{

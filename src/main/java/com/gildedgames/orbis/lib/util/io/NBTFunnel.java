@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.util.IStringSerializable;
@@ -30,95 +30,95 @@ import java.util.function.Supplier;
 public class NBTFunnel
 {
 
-	public static Function<IBlockState, NBTTagCompound> BLOCKSTATE_SETTER = NBTUtil::writeBlockState;
+	public static Function<BlockState, CompoundNBT> BLOCKSTATE_SETTER = NBTUtil::writeBlockState;
 
-	public static Function<NBTTagCompound, IBlockState> BLOCKSTATE_GETTER = NBTUtil::readBlockState;
+	public static Function<CompoundNBT, BlockState> BLOCKSTATE_GETTER = NBTUtil::readBlockState;
 
-	public static Function<ItemStack, NBTTagCompound> STACK_SETTER = o ->
+	public static Function<ItemStack, CompoundNBT> STACK_SETTER = o ->
 	{
-		NBTTagCompound tag = new NBTTagCompound();
+		CompoundNBT tag = new CompoundNBT();
 
 		tag.put("s", NBTHelper.writeStack(o));
 
 		return tag;
 	};
 
-	public static Function<NBTTagCompound, ItemStack> STACK_GETTER = n -> NBTHelper.readStack(n.getCompound("s"));
+	public static Function<CompoundNBT, ItemStack> STACK_GETTER = n -> NBTHelper.readStack(n.getCompound("s"));
 
-	public static Function<UUID, NBTTagCompound> UUID_SETTER = o ->
+	public static Function<UUID, CompoundNBT> UUID_SETTER = o ->
 	{
-		NBTTagCompound tag = new NBTTagCompound();
+		CompoundNBT tag = new CompoundNBT();
 
 		tag.putUniqueId("u", o);
 
 		return tag;
 	};
 
-	public static Function<NBTTagCompound, UUID> UUID_GETTER = n -> n.getUniqueId("u");
+	public static Function<CompoundNBT, UUID> UUID_GETTER = n -> n.getUniqueId("u");
 
-	public static Function<String, NBTTagCompound> STRING_SETTER = o ->
+	public static Function<String, CompoundNBT> STRING_SETTER = o ->
 	{
-		NBTTagCompound f = new NBTTagCompound();
+		CompoundNBT f = new CompoundNBT();
 
 		f.putString("s", o);
 
 		return f;
 	};
 
-	public static Function<NBTTagCompound, String> STRING_GETTER = n -> n.getString("s");
+	public static Function<CompoundNBT, String> STRING_GETTER = n -> n.getString("s");
 
-	public static Function<Boolean, NBTTagCompound> BOOLEAN_SETTER = o ->
+	public static Function<Boolean, CompoundNBT> BOOLEAN_SETTER = o ->
 	{
-		NBTTagCompound f = new NBTTagCompound();
+		CompoundNBT f = new CompoundNBT();
 
 		f.putBoolean("b", o);
 
 		return f;
 	};
 
-	public static Function<NBTTagCompound, Boolean> BOOLEAN_GETTER = n -> n.getBoolean("b");
+	public static Function<CompoundNBT, Boolean> BOOLEAN_GETTER = n -> n.getBoolean("b");
 
-	public static Function<Integer, NBTTagCompound> INTEGER_SETTER = o ->
+	public static Function<Integer, CompoundNBT> INTEGER_SETTER = o ->
 	{
-		NBTTagCompound f = new NBTTagCompound();
+		CompoundNBT f = new CompoundNBT();
 
 		f.putInt("i", o);
 
 		return f;
 	};
 
-	public static Function<NBTTagCompound, Integer> INTEGER_GETTER = n -> n.getInt("i");
+	public static Function<CompoundNBT, Integer> INTEGER_GETTER = n -> n.getInt("i");
 
-	public static Function<ResourceLocation, NBTTagCompound> LOC_SETTER = o ->
+	public static Function<ResourceLocation, CompoundNBT> LOC_SETTER = o ->
 	{
-		NBTTagCompound f = new NBTTagCompound();
+		CompoundNBT f = new CompoundNBT();
 
 		f.putString("loc", o.toString());
 
 		return f;
 	};
 
-	public static Function<NBTTagCompound, ResourceLocation> LOC_GETTER = n -> new ResourceLocation(n.getString("loc"));
+	public static Function<CompoundNBT, ResourceLocation> LOC_GETTER = n -> new ResourceLocation(n.getString("loc"));
 
-	public static Function<BlockPos, NBTTagCompound> POS_SETTER = o ->
+	public static Function<BlockPos, CompoundNBT> POS_SETTER = o ->
 	{
-		NBTFunnel f = new NBTFunnel(new NBTTagCompound());
+		NBTFunnel f = new NBTFunnel(new CompoundNBT());
 
 		f.setPos("p", o);
 
 		return f.getTag();
 	};
 
-	public static Function<NBTTagCompound, BlockPos> POS_GETTER = n ->
+	public static Function<CompoundNBT, BlockPos> POS_GETTER = n ->
 	{
 		NBTFunnel f = new NBTFunnel(n);
 
 		return f.getPos("p");
 	};
 
-	public static Function<Pos2D, NBTTagCompound> POS2D_SETTER = o ->
+	public static Function<Pos2D, CompoundNBT> POS2D_SETTER = o ->
 	{
-		NBTTagCompound tag = new NBTTagCompound();
+		CompoundNBT tag = new CompoundNBT();
 
 		tag.putFloat("x", o.x());
 		tag.putFloat("y", o.y());
@@ -126,11 +126,11 @@ public class NBTFunnel
 		return tag;
 	};
 
-	public static Function<NBTTagCompound, Pos2D> POS2D_GETTER = n -> Pos2D.flush(n.getFloat("x"), n.getFloat("y"));
+	public static Function<CompoundNBT, Pos2D> POS2D_GETTER = n -> Pos2D.flush(n.getFloat("x"), n.getFloat("y"));
 
-	public static Function<ChunkPos, NBTTagCompound> CHUNK_POS_SETTER = o ->
+	public static Function<ChunkPos, CompoundNBT> CHUNK_POS_SETTER = o ->
 	{
-		NBTTagCompound tag = new NBTTagCompound();
+		CompoundNBT tag = new CompoundNBT();
 
 		tag.putInt("x", o.x);
 		tag.putInt("z", o.z);
@@ -138,16 +138,16 @@ public class NBTFunnel
 		return tag;
 	};
 
-	public static Function<NBTTagCompound, ChunkPos> CHUNK_POS_GETTER = n -> new ChunkPos(n.getInt("x"), n.getInt("z"));
+	public static Function<CompoundNBT, ChunkPos> CHUNK_POS_GETTER = n -> new ChunkPos(n.getInt("x"), n.getInt("z"));
 
-	private final NBTTagCompound tag;
+	private final CompoundNBT tag;
 
-	public NBTFunnel(final NBTTagCompound tag)
+	public NBTFunnel(final CompoundNBT tag)
 	{
 		this.tag = tag;
 	}
 
-	public static <T extends NBT> Function<NBTTagCompound, T> getter()
+	public static <T extends NBT> Function<CompoundNBT, T> getter()
 	{
 		return n ->
 		{
@@ -157,11 +157,11 @@ public class NBTFunnel
 		};
 	}
 
-	public static <T extends NBT> Function<T, NBTTagCompound> setter()
+	public static <T extends NBT> Function<T, CompoundNBT> setter()
 	{
 		return o ->
 		{
-			NBTTagCompound tag = new NBTTagCompound();
+			CompoundNBT tag = new CompoundNBT();
 			NBTFunnel funnel = new NBTFunnel(tag);
 
 			funnel.set("o", o);
@@ -170,7 +170,7 @@ public class NBTFunnel
 		};
 	}
 
-	public static <T extends List<? extends NBT>> Function<NBTTagCompound, T> listGetter()
+	public static <T extends List<? extends NBT>> Function<CompoundNBT, T> listGetter()
 	{
 		return n ->
 		{
@@ -180,11 +180,11 @@ public class NBTFunnel
 		};
 	}
 
-	public static <T extends List<? extends NBT>> Function<T, NBTTagCompound> listSetter()
+	public static <T extends List<? extends NBT>> Function<T, CompoundNBT> listSetter()
 	{
 		return l ->
 		{
-			NBTTagCompound tag = new NBTTagCompound();
+			CompoundNBT tag = new CompoundNBT();
 			NBTFunnel funnel = new NBTFunnel(tag);
 
 			funnel.setList("l", l);
@@ -196,7 +196,7 @@ public class NBTFunnel
 	/**wha
 	 * @return The tag we're reading and writing from.
 	 */
-	public NBTTagCompound getTag()
+	public CompoundNBT getTag()
 	{
 		return this.tag;
 	}
@@ -218,7 +218,7 @@ public class NBTFunnel
 
 	public LocalDateTime getDate(final String key)
 	{
-		final NBTTagCompound tag = this.tag.getCompound(key);
+		final CompoundNBT tag = this.tag.getCompound(key);
 
 		if (tag.getBoolean("_null") || !tag.contains("_null"))
 		{
@@ -230,7 +230,7 @@ public class NBTFunnel
 
 	public void setDate(final String key, final LocalDateTime date)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		if (date == null)
 		{
@@ -245,9 +245,9 @@ public class NBTFunnel
 		this.tag.put(key, tag);
 	}
 
-	public <NBT_OBJECT> void setSet(final String key, final Set<NBT_OBJECT> nbtList, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	public <NBT_OBJECT> void setSet(final String key, final Set<NBT_OBJECT> nbtList, @Nullable Function<NBT_OBJECT, CompoundNBT> setter)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final NBT_OBJECT nbt : nbtList)
 		{
@@ -264,14 +264,14 @@ public class NBTFunnel
 		this.tag.put(key, writtenObjects);
 	}
 
-	public <NBT_OBJECT> Set<NBT_OBJECT> getSet(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	public <NBT_OBJECT> Set<NBT_OBJECT> getSet(final String key, @Nullable Function<CompoundNBT, NBT_OBJECT> getter)
 	{
 		final Set<NBT_OBJECT> readObjects = Sets.newHashSet();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound data = nbtList.getCompound(i);
+			final CompoundNBT data = nbtList.getCompound(i);
 
 			readObjects.add(getter != null ? getter.apply(data) : NBTHelper.read(data));
 		}
@@ -279,9 +279,9 @@ public class NBTFunnel
 		return readObjects;
 	}
 
-	public <NBT_OBJECT> void set(final String key, NBT_OBJECT nbt, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	public <NBT_OBJECT> void set(final String key, NBT_OBJECT nbt, @Nullable Function<NBT_OBJECT, CompoundNBT> setter)
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		if (nbt == null)
 		{
@@ -304,30 +304,30 @@ public class NBTFunnel
 		this.tag.put(key, tag);
 	}
 
-	public <NBT_OBJECT> NBT_OBJECT get(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	public <NBT_OBJECT> NBT_OBJECT get(final String key, @Nullable Function<CompoundNBT, NBT_OBJECT> getter)
 	{
-		final NBTTagCompound tag = this.tag.getCompound(key);
+		final CompoundNBT tag = this.tag.getCompound(key);
 
 		if (tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return null;
 		}
 
-		final NBTTagCompound data = tag.getCompound("data");
+		final CompoundNBT data = tag.getCompound("data");
 
 		return getter != null ? getter.apply(data) : NBTHelper.read(data);
 	}
 
-	public <NBT_OBJECT> NBT_OBJECT getWithDefault(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter, Supplier<NBT_OBJECT> def)
+	public <NBT_OBJECT> NBT_OBJECT getWithDefault(final String key, @Nullable Function<CompoundNBT, NBT_OBJECT> getter, Supplier<NBT_OBJECT> def)
 	{
-		final NBTTagCompound tag = this.tag.getCompound(key);
+		final CompoundNBT tag = this.tag.getCompound(key);
 
 		if (tag.getBoolean("_null") || !tag.contains("_null"))
 		{
 			return def.get();
 		}
 
-		final NBTTagCompound data = tag.getCompound("data");
+		final CompoundNBT data = tag.getCompound("data");
 
 		return getter != null ? getter.apply(data) : NBTHelper.read(data);
 	}
@@ -364,16 +364,16 @@ public class NBTFunnel
 
 	public void setIntToStringMap(final String key, final Map<Integer, String> nbtMap)
 	{
-		final NBTTagList writtenKeys = new NBTTagList();
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenKeys = new ListNBT();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final Map.Entry<Integer, String> entrySet : nbtMap.entrySet())
 		{
 			final int intKey = entrySet.getKey();
 			final String string = entrySet.getValue();
 
-			writtenKeys.add(new NBTTagInt(intKey));
-			writtenObjects.add(new NBTTagString(string));
+			writtenKeys.add(new IntNBT(intKey));
+			writtenObjects.add(new StringNBT(string));
 		}
 
 		this.tag.put(key + "_keys", writtenKeys);
@@ -384,8 +384,8 @@ public class NBTFunnel
 	{
 		final Map<Integer, String> readObjects = Maps.newHashMap();
 
-		final NBTTagList keys = this.tag.getList(key + "_keys", 3);
-		final NBTTagList objects = this.tag.getList(key + "_obj", 8);
+		final ListNBT keys = this.tag.getList(key + "_keys", 3);
+		final ListNBT objects = this.tag.getList(key + "_obj", 8);
 
 		for (int i = 0; i < keys.size(); i++)
 		{
@@ -402,13 +402,13 @@ public class NBTFunnel
 	{
 		final Map<String, T> readObjects = Maps.newHashMap();
 
-		final NBTTagList keys = this.tag.getList(key + "_keys", 8);
-		final NBTTagList objects = this.tag.getList(key + "_obj", 10);
+		final ListNBT keys = this.tag.getList(key + "_keys", 8);
+		final ListNBT objects = this.tag.getList(key + "_obj", 10);
 
 		for (int i = 0; i < keys.size(); i++)
 		{
 			final String stringKey = keys.getString(i);
-			final NBTTagCompound data = objects.getCompound(i);
+			final CompoundNBT data = objects.getCompound(i);
 
 			readObjects.put(stringKey, world == null ? NBTHelper.read(data) : NBTHelper.read(world, data));
 		}
@@ -428,8 +428,8 @@ public class NBTFunnel
 
 	public void setMap(final String key, final Map<? extends NBT, ? extends NBT> nbtMap)
 	{
-		final NBTTagList writtenKeys = new NBTTagList();
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenKeys = new ListNBT();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final Map.Entry<? extends NBT, ? extends NBT> entrySet : nbtMap.entrySet())
 		{
@@ -445,17 +445,17 @@ public class NBTFunnel
 	}
 
 	public <R> void setLongMap(final String key, final Long2ObjectOpenHashMap<R> nbtMap,
-			@Nullable Function<R, NBTTagCompound> rightSetter)
+			@Nullable Function<R, CompoundNBT> rightSetter)
 	{
-		final NBTTagList writtenKeys = new NBTTagList();
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenKeys = new ListNBT();
+		final ListNBT writtenObjects = new ListNBT();
 
 		nbtMap.long2ObjectEntrySet().forEach((entry) ->
 		{
 			final long chunkPos = entry.getLongKey();
 			final R valueNBT = entry.getValue();
 
-			writtenKeys.add(new NBTTagLong(chunkPos));
+			writtenKeys.add(new LongNBT(chunkPos));
 
 			if (rightSetter != null)
 			{
@@ -471,17 +471,17 @@ public class NBTFunnel
 		this.tag.put(key + "_obj", writtenObjects);
 	}
 
-	public <R> Long2ObjectOpenHashMap<R> getLongMap(final String key, @Nullable Function<NBTTagCompound, R> rightGetter)
+	public <R> Long2ObjectOpenHashMap<R> getLongMap(final String key, @Nullable Function<CompoundNBT, R> rightGetter)
 	{
 		final Long2ObjectOpenHashMap<R> readObjects = new Long2ObjectOpenHashMap<>();
 
-		final NBTTagList keys = this.tag.getList(key + "_keys", 4);
-		final NBTTagList objects = this.tag.getList(key + "_obj", 10);
+		final ListNBT keys = this.tag.getList(key + "_keys", 4);
+		final ListNBT objects = this.tag.getList(key + "_obj", 10);
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			final NBTTagLong keyData = (NBTTagLong) keys.get(i);
-			final NBTTagCompound valueData = objects.getCompound(i);
+			final LongNBT keyData = (LongNBT) keys.get(i);
+			final CompoundNBT valueData = objects.getCompound(i);
 
 			readObjects.put(keyData.getLong(), rightGetter != null ? rightGetter.apply(valueData) : NBTHelper.read(valueData));
 		}
@@ -489,11 +489,11 @@ public class NBTFunnel
 		return readObjects;
 	}
 
-	public <L, R> void setMap(final String key, final Map<L, R> nbtMap, @Nullable Function<L, NBTTagCompound> leftSetter,
-			@Nullable Function<R, NBTTagCompound> rightSetter)
+	public <L, R> void setMap(final String key, final Map<L, R> nbtMap, @Nullable Function<L, CompoundNBT> leftSetter,
+			@Nullable Function<R, CompoundNBT> rightSetter)
 	{
-		final NBTTagList writtenKeys = new NBTTagList();
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenKeys = new ListNBT();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final Map.Entry<L, R> entrySet : nbtMap.entrySet())
 		{
@@ -523,18 +523,18 @@ public class NBTFunnel
 		this.tag.put(key + "_obj", writtenObjects);
 	}
 
-	public <L, R> Map<L, R> getMap(final String key, @Nullable Function<NBTTagCompound, L> leftGetter,
-			@Nullable Function<NBTTagCompound, R> rightGetter)
+	public <L, R> Map<L, R> getMap(final String key, @Nullable Function<CompoundNBT, L> leftGetter,
+			@Nullable Function<CompoundNBT, R> rightGetter)
 	{
 		final Map<L, R> readObjects = Maps.newHashMap();
 
-		final NBTTagList keys = this.tag.getList(key + "_keys", 10);
-		final NBTTagList objects = this.tag.getList(key + "_obj", 10);
+		final ListNBT keys = this.tag.getList(key + "_keys", 10);
+		final ListNBT objects = this.tag.getList(key + "_obj", 10);
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			final NBTTagCompound keyData = keys.getCompound(i);
-			final NBTTagCompound valueData = objects.getCompound(i);
+			final CompoundNBT keyData = keys.getCompound(i);
+			final CompoundNBT valueData = objects.getCompound(i);
 
 			readObjects.put(leftGetter != null ? leftGetter.apply(keyData) : NBTHelper.read(keyData),
 					rightGetter != null ? rightGetter.apply(valueData) : NBTHelper.read(valueData));
@@ -547,13 +547,13 @@ public class NBTFunnel
 	{
 		final Map<K, T> readObjects = Maps.newHashMap();
 
-		final NBTTagList keys = this.tag.getList(key + "_keys", 10);
-		final NBTTagList objects = this.tag.getList(key + "_obj", 10);
+		final ListNBT keys = this.tag.getList(key + "_keys", 10);
+		final ListNBT objects = this.tag.getList(key + "_obj", 10);
 
 		for (int i = 0; i < keys.size(); i++)
 		{
-			final NBTTagCompound keyData = keys.getCompound(i);
-			final NBTTagCompound valueData = objects.getCompound(i);
+			final CompoundNBT keyData = keys.getCompound(i);
+			final CompoundNBT valueData = objects.getCompound(i);
 
 			readObjects.put(world == null ? NBTHelper.read(keyData) : NBTHelper.read(world, keyData),
 					world == null ? NBTHelper.read(valueData) : NBTHelper.read(world, valueData));
@@ -574,15 +574,15 @@ public class NBTFunnel
 
 	public void setStringMap(final String key, final Map<String, ? extends NBT> nbtMap)
 	{
-		final NBTTagList writtenKeys = new NBTTagList();
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenKeys = new ListNBT();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final Map.Entry<String, ? extends NBT> entrySet : nbtMap.entrySet())
 		{
 			final String stringKey = entrySet.getKey();
 			final NBT nbt = entrySet.getValue();
 
-			writtenKeys.add(new NBTTagString(stringKey));
+			writtenKeys.add(new StringNBT(stringKey));
 			writtenObjects.add(NBTHelper.write(nbt));
 		}
 
@@ -592,15 +592,15 @@ public class NBTFunnel
 
 	public void setIntMap(final String key, final Map<Integer, ? extends NBT> nbtMap)
 	{
-		final NBTTagList writtenKeys = new NBTTagList();
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenKeys = new ListNBT();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final Map.Entry<Integer, ? extends NBT> entrySet : nbtMap.entrySet())
 		{
 			final int intKey = entrySet.getKey();
 			final NBT nbt = entrySet.getValue();
 
-			writtenKeys.add(new NBTTagInt(intKey));
+			writtenKeys.add(new IntNBT(intKey));
 			writtenObjects.add(NBTHelper.write(nbt));
 		}
 
@@ -612,13 +612,13 @@ public class NBTFunnel
 	{
 		final Map<Integer, T> readObjects = Maps.newHashMap();
 
-		final NBTTagList keys = this.tag.getList(key + "_keys", 3);
-		final NBTTagList objects = this.tag.getList(key + "_obj", 10);
+		final ListNBT keys = this.tag.getList(key + "_keys", 3);
+		final ListNBT objects = this.tag.getList(key + "_obj", 10);
 
 		for (int i = 0; i < keys.size(); i++)
 		{
 			final int intKey = keys.getInt(i);
-			final NBTTagCompound data = objects.getCompound(i);
+			final CompoundNBT data = objects.getCompound(i);
 
 			readObjects.put(intKey, world == null ? NBTHelper.read(data) : NBTHelper.read(world, data));
 		}
@@ -638,7 +638,7 @@ public class NBTFunnel
 
 	public void setPairList(final String key, final List<? extends Pair<? extends NBT, ? extends NBT>> nbtList)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final Pair<? extends NBT, ? extends NBT> pair : nbtList)
 		{
@@ -652,12 +652,12 @@ public class NBTFunnel
 	public <T extends Pair, L extends NBT, R extends NBT> List<T> getPairList(final World world, final String key)
 	{
 		final List<Pair> readObjects = Lists.newArrayList();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound leftData = nbtList.getCompound(i);
-			final NBTTagCompound rightData = nbtList.getCompound(i++);
+			final CompoundNBT leftData = nbtList.getCompound(i);
+			final CompoundNBT rightData = nbtList.getCompound(i++);
 
 			final L left = NBTHelper.read(world, leftData);
 			final R right = NBTHelper.read(world, rightData);
@@ -671,12 +671,12 @@ public class NBTFunnel
 	public <T extends Pair, L extends NBT, R extends NBT> List<T> getPairList(final String key)
 	{
 		final List<Pair> readObjects = Lists.newArrayList();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound leftData = nbtList.getCompound(i);
-			final NBTTagCompound rightData = nbtList.getCompound(++i);
+			final CompoundNBT leftData = nbtList.getCompound(i);
+			final CompoundNBT rightData = nbtList.getCompound(++i);
 
 			final L left = NBTHelper.read(leftData);
 			final R right = NBTHelper.read(rightData);
@@ -689,7 +689,7 @@ public class NBTFunnel
 
 	public void setSet(final String key, final Set<? extends NBT> nbtList)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final NBT nbt : nbtList)
 		{
@@ -702,11 +702,11 @@ public class NBTFunnel
 	public <T extends NBT> Set<T> getSet(final World world, final String key)
 	{
 		final Set<T> readObjects = Sets.newHashSet();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound data = nbtList.getCompound(i);
+			final CompoundNBT data = nbtList.getCompound(i);
 
 			readObjects.add(NBTHelper.read(world, data));
 		}
@@ -717,11 +717,11 @@ public class NBTFunnel
 	public <T extends NBT> Set<T> getSet(final String key)
 	{
 		final Set<T> readObjects = Sets.newHashSet();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound data = nbtList.getCompound(i);
+			final CompoundNBT data = nbtList.getCompound(i);
 
 			readObjects.add(NBTHelper.read(data));
 		}
@@ -731,11 +731,11 @@ public class NBTFunnel
 
 	public void setStackList(final String key, final List<ItemStack> stackList)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final ItemStack stack : stackList)
 		{
-			NBTTagCompound tag = new NBTTagCompound();
+			CompoundNBT tag = new CompoundNBT();
 
 			stack.write(tag);
 
@@ -748,11 +748,11 @@ public class NBTFunnel
 	public List<ItemStack> getStackList(final String key)
 	{
 		final List<ItemStack> readObjects = Lists.newArrayList();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound data = nbtList.getCompound(i);
+			final CompoundNBT data = nbtList.getCompound(i);
 
 			readObjects.add(ItemStack.read(data));
 		}
@@ -760,9 +760,9 @@ public class NBTFunnel
 		return readObjects;
 	}
 
-	public <NBT_OBJECT> void setList(final String key, final List<NBT_OBJECT> nbtList, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	public <NBT_OBJECT> void setList(final String key, final List<NBT_OBJECT> nbtList, @Nullable Function<NBT_OBJECT, CompoundNBT> setter)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final NBT_OBJECT nbt : nbtList)
 		{
@@ -779,7 +779,7 @@ public class NBTFunnel
 		this.tag.put(key, writtenObjects);
 	}
 
-	public <NBT_OBJECT> void setArray(final String key, final NBT_OBJECT[] array, @Nullable Function<NBT_OBJECT, NBTTagCompound> setter)
+	public <NBT_OBJECT> void setArray(final String key, final NBT_OBJECT[] array, @Nullable Function<NBT_OBJECT, CompoundNBT> setter)
 	{
 		final boolean nul = array == null;
 
@@ -790,7 +790,7 @@ public class NBTFunnel
 			return;
 		}
 
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final NBT_OBJECT obj : array)
 		{
@@ -807,14 +807,14 @@ public class NBTFunnel
 		this.tag.put(key, writtenObjects);
 	}
 
-	public <NBT_OBJECT> NBT_OBJECT[] getArray(final String key, final Class<? extends NBT_OBJECT> clazz, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	public <NBT_OBJECT> NBT_OBJECT[] getArray(final String key, final Class<? extends NBT_OBJECT> clazz, @Nullable Function<CompoundNBT, NBT_OBJECT> getter)
 	{
 		if (this.tag.getBoolean(key + "_null"))
 		{
 			return null;
 		}
 
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 		final NBT_OBJECT[] readObjects = (NBT_OBJECT[]) Array.newInstance(clazz, nbtList.size());
 
 		for (int i = 0; i < nbtList.size(); i++)
@@ -825,14 +825,14 @@ public class NBTFunnel
 		return readObjects;
 	}
 
-	public <NBT_OBJECT> List<NBT_OBJECT> getList(final String key, @Nullable Function<NBTTagCompound, NBT_OBJECT> getter)
+	public <NBT_OBJECT> List<NBT_OBJECT> getList(final String key, @Nullable Function<CompoundNBT, NBT_OBJECT> getter)
 	{
 		final List<NBT_OBJECT> readObjects = Lists.newArrayList();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound data = nbtList.getCompound(i);
+			final CompoundNBT data = nbtList.getCompound(i);
 
 			readObjects.add(getter != null ? getter.apply(data) : NBTHelper.read(data));
 		}
@@ -842,7 +842,7 @@ public class NBTFunnel
 
 	public void setList(final String key, final List<? extends NBT> nbtList)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final NBT nbt : nbtList)
 		{
@@ -855,11 +855,11 @@ public class NBTFunnel
 	public <T extends NBT> List<T> getList(final World world, final String key)
 	{
 		final List<T> readObjects = Lists.newArrayList();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound data = nbtList.getCompound(i);
+			final CompoundNBT data = nbtList.getCompound(i);
 
 			readObjects.add(NBTHelper.read(world, data));
 		}
@@ -870,11 +870,11 @@ public class NBTFunnel
 	public <T extends NBT> List<T> getList(final String key)
 	{
 		final List<T> readObjects = Lists.newArrayList();
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			final NBTTagCompound data = nbtList.getCompound(i);
+			final CompoundNBT data = nbtList.getCompound(i);
 
 			readObjects.add(NBTHelper.read(data));
 		}
@@ -885,7 +885,7 @@ public class NBTFunnel
 	public List<String> getStringList(final String key)
 	{
 		final List<String> readObjects = Lists.newArrayList();
-		final NBTTagList nbtList = this.tag.getList(key, 8);
+		final ListNBT nbtList = this.tag.getList(key, 8);
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
@@ -897,11 +897,11 @@ public class NBTFunnel
 
 	public void setStringList(final String key, final List<String> stringList)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final String string : stringList)
 		{
-			writtenObjects.add(new NBTTagString(string));
+			writtenObjects.add(new StringNBT(string));
 		}
 
 		this.tag.put(key, writtenObjects);
@@ -909,11 +909,11 @@ public class NBTFunnel
 
 	public void setBooleanArray(final String key, final boolean[] array)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final boolean bool : array)
 		{
-			writtenObjects.add(new NBTTagByte((byte) (bool ? 1 : 0)));
+			writtenObjects.add(new ByteNBT((byte) (bool ? 1 : 0)));
 		}
 
 		this.tag.put(key, writtenObjects);
@@ -921,12 +921,12 @@ public class NBTFunnel
 
 	public boolean[] getBooleanArray(final String key)
 	{
-		final NBTTagList nbtList = this.tag.getList(key, 1);
+		final ListNBT nbtList = this.tag.getList(key, 1);
 		final boolean[] readObjects = new boolean[nbtList.size()];
 
 		for (int i = 0; i < nbtList.size(); i++)
 		{
-			readObjects[i] = (((NBTTagByte) nbtList.get(i)).getByte()) == 1;
+			readObjects[i] = (((ByteNBT) nbtList.get(i)).getByte()) == 1;
 		}
 
 		return readObjects;
@@ -943,11 +943,11 @@ public class NBTFunnel
 			return;
 		}
 
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final T obj : array)
 		{
-			writtenObjects.add(new NBTTagString(obj.getName()));
+			writtenObjects.add(new StringNBT(obj.getName()));
 		}
 
 		this.tag.put(key, writtenObjects);
@@ -964,11 +964,11 @@ public class NBTFunnel
 			return;
 		}
 
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final T obj : array)
 		{
-			writtenObjects.add(new NBTTagString(obj.name()));
+			writtenObjects.add(new StringNBT(obj.name()));
 		}
 
 		this.tag.put(key, writtenObjects);
@@ -985,7 +985,7 @@ public class NBTFunnel
 			return;
 		}
 
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final T obj : array)
 		{
@@ -1002,7 +1002,7 @@ public class NBTFunnel
 			return null;
 		}
 
-		final NBTTagList nbtList = this.tag.getList(key, 8);
+		final ListNBT nbtList = this.tag.getList(key, 8);
 		final String[] readObjects = new String[nbtList.size()];
 
 		for (int i = 0; i < nbtList.size(); i++)
@@ -1020,7 +1020,7 @@ public class NBTFunnel
 			return null;
 		}
 
-		final NBTTagList nbtList = this.tag.getList(key, 8);
+		final ListNBT nbtList = this.tag.getList(key, 8);
 		final String[] readObjects = new String[nbtList.size()];
 
 		for (int i = 0; i < nbtList.size(); i++)
@@ -1038,7 +1038,7 @@ public class NBTFunnel
 			return null;
 		}
 
-		final NBTTagList nbtList = this.tag.getList(key, 10);
+		final ListNBT nbtList = this.tag.getList(key, 10);
 		final T[] readObjects = (T[]) Array.newInstance(clazz, nbtList.size());
 
 		for (int i = 0; i < nbtList.size(); i++)
@@ -1051,11 +1051,11 @@ public class NBTFunnel
 
 	public void setIntArray(final String key, final int[] array)
 	{
-		final NBTTagList writtenObjects = new NBTTagList();
+		final ListNBT writtenObjects = new ListNBT();
 
 		for (final int obj : array)
 		{
-			writtenObjects.add(new NBTTagInt(obj));
+			writtenObjects.add(new IntNBT(obj));
 		}
 
 		this.tag.put(key, writtenObjects);
@@ -1063,7 +1063,7 @@ public class NBTFunnel
 
 	public int[] getIntArray(final String key)
 	{
-		final NBTTagList nbtList = this.tag.getList(key, 3);
+		final ListNBT nbtList = this.tag.getList(key, 3);
 		final int[] readObjects = new int[nbtList.size()];
 
 		for (int i = 0; i < nbtList.size(); i++)
@@ -1076,13 +1076,13 @@ public class NBTFunnel
 
 	public void setBlockPos(final String key, BlockPos pos)
 	{
-		INBTBase tag = NBTHelper.writeBlockPos(pos);
+		INBT tag = NBTHelper.writeBlockPos(pos);
 		this.tag.put(key, tag);
 	}
 
 	public BlockPos getBlockPos(final String key)
 	{
-		NBTTagCompound tag = this.tag.getCompound(key);
+		CompoundNBT tag = this.tag.getCompound(key);
 		return NBTHelper.readBlockPos(tag);
 	}
 

@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.core.tree;
 
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class ConditionLink implements NBT
 {
@@ -22,13 +22,13 @@ public class ConditionLink implements NBT
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		tag.putString("property", this.property.name());
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		this.property = Property.valueOf(tag.getString("property"));
 	}

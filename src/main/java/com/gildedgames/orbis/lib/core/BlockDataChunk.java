@@ -3,7 +3,7 @@ package com.gildedgames.orbis.lib.core;
 import com.gildedgames.orbis.lib.block.BlockDataContainer;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.ChunkPos;
 
 public class BlockDataChunk implements NBT
@@ -35,7 +35,7 @@ public class BlockDataChunk implements NBT
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -44,7 +44,7 @@ public class BlockDataChunk implements NBT
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

@@ -4,7 +4,7 @@ import com.gildedgames.orbis.lib.data.management.IData;
 import com.gildedgames.orbis.lib.data.management.IDataMetadata;
 import com.gildedgames.orbis.lib.data.management.impl.DataMetadata;
 import com.gildedgames.orbis.lib.world.IWorldObject;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -31,7 +31,7 @@ public class JsonData implements IData
 	{
 		final JsonData data = new JsonData();
 
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		this.write(tag);
 
@@ -90,13 +90,13 @@ public class JsonData implements IData
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 
 	}

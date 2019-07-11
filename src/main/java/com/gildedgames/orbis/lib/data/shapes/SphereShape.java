@@ -5,7 +5,7 @@ import com.gildedgames.orbis.lib.data.region.IShape;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.RegionHelp;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,7 +19,7 @@ public class SphereShape extends AbstractShape
 
 	private boolean centered;
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private BlockPos renderMin, renderMax;
 
@@ -58,7 +58,7 @@ public class SphereShape extends AbstractShape
 	}
 
 	@Override
-	public void writeShape(final NBTTagCompound tag)
+	public void writeShape(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -69,7 +69,7 @@ public class SphereShape extends AbstractShape
 	}
 
 	@Override
-	public void readShape(final NBTTagCompound tag)
+	public void readShape(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -104,7 +104,7 @@ public class SphereShape extends AbstractShape
 		{
 			final int radiusSq = (int) this.start.distanceSq(this.end);
 
-			final double distSq = this.start.distanceSq(x, y, z);
+			final double distSq = this.start.distanceSq(x, y, z, true);
 
 			return distSq < radiusSq + 1;
 		}
@@ -122,7 +122,7 @@ public class SphereShape extends AbstractShape
 			final double squareY = point.getY() * (1.0D / radiusY);
 			final double squareZ = point.getZ() * (1.0D / radiusZ);
 
-			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, squareY, squareZ));
+			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, squareY, squareZ, true));
 
 			return dist < 1;
 		}
@@ -147,7 +147,7 @@ public class SphereShape extends AbstractShape
 			final double squareY = point.getY() * (1.0D / radiusY);
 			final double squareZ = point.getZ() * (1.0D / radius);
 
-			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, squareY, squareZ));
+			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, squareY, squareZ, true));
 
 			return dist < 1;
 		}
@@ -160,7 +160,7 @@ public class SphereShape extends AbstractShape
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null)
 		{

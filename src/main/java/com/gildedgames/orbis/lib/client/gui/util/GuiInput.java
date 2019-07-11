@@ -7,7 +7,7 @@ import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.google.common.collect.Lists;
 import net.minecraft.client.KeyboardListener;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public class GuiInput extends GuiElement
 {
 	private final KeyboardListener keyboardListener;
 
-	private final GuiTextField field;
+	private final TextFieldWidget field;
 
 	private List<IGuiInputListener> listeners = Lists.newArrayList();
 
@@ -24,7 +24,7 @@ public class GuiInput extends GuiElement
 	{
 		super(rect, true);
 
-		this.field = new GuiTextField(0, Minecraft.getInstance().fontRenderer, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height());
+		this.field = new TextFieldWidget(Minecraft.getInstance().fontRenderer, (int) rect.x(), (int) rect.y(), (int) rect.width(), (int) rect.height(), "Label");
 		this.keyboardListener = Minecraft.getInstance().keyboardListener;
 	}
 
@@ -41,7 +41,7 @@ public class GuiInput extends GuiElement
 		return this.listeners.remove(listener);
 	}
 
-	public GuiTextField getInner()
+	public TextFieldWidget getInner()
 	{
 		return this.field;
 	}
@@ -93,7 +93,7 @@ public class GuiInput extends GuiElement
 	{
 		if (key == GLFW.GLFW_KEY_ESCAPE)
 		{
-			this.getInner().setFocused(false);
+			this.getInner().setFocused2(false);
 		}
 
 		if (this.field.getVisible())
@@ -116,12 +116,12 @@ public class GuiInput extends GuiElement
 		this.field.x = (int) this.dim().x();
 		this.field.y = (int) this.dim().y();
 
-		this.field.width = (int) this.dim().width();
-		this.field.height = (int) this.dim().height();
+		this.field.setWidth((int) this.dim().width());
+		this.field.setHeight((int) this.dim().height());
 
 		if (this.field.getVisible())
 		{
-			this.field.drawTextField(mouseX, mouseY, partialTicks);
+			this.field.render(mouseX, mouseY, partialTicks);
 		}
 	}
 

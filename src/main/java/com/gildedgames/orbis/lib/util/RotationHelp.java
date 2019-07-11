@@ -9,7 +9,7 @@ import com.gildedgames.orbis.lib.data.region.IDimensions;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.google.common.collect.AbstractIterator;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
@@ -296,32 +296,32 @@ public class RotationHelp
 
 		if (facing.hasPlane(EnumFacingMultiple.Plane.DIAGONAL))
 		{
-			if (facing.getFacings().contains(EnumFacing.NORTH) && facing.getFacings().contains(EnumFacing.EAST))
+			if (facing.getFacings().contains(Direction.NORTH) && facing.getFacings().contains(Direction.EAST))
 			{
 				result = result.add(Rotation.CLOCKWISE_180);
 			}
-			else if (facing.getFacings().contains(EnumFacing.NORTH) && facing.getFacings().contains(EnumFacing.WEST))
+			else if (facing.getFacings().contains(Direction.NORTH) && facing.getFacings().contains(Direction.WEST))
 			{
 				result = result.add(Rotation.COUNTERCLOCKWISE_90);
 			}
-			else if (facing.getFacings().contains(EnumFacing.SOUTH) && facing.getFacings().contains(EnumFacing.EAST))
+			else if (facing.getFacings().contains(Direction.SOUTH) && facing.getFacings().contains(Direction.EAST))
 			{
 				result = result.add(Rotation.CLOCKWISE_90);
 			}
 		}
-		else if (facing.getFacings().contains(EnumFacing.NORTH))
+		else if (facing.getFacings().contains(Direction.NORTH))
 		{
 			result = result.add(Rotation.CLOCKWISE_180);
 		}
-		else if (facing.getFacings().contains(EnumFacing.SOUTH))
+		else if (facing.getFacings().contains(Direction.SOUTH))
 		{
 			result = result.add(Rotation.NONE);
 		}
-		else if (facing.getFacings().contains(EnumFacing.EAST))
+		else if (facing.getFacings().contains(Direction.EAST))
 		{
 			result = result.add(Rotation.CLOCKWISE_90);
 		}
-		else if (facing.getFacings().contains(EnumFacing.WEST))
+		else if (facing.getFacings().contains(Direction.WEST))
 		{
 			result = result.add(Rotation.COUNTERCLOCKWISE_90);
 		}
@@ -329,7 +329,7 @@ public class RotationHelp
 		return result;
 	}
 
-	public static Rotation fromFacing(final EnumFacing facing)
+	public static Rotation fromFacing(final Direction facing)
 	{
 		switch (facing)
 		{

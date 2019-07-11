@@ -8,6 +8,7 @@ import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.client.rect.RectModifier;
 import com.gildedgames.orbis.lib.core.variables.GuiVarItemStack;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 
@@ -53,14 +54,14 @@ public class GuiItemStackChooser extends GuiElement
 	@Override
 	public void build()
 	{
-		this.button = new GuiButtonVanilla(Dim2D.build().flush(), () -> {
+		this.button = new GuiButtonVanilla(Dim2D.build().flush(), (button) -> {
 			if (this.viewer().mc().currentScreen instanceof GuiViewer)
 			{
-				this.viewer().mc().displayGuiScreen(new GuiItemStackChooserScreen((GuiViewer) this.viewer().mc().currentScreen, this));
+				this.viewer().mc().displayGuiScreen(new GuiItemStackChooserScreen((GuiViewer) this.viewer().mc().currentScreen, this, this.viewer().mc().player));
 			}
 		});
 
-		this.button.getInner().displayString = I18n.format("orbis.gui.choose_itemstack");
+		this.button.getInner().setMessage(I18n.format("orbis.gui.choose_itemstack"));
 
 		if (!this.button.dim().containsModifier("area"))
 		{

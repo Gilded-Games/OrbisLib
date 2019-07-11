@@ -11,10 +11,10 @@ import com.gildedgames.orbis.lib.world.IWorldObject;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Rotation;
@@ -31,16 +31,16 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	private Int2ObjectOpenHashMap<TileEntityEntry> entities = new Int2ObjectOpenHashMap<>();
 
-	private Int2ObjectOpenHashMap<IBlockState> paletteKeys = new Int2ObjectOpenHashMap<>();
+	private Int2ObjectOpenHashMap<BlockState> paletteKeys = new Int2ObjectOpenHashMap<>();
 
-	private Object2IntOpenCustomHashMap<IBlockState> paletteValues =
+	private Object2IntOpenCustomHashMap<BlockState> paletteValues =
 			new Object2IntOpenCustomHashMap<>(Util.identityHashStrategy());
 
 	private int width, height, length;
 
 	private IDataMetadata metadata;
 
-	private IBlockState defaultBlock;
+	private BlockState defaultBlock;
 
 	private int nextID;
 
@@ -68,7 +68,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this(Blocks.AIR.getDefaultState());
 	}
 
-	public BlockDataContainer(IBlockState defaultBlock)
+	public BlockDataContainer(BlockState defaultBlock)
 	{
 		if (defaultBlock == null)
 		{
@@ -91,7 +91,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	 * @param height Maximum height possible is 256
 	 * @param length
 	 */
-	public BlockDataContainer(final IBlockState defaultBlock, final int width, final int height, final int length)
+	public BlockDataContainer(final BlockState defaultBlock, final int width, final int height, final int length)
 	{
 		this(defaultBlock);
 
@@ -102,7 +102,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.blocks = new int[this.getVolume()];
 	}
 
-	public BlockDataContainer(IBlockState defaultBlock, final IRegion region)
+	public BlockDataContainer(BlockState defaultBlock, final IRegion region)
 	{
 		this(defaultBlock, region.getWidth(), region.getHeight(), region.getLength());
 	}
@@ -126,7 +126,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		final BlockDataContainer container = new BlockDataContainer(bounding.getWidth(), bounding.getHeight(), bounding.getLength());
 		for (final BlockPos pos : shape.getShapeData())
 		{
-			final IBlockState state = world.getBlockState(pos);
+			final BlockState state = world.getBlockState(pos);
 
 			final BlockPos tr = pos.add(-minx, -miny, -minz);
 			container.setBlockState(state, tr);
@@ -168,27 +168,27 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return index >= this.blocks.length || index < 0;
 	}
 
-	public IBlockState getBlockState(final BlockPos pos)
+	public BlockState getBlockState(final BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	public IBlockState getBlockState(final int x, final int y, final int z)
+	public BlockState getBlockState(final int x, final int y, final int z)
 	{
 		return this.getBlockState(this.getIndex(x, y, z));
 	}
 
-	private IBlockState getBlockState(final int index)
+	private BlockState getBlockState(final int index)
 	{
 		return this.paletteKeys.get(this.blocks[index]);
 	}
 
-	public void setBlockState(final IBlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
+	public void setBlockState(final BlockState state, final int x, final int y, final int z) throws ArrayIndexOutOfBoundsException
 	{
 		this.setBlockState(state, this.getIndex(x, y, z));
 	}
 
-	private void setBlockState(final IBlockState state, final int index)
+	private void setBlockState(final BlockState state, final int index)
 	{
 		int value = this.paletteValues.getInt(state);
 
@@ -203,7 +203,7 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		this.blocks[index] = value;
 	}
 
-	public void setBlockState(final IBlockState state, final BlockPos pos) throws ArrayIndexOutOfBoundsException
+	public void setBlockState(final BlockState state, final BlockPos pos) throws ArrayIndexOutOfBoundsException
 	{
 		this.setBlockState(state, pos.getX(), pos.getY(), pos.getZ());
 	}
@@ -218,8 +218,8 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 		else
 		{
-			IBlockState state = data.paletteKeys.get(block);
-			IBlockState stateRotated = state.rotate(rotation);
+			BlockState state = data.paletteKeys.get(block);
+			BlockState stateRotated = state.rotate(rotation);
 
 			// Avoid expensive map operations if the block hasn't changed... we know the state is already mapped
 			if (state == stateRotated)
@@ -251,13 +251,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		return this.length;
 	}
 
-	public IBlockState getDefaultBlock()
+	public BlockState getDefaultBlock()
 	{
 		return this.defaultBlock;
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		tag.putInt("width", this.getWidth());
 		tag.putInt("height", this.getHeight());
@@ -275,14 +275,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		 * be writing an integer and the map will point us to the appropriate
 		 * ResourceLocation when reading back
 		 */
-		final ArrayList<IBlockState> identifiers = new ArrayList<>();
+		final ArrayList<BlockState> identifiers = new ArrayList<>();
 		identifiers.add(this.defaultBlock);
 
-		final Int2ObjectOpenHashMap<NBTTagCompound> tileEntities = new Int2ObjectOpenHashMap<>();
+		final Int2ObjectOpenHashMap<CompoundNBT> tileEntities = new Int2ObjectOpenHashMap<>();
 
 		for (int i = 0; i < this.blocks.length; i++)
 		{
-			IBlockState state = this.getBlockState(i);
+			BlockState state = this.getBlockState(i);
 
 			int paletteId = this.blocks[i];
 
@@ -346,9 +346,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		/**
 		 * Saving the identifier map for later reference
 		 */
-		final NBTTagList identifiersNbt = new NBTTagList();
+		final ListNBT identifiersNbt = new ListNBT();
 
-		for (IBlockState state : identifiers)
+		for (BlockState state : identifiers)
 		{
 			// Don't serialize the default key
 			if (state == this.defaultBlock)
@@ -364,11 +364,11 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		/**
 		 * Saving tile entity data
 		 */
-		final NBTTagList tileEntityList = new NBTTagList();
+		final ListNBT tileEntityList = new ListNBT();
 
-		for (final Map.Entry<Integer, NBTTagCompound> entry : tileEntities.entrySet())
+		for (final Map.Entry<Integer, CompoundNBT> entry : tileEntities.entrySet())
 		{
-			final NBTTagCompound data = new NBTTagCompound();
+			final CompoundNBT data = new CompoundNBT();
 
 			data.put("tileEnt", entry.getValue());
 			data.putInt("orbisTEIndex", entry.getKey());
@@ -389,9 +389,9 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
-		Int2ObjectOpenHashMap<IBlockState> localIdToBlock = new Int2ObjectOpenHashMap<>();
+		Int2ObjectOpenHashMap<BlockState> localIdToBlock = new Int2ObjectOpenHashMap<>();
 		localIdToBlock.put(0, this.defaultBlock);
 
 		this.width = tag.getInt("width");
@@ -401,13 +401,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		/** Read back identifier list so we can figure out which
 		 * ids belong to what blocks (as well as their parent mods)
 		 */
-		final NBTTagList identifierList = tag.getList("identifiers", 10);
+		final ListNBT identifierList = tag.getList("identifiers", 10);
 
 		int start = localIdToBlock.size();
 
 		for (int i = 0; i < identifierList.size(); i++)
 		{
-			final IBlockState state = NBTUtil.readBlockState(identifierList.getCompound(i));
+			final BlockState state = NBTUtil.readBlockState(identifierList.getCompound(i));
 
 			localIdToBlock.put(start + i, state);
 		}
@@ -415,14 +415,14 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		/**
 		 * Read back tile entities
 		 */
-		final Int2ObjectOpenHashMap<NBTTagCompound> tileEntities = new Int2ObjectOpenHashMap<>();
-		final NBTTagList tileEntityList = tag.getList("tileEntities", 10);
+		final Int2ObjectOpenHashMap<CompoundNBT> tileEntities = new Int2ObjectOpenHashMap<>();
+		final ListNBT tileEntityList = tag.getList("tileEntities", 10);
 
 		for (int i = 0; i < tileEntityList.size(); i++)
 		{
-			final NBTTagCompound data = tileEntityList.getCompound(i);
+			final CompoundNBT data = tileEntityList.getCompound(i);
 
-			final NBTTagCompound tileEntData = data.getCompound("tileEnt");
+			final CompoundNBT tileEntData = data.getCompound("tileEnt");
 			tileEntities.put(data.getInt("orbisTEIndex"), tileEntData);
 		}
 
@@ -464,13 +464,13 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 				}
 			}
 
-			IBlockState state = localIdToBlock.get(finalId);
+			BlockState state = localIdToBlock.get(finalId);
 
 			this.setBlockState(state, i);
 
 			if (state.hasTileEntity())
 			{
-				NBTTagCompound entity = tileEntities.get(i);
+				CompoundNBT entity = tileEntities.get(i);
 
 				if (entity != null)
 				{
@@ -544,10 +544,10 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	public void setTileEntity(TileEntity tileEntity, BlockPos pos)
 	{
-		this.setTileEntity(tileEntity.write(new NBTTagCompound()), pos);
+		this.setTileEntity(tileEntity.write(new CompoundNBT()), pos);
 	}
 
-	public void setTileEntity(NBTTagCompound tileEntity, BlockPos pos)
+	public void setTileEntity(CompoundNBT tileEntity, BlockPos pos)
 	{
 		if (tileEntity == null)
 		{
@@ -567,11 +567,11 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 
 	public class TileEntityEntry
 	{
-		public final NBTTagCompound data;
+		public final CompoundNBT data;
 
 		public final BlockPos pos;
 
-		public TileEntityEntry(NBTTagCompound data, BlockPos pos)
+		public TileEntityEntry(CompoundNBT data, BlockPos pos)
 		{
 			this.data = data;
 			this.pos = pos;

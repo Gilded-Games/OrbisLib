@@ -11,8 +11,8 @@ import com.gildedgames.orbis.lib.data.IDataUser;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collections;
 import java.util.List;
@@ -95,7 +95,7 @@ public class GuiVarBlueprintVariable implements IGuiVar<INode<BlueprintVariable,
 			this.blueprintVariables.getNodes().forEach((n) ->
 			{
 				DropdownElementWithData<INode<BlueprintVariable, NBT>> element = new DropdownElementWithData<>(
-						new TextComponentTranslation(n.getData().getUniqueNameVar().getData()), n);
+						new TranslationTextComponent(n.getData().getUniqueNameVar().getData()), n);
 
 				elements.add(element);
 			});
@@ -173,14 +173,14 @@ public class GuiVarBlueprintVariable implements IGuiVar<INode<BlueprintVariable,
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		tag.putString("name", this.name);
 		tag.putInt("dataIndex", this.dataIndex);
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		this.name = tag.getString("name");
 		this.dataIndex = tag.getInt("dataIndex");

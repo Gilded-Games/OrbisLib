@@ -14,9 +14,9 @@ import com.gildedgames.orbis.lib.data.schedules.IPosActionBaker;
 import com.gildedgames.orbis.lib.data.schedules.ScheduleRegion;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
-import net.minecraft.item.ItemSpawnEgg;
+import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
@@ -26,7 +26,7 @@ import java.util.function.Function;
 
 public class PostResolveActionSpawnEntities implements IPostResolveAction, IDataUser<ScheduleRegion>, IPosActionBaker
 {
-	private static final Function<ItemStack, Boolean> SPAWN_EGG_VALIDATOR = (itemStack -> itemStack.getItem() instanceof ItemSpawnEgg);
+	private static final Function<ItemStack, Boolean> SPAWN_EGG_VALIDATOR = (itemStack -> itemStack.getItem() instanceof SpawnEggItem);
 
 	private List<IGuiVar> variables = Lists.newArrayList();
 
@@ -84,7 +84,7 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -96,7 +96,7 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -139,7 +139,7 @@ public class PostResolveActionSpawnEntities implements IPostResolveAction, IData
 		List<IBakedPosAction> actions = Lists.newArrayList();
 		float rotationOffset = (rotation.compareTo(Rotation.NONE) * 90.0F);
 
-		if (this.itemStackVariable.getData().getItem() instanceof ItemSpawnEgg)
+		if (this.itemStackVariable.getData().getItem() instanceof SpawnEggItem)
 		{
 			for (int i = 0; i < this.itemStackVariable.getData().getCount(); i++)
 			{

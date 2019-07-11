@@ -3,7 +3,7 @@ package com.gildedgames.orbis.lib.data.management.impl;
 import com.gildedgames.orbis.lib.data.management.*;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Maps;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -187,7 +187,7 @@ public class OrbisProjectCache implements IProjectCache
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -197,7 +197,7 @@ public class OrbisProjectCache implements IProjectCache
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

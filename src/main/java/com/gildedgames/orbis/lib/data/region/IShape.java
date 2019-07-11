@@ -12,13 +12,13 @@ public interface IShape extends NBT
 	 * This method should not affect the state of the shape itself, but rather acts as a pure factory method.
 	 * @return
 	 */
-	Iterable<BlockPos.MutableBlockPos> createShapeData();
+	Iterable<BlockPos> createShapeData();
 
 	/**
 	 * This data should only be created once, and recreated or refreshed when the shape input has changed.
 	 * @return
 	 */
-	Iterable<BlockPos.MutableBlockPos> getShapeData();
+	Iterable<BlockPos> getShapeData();
 
 	IShape rotate(Rotation rotation, IRegion in);
 

@@ -8,10 +8,10 @@ import com.gildedgames.orbis.lib.core.baking.BakedBlueprint;
 import com.gildedgames.orbis.lib.core.baking.IBakedPosAction;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,7 +35,7 @@ public class DataPrimer
 
 	public void spawn(Entity entity)
 	{
-		this.access.spawnEntity(entity);
+		this.access.addEntity(entity);
 	}
 
 	public boolean canGenerate(BakedBlueprint blueprint, BlockPos offset)
@@ -44,7 +44,7 @@ public class DataPrimer
 		region.add(offset);
 
 		if (!this.access.isAreaLoaded(region.getMin().getX() - 2, region.getMin().getY() - 2, region.getMin().getZ() - 2,
-				region.getMax().getX() + 2, region.getMax().getY() + 2, region.getMax().getZ() + 2, true))
+				region.getMax().getX() + 2, region.getMax().getY() + 2, region.getMax().getZ() + 2))
 		{
 			return false;
 		}
@@ -60,7 +60,7 @@ public class DataPrimer
 		return true;
 	}
 
-	private void setBlockInWorld(final IBlockState state, final BlockDataContainer.TileEntityEntry entity, final BlockPos pos, final ICreationData<?> creationData)
+	private void setBlockInWorld(final BlockState state, final BlockDataContainer.TileEntityEntry entity, final BlockPos pos, final ICreationData<?> creationData)
 	{
 		if (state.getMaterial() == Material.AIR && !creationData.placeAir())
 		{
@@ -153,7 +153,7 @@ public class DataPrimer
 			int y = pos.getY() - region.getMin().getY();
 			int z = pos.getZ() - region.getMin().getZ();
 
-			final IBlockState state = blocks.getBlockState(x, y, z);
+			final BlockState state = blocks.getBlockState(x, y, z);
 
 			final BlockDataContainer.TileEntityEntry entity;
 

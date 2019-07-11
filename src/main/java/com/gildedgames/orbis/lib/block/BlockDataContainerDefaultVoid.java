@@ -1,11 +1,11 @@
 package com.gildedgames.orbis.lib.block;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 
 public class BlockDataContainerDefaultVoid extends BlockDataContainer
 {
-	private static final IBlockState VOID_BLOCK = Blocks.STRUCTURE_VOID.getDefaultState();
+	private static final BlockState VOID_BLOCK = Blocks.STRUCTURE_VOID.getDefaultState();
 
 	private BlockDataContainerDefaultVoid()
 	{
@@ -18,7 +18,7 @@ public class BlockDataContainerDefaultVoid extends BlockDataContainer
 	}
 
 	@Override
-	public IBlockState getDefaultBlock()
+	public BlockState getDefaultBlock()
 	{
 		return VOID_BLOCK;
 	}

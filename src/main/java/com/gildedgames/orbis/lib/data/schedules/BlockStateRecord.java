@@ -6,8 +6,8 @@ import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 
@@ -15,11 +15,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class BlockStateRecord implements IPositionRecord<IBlockState>
+public class BlockStateRecord implements IPositionRecord<BlockState>
 {
-	private final List<IPositionRecordListener<IBlockState>> listeners = Lists.newArrayList();
+	private final List<IPositionRecordListener<BlockState>> listeners = Lists.newArrayList();
 
-	private IBlockState[] states;
+	private BlockState[] states;
 
 	private int[] markedPositions;
 
@@ -27,7 +27,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 
 	private IRegion boundingBox;
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private BlockStateRecord()
 	{
@@ -40,18 +40,18 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 		this.height = height;
 		this.length = length;
 
-		this.boundingBox = new Region(BlockPos.ORIGIN, new BlockPos(this.width - 1, this.height - 1, this.length - 1));
+		this.boundingBox = new Region(BlockPos.ZERO, new BlockPos(this.width - 1, this.height - 1, this.length - 1));
 
 		this.createMarkedPositions();
 	}
 
-	private int getInternalStateId(final IBlockState state)
+	private int getInternalStateId(final BlockState state)
 	{
 		int id = -1;
 
 		for (int i = 0; i < this.states.length; i++)
 		{
-			final IBlockState f = this.states[i];
+			final BlockState f = this.states[i];
 
 			if (f != null && state == f)
 			{
@@ -63,16 +63,16 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 		return id;
 	}
 
-	private void checkForFilterAndAdd(final IBlockState state)
+	private void checkForFilterAndAdd(final BlockState state)
 	{
 		if (this.states == null)
 		{
-			this.states = new IBlockState[0];
+			this.states = new BlockState[0];
 		}
 
 		boolean hasState = false;
 
-		for (final IBlockState s : this.states)
+		for (final BlockState s : this.states)
 		{
 			if (s != null && state == s)
 			{
@@ -142,7 +142,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public void listen(final IPositionRecordListener<IBlockState> listener)
+	public void listen(final IPositionRecordListener<BlockState> listener)
 	{
 		if (!this.listeners.contains(listener))
 		{
@@ -151,7 +151,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public boolean unlisten(final IPositionRecordListener<IBlockState> listener)
+	public boolean unlisten(final IPositionRecordListener<BlockState> listener)
 	{
 		return this.listeners.remove(listener);
 	}
@@ -163,18 +163,18 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public IBlockState[] getData()
+	public BlockState[] getData()
 	{
 		if (this.states == null)
 		{
-			this.states = new IBlockState[0];
+			this.states = new BlockState[0];
 		}
 
 		return this.states;
 	}
 
 	@Override
-	public IBlockState get(final int index)
+	public BlockState get(final int index)
 	{
 		final int id = this.markedPositions[index];
 
@@ -187,7 +187,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public IBlockState get(final int x, final int y, final int z)
+	public BlockState get(final int x, final int y, final int z)
 	{
 		final int index = this.getIndex(x, y, z, true);
 
@@ -195,7 +195,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public void markPos(final IBlockState state, final int x, final int y, final int z)
+	public void markPos(final BlockState state, final int x, final int y, final int z)
 	{
 		this.checkForFilterAndAdd(state);
 
@@ -223,25 +223,25 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> createShapeData()
+	public Iterable<BlockPos> createShapeData()
 	{
-		return new Iterable<BlockPos.MutableBlockPos>()
+		return new Iterable<BlockPos>()
 		{
 
 			@Override
-			public Iterator<BlockPos.MutableBlockPos> iterator()
+			public Iterator<BlockPos> iterator()
 			{
-				final Iterator<BlockPos.MutableBlockPos> iter = BlockStateRecord.this.getBoundingBox().createShapeData().iterator();
+				final Iterator<BlockPos> iter = BlockStateRecord.this.getBoundingBox().createShapeData().iterator();
 
-				return new AbstractIterator<BlockPos.MutableBlockPos>()
+				return new AbstractIterator<BlockPos>()
 				{
 
 					@Override
-					protected BlockPos.MutableBlockPos computeNext()
+					protected BlockPos computeNext()
 					{
 						while (iter.hasNext())
 						{
-							final BlockPos.MutableBlockPos next = iter.next();
+							final BlockPos next = iter.next();
 
 							if (BlockStateRecord.this.contains(next.getX(), next.getY(), next.getZ()))
 							{
@@ -257,7 +257,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null)
 		{
@@ -311,7 +311,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -329,7 +329,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -341,7 +341,7 @@ public class BlockStateRecord implements IPositionRecord<IBlockState>
 
 		this.boundingBox = funnel.get("boundingBox");
 
-		this.states = funnel.getArray("states", IBlockState.class, NBTFunnel.BLOCKSTATE_GETTER);
+		this.states = funnel.getArray("states", BlockState.class, NBTFunnel.BLOCKSTATE_GETTER);
 		this.markedPositions = funnel.getIntArray("markedPositions");
 	}
 

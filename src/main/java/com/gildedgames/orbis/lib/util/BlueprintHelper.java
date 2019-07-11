@@ -5,8 +5,8 @@ import com.gildedgames.orbis.lib.data.region.IMutableRegion;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.IShape;
 import com.gildedgames.orbis.lib.data.region.Region;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -33,11 +33,11 @@ public class BlueprintHelper
 		BlockDataContainer difference = new BlockDataContainer(Blocks.STRUCTURE_VOID.getDefaultState(), oldState.getWidth(), oldState.getHeight(),
 				oldState.getLength());
 
-		for (BlockPos.MutableBlockPos pos : BlockPos
-				.getAllInBoxMutable(BlockPos.ORIGIN, new BlockPos(oldState.getWidth() - 1, oldState.getHeight() - 1, oldState.getLength() - 1)))
+		for (BlockPos pos : BlockPos
+				.getAllInBoxMutable(BlockPos.ZERO, new BlockPos(oldState.getWidth() - 1, oldState.getHeight() - 1, oldState.getLength() - 1)))
 		{
-			IBlockState oldBlock = oldState.getBlockState(pos);
-			IBlockState newBlock = newState.getBlockState(pos);
+			BlockState oldBlock = oldState.getBlockState(pos);
+			BlockState newBlock = newState.getBlockState(pos);
 
 			if (oldBlock != newBlock)
 			{
@@ -58,7 +58,7 @@ public class BlueprintHelper
 		return fetchBlocksInside(Blocks.AIR.getDefaultState(), shape, world, overridePos);
 	}
 
-	public static BlockDataContainer fetchBlocksInside(IBlockState defaultState, final IShape shape, final World world, @Nullable BlockPos overridePos)
+	public static BlockDataContainer fetchBlocksInside(BlockState defaultState, final IShape shape, final World world, @Nullable BlockPos overridePos)
 	{
 		IRegion bb = overridePos != null ? new Region(shape.getBoundingBox()) : shape.getBoundingBox();
 

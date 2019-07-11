@@ -22,8 +22,8 @@ import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.gildedgames.orbis.lib.world.IWorldObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlueprintData
-		implements IDimensions, IData, IPositionRecordListener<IBlockState>, IDataHolder<BlueprintData>,
+		implements IDimensions, IData, IPositionRecordListener<BlockState>, IDataHolder<BlueprintData>,
 		INodeTreeListener<IScheduleLayer, LayerLink>
 {
 	public static final String EXTENSION = "blueprint";
@@ -296,7 +296,7 @@ public class BlueprintData
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -311,7 +311,7 @@ public class BlueprintData
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -399,7 +399,7 @@ public class BlueprintData
 	{
 		final BlueprintData data = new BlueprintData();
 
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 
 		this.write(tag);
 
@@ -409,7 +409,7 @@ public class BlueprintData
 	}
 
 	@Override
-	public void onMarkPos(final IBlockState state, final int x, final int y, final int z)
+	public void onMarkPos(final BlockState state, final int x, final int y, final int z)
 	{
 		this.listeners.forEach(IBlueprintDataListener::onDataChanged);
 	}

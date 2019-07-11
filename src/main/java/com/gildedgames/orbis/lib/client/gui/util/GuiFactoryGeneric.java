@@ -6,9 +6,9 @@ import com.gildedgames.orbis.lib.client.gui.data.IDropdownElement;
 import com.gildedgames.orbis.lib.client.gui.data.directory.IDirectoryNavigator;
 import com.gildedgames.orbis.lib.client.rect.Dim2D;
 import com.gildedgames.orbis.lib.client.rect.Rect;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.io.File;
 import java.util.Collections;
@@ -39,10 +39,10 @@ public class GuiFactoryGeneric
 
 	public static IDropdownElement createCloseDropdownElement(final File file, final IDirectoryNavigator navigator)
 	{
-		return new DropdownElement(new TextComponentString("Close"))
+		return new DropdownElement(new StringTextComponent("Close"))
 		{
 			@Override
-			public void onClick(final GuiDropdownList list, final EntityPlayer player)
+			public void onClick(final GuiDropdownList list, final PlayerEntity player)
 			{
 				list.setDropdownElements(Collections.emptyList());
 			}
@@ -51,10 +51,10 @@ public class GuiFactoryGeneric
 
 	public static IDropdownElement createDeleteFileDropdownElement(final File file, final IDirectoryNavigator navigator)
 	{
-		return new DropdownElement(new TextComponentString("Delete"))
+		return new DropdownElement(new StringTextComponent("Delete"))
 		{
 			@Override
-			public void onClick(final GuiDropdownList list, final EntityPlayer player)
+			public void onClick(final GuiDropdownList list, final PlayerEntity player)
 			{
 				if (file.isDirectory())
 				{

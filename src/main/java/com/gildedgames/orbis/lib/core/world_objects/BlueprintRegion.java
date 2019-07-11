@@ -9,8 +9,8 @@ import com.gildedgames.orbis.lib.data.region.IRotateable;
 import com.gildedgames.orbis.lib.util.RegionHelp;
 import com.gildedgames.orbis.lib.util.RotationHelp;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -23,7 +23,7 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 
 	protected BlueprintData data;
 
-	protected BlockPos min = BlockPos.ORIGIN, max = BlockPos.ORIGIN;
+	protected BlockPos min = BlockPos.ZERO, max = BlockPos.ZERO;
 
 	protected BlueprintRegion()
 	{
@@ -62,7 +62,7 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 		return this.rotation;
 	}
 
-	public IBlockState getBlock(final BlockPos pos)
+	public BlockState getBlock(final BlockPos pos)
 	{
 		final BlockPos transformed = this.transformForBlueprint(pos);
 		return this.getBlockDataContainer().getBlockState(transformed);
@@ -126,7 +126,7 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -138,7 +138,7 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -182,7 +182,7 @@ public class BlueprintRegion extends AbstractRegion implements IMutableRegion, I
 	}
 
 	@Override
-	public Iterator<BlockPos.MutableBlockPos> iterator()
+	public Iterator<BlockPos> iterator()
 	{
 		return BlockPos.getAllInBoxMutable(this.min, this.max).iterator();
 	}

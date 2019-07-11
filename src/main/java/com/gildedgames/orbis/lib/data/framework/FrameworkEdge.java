@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.data.framework;
 
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class FrameworkEdge implements NBT
 {
@@ -29,13 +29,13 @@ public class FrameworkEdge implements NBT
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 
 	}

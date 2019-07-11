@@ -2,7 +2,7 @@ package com.gildedgames.orbis.lib.client.gui.util.gui_library;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.Collection;
@@ -18,7 +18,7 @@ public interface IGuiViewer
 
 	void notifyBuildingFinished(IGuiElement element);
 
-	GuiScreen getActualScreen();
+	Screen getActualScreen();
 
 	IGuiViewer getPreviousViewer();
 

@@ -1,18 +1,18 @@
 package com.gildedgames.orbis.lib.world;
 
 import com.gildedgames.orbis.lib.processing.IBlockAccess;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
 import net.minecraft.fluid.IFluidState;
-import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.EnumLightType;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
 
 import javax.annotation.Nullable;
@@ -21,13 +21,13 @@ public class WorldSlice implements IBlockAccess
 {
 	private final World world;
 
-	private final Chunk[] chunks;
+	private final IChunk[] chunks;
 
 	private final ChunkSection[] sections;
 
 	private final int offsetX, offsetZ;
 
-	private final IBlockState defaultBlockState = Blocks.AIR.getDefaultState();
+	private final BlockState defaultBlockState = Blocks.AIR.getDefaultState();
 
 	public WorldSlice(World world, ChunkPos pos)
 	{
@@ -47,7 +47,7 @@ public class WorldSlice implements IBlockAccess
 				int chunkZ = pos.z + z - 1;
 
 				// TODO: Investigate load and generate parameters
-				Chunk chunk = world.getChunkProvider().getChunk(chunkX, chunkZ, false, false);
+				IChunk chunk = world.getChunkProvider().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false);
 
 				if (chunk == null)
 				{
@@ -73,7 +73,7 @@ public class WorldSlice implements IBlockAccess
 	}
 
 	@Override
-	public IBlockState getBlockState(BlockPos pos)
+	public BlockState getBlockState(BlockPos pos)
 	{
 		return this.getBlockState(pos.getX(), pos.getY(), pos.getZ());
 	}
@@ -84,7 +84,7 @@ public class WorldSlice implements IBlockAccess
 		return null;
 	}
 
-	public IBlockState getBlockState(int x, int y, int z)
+	public BlockState getBlockState(int x, int y, int z)
 	{
 		if (y >= 0  && y < 256)
 		{
@@ -117,7 +117,7 @@ public class WorldSlice implements IBlockAccess
 	 * @param pos The {@link BlockPos} of the block to replace
 	 * @param after The state of the block at {@link BlockPos} after it is replaced
 	 */
-	public void replaceBlockState(BlockPos pos, IBlockState after)
+	public void replaceBlockState(BlockPos pos, BlockState after)
 	{
 		if (pos.getY() >= 0  && pos.getY() < 256)
 		{
@@ -182,14 +182,14 @@ public class WorldSlice implements IBlockAccess
 		return this.isAirBlock(pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	public boolean setBlockState(BlockPos pos, IBlockState state)
+	public boolean setBlockState(BlockPos pos, BlockState state)
 	{
 		if (pos.getY() >= 0  && pos.getY() < 256)
 		{
 			int chunkX = (pos.getX() - this.offsetX) >> 4;
 			int chunkZ = (pos.getZ() - this.offsetZ) >> 4;
 
-			Chunk chunk = this.chunks[(chunkX * 3) + chunkZ];
+			IChunk chunk = this.chunks[(chunkX * 3) + chunkZ];
 
 			if (chunk == null)
 			{
@@ -206,7 +206,7 @@ public class WorldSlice implements IBlockAccess
 
 	public int getHeight(Heightmap.Type type, int x, int z)
 	{
-		return this.world.getChunk(x >> 4, z >> 4).getHeightmap(type).getHeight(x & 15, z & 15);
+		return this.world.getChunk(x >> 4, z >> 4).getTopBlockY(type, x & 15, z & 15);
 	}
 
 	public boolean isAirBlock(int x, int y, int z)
@@ -215,27 +215,15 @@ public class WorldSlice implements IBlockAccess
 	}
 
 	@Override
-	public boolean setBlockState(BlockPos pos, IBlockState newState, int flags)
+	public boolean setBlockState(BlockPos pos, BlockState newState, int flags)
 	{
 		return this.setBlockState(pos, newState);
 	}
 
 	@Override
-	public boolean spawnEntity(Entity entityIn)
+	public boolean removeBlock(BlockPos pos, boolean isMoving)
 	{
-		return this.world.spawnEntity(entityIn);
-	}
-
-	@Override
-	public boolean removeBlock(BlockPos pos)
-	{
-		return this.world.removeBlock(pos);
-	}
-
-	@Override
-	public void setLightFor(EnumLightType type, BlockPos pos, int lightValue)
-	{
-		this.world.setLightFor(type, pos, lightValue);
+		return this.setBlockState(pos, Blocks.AIR.getDefaultState());
 	}
 
 	@Override
@@ -243,4 +231,5 @@ public class WorldSlice implements IBlockAccess
 	{
 		return this.setBlockState(pos, Blocks.AIR.getDefaultState());
 	}
+
 }

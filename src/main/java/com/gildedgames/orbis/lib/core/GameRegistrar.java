@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.core;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -39,7 +39,7 @@ public class GameRegistrar
 		return this.itemRegistry.getValue(identifier);
 	}
 
-	public int getStateId(final IBlockState blockState)
+	public int getStateId(final BlockState blockState)
 	{
 		return Block.getStateId(blockState);
 	}

@@ -5,7 +5,7 @@ import com.gildedgames.orbis.lib.core.variables.IGuiVar;
 import com.gildedgames.orbis.lib.core.variables.displays.GuiVarDisplay;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Lists;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class BlueprintMetadata implements IBlueprintMetadata
 	}
 
 	@Override
-	public void write(final NBTTagCompound tag)
+	public void write(final CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -64,7 +64,7 @@ public class BlueprintMetadata implements IBlueprintMetadata
 	}
 
 	@Override
-	public void read(final NBTTagCompound tag)
+	public void read(final CompoundNBT tag)
 	{
 		NBTFunnel funnel = new NBTFunnel(tag);
 

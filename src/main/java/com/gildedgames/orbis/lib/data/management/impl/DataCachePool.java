@@ -5,8 +5,8 @@ import com.gildedgames.orbis.lib.data.management.IDataCache;
 import com.gildedgames.orbis.lib.data.management.IDataCachePool;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.google.common.collect.Maps;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.annotation.Nullable;
@@ -48,7 +48,7 @@ public class DataCachePool implements IDataCachePool
 	{
 		try (FileInputStream in = new FileInputStream(file))
 		{
-			final NBTTagCompound tag = CompressedStreamTools.readCompressed(in);
+			final CompoundNBT tag = CompressedStreamTools.readCompressed(in);
 
 			final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -68,7 +68,7 @@ public class DataCachePool implements IDataCachePool
 
 		try (FileOutputStream out = new FileOutputStream(cacheFile))
 		{
-			final NBTTagCompound tag = new NBTTagCompound();
+			final CompoundNBT tag = new CompoundNBT();
 			final NBTFunnel funnel = new NBTFunnel(tag);
 
 			funnel.set(EXTENSION, cache);
@@ -141,9 +141,9 @@ public class DataCachePool implements IDataCachePool
 	}
 
 	@Override
-	public NBTTagCompound writeCacheData()
+	public CompoundNBT writeCacheData()
 	{
-		final NBTTagCompound tag = new NBTTagCompound();
+		final CompoundNBT tag = new CompoundNBT();
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
 		funnel.setStringMap("idToCache", this.idToCache);
@@ -152,7 +152,7 @@ public class DataCachePool implements IDataCachePool
 	}
 
 	@Override
-	public void readCacheData(final NBTTagCompound tag)
+	public void readCacheData(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

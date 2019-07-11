@@ -10,7 +10,7 @@ import com.gildedgames.orbis.lib.client.rect.Rect;
 import com.gildedgames.orbis.lib.core.variables.IGuiVar;
 import com.gildedgames.orbis.lib.core.variables.IGuiVarDisplayContents;
 import com.google.common.collect.Maps;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -83,7 +83,7 @@ public class GuiVarDisplay extends GuiElement
 		if (this.displayTitle != null)
 		{
 			GuiText title = new GuiText(Dim2D.build().y(currentY).x(this.dim().width() / 2).centerX(true).flush(),
-					new Text(new TextComponentTranslation(this.displayTitle), 1.0F));
+					new Text(new TranslationTextComponent(this.displayTitle), 1.0F));
 
 			currentY += 15;
 
@@ -92,7 +92,7 @@ public class GuiVarDisplay extends GuiElement
 
 		for (IGuiVar var : this.variables)
 		{
-			GuiText text = new GuiText(Dim2D.build().y(currentY).flush(), new Text(new TextComponentTranslation(var.getVariableName()), 1.0F));
+			GuiText text = new GuiText(Dim2D.build().y(currentY).flush(), new Text(new TranslationTextComponent(var.getVariableName()), 1.0F));
 
 			currentY += 13;
 
@@ -109,11 +109,11 @@ public class GuiVarDisplay extends GuiElement
 
 		currentY += 5;
 
-		this.apply = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x(0).y(currentY).height(20).flush(), this::updateVariableData);
-		this.reset = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x((this.dim().width() / 2) + 4).y(currentY).height(20).flush(), this::resetVariableData);
+		this.apply = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x(0).y(currentY).height(20).flush(), (button) -> this.updateVariableData());
+		this.reset = new GuiButtonVanilla(Dim2D.build().width((this.dim().width() / 2) - 2).x((this.dim().width() / 2) + 4).y(currentY).height(20).flush(), (button) -> this.resetVariableData());
 
-		this.apply.getInner().displayString = "Apply";
-		this.reset.getInner().displayString = "Reset";
+		this.apply.getInner().setMessage("Apply");
+		this.reset.getInner().setMessage("Reset");
 
 		currentY += this.apply.dim().height();
 

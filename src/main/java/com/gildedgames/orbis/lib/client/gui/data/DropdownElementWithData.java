@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.client.gui.data;
 
 import com.gildedgames.orbis.lib.client.gui.util.GuiDropdownList;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
@@ -26,7 +26,7 @@ public class DropdownElementWithData<DATA> implements IDropdownElement
 	}
 
 	@Override
-	public void onClick(final GuiDropdownList list, final EntityPlayer player)
+	public void onClick(final GuiDropdownList list, final PlayerEntity player)
 	{
 
 	}

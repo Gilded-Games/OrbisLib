@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.util.mc;
 
 import com.google.common.collect.Lists;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 
 import java.util.List;

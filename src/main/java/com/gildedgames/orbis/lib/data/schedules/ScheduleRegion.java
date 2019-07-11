@@ -10,7 +10,7 @@ import com.gildedgames.orbis.lib.data.region.IColored;
 import com.gildedgames.orbis.lib.data.region.IMutableRegion;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public class ScheduleRegion implements NBT, IColored, ISchedule
 {
@@ -108,7 +108,7 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public void write(NBTTagCompound tag)
+	public void write(CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -123,7 +123,7 @@ public class ScheduleRegion implements NBT, IColored, ISchedule
 	}
 
 	@Override
-	public void read(NBTTagCompound tag)
+	public void read(CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 

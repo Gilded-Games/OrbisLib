@@ -5,8 +5,8 @@ import com.gildedgames.orbis.lib.core.PlacementCondition;
 import com.gildedgames.orbis.lib.core.baking.BakedBlueprint;
 import com.gildedgames.orbis.lib.core.util.BlueprintUtil;
 import com.gildedgames.orbis.lib.util.ArrayHelper;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 
@@ -32,7 +32,7 @@ public class PlacementConditionReplaceableMaterials implements PlacementConditio
 			{
 				for (int y = 0; y < container.getHeight(); y++)
 				{
-					final IBlockState blueprintBlock = container.getBlockState(x, y, z);
+					final BlockState blueprintBlock = container.getBlockState(x, y, z);
 
 					if (!blueprintBlock.getMaterial().isSolid())
 					{
@@ -41,7 +41,7 @@ public class PlacementConditionReplaceableMaterials implements PlacementConditio
 
 					pos.setPos(offset.getX() + x, offset.getY() + y, offset.getZ() + z);
 
-					final IBlockState worldBlock = access.getBlockState(pos);
+					final BlockState worldBlock = access.getBlockState(pos);
 
 					if (BlueprintUtil.isReplaceable(worldBlock) || ArrayHelper.contains(this.acceptedMaterials, worldBlock.getMaterial()))
 					{

@@ -5,7 +5,7 @@ import com.gildedgames.orbis.lib.data.region.IShape;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.RegionHelp;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,7 +19,7 @@ public class CylinderShape extends AbstractShape
 
 	private boolean centered;
 
-	private Iterable<BlockPos.MutableBlockPos> data;
+	private Iterable<BlockPos> data;
 
 	private BlockPos renderMin, renderMax;
 
@@ -46,7 +46,7 @@ public class CylinderShape extends AbstractShape
 	}
 
 	@Override
-	public void writeShape(final NBTTagCompound tag)
+	public void writeShape(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -57,7 +57,7 @@ public class CylinderShape extends AbstractShape
 	}
 
 	@Override
-	public void readShape(final NBTTagCompound tag)
+	public void readShape(final CompoundNBT tag)
 	{
 		final NBTFunnel funnel = new NBTFunnel(tag);
 
@@ -104,7 +104,7 @@ public class CylinderShape extends AbstractShape
 		{
 			final int radiusSq = (int) this.start.distanceSq(this.end);
 
-			final double dist = this.start.add(0, y - this.start.getY(), 0).distanceSq(x, y, z);
+			final double dist = this.start.add(0, y - this.start.getY(), 0).distanceSq(x, y, z, true);
 
 			return dist < radiusSq + 2;
 		}
@@ -120,7 +120,7 @@ public class CylinderShape extends AbstractShape
 			final double squareX = point.getX() * (1.0D / radiusX);
 			final double squareZ = point.getZ() * (1.0D / radiusZ);
 
-			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, 0, squareZ));
+			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, 0, squareZ, true));
 
 			return dist < 1;
 		}
@@ -142,7 +142,7 @@ public class CylinderShape extends AbstractShape
 			final double squareX = point.getX() * (1.0D / radius);
 			final double squareZ = point.getZ() * (1.0D / radius);
 
-			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, 0, squareZ));
+			final double dist = Math.sqrt(new BlockPos(0, 0, 0).distanceSq(squareX, 0, squareZ, false));
 
 			return dist < 1;
 		}
@@ -155,7 +155,7 @@ public class CylinderShape extends AbstractShape
 	}
 
 	@Override
-	public Iterable<BlockPos.MutableBlockPos> getShapeData()
+	public Iterable<BlockPos> getShapeData()
 	{
 		if (this.data == null)
 		{

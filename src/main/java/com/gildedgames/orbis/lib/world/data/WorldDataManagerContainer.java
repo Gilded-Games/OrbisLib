@@ -1,8 +1,9 @@
 package com.gildedgames.orbis.lib.world.data;
 
-import net.minecraft.nbt.INBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.Direction;
+import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 
@@ -11,7 +12,7 @@ import java.io.File;
 
 public class WorldDataManagerContainer implements IWorldDataManagerContainer
 {
-	private final World world;
+	private final ServerWorld world;
 
 	private IWorldDataManager manager;
 
@@ -22,7 +23,7 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 		this.world = null;
 	}
 
-	public WorldDataManagerContainer(World world)
+	public WorldDataManagerContainer(ServerWorld world)
 	{
 		this.world = world;
 	}
@@ -50,29 +51,22 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 		this.lastStorageMethod = method;
 	}
 
-	private IWorldDataManager createDataManager(World world)
+	private IWorldDataManager createDataManager(ServerWorld world)
 	{
-		if (world.isRemote)
+		if (this.lastStorageMethod == null)
 		{
-			return new WorldDataManagerNOOP();
+			this.lastStorageMethod = WorldDataStorageMethod.FLAT;
+		}
+
+		File dir = new File(world.getDimension().getType().getDirectory(world.getSaveHandler().getWorldDirectory()) ,"data/orbis");
+
+		if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
+		{
+			return new WorldDataManagerFlat(dir);
 		}
 		else
 		{
-			if (this.lastStorageMethod == null)
-			{
-				this.lastStorageMethod = WorldDataStorageMethod.FLAT;
-			}
-
-			File dir = new File(world.getDimension().getType().getDirectory(world.getSaveHandler().getWorldDirectory()) ,"data/orbis");
-
-			if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
-			{
-				return new WorldDataManagerFlat(dir);
-			}
-			else
-			{
-				throw new IllegalStateException("Don't know how to initialize '" + this.lastStorageMethod.serializedName + "' storage");
-			}
+			throw new IllegalStateException("Don't know how to initialize '" + this.lastStorageMethod.serializedName + "' storage");
 		}
 	}
 
@@ -80,9 +74,9 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 	{
 		@Nullable
 		@Override
-		public INBTBase writeNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side)
+		public INBT writeNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final Direction side)
 		{
-			NBTTagCompound tag = new NBTTagCompound();
+			CompoundNBT tag = new CompoundNBT();
 
 			if (instance.getLastStorageMethod() != null)
 			{
@@ -93,9 +87,9 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 		}
 
 		@Override
-		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side, final INBTBase nbt)
+		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final Direction side, final INBT nbt)
 		{
-			String name = ((NBTTagCompound) nbt).getString("LastStorageMethod");
+			String name = ((CompoundNBT) nbt).getString("LastStorageMethod");
 
 			for (WorldDataStorageMethod method : WorldDataStorageMethod.values())
 			{

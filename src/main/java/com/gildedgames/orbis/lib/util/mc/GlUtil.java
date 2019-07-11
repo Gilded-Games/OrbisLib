@@ -1,7 +1,7 @@
 package com.gildedgames.orbis.lib.util.mc;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
@@ -14,7 +14,7 @@ public class GlUtil
 		GlStateManager.lineWidth(lineWidth);
 
 		GlStateManager.disableLighting();
-		GlStateManager.disableTexture2D();
+		GlStateManager.disableTexture();
 		GlStateManager.enableBlend();
 
 		buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
@@ -24,7 +24,7 @@ public class GlUtil
 
 		Tessellator.getInstance().draw();
 
-		GlStateManager.enableTexture2D();
+		GlStateManager.enableTexture();
 
 		GlStateManager.lineWidth(1.0F);
 	}

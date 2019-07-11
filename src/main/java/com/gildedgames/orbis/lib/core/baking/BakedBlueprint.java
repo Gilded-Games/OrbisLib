@@ -23,7 +23,7 @@ import com.gildedgames.orbis.lib.util.RotationHelp;
 import com.gildedgames.orbis.lib.util.mc.NBT;
 import com.gildedgames.orbis.lib.util.mc.NBTHelper;
 import com.google.common.collect.Lists;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -317,7 +317,7 @@ public class BakedBlueprint
 
 		BlockPos dimensions = new BlockPos(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1);
 
-		this.bakedRegion = new Region(BlockPos.ORIGIN, transformedBlockPos(dimensions, rotation));
+		this.bakedRegion = new Region(BlockPos.ZERO, transformedBlockPos(dimensions, rotation));
 		this.bakedRegion.add(this.creationData.getPos());
 	}
 
@@ -374,9 +374,9 @@ public class BakedBlueprint
 
 			for (BlockPos pos : layer.getStateRecord().getRegion())
 			{
-				final IBlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
+				final BlockState layerState = layer.getStateRecord().get(pos.getX(), pos.getY(), pos.getZ());
 
-				for (IBlockState predicate : layer.getStateRecord().getData())
+				for (BlockState predicate : layer.getStateRecord().getData())
 				{
 					if (predicate == layerState)
 					{

@@ -3,8 +3,8 @@ package com.gildedgames.orbis.lib.client.gui.util;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.GuiElement;
 import com.gildedgames.orbis.lib.client.gui.util.gui_library.IGuiElement;
 import com.gildedgames.orbis.lib.client.rect.Rect;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 
@@ -82,8 +82,8 @@ public class GuiInputSlider extends GuiElement
 		GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
 				GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 		GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-		this.viewer().getActualScreen().drawTexturedModalRect(this.dim().x(), this.dim().y(), 0, 46, (int) (this.dim().width() / 2), (int) this.dim().height());
-		this.viewer().getActualScreen().drawTexturedModalRect(this.dim().x() + this.dim().width() / 2, this.dim().y(), (int) (200 - this.dim().width() / 2), 46,
+		this.viewer().getActualScreen().blit((int) this.dim().x(), (int) this.dim().y(), 0, 46, (int) (this.dim().width() / 2), (int) this.dim().height());
+		this.viewer().getActualScreen().blit((int) (this.dim().x() + this.dim().width() / 2), (int) this.dim().y(), (int) (200 - this.dim().width() / 2), 46,
 				(int) (this.dim().width() / 2), (int) this.dim().height());
 
 		int j = 14737632;
@@ -111,9 +111,9 @@ public class GuiInputSlider extends GuiElement
 		this.viewer().mc().getTextureManager().bindTexture(BUTTON_TEXTURES);
 		GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 		this.viewer().getActualScreen()
-				.drawTexturedModalRect(this.dim().x() + (int) (this.sliderValue * (this.dim().width() - 8)), this.dim().y(), 0, 66, 4, 20);
+				.blit((int) this.dim().x() + (int) (this.sliderValue * (this.dim().width() - 8)), (int) this.dim().y(), 0, 66, 4, 20);
 		this.viewer().getActualScreen()
-				.drawTexturedModalRect(this.dim().x() + (int) (this.sliderValue * (this.dim().width() - 8)) + 4, this.dim().y(), 196, 66, 4, 20);
+				.blit((int) this.dim().x() + (int) (this.sliderValue * (this.dim().width() - 8)) + 4, (int) this.dim().y(), 196, 66, 4, 20);
 	}
 
 	@Override

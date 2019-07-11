@@ -3,20 +3,16 @@ package com.gildedgames.orbis.lib.inventory;
 import com.gildedgames.orbis.lib.data.IDataChild;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
 import com.gildedgames.orbis.lib.util.mc.NBT;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.ItemSpawnEgg;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.item.SpawnEggItem;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentBase;
-import net.minecraft.util.text.TextComponentTranslation;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class InventorySpawnEggs implements IInventory, NBT, IDataChild<BlueprintData>
 {
@@ -103,42 +99,25 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 	}
 
 	@Override
-	public boolean isUsableByPlayer(final EntityPlayer player)
+	public boolean isUsableByPlayer(final PlayerEntity player)
 	{
 		return true;
 	}
 
 	@Override
-	public void openInventory(final EntityPlayer player)
+	public void openInventory(final PlayerEntity player)
 	{
 	}
 
 	@Override
-	public void closeInventory(@Nonnull final EntityPlayer player)
+	public void closeInventory(@Nonnull final PlayerEntity player)
 	{
 	}
 
 	@Override
 	public boolean isItemValidForSlot(final int index, @Nonnull final ItemStack stack)
 	{
-		return stack.getItem() instanceof ItemSpawnEgg;
-	}
-
-	@Override
-	public int getField(final int id)
-	{
-		return 0;
-	}
-
-	@Override
-	public void setField(final int id, final int value)
-	{
-	}
-
-	@Override
-	public int getFieldCount()
-	{
-		return 0;
+		return stack.getItem() instanceof SpawnEggItem;
 	}
 
 	@Override
@@ -148,28 +127,9 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 	}
 
 	@Override
-	public ITextComponent getName()
+	public void write(final CompoundNBT output)
 	{
-		return new TextComponentTranslation("inventory.forge");
-	}
-
-	@Override
-	public boolean hasCustomName()
-	{
-		return false;
-	}
-
-	@Nullable
-	@Override
-	public ITextComponent getCustomName()
-	{
-		return null;
-	}
-
-	@Override
-	public void write(final NBTTagCompound output)
-	{
-		final NBTTagList list = new NBTTagList();
+		final ListNBT list = new ListNBT();
 
 		for (int i = 0; i < this.inventory.size(); ++i)
 		{
@@ -177,7 +137,7 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 
 			if (!stack.isEmpty())
 			{
-				final NBTTagCompound stackCompound = new NBTTagCompound();
+				final CompoundNBT stackCompound = new CompoundNBT();
 				stackCompound.putByte("Slot", (byte) i);
 
 				stack.write(stackCompound);
@@ -190,13 +150,13 @@ public class InventorySpawnEggs implements IInventory, NBT, IDataChild<Blueprint
 	}
 
 	@Override
-	public void read(final NBTTagCompound input)
+	public void read(final CompoundNBT input)
 	{
-		final NBTTagList list = input.getList("Items", 10);
+		final ListNBT list = input.getList("Items", 10);
 
 		for (int i = 0; i < list.size(); i++)
 		{
-			final NBTTagCompound compound = list.getCompound(i);
+			final CompoundNBT compound = list.getCompound(i);
 
 			final int slot = compound.getByte("Slot") & 255;
 
