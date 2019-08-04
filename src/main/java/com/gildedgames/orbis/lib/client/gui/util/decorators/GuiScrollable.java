@@ -20,13 +20,9 @@ public class GuiScrollable extends GuiElement
 
 	private static final ResourceLocation SCROLL_BAR = OrbisLib.getResource("list/scroll_bar.png");
 
-	private final IGuiElement window;
-
-	private final IGuiElement pane;
-
-	private final IGuiElement decorated;
-
 	private final boolean scrollBarOnRightSide;
+
+	private IGuiElement window;
 
 	private final IGuiEvent<IGuiElement> scissorEvent = new IGuiEvent<IGuiElement>()
 	{
@@ -203,6 +199,10 @@ public class GuiScrollable extends GuiElement
 		}
 	};
 
+	private IGuiElement pane;
+
+	private IGuiElement decorated;
+
 	private float scroll;
 
 	private GuiTexture scrollKnob, scrollBar;
@@ -218,6 +218,11 @@ public class GuiScrollable extends GuiElement
 
 		this.scrollBarOnRightSide = scrollBarOnRightSide;
 
+		this.setDecorated(decorated);
+	}
+
+	public void setDecorated(final IGuiElement decorated)
+	{
 		this.dim().mod().x(decorated.dim().x()).y(decorated.dim().y()).flush();
 
 		this.decorated = decorated;
@@ -227,6 +232,8 @@ public class GuiScrollable extends GuiElement
 
 		this.window.dim().add("scrollableArea", this, RectModifier.ModifierType.AREA);
 		this.pane.dim().add("scrollableArea", this, RectModifier.ModifierType.AREA);
+
+		this.tryRebuild();
 	}
 
 	public float getScrollBarWidth()
@@ -286,20 +293,19 @@ public class GuiScrollable extends GuiElement
 	{
 		if (this.window.state().isHoveredAndTopElement())
 		{
-			final float prevScroll = this.scroll;
+			final float height = this.decorated.dim().height() - this.dim().height();
 
 			this.scroll -= (float) (state / 120) * 10.0F;
 
-			this.scroll = Math.max(0.0F, Math.min(this.decorated.dim().height() - this.dim().height(), this.scroll));
+			this.scroll = Math.max(0.0F, Math.min(height, this.scroll));
 
-			this.pane.dim().mod().addY(prevScroll - this.scroll).flush();
-			final float height = this.decorated.dim().height() - this.dim().height();
+			this.pane.dim().mod().y(-this.scroll).flush();
 
-			final float percent = this.scroll <= 0.0F ? 0.0F : this.scroll / height;
+			final float percent = this.scroll / height;
+			final float yScrollBarPadding = 1;
+			final float y = percent * (this.dim().height() - this.scrollKnob.dim().height() - (yScrollBarPadding * 2));
 
-			final float y = Math.max(0.0F, (percent * this.dim().height()) - this.scrollKnob.dim().height());
-
-			this.scrollKnob.dim().mod().y(Math.min(this.dim().height() - this.scrollKnob.dim().height() - 1, y + 1)).flush();
+			this.scrollKnob.dim().mod().y(y + yScrollBarPadding).flush();
 		}
 	}
 
