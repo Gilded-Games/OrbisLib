@@ -69,7 +69,7 @@ public class NBTHelper
 
 	public static CompoundNBT readNBTFromFile(final MinecraftServer server, final String fileName)
 	{
-		return readNBTFromFile(new File(server.getWorld(DimensionType.field_223227_a_).getSaveHandler().getWorldDirectory(), fileName));
+		return readNBTFromFile(new File(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory(), fileName));
 	}
 
 	public static CompoundNBT readNBTFromFile(final File file)
@@ -92,7 +92,7 @@ public class NBTHelper
 
 	public static void writeNBTToFile(final MinecraftServer server, final CompoundNBT tag, final String fileName)
 	{
-		writeNBTToFile(tag, new File(server.getWorld(DimensionType.field_223227_a_).getSaveHandler().getWorldDirectory(), fileName));
+		writeNBTToFile(tag, new File(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory(), fileName));
 	}
 
 	public static void writeNBTToFile(final CompoundNBT tag, final File file)

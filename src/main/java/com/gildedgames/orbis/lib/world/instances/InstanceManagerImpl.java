@@ -15,15 +15,15 @@ import net.minecraft.nbt.ListNBT;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -142,7 +142,7 @@ public class InstanceManagerImpl implements IInstanceManager
 
 		MinecraftServer server = this.server;
 		server.runAsync(() -> {
-			File file = type.getDirectory(server.getWorld(DimensionType.field_223227_a_).getSaveHandler().getWorldDirectory());
+			File file = type.getDirectory(server.getWorld(DimensionType.OVERWORLD).getSaveHandler().getWorldDirectory());
 
 			if (!file.isDirectory())
 			{

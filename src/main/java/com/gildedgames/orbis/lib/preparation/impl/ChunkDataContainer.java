@@ -57,7 +57,7 @@ public class ChunkDataContainer implements IBlockAccess
 			return Blocks.AIR.getDefaultState();
 		}
 
-		return segment.get(x, y & 15, z);
+		return segment.getBlockState(x, y & 15, z);
 	}
 
 	public boolean setBlockState(final int x, final int y, final int z, final BlockState state)
@@ -69,7 +69,7 @@ public class ChunkDataContainer implements IBlockAccess
 			this.segments[y >> 4] = segment = new ChunkSection((y >> 4) * 16);
 		}
 
-		segment.set(x, y & 15, z, state);
+		segment.setBlockState(x, y & 15, z, state);
 
 		return true;
 	}
@@ -161,7 +161,7 @@ public class ChunkDataContainer implements IBlockAccess
 							continue;
 						}
 
-						dest.set(x, y2, z, transformer.getBlockState(block));
+						dest.setBlockState(x, y2, z, transformer.getBlockState(block));
 					}
 				}
 			}

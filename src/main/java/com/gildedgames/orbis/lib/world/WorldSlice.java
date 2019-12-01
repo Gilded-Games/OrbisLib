@@ -95,7 +95,7 @@ public class WorldSlice implements IBlockAccess
 
 			if (section != null)
 			{
-				return section.get(x & 15, y & 15, z & 15);
+				return section.getBlockState(x & 15, y & 15, z & 15);
 			}
 		}
 
@@ -128,7 +128,7 @@ public class WorldSlice implements IBlockAccess
 
 			if (section != null)
 			{
-				section.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, after);
+				section.setBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, after);
 			}
 		}
 	}

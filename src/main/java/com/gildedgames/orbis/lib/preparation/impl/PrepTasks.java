@@ -3,9 +3,9 @@ package com.gildedgames.orbis.lib.preparation.impl;
 import com.gildedgames.orbis.lib.preparation.impl.util.PrepHelper;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.IWorld;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class PrepTasks
 {
