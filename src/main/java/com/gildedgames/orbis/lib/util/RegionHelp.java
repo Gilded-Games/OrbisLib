@@ -5,6 +5,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public class RegionHelp
@@ -86,16 +87,18 @@ public class RegionHelp
 				&& max1.getY() >= min2.getY() && min1.getY() <= max2.getY();
 	}
 
-	public static boolean intersects(final IRegion region1, final IRegion region2)
+	public static boolean intersects(final IRegion a, final IRegion b)
 	{
-		final BlockPos min1 = region1.getMin();
-		final BlockPos min2 = region2.getMin();
+		return a.getMin().getX() <= b.getMax().getX() && a.getMax().getX() >= b.getMin().getX()
+				&& a.getMin().getZ() <= b.getMax().getZ() && a.getMax().getZ() >= b.getMin().getZ();
+	}
 
-		final BlockPos max1 = region1.getMax();
-		final BlockPos max2 = region2.getMax();
-
-		return max1.getX() >= min2.getX() && min1.getX() <= max2.getX() && max1.getY() >= min2.getY() && min1.getY() <= max2.getY()
-				&& max1.getZ() >= min2.getZ() && min1.getZ() <= max2.getZ();
+	public static <T extends IRegion> void fetchIntersecting2D(T region, List<T> regions, List<T> addTo) {
+		for (T r : regions) {
+			if (intersects(r, region)) {
+				addTo.add(r);
+			}
+		}
 	}
 
 	public static boolean contains(final IRegion region1, final IRegion region2)
