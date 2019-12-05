@@ -87,15 +87,20 @@ public class RegionHelp
 				&& max1.getY() >= min2.getY() && min1.getY() <= max2.getY();
 	}
 
-	public static boolean intersects(final IRegion a, final IRegion b)
+	public static boolean intersects(final IRegion a, final IRegion b, int padding)
 	{
-		return a.getMin().getX() <= b.getMax().getX() && a.getMax().getX() >= b.getMin().getX()
-				&& a.getMin().getZ() <= b.getMax().getZ() && a.getMax().getZ() >= b.getMin().getZ();
+		return a.getMin().getX() - padding <= b.getMax().getX() + padding && a.getMax().getX() + padding >= b.getMin().getX() - padding
+				&& a.getMin().getZ()- padding <= b.getMax().getZ() + padding && a.getMax().getZ() >= b.getMin().getZ() + padding;
 	}
 
-	public static <T extends IRegion> void fetchIntersecting2D(T region, List<T> regions, List<T> addTo) {
+	public static boolean intersects(final IRegion a, final IRegion b)
+	{
+		return intersects(a, b, 0);
+	}
+
+	public static <T extends IRegion> void fetchIntersecting2D(T region, List<T> regions, List<T> addTo, int padding) {
 		for (T r : regions) {
-			if (intersects(r, region)) {
+			if (intersects(r, region, padding)) {
 				addTo.add(r);
 			}
 		}
