@@ -190,7 +190,6 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 
 		for (final Map.Entry<IDataIdentifier, DataCondition> pair : this.idToConditions.entrySet())
 		{
-
 			final IDataIdentifier id = pair.getKey();
 			final Optional<BlueprintData> data = OrbisLib.services().getProjectManager().findData(id);
 

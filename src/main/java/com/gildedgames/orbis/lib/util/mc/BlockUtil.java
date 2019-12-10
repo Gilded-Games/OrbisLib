@@ -99,6 +99,10 @@ public class BlockUtil
 				&& state.getMaterial().isOpaque();
 	}
 
+	public static boolean isAir(IBlockState state) {
+		return state.getMaterial() == Material.AIR;
+	}
+
 	public static boolean isSolid(final IBlockState state)
 	{
 		Material material = state.getMaterial();

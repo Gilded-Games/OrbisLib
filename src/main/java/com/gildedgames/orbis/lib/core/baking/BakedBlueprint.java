@@ -2,6 +2,7 @@ package com.gildedgames.orbis.lib.core.baking;
 
 import com.gildedgames.orbis.lib.block.BlockDataContainer;
 import com.gildedgames.orbis.lib.core.BlueprintDefinition;
+import com.gildedgames.orbis.lib.core.CreationData;
 import com.gildedgames.orbis.lib.core.ICreationData;
 import com.gildedgames.orbis.lib.core.tree.ConditionLink;
 import com.gildedgames.orbis.lib.core.tree.INode;
@@ -12,13 +13,11 @@ import com.gildedgames.orbis.lib.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis.lib.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis.lib.data.IDataUser;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
+import com.gildedgames.orbis.lib.data.blueprint.BlueprintDataPalette;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
-import com.gildedgames.orbis.lib.data.schedules.IPosActionBaker;
-import com.gildedgames.orbis.lib.data.schedules.IScheduleLayer;
-import com.gildedgames.orbis.lib.data.schedules.PostGenReplaceLayer;
-import com.gildedgames.orbis.lib.data.schedules.ScheduleRegion;
+import com.gildedgames.orbis.lib.data.schedules.*;
 import com.gildedgames.orbis.lib.util.RotationHelp;
 import com.gildedgames.orbis.lib.util.mc.BlockUtil;
 import com.gildedgames.orbis.lib.util.mc.NBT;
@@ -29,6 +28,7 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -37,6 +37,8 @@ import java.util.List;
 public class BakedBlueprint
 {
 	private List<ScheduleRegion> bakedScheduleRegions = Lists.newArrayList();
+
+	private List<BakedBlueprint> bakedBlueprintChildren = Lists.newArrayList();
 
 	private LinkedList<INode<IScheduleLayer, LayerLink>> bakedScheduleLayerNodes = Lists.newLinkedList();
 
@@ -54,9 +56,12 @@ public class BakedBlueprint
 
 	public BakedBlueprint(BlueprintDefinition definition, ICreationData<?> creationData)
 	{
+		this(definition.getData(), creationData);
 		this.definition = definition;
-		this.blueprintData = definition.getData();
+	}
 
+	public BakedBlueprint(BlueprintData data, ICreationData<?> creationData) {
+		this.blueprintData = data;
 		this.creationData = creationData;
 
 		this.bake();
@@ -308,6 +313,26 @@ public class BakedBlueprint
 		}
 	}
 
+	private void updateBlueprintChildren() {
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes) {
+			IScheduleLayer layer = node.getData();
+
+			for (ScheduleBlueprint s : layer.getScheduleRecord().getSchedules(ScheduleBlueprint.class)) {
+				BlueprintDataPalette palette = s.getPalette();
+
+				if (palette.getData().size() > 0) {
+					BlueprintData data = palette.fetchRandom(this.creationData.getWorld(), this.creationData.getRandom());
+					ICreationData creationData = new CreationData(this.creationData.getWorld(), this.creationData.getRandom().nextLong())
+							.placesAir(this.creationData.placeAir());
+
+					BakedBlueprint baked = new BakedBlueprint(data, creationData);
+
+					this.bakedBlueprintChildren.add(baked);
+				}
+			}
+		}
+	}
+
 	private void updateBlocks()
 	{
 		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer();
@@ -422,6 +447,7 @@ public class BakedBlueprint
 		this.refresh();
 
 		this.updateBlocks();
+		this.updateBlueprintChildren();
 		this.updateScheduleRegions();
 
 		this.updatePostGenReplaceLayers();
@@ -457,11 +483,15 @@ public class BakedBlueprint
 		return this.bakedRegion;
 	}
 
+	public List<BakedBlueprint> getBakedBlueprintChildren() {
+		return this.bakedBlueprintChildren;
+	}
+
+	@Nullable
 	public BlueprintDefinition getDefinition()
 	{
 		return this.definition;
 	}
-
 
 	private interface RotationHandler
 	{
