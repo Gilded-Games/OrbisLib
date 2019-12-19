@@ -605,7 +605,7 @@ public class FrameworkAlgorithm implements IFrameworkAlgorithm
 						if (dist < diagonal * addEdgeDistanceRatio)
 						{
 							// TODO: Properly choose pathway
-							PathwayData p = n.getData().entrances().get(0).toConnectTo();
+							PathwayData p = n.getData().getEntrance().toConnectTo();
 							FDGDEdge e = new FDGDEdge(n, n2, p);
 							// Make sure this added edge does not intersect with any
 							// edges already in the graph

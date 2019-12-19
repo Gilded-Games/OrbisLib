@@ -6,7 +6,7 @@ import com.gildedgames.orbis.lib.core.tree.NodeTree;
 import com.gildedgames.orbis.lib.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis.lib.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
-import com.gildedgames.orbis.lib.data.blueprint.BlueprintDataPalette;
+import com.gildedgames.orbis.lib.data.management.IDataIdentifier;
 import com.gildedgames.orbis.lib.data.region.IColored;
 import com.gildedgames.orbis.lib.data.region.IMutableRegion;
 import com.gildedgames.orbis.lib.util.io.NBTFunnel;
@@ -14,8 +14,7 @@ import com.gildedgames.orbis.lib.util.mc.NBT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Rotation;
 
-//TODO: Convert into schedule processor
-public class ScheduleBlueprint implements NBT, IColored, ISchedule
+public class ScheduleEntranceHolder implements NBT, IColored, ISchedule
 {
 	private String triggerId;
 
@@ -25,30 +24,33 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 
 	private IScheduleRecord parent;
 
-	private BlueprintDataPalette palette;
+	private IDataIdentifier entranceHolderId;
 
 	private Rotation rotation;
 
-	protected ScheduleBlueprint()
-	{
+	private ScheduleEntranceHolder() {
 
 	}
 
-	public ScheduleBlueprint(String uniqueName, BlueprintDataPalette palette, IMutableRegion bounds, Rotation rotation)
+	public ScheduleEntranceHolder(String triggerId, IDataIdentifier entranceHolderId, IMutableRegion bounds, Rotation rotation)
 	{
-		this.triggerId = uniqueName;
-		this.palette = palette;
+		this.triggerId = triggerId;
+		this.entranceHolderId = entranceHolderId;
 		this.bounds = bounds;
 		this.rotation = rotation;
 	}
 
-	public BlueprintDataPalette getPalette()
+	public IDataIdentifier getEntranceHolder()
 	{
-		return this.palette;
+		return this.entranceHolderId;
 	}
 
 	public Rotation getRotation() {
 		return this.rotation;
+	}
+
+	public void setRotation(Rotation rotation) {
+		this.rotation = rotation;
 	}
 
 	@Override
@@ -124,7 +126,7 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 
 		tag.setString("triggerId", this.triggerId);
 		funnel.set("bounds", this.bounds);
-		funnel.set("palette", this.palette);
+		funnel.set("entranceHolderId", this.entranceHolderId);
 		tag.setString("rotation", this.rotation.name());
 	}
 
@@ -135,7 +137,7 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 
 		this.triggerId = tag.getString("triggerId");
 		this.bounds = funnel.get("bounds");
-		this.palette = funnel.get("palette");
+		this.entranceHolderId = funnel.get("entranceHolderId");
 
 		String rotationName = tag.getString("rotation");
 		this.rotation = rotationName.isEmpty() ? Rotation.NONE :  Rotation.valueOf(rotationName);

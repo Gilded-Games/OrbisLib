@@ -6,6 +6,7 @@ import com.gildedgames.orbis.lib.data.framework.interfaces.EnumFacingMultiple;
 import com.gildedgames.orbis.lib.data.pathway.Entrance;
 import com.gildedgames.orbis.lib.data.pathway.IEntrance;
 import com.gildedgames.orbis.lib.data.region.IDimensions;
+import com.gildedgames.orbis.lib.data.region.IMutableRegion;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.google.common.collect.AbstractIterator;
@@ -20,17 +21,39 @@ import java.util.List;
 
 public class RotationHelp
 {
+	public static void rotateNew(IMutableRegion region, Rotation rotation) {
+		BlockPos min = transformedBlockPos(region.getMin(), rotation);
+		BlockPos max = transformedBlockPos(region.getMax(), rotation);
+
+		region.setBounds(min, max);
+	}
+
+	public static BlockPos transformedBlockPos(BlockPos pos, Rotation rotation)
+	{
+		switch (rotation)
+		{
+			case COUNTERCLOCKWISE_90:
+				return new BlockPos(pos.getZ(), pos.getY(), -pos.getX());
+			case CLOCKWISE_90:
+				return new BlockPos(-pos.getZ(), pos.getY(), pos.getX());
+			case CLOCKWISE_180:
+				return new BlockPos(-pos.getX(), pos.getY(), -pos.getZ());
+			default:
+				return new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+		}
+	}
+
 	public static List<IEntrance> getEntrances(BlueprintData data, Rotation rotation, BlockPos center)
 	{
 		final List<IEntrance> newList = new ArrayList<>();
-		for (final IEntrance beforeTrans : data.entrances())
-		{
-			// TODO: Incorrect y coordinate
-			final BlockPos finalBP = beforeTrans.getBounds().getMin()
-					.add(center.getX() - data.getWidth() / 2, center.getY(), center.getZ() - data.getLength() / 2);
-			final BlockPos trans = RotationHelp.rotate(finalBP, center, rotation, data.getWidth(), data.getLength());
-			newList.add(new Entrance(new Region(trans), beforeTrans.toConnectTo(), PathwayUtil.getRotated(beforeTrans.getFacing(), rotation)));
-		}
+//		for (final IEntrance beforeTrans : data.getEntrance()) TODO: Entrances
+//		{
+//			// TODO: Incorrect y coordinate
+//			final BlockPos finalBP = beforeTrans.getBounds().getMin()
+//					.add(center.getX() - data.getWidth() / 2, center.getY(), center.getZ() - data.getLength() / 2);
+//			final BlockPos trans = RotationHelp.rotate(finalBP, center, rotation, data.getWidth(), data.getLength());
+//			newList.add(new Entrance(new Region(trans), beforeTrans.toConnectTo(), PathwayUtil.getRotated(beforeTrans.getFacing(), rotation)));
+//		}
 		return newList;
 	}
 

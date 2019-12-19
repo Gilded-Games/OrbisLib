@@ -4,17 +4,13 @@ import com.gildedgames.orbis.lib.block.BlockDataContainer;
 import com.gildedgames.orbis.lib.core.BlueprintDefinition;
 import com.gildedgames.orbis.lib.core.CreationData;
 import com.gildedgames.orbis.lib.core.ICreationData;
-import com.gildedgames.orbis.lib.core.tree.ConditionLink;
 import com.gildedgames.orbis.lib.core.tree.INode;
 import com.gildedgames.orbis.lib.core.tree.LayerLink;
-import com.gildedgames.orbis.lib.core.tree.NodeTree;
 import com.gildedgames.orbis.lib.core.util.BlueprintUtil;
-import com.gildedgames.orbis.lib.core.variables.conditions.IGuiCondition;
 import com.gildedgames.orbis.lib.core.variables.post_resolve_actions.IPostResolveAction;
 import com.gildedgames.orbis.lib.data.IDataUser;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintDataPalette;
-import com.gildedgames.orbis.lib.data.blueprint.BlueprintVariable;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.data.schedules.*;
@@ -29,10 +25,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import static com.gildedgames.orbis.lib.util.RotationHelp.transformedBlockPos;
 
 public class BakedBlueprint
 {
@@ -40,19 +35,17 @@ public class BakedBlueprint
 
 	private List<BakedBlueprint> bakedBlueprintChildren = Lists.newArrayList();
 
-	private LinkedList<INode<IScheduleLayer, LayerLink>> bakedScheduleLayerNodes = Lists.newLinkedList();
-
 	private BlockDataContainer bakedBlocks;
 
 	private Region bakedRegion;
 
 	private BlueprintData blueprintData;
 
-	private NodeTree<BlueprintVariable, NBT> bakedBlueprintVariables;
-
 	private ICreationData<?> creationData;
 
 	private BlueprintDefinition definition;
+
+	private BakedScheduleLayers bakedScheduleLayers;
 
 	public BakedBlueprint(BlueprintDefinition definition, ICreationData<?> creationData)
 	{
@@ -61,7 +54,12 @@ public class BakedBlueprint
 	}
 
 	public BakedBlueprint(BlueprintData data, ICreationData<?> creationData) {
+		this(data, new BakedScheduleLayers(data, creationData.getRandom()), creationData);
+	}
+
+	public BakedBlueprint(BlueprintData data, BakedScheduleLayers bakedScheduleLayers, ICreationData<?> creationData) {
 		this.blueprintData = data;
+		this.bakedScheduleLayers = bakedScheduleLayers;
 		this.creationData = creationData;
 
 		this.bake();
@@ -85,152 +83,25 @@ public class BakedBlueprint
 		return null;
 	}
 
-	private boolean resolveChildrenConditions(INode<IGuiCondition, ConditionLink> parent)
-	{
-		IGuiCondition condition = parent.getData();
-
-		if (condition instanceof IDataUser)
-		{
-			IDataUser user = (IDataUser) condition;
-
-			if (user.getDataIdentifier().equals("blueprintVariables"))
-			{
-				user.setUsedData(this.bakedBlueprintVariables);
-			}
-		}
-
-		boolean resolved = condition.resolve(this.creationData.getRandom());
-
-		boolean result = false;
-
-		if (resolved)
-		{
-			result = true;
-		}
-
-		for (INode<IGuiCondition, ConditionLink> child : parent.getTree().get(parent.getChildrenIds()))
-		{
-			//TODO: Implement actual condition link logic - AND and OR logic. Currently just goes through all checks if all are resolved.
-			if (this.resolveChildrenConditions(child))
-			{
-				result = true;
-			}
-		}
-
-		return result;
-	}
-
-	private void fetchValidLayers(INode<IScheduleLayer, LayerLink> root, List<INode<IScheduleLayer, LayerLink>> addValidTo,
-			List<INode<IScheduleLayer, LayerLink>> visited)
-	{
-		if (root == null)
-		{
-			return;
-		}
-
-		if (visited.contains(root))
-		{
-			return;
-		}
-
-		visited.add(root);
-
-		for (INode<IScheduleLayer, LayerLink> parent : root.getTree().get(root.getParentsIds()))
-		{
-			if (!visited.contains(parent))
-			{
-				this.fetchValidLayers(parent, addValidTo, visited);
-			}
-
-			if (!addValidTo.contains(parent))
-			{
-				return;
-			}
-		}
-
-		IScheduleLayer layer = root.getData();
-
-		if (layer.getConditionNodeTree().isEmpty())
-		{
-			addValidTo.add(root);
-
-			for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
-			{
-				if (action.getData() instanceof IDataUser)
-				{
-					IDataUser user = (IDataUser) action.getData();
-
-					if (user.getDataIdentifier().equals("blueprintVariables"))
-					{
-						user.setUsedData(this.bakedBlueprintVariables);
-					}
-				}
-
-				action.getData().resolve(this.creationData.getRandom());
-			}
-		}
-		else if (layer.getConditionNodeTree().getRootNode() != null)
-		{
-			if (!this.resolveChildrenConditions(layer.getConditionNodeTree().getRootNode()))
-			{
-				return;
-			}
-
-			addValidTo.add(root);
-
-			for (INode<IPostResolveAction, NBT> action : layer.getPostResolveActionNodeTree().getNodes())
-			{
-				if (action.getData() instanceof IDataUser)
-				{
-					IDataUser user = (IDataUser) action.getData();
-
-					if (user.getDataIdentifier().equals("blueprintVariables"))
-					{
-						user.setUsedData(this.bakedBlueprintVariables);
-					}
-				}
-
-				action.getData().resolve(this.creationData.getRandom());
-			}
-		}
-
-		List<INode<IScheduleLayer, LayerLink>> children = Lists.newArrayList(root.getTree().get(root.getChildrenIds()));
-
-		Collections.shuffle(children, this.creationData.getRandom());
-
-		for (INode<IScheduleLayer, LayerLink> child : children)
-		{
-			this.fetchValidLayers(child, addValidTo, visited);
-		}
-	}
-
-	private void refresh()
-	{
-		this.bakedBlueprintVariables = this.blueprintData.getVariableTree().deepClone();
-
-		this.bakedScheduleLayerNodes.clear();
-
-		this.fetchValidLayers(this.blueprintData.getScheduleLayerTree().getRootNode(), this.bakedScheduleLayerNodes, Lists.newArrayList());
-	}
-
-	private void updateScheduleRegions()
-	{
-		final Rotation rotation = this.creationData.getRotation();
-
-		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
-		{
+	private void updateBlueprintChildren() {
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayers.getScheduleLayerNodes()) {
 			IScheduleLayer layer = node.getData();
 
-			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
-			{
-				ScheduleRegion c = NBTHelper.clone(s);
+			for (ScheduleBlueprint s : layer.getScheduleRecord().getSchedules(ScheduleBlueprint.class)) {
+				BlockPos pos = s.getBounds().getMin();
+				BlueprintDataPalette palette = s.getPalette();
 
-				BlockPos min = transformedBlockPos(c.getBounds().getMin(), rotation);
-				BlockPos max = transformedBlockPos(c.getBounds().getMax(), rotation);
+				if (palette.getData().size() > 0) {
+					BlueprintData data = palette.fetchRandom(this.creationData.getWorld(), this.creationData.getRandom());
+					ICreationData creationData = new CreationData(this.creationData.getWorld(), this.creationData.getRandom().nextLong())
+							.pos(this.creationData.getPos().add(pos))
+							.rotation(s.getRotation())
+							.placesAir(this.creationData.placeAir());
 
-				c.getBounds().setBounds(min, max);
+					BakedBlueprint baked = new BakedBlueprint(data, creationData);
 
-				this.bakedScheduleRegions.add(c);
+					this.bakedBlueprintChildren.add(baked);
+				}
 			}
 		}
 	}
@@ -240,7 +111,7 @@ public class BakedBlueprint
 		Region boundsBeforeRotateAtOrigin = new Region(new BlockPos(0, 0, 0), new BlockPos(this.blueprintData.getWidth() - 1,
 				this.blueprintData.getHeight() - 1, this.blueprintData.getLength() - 1));
 
-		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayers.getScheduleLayerNodes())
 		{
 			IScheduleLayer layer = node.getData();
 
@@ -248,7 +119,7 @@ public class BakedBlueprint
 			{
 				IRegion rotatedBounds = RotationHelp.rotate(s.getBounds(), boundsBeforeRotateAtOrigin, this.creationData.getRotation());
 
-				if (!s.getConditionNodeTree().isEmpty() && !this.resolveChildrenConditions(s.getConditionNodeTree().getRootNode()))
+				if (!s.getConditionNodeTree().isEmpty() && !this.bakedScheduleLayers.resolveChildrenConditions(s.getConditionNodeTree().getRootNode()))
 				{
 					continue;
 				}
@@ -313,26 +184,6 @@ public class BakedBlueprint
 		}
 	}
 
-	private void updateBlueprintChildren() {
-		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes) {
-			IScheduleLayer layer = node.getData();
-
-			for (ScheduleBlueprint s : layer.getScheduleRecord().getSchedules(ScheduleBlueprint.class)) {
-				BlueprintDataPalette palette = s.getPalette();
-
-				if (palette.getData().size() > 0) {
-					BlueprintData data = palette.fetchRandom(this.creationData.getWorld(), this.creationData.getRandom());
-					ICreationData creationData = new CreationData(this.creationData.getWorld(), this.creationData.getRandom().nextLong())
-							.placesAir(this.creationData.placeAir());
-
-					BakedBlueprint baked = new BakedBlueprint(data, creationData);
-
-					this.bakedBlueprintChildren.add(baked);
-				}
-			}
-		}
-	}
-
 	private void updateBlocks()
 	{
 		BlockDataContainer blocks = this.blueprintData.getBlockDataContainer();
@@ -389,7 +240,7 @@ public class BakedBlueprint
 			}
 		}
 
-		for (final INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayerNodes)
+		for (final INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayers.getScheduleLayerNodes())
 		{
 			final IScheduleLayer layer = node.getData();
 
@@ -427,25 +278,31 @@ public class BakedBlueprint
 		return rotatedBlocks;
 	}
 
-	private static BlockPos transformedBlockPos(BlockPos pos, Rotation rotation)
+
+	private void updateScheduleRegions()
 	{
-		switch (rotation)
+		final Rotation rotation = this.creationData.getRotation();
+
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayers.getScheduleLayerNodes())
 		{
-			case CLOCKWISE_90:
-				return new BlockPos(pos.getZ(), pos.getY(), -pos.getX());
-			case COUNTERCLOCKWISE_90:
-				return new BlockPos(-pos.getZ(), pos.getY(), pos.getX());
-			case CLOCKWISE_180:
-				return new BlockPos(-pos.getX(), pos.getY(), -pos.getZ());
-			default:
-				return new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+			IScheduleLayer layer = node.getData();
+
+			for (ScheduleRegion s : layer.getScheduleRecord().getSchedules(ScheduleRegion.class))
+			{
+				ScheduleRegion c = NBTHelper.clone(s);
+
+				BlockPos min = transformedBlockPos(c.getBounds().getMin(), rotation);
+				BlockPos max = transformedBlockPos(c.getBounds().getMax(), rotation);
+
+				c.getBounds().setBounds(min, max);
+
+				this.bakedScheduleRegions.add(c);
+			}
 		}
 	}
 
 	private void bake()
 	{
-		this.refresh();
-
 		this.updateBlocks();
 		this.updateBlueprintChildren();
 		this.updateScheduleRegions();
@@ -485,6 +342,10 @@ public class BakedBlueprint
 
 	public List<BakedBlueprint> getBakedBlueprintChildren() {
 		return this.bakedBlueprintChildren;
+	}
+
+	public BakedScheduleLayers getScheduleLayers() {
+		return this.bakedScheduleLayers;
 	}
 
 	@Nullable

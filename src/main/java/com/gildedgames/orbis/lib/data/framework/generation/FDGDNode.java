@@ -39,7 +39,7 @@ public class FDGDNode extends BlueprintRegion
 		this.posY = pos.getY();
 		this.posZ = pos.getZ();
 		this.computeMinMax();
-		this.toleranceDist = data.entrances().get(0).toConnectTo().getToleranceDist();
+		this.toleranceDist = data.getEntrance().toConnectTo().getToleranceDist();
 	}
 
 	public FDGDNode(BlueprintData intersection, BlockPos pos, FDGDEdge oldEdge1, FDGDEdge oldEdge2, int toleranceDist)

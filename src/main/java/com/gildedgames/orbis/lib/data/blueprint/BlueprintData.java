@@ -56,7 +56,7 @@ public class BlueprintData
 
 	private LinkedHashMap<Integer, PostGenReplaceLayer> postGenReplaceLayers = Maps.newLinkedHashMap();
 
-	private List<IEntrance> entrances = Lists.newArrayList();
+	private IEntrance entrance;
 
 	private Pos2D scheduleTreeGuiPos, variableTreeGuiPos = Pos2D.ORIGIN;
 
@@ -133,22 +133,6 @@ public class BlueprintData
 		this.markDirty();
 	}
 
-	public int getEntranceId(IEntrance entrance)
-	{
-		int i = 0;
-		for (IEntrance e : this.entrances)
-		{
-			if (e == entrance)
-			{
-				return i;
-			}
-
-			i++;
-		}
-
-		return -1;
-	}
-
 	public void listen(final IBlueprintDataListener listener)
 	{
 		if (!this.listeners.contains(listener))
@@ -157,17 +141,17 @@ public class BlueprintData
 		}
 	}
 
-	public void addEntrance(IEntrance entrance)
+	public void setEntrance(IEntrance entrance)
 	{
 		final Lock w = this.lock.writeLock();
 		w.lock();
 
 		try
 		{
-			//TODO: Check that there are no entrances intersecting first, throw exception if so
+			this.clearEntrance();
 
 			entrance.setDataParent(this);
-			this.entrances.add(entrance);
+			this.entrance = entrance;
 
 			this.listeners.forEach(o -> o.onAddEntrance(entrance));
 		}
@@ -177,21 +161,21 @@ public class BlueprintData
 		}
 	}
 
-	public boolean removeEntrance(int id)
+	public boolean clearEntrance()
 	{
 		final Lock w = this.lock.writeLock();
 		w.lock();
 
 		try
 		{
-			IEntrance entrance = this.entrances.remove(id);
+			boolean avail = this.entrance != null;
 
-			if (entrance != null)
-			{
-				this.listeners.forEach(o -> o.onRemoveEntrance(entrance));
+			if (avail) {
+				this.listeners.forEach(o -> o.onRemoveEntrance(this.entrance));
+				this.entrance = null;
 			}
 
-			return entrance != null;
+			return avail;
 		}
 		finally
 		{
@@ -199,31 +183,9 @@ public class BlueprintData
 		}
 	}
 
-	public IEntrance getEntrance(int id)
+	public IEntrance getEntrance()
 	{
-		return this.entrances.get(id);
-	}
-
-	public boolean removeEntrance(IEntrance entrance)
-	{
-		final Lock w = this.lock.writeLock();
-		w.lock();
-
-		try
-		{
-			boolean flag = this.entrances.remove(entrance);
-
-			if (flag)
-			{
-				this.listeners.forEach(o -> o.onRemoveEntrance(entrance));
-			}
-
-			return flag;
-		}
-		finally
-		{
-			w.unlock();
-		}
+		return this.entrance;
 	}
 
 	public BlockDataContainer getBlockDataContainer()
@@ -239,11 +201,6 @@ public class BlueprintData
 	public NodeTree<BlueprintVariable, NBT> getVariableTree()
 	{
 		return this.variableTree;
-	}
-
-	public List<IEntrance> entrances()
-	{
-		return this.entrances;
 	}
 
 	@Override
@@ -304,7 +261,7 @@ public class BlueprintData
 		funnel.set("scheduleLayerTree", this.scheduleLayerTree);
 		funnel.set("variableTree", this.variableTree);
 		funnel.setIntMap("postGenReplaceLayers", this.postGenReplaceLayers);
-		funnel.setList("entrances", this.entrances);
+		funnel.set("entrance", this.entrance);
 		funnel.set("scheduleTreeGuiPos", this.scheduleTreeGuiPos, NBTFunnel.POS2D_SETTER);
 		funnel.set("variableTreeGuiPos", this.variableTreeGuiPos, NBTFunnel.POS2D_SETTER);
 		funnel.set("blueprintMetadata", this.blueprintMetadata);
@@ -326,7 +283,7 @@ public class BlueprintData
 		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().getStateRecord().listen(this));
 		this.scheduleLayerTree.getNodes().forEach(l -> l.getData().setNodeParent(l));
 
-		this.entrances = funnel.getList("entrances");
+		this.entrance = funnel.get("entrance");
 
 		this.scheduleTreeGuiPos = funnel.get("scheduleTreeGuiPos", NBTFunnel.POS2D_GETTER);
 		this.variableTreeGuiPos = funnel.getWithDefault("variableTreeGuiPos", NBTFunnel.POS2D_GETTER, () -> this.variableTreeGuiPos);
@@ -357,7 +314,7 @@ public class BlueprintData
 							});
 				});
 
-		this.entrances.forEach(e -> e.setDataParent(this));
+		if (this.entrance != null) this.entrance.setDataParent(this);
 		this.postGenReplaceLayers.values().forEach(l -> l.setDataParent(this));
 		this.scheduleLayerTree.setDataParent(this);
 		this.variableTree.setDataParent(this);

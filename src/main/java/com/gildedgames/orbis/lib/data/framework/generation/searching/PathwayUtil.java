@@ -59,7 +59,13 @@ public class PathwayUtil
 
 	public static IRegion adjacent(IRegion region, EnumFacingMultiple facing)
 	{
-		return new Region(adjacent(region.getMin(), facing), adjacent(region.getMax(), facing));
+		BlockPos min = new BlockPos(
+				region.getMin().getX() + ((region.getWidth()) * facing.getDirectionVec().getX()),
+				region.getMin().getY() + ((region.getHeight()) * facing.getDirectionVec().getY()),
+				region.getMin().getZ() + ((region.getLength()) * facing.getDirectionVec().getZ()));
+		BlockPos max = min.add(region.getWidth() - 1, region.getHeight() - 1, region.getLength() - 1);
+
+		return new Region(min, max);
 	}
 
 }

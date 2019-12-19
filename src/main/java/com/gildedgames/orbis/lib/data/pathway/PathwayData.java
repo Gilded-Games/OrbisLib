@@ -24,15 +24,15 @@ public class PathwayData implements NBT
 
 		this.pieces = new ArrayList<>(pieces);
 
-		this.pieces.removeIf(b -> b.entrances().size() < 2);
+		//this.pieces.removeIf(b -> b.getEntrance().size() < 2); TODO: Entrances
 	}
 
 	public void addPiece(BlueprintData piece)
 	{
-		if (piece.entrances().size() < 2)
-		{
-			throw new IllegalStateException("You can only add blueprints with at least two entrances to a pathway");
-		}
+//		if (piece.getEntrance().size() < 2) TODO: Entrances
+//		{
+//			throw new IllegalStateException("You can only add blueprints with at least two entrances to a pathway");
+//		}
 		this.pieces.add(piece);
 	}
 

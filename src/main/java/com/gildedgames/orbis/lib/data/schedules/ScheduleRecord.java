@@ -86,7 +86,7 @@ public class ScheduleRecord implements IScheduleRecord
 
 		for (ISchedule s : this.getSchedules(ISchedule.class))
 		{
-			if (RegionHelp.intersects(schedule.getBounds(), s.getBounds()))
+			if (RegionHelp.intersects3D(schedule.getBounds(), s.getBounds()))
 			{
 				return false;
 			}

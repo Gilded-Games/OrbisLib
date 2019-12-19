@@ -32,19 +32,30 @@ public class RegionHelp
 	{
 		for (T e : holders)
 		{
-			int minX = e.getBounds().getMin().getX() + origin.getX();
-			int minY = e.getBounds().getMin().getY() + origin.getY();
-			int minZ = e.getBounds().getMin().getZ() + origin.getZ();
+			Optional<T> opt = findIntersecting(e, origin, pos);
 
-			int maxX = minX + e.getBounds().getWidth() - 1;
-			int maxY = minY + e.getBounds().getHeight() - 1;
-			int maxZ = minZ + e.getBounds().getLength() - 1;
-
-			if (pos.getX() >= minX && pos.getX() <= maxX && pos.getY() >= minY && pos.getY() <= maxY && pos.getZ() >= minZ && pos.getZ() <= maxZ)
-			{
-				return Optional.of(e);
+			if (opt.isPresent()) {
+				return opt;
 			}
 		}
+
+		return Optional.empty();
+	}
+
+	public static <T extends IRegionHolder> Optional<T> findIntersecting(T holder, Vec3i origin, Vec3i pos) {
+		int minX = holder.getBounds().getMin().getX() + origin.getX();
+		int minY = holder.getBounds().getMin().getY() + origin.getY();
+		int minZ = holder.getBounds().getMin().getZ() + origin.getZ();
+
+		int maxX = minX + holder.getBounds().getWidth() - 1;
+		int maxY = minY + holder.getBounds().getHeight() - 1;
+		int maxZ = minZ + holder.getBounds().getLength() - 1;
+
+		if (pos.getX() >= minX && pos.getX() <= maxX && pos.getY() >= minY && pos.getY() <= maxY && pos.getZ() >= minZ && pos.getZ() <= maxZ)
+		{
+			return Optional.of(holder);
+		}
+
 		return Optional.empty();
 	}
 
@@ -76,15 +87,7 @@ public class RegionHelp
 
 	public static boolean intersects3D(final IRegion region1, final IRegion region2)
 	{
-		final BlockPos min1 = region1.getMin();
-		final BlockPos min2 = region2.getMin();
-
-		final BlockPos max1 = region1.getMax();
-		final BlockPos max2 = region2.getMax();
-
-		return max1.getX() >= min2.getX() && min1.getX() <= max2.getX()
-				&& max1.getZ() >= min2.getZ() && min1.getZ() <= max2.getZ()
-				&& max1.getY() >= min2.getY() && min1.getY() <= max2.getY();
+		return intersects(region1, region2, 0);
 	}
 
 	public static boolean intersects(final IRegion a, final IRegion b, int padding)

@@ -105,23 +105,23 @@ public class BlueprintDataPalette implements NBT, IDataHolder<BlueprintData>
 
 	private void evaluateEntrances()
 	{
-		int max = Integer.MIN_VALUE, min = Integer.MAX_VALUE;
-
-		for (final BlueprintData blueprint : this.data.values())
-		{
-			if (blueprint.entrances().size() > max)
-			{
-				max = blueprint.entrances().size();
-			}
-
-			if (blueprint.entrances().size() < min)
-			{
-				min = blueprint.entrances().size();
-			}
-		}
-
-		this.minEntrances = min;
-		this.maxEntrances = max;
+//		int max = Integer.MIN_VALUE, min = Integer.MAX_VALUE;
+//
+//		for (final BlueprintData blueprint : this.data.values())
+//		{
+//			if (blueprint.getEntrance().size() > max) TODO: Entrances
+//			{
+//				max = blueprint.getEntrance().size();
+//			}
+//
+//			if (blueprint.getEntrance().size() < min)
+//			{
+//				min = blueprint.getEntrance().size();
+//			}
+//		}
+//
+//		this.minEntrances = min;
+//		this.maxEntrances = max;
 	}
 
 	private void evaluateLargestInArea()
