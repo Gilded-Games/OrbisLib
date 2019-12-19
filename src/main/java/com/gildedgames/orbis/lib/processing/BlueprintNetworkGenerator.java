@@ -199,7 +199,7 @@ public class BlueprintNetworkGenerator
         Region rect = new Region(new BlockPos(0, 0, 0),
                 new BlockPos(connectingToRoom.getWidth() - 1, connectingToRoom.getHeight() - 1, connectingToRoom.getLength() - 1));
 
-        outer: for (PotentialEntrance potentialEntrance : roomScheduleLayers.getPotentialEntrances()) {
+        for (PotentialEntrance potentialEntrance : roomScheduleLayers.getPotentialEntrances()) {
             BlueprintData toEntrance = potentialEntrance.getData();
             ScheduleEntranceHolder toEntranceSchedule = potentialEntrance.getHolder();
 
@@ -229,21 +229,17 @@ public class BlueprintNetworkGenerator
             int dy = adjacentEntrance.getMin().getY() - trEntrance.getMin().getY();
             int dz = adjacentEntrance.getMin().getZ() - trEntrance.getMin().getZ();
 
-            adjacentEntrance.add(fromMin);
-
             Region finalRotatedRect = new Region(rect);
             RotationHelp.rotateNew(finalRotatedRect, rotation);
 
             finalRotatedRect.add(dx, dy, dz);
             finalRotatedRect.add(fromMin);
 
-            for (BlueprintNetworkNode node : this.bakedNetwork.getNodes()) {
-                BakedBlueprint baked = node.getBakedData();
-
-                if (baked.getBakedRegion().intersectsWith(finalRotatedRect)) {
-                    continue outer;
-                }
+            if (this.collidesWithExistingNodes(finalRotatedRect)) {
+                continue;
             }
+
+            adjacentEntrance.add(fromMin);
 
             trEntrance.add(dx, dy, dz);
             trEntrance.add(fromMin);
@@ -257,6 +253,18 @@ public class BlueprintNetworkGenerator
         }
 
         return null;
+    }
+
+    private boolean collidesWithExistingNodes(IRegion region) {
+        for (BlueprintNetworkNode node : this.bakedNetwork.getNodes()) {
+            BakedBlueprint baked = node.getBakedData();
+
+            if (baked.getBakedRegion().intersectsWith(region)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private List<BlueprintData> fetchBlueprints(List<IDataIdentifier> ids) {

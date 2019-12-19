@@ -85,9 +85,16 @@ public class RegionHelp
 		return new BlockPos(min.getX() + region.getWidth() / 2, min.getY() + region.getHeight() / 2, min.getZ() + region.getLength() / 2);
 	}
 
-	public static boolean intersects3D(final IRegion region1, final IRegion region2)
+	public static boolean intersects3D(final IRegion a, final IRegion b)
 	{
-		return intersects(region1, region2, 0);
+		return intersects3D(a, b, 0);
+	}
+
+	public static boolean intersects3D(final IRegion a, final IRegion b, int padding)
+	{
+		return a.getMin().getX() - padding <= b.getMax().getX() + padding && a.getMax().getX() + padding >= b.getMin().getX() - padding
+				&& a.getMin().getZ()- padding <= b.getMax().getZ() + padding && a.getMax().getZ() >= b.getMin().getZ() + padding &&
+				a.getMin().getY() - padding <= b.getMax().getY() + padding && a.getMax().getY() + padding >= b.getMin().getY();
 	}
 
 	public static boolean intersects(final IRegion a, final IRegion b, int padding)
