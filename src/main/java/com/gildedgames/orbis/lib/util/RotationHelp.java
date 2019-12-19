@@ -1,9 +1,7 @@
 package com.gildedgames.orbis.lib.util;
 
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
-import com.gildedgames.orbis.lib.data.framework.generation.searching.PathwayUtil;
 import com.gildedgames.orbis.lib.data.framework.interfaces.EnumFacingMultiple;
-import com.gildedgames.orbis.lib.data.pathway.Entrance;
 import com.gildedgames.orbis.lib.data.pathway.IEntrance;
 import com.gildedgames.orbis.lib.data.region.IDimensions;
 import com.gildedgames.orbis.lib.data.region.IMutableRegion;
@@ -317,36 +315,17 @@ public class RotationHelp
 	{
 		Rotation result = Rotation.NONE;
 
-		if (facing.hasPlane(EnumFacingMultiple.Plane.DIAGONAL))
+		if (facing.getFacings().contains(EnumFacing.SOUTH))
 		{
-			if (facing.getFacings().contains(EnumFacing.NORTH) && facing.getFacings().contains(EnumFacing.EAST))
-			{
-				result = result.add(Rotation.CLOCKWISE_180);
-			}
-			else if (facing.getFacings().contains(EnumFacing.NORTH) && facing.getFacings().contains(EnumFacing.WEST))
-			{
-				result = result.add(Rotation.COUNTERCLOCKWISE_90);
-			}
-			else if (facing.getFacings().contains(EnumFacing.SOUTH) && facing.getFacings().contains(EnumFacing.EAST))
-			{
-				result = result.add(Rotation.CLOCKWISE_90);
-			}
-		}
-		else if (facing.getFacings().contains(EnumFacing.NORTH))
-		{
-			result = result.add(Rotation.CLOCKWISE_180);
-		}
-		else if (facing.getFacings().contains(EnumFacing.SOUTH))
-		{
-			result = result.add(Rotation.NONE);
+			result = Rotation.CLOCKWISE_180;
 		}
 		else if (facing.getFacings().contains(EnumFacing.EAST))
 		{
-			result = result.add(Rotation.CLOCKWISE_90);
+			result = Rotation.CLOCKWISE_90;
 		}
 		else if (facing.getFacings().contains(EnumFacing.WEST))
 		{
-			result = result.add(Rotation.COUNTERCLOCKWISE_90);
+			result = Rotation.COUNTERCLOCKWISE_90;
 		}
 
 		return result;
@@ -473,21 +452,60 @@ public class RotationHelp
 	 */
 	public static Rotation getRotationDifference(Rotation rot1, Rotation rot2)
 	{
-		int rotAmount = indexDifference(rot1, rot2);
-		switch (rotAmount)
-		{
-			case 0:
-				return Rotation.NONE;
-			case 1:
-			case -3:
-				return Rotation.COUNTERCLOCKWISE_90;
-			case 2:
-			case -2:
-				return Rotation.CLOCKWISE_180;
-			case -1:
-			case 3:
-				return Rotation.CLOCKWISE_90;
+		switch (rot1) {
+			case NONE: {
+				return rot2;
+			}
+			case CLOCKWISE_90: {
+				switch (rot2) {
+					case NONE: {
+						return Rotation.COUNTERCLOCKWISE_90;
+					}
+					case CLOCKWISE_180: {
+						return Rotation.CLOCKWISE_90;
+					}
+					case COUNTERCLOCKWISE_90: {
+						return Rotation.CLOCKWISE_180;
+					}
+					case CLOCKWISE_90: {
+						return Rotation.NONE;
+					}
+				}
+			}
+			case CLOCKWISE_180: {
+				switch (rot2) {
+					case NONE: {
+						return Rotation.CLOCKWISE_180;
+					}
+					case CLOCKWISE_90: {
+						return Rotation.COUNTERCLOCKWISE_90;
+					}
+					case COUNTERCLOCKWISE_90: {
+						return Rotation.CLOCKWISE_90;
+					}
+					case CLOCKWISE_180: {
+						return Rotation.NONE;
+					}
+				}
+			}
+			case COUNTERCLOCKWISE_90: {
+				switch (rot2) {
+					case NONE: {
+						return Rotation.CLOCKWISE_90;
+					}
+					case CLOCKWISE_180: {
+						return Rotation.COUNTERCLOCKWISE_90;
+					}
+					case CLOCKWISE_90: {
+						return Rotation.CLOCKWISE_180;
+					}
+					case COUNTERCLOCKWISE_90: {
+						return Rotation.NONE;
+					}
+				}
+			}
 		}
+
 		throw new IllegalArgumentException();
 	}
 
