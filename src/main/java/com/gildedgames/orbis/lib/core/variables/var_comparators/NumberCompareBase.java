@@ -16,7 +16,7 @@ public abstract class NumberCompareBase<NUMBER extends Number & Comparable<NUMBE
 
 	protected NumberCompareBase()
 	{
-		
+
 	}
 
 	public NumberCompareBase(IGuiVar<NUMBER, ?> valueVar)

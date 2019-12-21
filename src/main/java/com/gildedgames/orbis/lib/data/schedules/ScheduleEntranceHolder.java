@@ -28,7 +28,8 @@ public class ScheduleEntranceHolder implements NBT, IColored, ISchedule
 
 	private Rotation rotation;
 
-	private ScheduleEntranceHolder() {
+	private ScheduleEntranceHolder()
+	{
 
 	}
 
@@ -45,11 +46,13 @@ public class ScheduleEntranceHolder implements NBT, IColored, ISchedule
 		return this.entranceHolderId;
 	}
 
-	public Rotation getRotation() {
+	public Rotation getRotation()
+	{
 		return this.rotation;
 	}
 
-	public void setRotation(Rotation rotation) {
+	public void setRotation(Rotation rotation)
+	{
 		this.rotation = rotation;
 	}
 
@@ -140,7 +143,7 @@ public class ScheduleEntranceHolder implements NBT, IColored, ISchedule
 		this.entranceHolderId = funnel.get("entranceHolderId");
 
 		String rotationName = tag.getString("rotation");
-		this.rotation = rotationName.isEmpty() ? Rotation.NONE :  Rotation.valueOf(rotationName);
+		this.rotation = rotationName.isEmpty() ? Rotation.NONE : Rotation.valueOf(rotationName);
 	}
 
 	@Override

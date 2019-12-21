@@ -63,7 +63,7 @@ public class WorldSlice
 
 	public IBlockState getBlockState(int x, int y, int z)
 	{
-		if (y >= 0  && y < 256)
+		if (y >= 0 && y < 256)
 		{
 			int chunkX = (x - this.offsetX) >> 4;
 			int chunkZ = (z - this.offsetZ) >> 4;
@@ -91,7 +91,7 @@ public class WorldSlice
 
 	public boolean setBlockState(BlockPos pos, IBlockState state)
 	{
-		if (pos.getY() >= 0  && pos.getY() < 256)
+		if (pos.getY() >= 0 && pos.getY() < 256)
 		{
 			int chunkX = (pos.getX() - this.offsetX) >> 4;
 			int chunkZ = (pos.getZ() - this.offsetZ) >> 4;
@@ -180,7 +180,7 @@ public class WorldSlice
 	{
 		return new BlockPos(x, this.getHeighestBlockValue(x, z), z);
 	}
-	
+
 	public int getHeighestBlockValue(int x, int z)
 	{
 		return this.world.getChunk(x >> 4, z >> 4).getHeightValue(x & 15, z & 15);

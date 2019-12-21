@@ -1,20 +1,13 @@
 package com.gildedgames.orbis.lib.data.framework.generation.searching;
 
-import com.gildedgames.orbis.lib.core.tree.ConditionLink;
-import com.gildedgames.orbis.lib.core.tree.INode;
-import com.gildedgames.orbis.lib.core.variables.conditions.IGuiConditionEntrance;
 import com.gildedgames.orbis.lib.core.world_objects.BlueprintRegion;
 import com.gildedgames.orbis.lib.data.blueprint.BlueprintData;
 import com.gildedgames.orbis.lib.data.framework.interfaces.EnumFacingMultiple;
 import com.gildedgames.orbis.lib.data.pathway.IEntrance;
-import com.gildedgames.orbis.lib.data.region.IMutableRegion;
 import com.gildedgames.orbis.lib.data.region.IRegion;
 import com.gildedgames.orbis.lib.data.region.Region;
 import com.gildedgames.orbis.lib.util.RegionHelp;
-import com.gildedgames.orbis.lib.util.RotationHelp;
 import com.google.common.collect.Lists;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -121,69 +114,69 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 			Region rect = new Region(new BlockPos(0, 0, 0),
 					new BlockPos(blueprint.getWidth() - 1, blueprint.getHeight() - 1, blueprint.getLength() - 1));
 
-//			entrances:
-//			for (IEntrance entrance : blueprint.getEntrance()) TODO: Entrances
-//			{
-//				for (INode<IGuiConditionEntrance, ConditionLink> node : lastEntrance.getConditionNodeTree().getNodes())
-//				{
-//					if (!node.getData().canConnectTo(entrance))
-//					{
-//						break entrances;
-//					}
-//				}
-//
-//				EnumFacingMultiple sideOn = entrance.getFacing();
-//
-//				Rotation rotation = Rotation.NONE;
-//
-//				if (toConnect.canRotateToFaceEachother(sideOn))
-//				{
-//					rotation = RotationHelp.getRotationDifference(RotationHelp.fromFacing(toConnect), RotationHelp.fromFacing(sideOn));
-//				}
-//				else if (sideOn != toConnect)
-//				{
-//					continue;
-//				}
-//
-//				IRegion trEntrance = RotationHelp.rotate(entrance.getBounds(), rect, rotation);
-//
-//				if (!RegionHelp.sameDim(trEntrance, parentState.endConnection) && parentState.parent != null)
-//				{
-//					continue;
-//				}
-//
-//				int dx = adjacentEntrance.getMin().getX() - trEntrance.getMin().getX();
-//				int dy = adjacentEntrance.getMin().getY() - trEntrance.getMin().getY();
-//				int dz = adjacentEntrance.getMin().getZ() - trEntrance.getMin().getZ();
-//
-//				for (IEntrance exit : blueprint.getEntrance())
-//				{
-//					if (entrance == exit)
-//					{
-//						continue;
-//					}
-//
-//					IRegion trExit = RotationHelp.rotate(exit.getBounds(), rect, rotation);
-//
-//					IMutableRegion endConnection = new Region(trExit);
-//
-//					RegionHelp.translate(endConnection, dx, dy, dz);
-//
-//					int fx = dx;
-//					int fy = dy;
-//					int fz = dz;
-//
-//					BlockPos fragmentMin = new BlockPos(fx, fy, fz);
-//					BlueprintRegion fragment = new BlueprintRegion(fragmentMin, rotation, blueprint);
-//
-//					PathwayNode node = new PathwayNode(parentState, fragment, endConnection, PathwayUtil.getRotated(exit.getFacing(), rotation), exit);
-//
-//					if (this.isSuccessor(node, parentState))
-//					{
-//						successors.add(node);
-//					}
-//				}
-//			}
+			//			entrances:
+			//			for (IEntrance entrance : blueprint.getEntrance()) TODO: Entrances
+			//			{
+			//				for (INode<IGuiConditionEntrance, ConditionLink> node : lastEntrance.getConditionNodeTree().getNodes())
+			//				{
+			//					if (!node.getData().canConnectTo(entrance))
+			//					{
+			//						break entrances;
+			//					}
+			//				}
+			//
+			//				EnumFacingMultiple sideOn = entrance.getFacing();
+			//
+			//				Rotation rotation = Rotation.NONE;
+			//
+			//				if (toConnect.canRotateToFaceEachother(sideOn))
+			//				{
+			//					rotation = RotationHelp.getRotationDifference(RotationHelp.fromFacing(toConnect), RotationHelp.fromFacing(sideOn));
+			//				}
+			//				else if (sideOn != toConnect)
+			//				{
+			//					continue;
+			//				}
+			//
+			//				IRegion trEntrance = RotationHelp.rotate(entrance.getBounds(), rect, rotation);
+			//
+			//				if (!RegionHelp.sameDim(trEntrance, parentState.endConnection) && parentState.parent != null)
+			//				{
+			//					continue;
+			//				}
+			//
+			//				int dx = adjacentEntrance.getMin().getX() - trEntrance.getMin().getX();
+			//				int dy = adjacentEntrance.getMin().getY() - trEntrance.getMin().getY();
+			//				int dz = adjacentEntrance.getMin().getZ() - trEntrance.getMin().getZ();
+			//
+			//				for (IEntrance exit : blueprint.getEntrance())
+			//				{
+			//					if (entrance == exit)
+			//					{
+			//						continue;
+			//					}
+			//
+			//					IRegion trExit = RotationHelp.rotate(exit.getBounds(), rect, rotation);
+			//
+			//					IMutableRegion endConnection = new Region(trExit);
+			//
+			//					RegionHelp.translate(endConnection, dx, dy, dz);
+			//
+			//					int fx = dx;
+			//					int fy = dy;
+			//					int fz = dz;
+			//
+			//					BlockPos fragmentMin = new BlockPos(fx, fy, fz);
+			//					BlueprintRegion fragment = new BlueprintRegion(fragmentMin, rotation, blueprint);
+			//
+			//					PathwayNode node = new PathwayNode(parentState, fragment, endConnection, PathwayUtil.getRotated(exit.getFacing(), rotation), exit);
+			//
+			//					if (this.isSuccessor(node, parentState))
+			//					{
+			//						successors.add(node);
+			//					}
+			//				}
+			//			}
 		}
 
 		return successors;
@@ -196,16 +189,16 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 
 		BlueprintData d = this.startFragment.getData();
 
-//		for (int i = 0; i < d.getEntrance().size(); i++) TODO: Entrances
-//		{
-//			IEntrance e = d.getEntrance().get(i);
-//
-//			Region r = new Region(e.getBounds());
-//
-//			r.add(this.start.getX(), this.start.getY(), this.start.getZ());
-//
-//			viable.add(new PathwayNode(null, this.startFragment, r, e.getFacing(), e));
-//		}
+		//		for (int i = 0; i < d.getEntrance().size(); i++) TODO: Entrances
+		//		{
+		//			IEntrance e = d.getEntrance().get(i);
+		//
+		//			Region r = new Region(e.getBounds());
+		//
+		//			r.add(this.start.getX(), this.start.getY(), this.start.getZ());
+		//
+		//			viable.add(new PathwayNode(null, this.startFragment, r, e.getFacing(), e));
+		//		}
 
 		return viable;
 	}
@@ -255,27 +248,27 @@ public class PathwayProblem implements ISearchProblem<PathwayNode>
 
 			for (BlueprintData d : this.pieces)
 			{
-//				for (IEntrance e : d.getEntrance()) TODO: Entrances
-//				{
-//					for (EnumFacing side : e.getFacing().getFacings())
-//					{
-//						if (side == EnumFacing.DOWN)
-//						{
-//							hasDown = true;
-//						}
-//
-//						if (side == EnumFacing.UP)
-//						{
-//							hasUp = true;
-//						}
-//
-//						if (hasDown && hasUp)
-//						{
-//							this.hasVerticalEntrances = true;
-//							break;
-//						}
-//					}
-//				}
+				//				for (IEntrance e : d.getEntrance()) TODO: Entrances
+				//				{
+				//					for (EnumFacing side : e.getFacing().getFacings())
+				//					{
+				//						if (side == EnumFacing.DOWN)
+				//						{
+				//							hasDown = true;
+				//						}
+				//
+				//						if (side == EnumFacing.UP)
+				//						{
+				//							hasUp = true;
+				//						}
+				//
+				//						if (hasDown && hasUp)
+				//						{
+				//							this.hasVerticalEntrances = true;
+				//							break;
+				//						}
+				//					}
+				//				}
 			}
 
 			this.checkedForVertical = true;

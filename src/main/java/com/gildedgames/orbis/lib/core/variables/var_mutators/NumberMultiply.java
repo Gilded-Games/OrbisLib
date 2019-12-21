@@ -6,7 +6,7 @@ public class NumberMultiply<NUMBER extends Number & Comparable<NUMBER>> extends 
 {
 	private NumberMultiply()
 	{
-		
+
 	}
 
 	public NumberMultiply(IGuiVar<NUMBER, ?> valueVar)

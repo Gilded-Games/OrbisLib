@@ -57,7 +57,8 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 			this.lastStorageMethod = WorldDataStorageMethod.FLAT;
 		}
 
-		File dir = new File(world.getSaveHandler().getWorldDirectory(), (world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
+		File dir = new File(world.getSaveHandler().getWorldDirectory(),
+				(world.provider.getSaveFolder() == null ? "" : world.provider.getSaveFolder()) + "/data/orbis/");
 
 		if (this.lastStorageMethod == WorldDataStorageMethod.FLAT)
 		{
@@ -86,7 +87,8 @@ public class WorldDataManagerContainer implements IWorldDataManagerContainer
 		}
 
 		@Override
-		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side, final NBTBase nbt)
+		public void readNBT(final Capability<IWorldDataManagerContainer> capability, final IWorldDataManagerContainer instance, final EnumFacing side,
+				final NBTBase nbt)
 		{
 			String name = ((NBTTagCompound) nbt).getString("LastStorageMethod");
 

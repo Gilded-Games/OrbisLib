@@ -47,7 +47,8 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 		return this.palette;
 	}
 
-	public Rotation getRotation() {
+	public Rotation getRotation()
+	{
 		return this.rotation;
 	}
 
@@ -138,7 +139,7 @@ public class ScheduleBlueprint implements NBT, IColored, ISchedule
 		this.palette = funnel.get("palette");
 
 		String rotationName = tag.getString("rotation");
-		this.rotation = rotationName.isEmpty() ? Rotation.NONE :  Rotation.valueOf(rotationName);
+		this.rotation = rotationName.isEmpty() ? Rotation.NONE : Rotation.valueOf(rotationName);
 	}
 
 	@Override

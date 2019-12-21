@@ -170,7 +170,8 @@ public class BlueprintData
 		{
 			boolean avail = this.entrance != null;
 
-			if (avail) {
+			if (avail)
+			{
 				this.listeners.forEach(o -> o.onRemoveEntrance(this.entrance));
 				this.entrance = null;
 			}
@@ -314,7 +315,10 @@ public class BlueprintData
 							});
 				});
 
-		if (this.entrance != null) this.entrance.setDataParent(this);
+		if (this.entrance != null)
+		{
+			this.entrance.setDataParent(this);
+		}
 		this.postGenReplaceLayers.values().forEach(l -> l.setDataParent(this));
 		this.scheduleLayerTree.setDataParent(this);
 		this.variableTree.setDataParent(this);

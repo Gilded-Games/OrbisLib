@@ -6,16 +6,19 @@ import java.util.List;
 
 public class BakedBlueprintNetwork
 {
-    private List<BlueprintNetworkNode> nodes = Lists.newArrayList();
+	private List<BlueprintNetworkNode> nodes = Lists.newArrayList();
 
-    public BakedBlueprintNetwork() {
-    }
+	public BakedBlueprintNetwork()
+	{
+	}
 
-    public void addBakedNode(BlueprintNetworkNode node) {
-        this.nodes.add(node);
-    }
+	public void addBakedNode(BlueprintNetworkNode node)
+	{
+		this.nodes.add(node);
+	}
 
-    public List<BlueprintNetworkNode> getNodes() {
-        return this.nodes;
-    }
+	public List<BlueprintNetworkNode> getNodes()
+	{
+		return this.nodes;
+	}
 }

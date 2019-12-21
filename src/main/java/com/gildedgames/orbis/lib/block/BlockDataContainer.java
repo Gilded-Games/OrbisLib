@@ -619,7 +619,6 @@ public class BlockDataContainer implements NBT, IDimensions, IData
 		}
 	}
 
-
 	public Iterable<TileEntityEntry> getTileEntityEntries()
 	{
 		return this.entities.values();

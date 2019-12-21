@@ -25,269 +25,311 @@ import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-
-
 public class BlueprintNetworkGenerator
 {
-    public interface IDebugNetworkPainter {
-        void paint(IRegion region, int color, int zLevel);
-    }
+	public interface IDebugNetworkPainter
+	{
+		void paint(IRegion region, int color, int zLevel);
+	}
 
-    public enum BlueprintNetworkGenerationStep {
-        START,
-        GENERATE_NODES,
-        FINISH,
-    }
+	public enum BlueprintNetworkGenerationStep
+	{
+		START,
+		GENERATE_NODES,
+		FINISH,
+	}
 
-    private IDebugNetworkPainter debugPainter;
-    private BiConsumer<BakedBlueprint, BlockPos> nodeGenerator;
+	private IDebugNetworkPainter debugPainter;
 
-    private BlueprintNetworkData networkData;
-    private BakedBlueprintNetwork bakedNetwork;
+	private BiConsumer<BakedBlueprint, BlockPos> nodeGenerator;
 
-    private List<BlueprintData> potentialRooms;
+	private BlueprintNetworkData networkData;
 
-    private BlueprintNetworkGenerationStep currentStep = BlueprintNetworkGenerationStep.START;
+	private BakedBlueprintNetwork bakedNetwork;
 
-    private BlockPos pos;
-    private World world;
-    private Random rand;
+	private List<BlueprintData> potentialRooms;
+
+	private BlueprintNetworkGenerationStep currentStep = BlueprintNetworkGenerationStep.START;
 
-    private List<BlueprintNetworkNode> unresolvedNodes = Lists.newArrayList();
-    private List<BlueprintNetworkNode> queuedNodes = Lists.newArrayList();
+	private BlockPos pos;
+
+	private World world;
 
-    public BlueprintNetworkGenerator(BlueprintNetworkData networkData, ICreationData<?> creationData,IDebugNetworkPainter debugPainter, BiConsumer<BakedBlueprint, BlockPos> nodeGenerator) {
-        this.networkData = networkData;
-        this.debugPainter = debugPainter;
-        this.nodeGenerator = nodeGenerator;
+	private Random rand;
+
+	private List<BlueprintNetworkNode> unresolvedNodes = Lists.newArrayList();
 
-        this.pos = creationData.getPos();
-        this.world = creationData.getWorld();
-        this.rand = creationData.getRandom();
+	private List<BlueprintNetworkNode> queuedNodes = Lists.newArrayList();
 
-        this.bakedNetwork = new BakedBlueprintNetwork();
-    }
+	public BlueprintNetworkGenerator(BlueprintNetworkData networkData, ICreationData<?> creationData, IDebugNetworkPainter debugPainter,
+			BiConsumer<BakedBlueprint, BlockPos> nodeGenerator)
+	{
+		this.networkData = networkData;
+		this.debugPainter = debugPainter;
+		this.nodeGenerator = nodeGenerator;
 
-    public boolean step() {
-        this.unresolvedNodes.addAll(this.queuedNodes);
-        this.queuedNodes.clear();
+		this.pos = creationData.getPos();
+		this.world = creationData.getWorld();
+		this.rand = creationData.getRandom();
 
-        switch (this.currentStep) {
-            case START: {
-                this.start();
-                this.currentStep = BlueprintNetworkGenerationStep.GENERATE_NODES;
+		this.bakedNetwork = new BakedBlueprintNetwork();
+	}
+
+	public boolean step()
+	{
+		this.unresolvedNodes.addAll(this.queuedNodes);
+		this.queuedNodes.clear();
 
-                return false;
-            }
-            case GENERATE_NODES: {
-                Iterator<BlueprintNetworkNode> nodes = this.unresolvedNodes.iterator();
+		switch (this.currentStep)
+		{
+			case START:
+			{
+				this.start();
+				this.currentStep = BlueprintNetworkGenerationStep.GENERATE_NODES;
 
-                if (nodes.hasNext()) {
-                    BlueprintNetworkNode node = nodes.next();
+				return false;
+			}
+			case GENERATE_NODES:
+			{
+				Iterator<BlueprintNetworkNode> nodes = this.unresolvedNodes.iterator();
 
-                    if (this.generateNode(this.potentialRooms, this.rand, node)) {
-                        nodes.remove();
-                    }
-                } else {
-                    this.currentStep = BlueprintNetworkGenerationStep.FINISH;
-                }
+				if (nodes.hasNext())
+				{
+					BlueprintNetworkNode node = nodes.next();
 
-                return false;
-            }
-            case FINISH: {
-                System.out.println("Finished!");
-                break;
-            }
-        }
+					if (this.generateNode(this.potentialRooms, this.rand, node))
+					{
+						nodes.remove();
+					}
+				}
+				else
+				{
+					this.currentStep = BlueprintNetworkGenerationStep.FINISH;
+				}
 
-        return true;
-    }
+				return false;
+			}
+			case FINISH:
+			{
+				System.out.println("Finished!");
+				break;
+			}
+		}
 
-    private void start() {
-        this.potentialRooms = fetchBlueprints(this.networkData.getRooms());
+		return true;
+	}
 
-        BlueprintData start = this.potentialRooms.get(this.rand.nextInt(this.potentialRooms.size()));
-        BakedBlueprint bakedStart = new BakedBlueprint(start, new CreationData(this.world).pos(pos));
-        BlueprintNetworkNode startNode = new BlueprintNetworkNode(bakedStart, 0, this.rand);
+	private void start()
+	{
+		this.potentialRooms = this.fetchBlueprints(this.networkData.getRooms());
 
-        this.addNodeForGeneration(startNode);
-    }
+		BlueprintData start = this.potentialRooms.get(this.rand.nextInt(this.potentialRooms.size()));
+		BakedBlueprint bakedStart = new BakedBlueprint(start, new CreationData(this.world).pos(this.pos));
+		BlueprintNetworkNode startNode = new BlueprintNetworkNode(bakedStart, 0, this.rand);
 
-    private void addNodeForGeneration(BlueprintNetworkNode node) {
-        this.bakedNetwork.addBakedNode(node);
+		this.addNodeForGeneration(startNode);
+	}
 
-        BakedBlueprint bakedNode = node.getBakedData();
+	private void addNodeForGeneration(BlueprintNetworkNode node)
+	{
+		this.bakedNetwork.addBakedNode(node);
 
-        this.debugPainter.paint(bakedNode.getBakedRegion(), 0xFF474747, 0);
-        this.nodeGenerator.accept(bakedNode, BlockPos.ORIGIN);
+		BakedBlueprint bakedNode = node.getBakedData();
 
-        this.queuedNodes.add(node);
-    }
+		this.debugPainter.paint(bakedNode.getBakedRegion(), 0xFF474747, 0);
+		this.nodeGenerator.accept(bakedNode, BlockPos.ORIGIN);
 
-    private boolean generateNode(List<BlueprintData> potentialRooms, Random rand, BlueprintNetworkNode node) {
-        if (node.getDepth() < this.networkData.getTargetDepth() && node.getChildrenNodeCount() < 3) {
-            if (node.getEntrancesToConnect().hasNext()) {
-                PotentialEntrance potentialEntrance = node.getEntrancesToConnect().next();
+		this.queuedNodes.add(node);
+	}
 
-                if (!node.getUsedEntrances().contains(potentialEntrance)) {
-                    BlueprintData nextRoom = this.randRoom(potentialRooms, rand);
+	private boolean generateNode(List<BlueprintData> potentialRooms, Random rand, BlueprintNetworkNode node)
+	{
+		if (node.getDepth() < this.networkData.getTargetDepth() && node.getChildrenNodeCount() < 3)
+		{
+			if (node.getEntrancesToConnect().hasNext())
+			{
+				PotentialEntrance potentialEntrance = node.getEntrancesToConnect().next();
 
-                    boolean generated = this.generateNextNode(potentialEntrance, nextRoom, node);
-                    int entranceColor = generated ? 0xFFce6dd1 : 0xFFc7202e;
+				if (!node.getUsedEntrances().contains(potentialEntrance))
+				{
+					BlueprintData nextRoom = this.randRoom(potentialRooms, rand);
 
-                    Region region = new Region(potentialEntrance.getHolder().getBounds());
-                    region.add(node.getBakedData().getBakedRegion().getMin());
+					boolean generated = this.generateNextNode(potentialEntrance, nextRoom, node);
+					int entranceColor = generated ? 0xFFce6dd1 : 0xFFc7202e;
 
-                    if (generated) {
-                        BakedBlueprint entranceToGenerate = new BakedBlueprint(potentialEntrance.getData(), new CreationData(this.world).rotation(potentialEntrance.getHolder().getRotation()));
-                        entranceToGenerate.getBakedRegion().relocate(region.getMin());
+					Region region = new Region(potentialEntrance.getHolder().getBounds());
+					region.add(node.getBakedData().getBakedRegion().getMin());
 
-                        this.nodeGenerator.accept(entranceToGenerate, BlockPos.ORIGIN);
-                        this.debugPainter.paint(entranceToGenerate.getBakedRegion(), entranceColor, 2);
-                    }
-                }
+					if (generated)
+					{
+						BakedBlueprint entranceToGenerate = new BakedBlueprint(potentialEntrance.getData(),
+								new CreationData(this.world).rotation(potentialEntrance.getHolder().getRotation()));
+						entranceToGenerate.getBakedRegion().relocate(region.getMin());
 
-                return false;
-            }
-        }
+						this.nodeGenerator.accept(entranceToGenerate, BlockPos.ORIGIN);
+						this.debugPainter.paint(entranceToGenerate.getBakedRegion(), entranceColor, 2);
+					}
+				}
 
-        return true; // Return true when node finished with generation
-    }
+				return false;
+			}
+		}
 
-    private boolean generateNextNode(PotentialEntrance potentialEntrance, BlueprintData nextRoom, BlueprintNetworkNode comingFrom) {
-        BakedBlueprint bakedComingFrom = comingFrom.getBakedData();
+		return true; // Return true when node finished with generation
+	}
 
-        BlueprintData fromEntrance = potentialEntrance.getData();
-        ScheduleEntranceHolder fromEntranceSchedule = potentialEntrance.getHolder();
+	private boolean generateNextNode(PotentialEntrance potentialEntrance, BlueprintData nextRoom, BlueprintNetworkNode comingFrom)
+	{
+		BakedBlueprint bakedComingFrom = comingFrom.getBakedData();
 
-        BakedScheduleLayers scheduleLayers = new BakedScheduleLayers(nextRoom, this.world.rand);
-        ConnectionData connectionData = this.connectBlueprints(bakedComingFrom, fromEntrance, fromEntranceSchedule, nextRoom, scheduleLayers);
+		BlueprintData fromEntrance = potentialEntrance.getData();
+		ScheduleEntranceHolder fromEntranceSchedule = potentialEntrance.getHolder();
 
-        if (connectionData != null) {
-            comingFrom.addChildrenNodeCount(1);
+		BakedScheduleLayers scheduleLayers = new BakedScheduleLayers(nextRoom, this.world.rand);
+		ConnectionData connectionData = this.connectBlueprints(bakedComingFrom, fromEntrance, fromEntranceSchedule, nextRoom, scheduleLayers);
 
-            CreationData creationData = new CreationData(this.world).pos(connectionData.pos.add(bakedComingFrom.getBakedRegion().getMin())).rotation(connectionData.rotation);
-            BakedBlueprint bakedNextRoom = new BakedBlueprint(nextRoom, scheduleLayers, creationData);
+		if (connectionData != null)
+		{
+			comingFrom.addChildrenNodeCount(1);
 
-            bakedNextRoom.getScheduleLayers().bakePotentialEntrances(connectionData.rotation);
+			CreationData creationData = new CreationData(this.world).pos(connectionData.pos.add(bakedComingFrom.getBakedRegion().getMin()))
+					.rotation(connectionData.rotation);
+			BakedBlueprint bakedNextRoom = new BakedBlueprint(nextRoom, scheduleLayers, creationData);
 
-            BlueprintNetworkNode nextNode = new BlueprintNetworkNode(bakedNextRoom, comingFrom.getDepth() + 1, this.rand);
-            nextNode.addUsedEntrance(connectionData.usedEntrance);
+			bakedNextRoom.getScheduleLayers().bakePotentialEntrances(connectionData.rotation);
 
-            this.addNodeForGeneration(nextNode);
+			BlueprintNetworkNode nextNode = new BlueprintNetworkNode(bakedNextRoom, comingFrom.getDepth() + 1, this.rand);
+			nextNode.addUsedEntrance(connectionData.usedEntrance);
 
-            BakedBlueprint connectToEntrance = new BakedBlueprint(connectionData.usedEntrance.getData(), new CreationData(this.world).rotation(connectionData.usedEntranceRotation));
-            connectToEntrance.getBakedRegion().relocate(connectionData.usedEntrancePos);
+			this.addNodeForGeneration(nextNode);
 
-            this.nodeGenerator.accept(connectToEntrance, BlockPos.ORIGIN);
-        }
+			BakedBlueprint connectToEntrance = new BakedBlueprint(connectionData.usedEntrance.getData(),
+					new CreationData(this.world).rotation(connectionData.usedEntranceRotation));
+			connectToEntrance.getBakedRegion().relocate(connectionData.usedEntrancePos);
 
-        return connectionData != null;
-    }
+			this.nodeGenerator.accept(connectToEntrance, BlockPos.ORIGIN);
+		}
 
-    private BlueprintData randRoom(List<BlueprintData> blueprints, Random rand) {
-        return blueprints.get(rand.nextInt(blueprints.size()));
-    }
+		return connectionData != null;
+	}
 
-    private ConnectionData connectBlueprints(BakedBlueprint fromRoom, BlueprintData fromEntrance, ScheduleEntranceHolder fromEntranceSchedule, BlueprintData connectingToRoom, BakedScheduleLayers roomScheduleLayers) {
-        BlockPos fromMin = fromRoom.getBakedRegion().getMin();
+	private BlueprintData randRoom(List<BlueprintData> blueprints, Random rand)
+	{
+		return blueprints.get(rand.nextInt(blueprints.size()));
+	}
 
-        EnumFacingMultiple connectingFrom = PathwayUtil.getRotated(fromEntrance.getEntrance().getFacing(), fromEntranceSchedule.getRotation());
+	private ConnectionData connectBlueprints(BakedBlueprint fromRoom, BlueprintData fromEntrance, ScheduleEntranceHolder fromEntranceSchedule,
+			BlueprintData connectingToRoom, BakedScheduleLayers roomScheduleLayers)
+	{
+		BlockPos fromMin = fromRoom.getBakedRegion().getMin();
 
-        Collections.shuffle(roomScheduleLayers.getPotentialEntrances(), rand);
+		EnumFacingMultiple connectingFrom = PathwayUtil.getRotated(fromEntrance.getEntrance().getFacing(), fromEntranceSchedule.getRotation());
 
-        Region rect = new Region(new BlockPos(0, 0, 0),
-                new BlockPos(connectingToRoom.getWidth() - 1, connectingToRoom.getHeight() - 1, connectingToRoom.getLength() - 1));
+		Collections.shuffle(roomScheduleLayers.getPotentialEntrances(), this.rand);
 
-        for (PotentialEntrance potentialEntrance : roomScheduleLayers.getPotentialEntrances()) {
-            BlueprintData toEntrance = potentialEntrance.getData();
-            ScheduleEntranceHolder toEntranceSchedule = potentialEntrance.getHolder();
+		Region rect = new Region(new BlockPos(0, 0, 0),
+				new BlockPos(connectingToRoom.getWidth() - 1, connectingToRoom.getHeight() - 1, connectingToRoom.getLength() - 1));
 
-            EnumFacingMultiple connectingTo = PathwayUtil.getRotated(toEntrance.getEntrance().getFacing(), toEntranceSchedule.getRotation());
+		for (PotentialEntrance potentialEntrance : roomScheduleLayers.getPotentialEntrances())
+		{
+			BlueprintData toEntrance = potentialEntrance.getData();
+			ScheduleEntranceHolder toEntranceSchedule = potentialEntrance.getHolder();
 
-            Rotation rotation = Rotation.NONE;
+			EnumFacingMultiple connectingTo = PathwayUtil.getRotated(toEntrance.getEntrance().getFacing(), toEntranceSchedule.getRotation());
 
-            Rotation connectingFromRot = RotationHelp.fromFacing(connectingFrom.getOpposite());
-            Rotation connectingToRot = RotationHelp.fromFacing(connectingTo);
+			Rotation rotation = Rotation.NONE;
 
-            if (connectingFrom.canRotateToFaceEachother(connectingTo))
-            {
-                rotation = RotationHelp.getRotationDifference(connectingToRot, connectingFromRot);
-            }
-            else if (connectingTo != connectingFrom)
-            {
-                continue;
-            }
+			Rotation connectingFromRot = RotationHelp.fromFacing(connectingFrom.getOpposite());
+			Rotation connectingToRot = RotationHelp.fromFacing(connectingTo);
 
-            Region trEntrance = new Region(toEntranceSchedule.getBounds());
-            RotationHelp.rotateNew(trEntrance, rotation);
+			if (connectingFrom.canRotateToFaceEachother(connectingTo))
+			{
+				rotation = RotationHelp.getRotationDifference(connectingToRot, connectingFromRot);
+			}
+			else if (connectingTo != connectingFrom)
+			{
+				continue;
+			}
 
-            IRegion fromEntranceRect = fromEntranceSchedule.getBounds();
-            Region adjacentEntrance = (Region) PathwayUtil.adjacent(fromEntranceRect, connectingFrom);
+			Region trEntrance = new Region(toEntranceSchedule.getBounds());
+			RotationHelp.rotateNew(trEntrance, rotation);
 
-            int dx = adjacentEntrance.getMin().getX() - trEntrance.getMin().getX();
-            int dy = adjacentEntrance.getMin().getY() - trEntrance.getMin().getY();
-            int dz = adjacentEntrance.getMin().getZ() - trEntrance.getMin().getZ();
+			IRegion fromEntranceRect = fromEntranceSchedule.getBounds();
+			Region adjacentEntrance = (Region) PathwayUtil.adjacent(fromEntranceRect, connectingFrom);
 
-            Region finalRotatedRect = new Region(rect);
-            RotationHelp.rotateNew(finalRotatedRect, rotation);
+			int dx = adjacentEntrance.getMin().getX() - trEntrance.getMin().getX();
+			int dy = adjacentEntrance.getMin().getY() - trEntrance.getMin().getY();
+			int dz = adjacentEntrance.getMin().getZ() - trEntrance.getMin().getZ();
 
-            finalRotatedRect.add(dx, dy, dz);
-            finalRotatedRect.add(fromMin);
+			Region finalRotatedRect = new Region(rect);
+			RotationHelp.rotateNew(finalRotatedRect, rotation);
 
-            if (this.collidesWithExistingNodes(finalRotatedRect)) {
-                continue;
-            }
+			finalRotatedRect.add(dx, dy, dz);
+			finalRotatedRect.add(fromMin);
 
-            adjacentEntrance.add(fromMin);
+			if (this.collidesWithExistingNodes(finalRotatedRect))
+			{
+				continue;
+			}
 
-            trEntrance.add(dx, dy, dz);
-            trEntrance.add(fromMin);
+			adjacentEntrance.add(fromMin);
 
-            //this.debugPainter.paint(finalRotatedRect, 0xFF171717, 1);
-            //this.nodeGenerator.accept(rotated, 0xFF171717);
+			trEntrance.add(dx, dy, dz);
+			trEntrance.add(fromMin);
 
-            //this.debugPainter.paint(adjacentEntrance, 0xFFcc8521, 1);
+			//this.debugPainter.paint(finalRotatedRect, 0xFF171717, 1);
+			//this.nodeGenerator.accept(rotated, 0xFF171717);
 
-            return new ConnectionData(rotation, new BlockPos(dx, dy, dz), potentialEntrance, trEntrance.getMin(), connectingToRot.add(rotation));
-        }
+			//this.debugPainter.paint(adjacentEntrance, 0xFFcc8521, 1);
 
-        return null;
-    }
+			return new ConnectionData(rotation, new BlockPos(dx, dy, dz), potentialEntrance, trEntrance.getMin(), connectingToRot.add(rotation));
+		}
 
-    private boolean collidesWithExistingNodes(IRegion region) {
-        for (BlueprintNetworkNode node : this.bakedNetwork.getNodes()) {
-            BakedBlueprint baked = node.getBakedData();
+		return null;
+	}
 
-            if (baked.getBakedRegion().intersectsWith(region)) {
-                return true;
-            }
-        }
+	private boolean collidesWithExistingNodes(IRegion region)
+	{
+		for (BlueprintNetworkNode node : this.bakedNetwork.getNodes())
+		{
+			BakedBlueprint baked = node.getBakedData();
 
-        return false;
-    }
+			if (baked.getBakedRegion().intersectsWith(region))
+			{
+				return true;
+			}
+		}
 
-    private List<BlueprintData> fetchBlueprints(List<IDataIdentifier> ids) {
-        return ids.stream()
-                .map((id) ->  OrbisLib.services().getProjectManager().findData(id))
-                .filter((opt) -> opt.isPresent() && opt.get() instanceof BlueprintData)
-                .map((opt) -> (BlueprintData)opt.get()).collect(Collectors.toList());
-    }
+		return false;
+	}
 
-    public static class ConnectionData {
-        public Rotation rotation;
-        public BlockPos pos;
+	private List<BlueprintData> fetchBlueprints(List<IDataIdentifier> ids)
+	{
+		return ids.stream()
+				.map((id) -> OrbisLib.services().getProjectManager().findData(id))
+				.filter((opt) -> opt.isPresent() && opt.get() instanceof BlueprintData)
+				.map((opt) -> (BlueprintData) opt.get()).collect(Collectors.toList());
+	}
 
-        public PotentialEntrance usedEntrance;
-        public BlockPos usedEntrancePos;
-        public Rotation usedEntranceRotation;
+	public static class ConnectionData
+	{
+		public Rotation rotation;
 
-        public ConnectionData(Rotation rotation, BlockPos pos, PotentialEntrance usedEntrance, BlockPos usedEntrancePos, Rotation usedEntranceRotation) {
-            this.rotation = rotation;
-            this.pos = pos;
-            this.usedEntrance = usedEntrance;
-            this.usedEntrancePos = usedEntrancePos;
-            this.usedEntranceRotation = usedEntranceRotation;
-        }
-    }
+		public BlockPos pos;
+
+		public PotentialEntrance usedEntrance;
+
+		public BlockPos usedEntrancePos;
+
+		public Rotation usedEntranceRotation;
+
+		public ConnectionData(Rotation rotation, BlockPos pos, PotentialEntrance usedEntrance, BlockPos usedEntrancePos, Rotation usedEntranceRotation)
+		{
+			this.rotation = rotation;
+			this.pos = pos;
+			this.usedEntrance = usedEntrance;
+			this.usedEntrancePos = usedEntrancePos;
+			this.usedEntranceRotation = usedEntranceRotation;
+		}
+	}
 }

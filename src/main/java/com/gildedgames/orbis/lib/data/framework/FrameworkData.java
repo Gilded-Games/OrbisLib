@@ -301,10 +301,10 @@ public class FrameworkData implements IFrameworkNode, IData, IDimensions
 	 */
 	public void addIntersection(PathwayData pathway1, PathwayData pathway2, BlueprintData blueprint)
 	{
-//		if (blueprint.getEntrance().size() < 4) TODO: Entrances
-//		{
-//			throw new IllegalArgumentException("Can only have intersection blueprints with 4 or more entrances");
-//		}
+		//		if (blueprint.getEntrance().size() < 4) TODO: Entrances
+		//		{
+		//			throw new IllegalArgumentException("Can only have intersection blueprints with 4 or more entrances");
+		//		}
 		this.intersections.put(Pair.of(pathway1, pathway2), blueprint);
 
 		this.listeners.forEach(l -> l.onAddIntersection(pathway1, pathway2, blueprint));

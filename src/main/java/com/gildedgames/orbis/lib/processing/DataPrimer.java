@@ -71,9 +71,10 @@ public class DataPrimer
 		return true;
 	}
 
-    public void setBlockInWorld(BlockData data, ICreationData<?> creationData) {
-        this.setBlockInWorld(data.getBlockState(), data.getTileEntity(), creationData.getPos(), creationData);
-    }
+	public void setBlockInWorld(BlockData data, ICreationData<?> creationData)
+	{
+		this.setBlockInWorld(data.getBlockState(), data.getTileEntity(), creationData.getPos(), creationData);
+	}
 
 	public void setBlockInWorld(final IBlockState state, final NBTTagCompound entity, final BlockPos pos, final ICreationData<?> creationData)
 	{
@@ -101,7 +102,8 @@ public class DataPrimer
 		MinecraftForge.EVENT_BUS.post(changeBlockEvent);*/
 	}
 
-	public void place(BakedBlueprint baked) {
+	public void place(BakedBlueprint baked)
+	{
 		this.place(baked, BlockPos.ORIGIN);
 	}
 
@@ -109,14 +111,15 @@ public class DataPrimer
 	{
 		if (this.copyBlocksIntoWorld(relocateTo, baked, null, baked.getCreationData()))
 		{
-            for (BakedBlueprint child : baked.getBakedBlueprintChildren()) {
-                this.place(child, relocateTo);
-            }
+			for (BakedBlueprint child : baked.getBakedBlueprintChildren())
+			{
+				this.place(child, relocateTo);
+			}
 
-            for (IBakedPosAction action : baked.getBakedPositionActions())
-            {
-                action.call(this);
-            }
+			for (IBakedPosAction action : baked.getBakedPositionActions())
+			{
+				action.call(this);
+			}
 		}
 	}
 
@@ -128,72 +131,75 @@ public class DataPrimer
 
 		if (this.copyBlocksIntoWorld(offset, baked, region, placed.getCreationData()))
 		{
-            for (BakedBlueprint child : baked.getBakedBlueprintChildren()) {
-                this.place(child, offset);
-            }
+			for (BakedBlueprint child : baked.getBakedBlueprintChildren())
+			{
+				this.place(child, offset);
+			}
 
-            Region intersection = placed.getRegion().fromIntersection(region);
+			Region intersection = placed.getRegion().fromIntersection(region);
 
-            for (IBakedPosAction action : placed.getPendingPosActions())
-            {
-                if (intersection.contains(action.getPos()))
-                {
-                    action.call(this);
-                }
-            }
+			for (IBakedPosAction action : placed.getPendingPosActions())
+			{
+				if (intersection.contains(action.getPos()))
+				{
+					action.call(this);
+				}
+			}
 		}
 	}
 
-	public boolean create(BlockDataContainer blocks, ICreationData<?> data) {
+	public boolean create(BlockDataContainer blocks, ICreationData<?> data)
+	{
 		BlockPos min = data.getPos();
 		BlockPos max = data.getPos().add(blocks.getWidth() - 1, blocks.getHeight() - 1, blocks.getLength() - 1);
 
 		return this.create(blocks, data, BlockPos.getAllInBox(min, max), min);
 	}
 
-    public boolean create(BlockDataContainer blocks, ICreationData<?> data, Iterable<? extends BlockPos> toCreate, BlockPos min) {
-        for (BlockPos pos : toCreate)
-        {
-            int x = pos.getX() - min.getX();
-            int y = pos.getY() - min.getY();
-            int z = pos.getZ() - min.getZ();
+	public boolean create(BlockDataContainer blocks, ICreationData<?> data, Iterable<? extends BlockPos> toCreate, BlockPos min)
+	{
+		for (BlockPos pos : toCreate)
+		{
+			int x = pos.getX() - min.getX();
+			int y = pos.getY() - min.getY();
+			int z = pos.getZ() - min.getZ();
 
-            final IBlockState state = blocks.getBlockState(x, y, z);
-            final NBTTagCompound entity;
+			final IBlockState state = blocks.getBlockState(x, y, z);
+			final NBTTagCompound entity;
 
-            if (state.getBlock().hasTileEntity(state))
-            {
-                entity = blocks.getTileEntity(x, y, z).data;
-            }
-            else
-            {
-                entity = null;
-            }
+			if (state.getBlock().hasTileEntity(state))
+			{
+				entity = blocks.getTileEntity(x, y, z).data;
+			}
+			else
+			{
+				entity = null;
+			}
 
-            this.setBlockInWorld(state, entity, pos, data);
-        }
+			this.setBlockInWorld(state, entity, pos, data);
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    public void create(BlueprintDataPalette palette, ICreationData<?> data)
-    {
-        final BlueprintData b = palette.fetchRandom(data.getWorld(), data.getRandom());
-        final Rotation rotation = data.getRotation();
-        final IRegion region = RotationHelp.regionFromCenter(data.getPos(), b, rotation);
+	public void create(BlueprintDataPalette palette, ICreationData<?> data)
+	{
+		final BlueprintData b = palette.fetchRandom(data.getWorld(), data.getRandom());
+		final Rotation rotation = data.getRotation();
+		final IRegion region = RotationHelp.regionFromCenter(data.getPos(), b, rotation);
 
-        BakedBlueprint baked = new BakedBlueprint(b, data.clone().pos(region.getMin()));
+		BakedBlueprint baked = new BakedBlueprint(b, data.clone().pos(region.getMin()));
 
-        this.place(baked, data.getPos());
-    }
+		this.place(baked, data.getPos());
+	}
 
 	private boolean copyBlocksIntoWorld(BlockPos offset, BakedBlueprint blueprint, IRegion bounds, ICreationData<?> data)
 	{
-		return copyBlocksIntoWorld(offset, blueprint.getBlockData(), blueprint.getBakedRegion(), bounds, data);
+		return this.copyBlocksIntoWorld(offset, blueprint.getBlockData(), blueprint.getBakedRegion(), bounds, data);
 	}
 
-    public boolean copyBlocksIntoWorld(BlockPos offset, BlockDataContainer blocks, IRegion origin, IRegion bounds, ICreationData<?> data)
-    {
+	public boolean copyBlocksIntoWorld(BlockPos offset, BlockDataContainer blocks, IRegion origin, IRegion bounds, ICreationData<?> data)
+	{
 		final Region region = new Region(origin);
 		region.add(offset);
 

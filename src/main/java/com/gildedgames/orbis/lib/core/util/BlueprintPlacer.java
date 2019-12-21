@@ -14,7 +14,6 @@ public class BlueprintPlacer
 
 	public static final Rotation[] ROTATIONS = Rotation.values();
 
-
 	public static Rotation getRandomRotation(final Random rand)
 	{
 		return BlueprintPlacer.ROTATIONS[rand.nextInt(BlueprintPlacer.ROTATIONS.length)];

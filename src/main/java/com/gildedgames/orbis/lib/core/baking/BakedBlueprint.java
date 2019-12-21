@@ -25,7 +25,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.gildedgames.orbis.lib.util.RotationHelp.transformedBlockPos;
 
@@ -53,11 +54,13 @@ public class BakedBlueprint
 		this.definition = definition;
 	}
 
-	public BakedBlueprint(BlueprintData data, ICreationData<?> creationData) {
+	public BakedBlueprint(BlueprintData data, ICreationData<?> creationData)
+	{
 		this(data, new BakedScheduleLayers(data, creationData.getRandom()), creationData);
 	}
 
-	public BakedBlueprint(BlueprintData data, BakedScheduleLayers bakedScheduleLayers, ICreationData<?> creationData) {
+	public BakedBlueprint(BlueprintData data, BakedScheduleLayers bakedScheduleLayers, ICreationData<?> creationData)
+	{
 		this.blueprintData = data;
 		this.bakedScheduleLayers = bakedScheduleLayers;
 		this.creationData = creationData;
@@ -83,15 +86,19 @@ public class BakedBlueprint
 		return null;
 	}
 
-	private void updateBlueprintChildren() {
-		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayers.getScheduleLayerNodes()) {
+	private void updateBlueprintChildren()
+	{
+		for (INode<IScheduleLayer, LayerLink> node : this.bakedScheduleLayers.getScheduleLayerNodes())
+		{
 			IScheduleLayer layer = node.getData();
 
-			for (ScheduleBlueprint s : layer.getScheduleRecord().getSchedules(ScheduleBlueprint.class)) {
+			for (ScheduleBlueprint s : layer.getScheduleRecord().getSchedules(ScheduleBlueprint.class))
+			{
 				BlockPos pos = s.getBounds().getMin();
 				BlueprintDataPalette palette = s.getPalette();
 
-				if (palette.getData().size() > 0) {
+				if (palette.getData().size() > 0)
+				{
 					BlueprintData data = palette.fetchRandom(this.creationData.getWorld(), this.creationData.getRandom());
 					ICreationData creationData = new CreationData(this.creationData.getWorld(), this.creationData.getRandom().nextLong())
 							.pos(this.creationData.getPos().add(pos))
@@ -278,7 +285,6 @@ public class BakedBlueprint
 		return rotatedBlocks;
 	}
 
-
 	private void updateScheduleRegions()
 	{
 		final Rotation rotation = this.creationData.getRotation();
@@ -340,11 +346,13 @@ public class BakedBlueprint
 		return this.bakedRegion;
 	}
 
-	public List<BakedBlueprint> getBakedBlueprintChildren() {
+	public List<BakedBlueprint> getBakedBlueprintChildren()
+	{
 		return this.bakedBlueprintChildren;
 	}
 
-	public BakedScheduleLayers getScheduleLayers() {
+	public BakedScheduleLayers getScheduleLayers()
+	{
 		return this.bakedScheduleLayers;
 	}
 
@@ -409,7 +417,6 @@ public class BakedBlueprint
 			return pos.setPos(x, pos.getY(), z);
 		}
 
-
 		@Override
 		public BlockPos getDimensions(BlockPos dimensions)
 		{
@@ -424,7 +431,6 @@ public class BakedBlueprint
 		{
 			return pos;
 		}
-
 
 		@Override
 		public BlockPos getDimensions(BlockPos dimensions)

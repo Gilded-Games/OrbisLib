@@ -19,7 +19,8 @@ import java.util.List;
 
 public class RotationHelp
 {
-	public static void rotateNew(IMutableRegion region, Rotation rotation) {
+	public static void rotateNew(IMutableRegion region, Rotation rotation)
+	{
 		BlockPos min = transformedBlockPos(region.getMin(), rotation);
 		BlockPos max = transformedBlockPos(region.getMax(), rotation);
 
@@ -44,14 +45,14 @@ public class RotationHelp
 	public static List<IEntrance> getEntrances(BlueprintData data, Rotation rotation, BlockPos center)
 	{
 		final List<IEntrance> newList = new ArrayList<>();
-//		for (final IEntrance beforeTrans : data.getEntrance()) TODO: Entrances
-//		{
-//			// TODO: Incorrect y coordinate
-//			final BlockPos finalBP = beforeTrans.getBounds().getMin()
-//					.add(center.getX() - data.getWidth() / 2, center.getY(), center.getZ() - data.getLength() / 2);
-//			final BlockPos trans = RotationHelp.rotate(finalBP, center, rotation, data.getWidth(), data.getLength());
-//			newList.add(new Entrance(new Region(trans), beforeTrans.toConnectTo(), PathwayUtil.getRotated(beforeTrans.getFacing(), rotation)));
-//		}
+		//		for (final IEntrance beforeTrans : data.getEntrance()) TODO: Entrances
+		//		{
+		//			// TODO: Incorrect y coordinate
+		//			final BlockPos finalBP = beforeTrans.getBounds().getMin()
+		//					.add(center.getX() - data.getWidth() / 2, center.getY(), center.getZ() - data.getLength() / 2);
+		//			final BlockPos trans = RotationHelp.rotate(finalBP, center, rotation, data.getWidth(), data.getLength());
+		//			newList.add(new Entrance(new Region(trans), beforeTrans.toConnectTo(), PathwayUtil.getRotated(beforeTrans.getFacing(), rotation)));
+		//		}
 		return newList;
 	}
 
@@ -452,54 +453,74 @@ public class RotationHelp
 	 */
 	public static Rotation getRotationDifference(Rotation rot1, Rotation rot2)
 	{
-		switch (rot1) {
-			case NONE: {
+		switch (rot1)
+		{
+			case NONE:
+			{
 				return rot2;
 			}
-			case CLOCKWISE_90: {
-				switch (rot2) {
-					case NONE: {
+			case CLOCKWISE_90:
+			{
+				switch (rot2)
+				{
+					case NONE:
+					{
 						return Rotation.COUNTERCLOCKWISE_90;
 					}
-					case CLOCKWISE_180: {
+					case CLOCKWISE_180:
+					{
 						return Rotation.CLOCKWISE_90;
 					}
-					case COUNTERCLOCKWISE_90: {
+					case COUNTERCLOCKWISE_90:
+					{
 						return Rotation.CLOCKWISE_180;
 					}
-					case CLOCKWISE_90: {
+					case CLOCKWISE_90:
+					{
 						return Rotation.NONE;
 					}
 				}
 			}
-			case CLOCKWISE_180: {
-				switch (rot2) {
-					case NONE: {
+			case CLOCKWISE_180:
+			{
+				switch (rot2)
+				{
+					case NONE:
+					{
 						return Rotation.CLOCKWISE_180;
 					}
-					case CLOCKWISE_90: {
+					case CLOCKWISE_90:
+					{
 						return Rotation.COUNTERCLOCKWISE_90;
 					}
-					case COUNTERCLOCKWISE_90: {
+					case COUNTERCLOCKWISE_90:
+					{
 						return Rotation.CLOCKWISE_90;
 					}
-					case CLOCKWISE_180: {
+					case CLOCKWISE_180:
+					{
 						return Rotation.NONE;
 					}
 				}
 			}
-			case COUNTERCLOCKWISE_90: {
-				switch (rot2) {
-					case NONE: {
+			case COUNTERCLOCKWISE_90:
+			{
+				switch (rot2)
+				{
+					case NONE:
+					{
 						return Rotation.CLOCKWISE_90;
 					}
-					case CLOCKWISE_180: {
+					case CLOCKWISE_180:
+					{
 						return Rotation.COUNTERCLOCKWISE_90;
 					}
-					case CLOCKWISE_90: {
+					case CLOCKWISE_90:
+					{
 						return Rotation.CLOCKWISE_180;
 					}
-					case COUNTERCLOCKWISE_90: {
+					case COUNTERCLOCKWISE_90:
+					{
 						return Rotation.NONE;
 					}
 				}

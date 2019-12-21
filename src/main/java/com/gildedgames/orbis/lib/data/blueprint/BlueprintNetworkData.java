@@ -34,7 +34,8 @@ public class BlueprintNetworkData implements IData
 		this.metadata = new DataMetadata();
 	}
 
-	public BlueprintNetworkData(int depth, List<IDataIdentifier> rooms, List<IDataIdentifier> paths, List<IDataIdentifier> start, List<IDataIdentifier> finish) {
+	public BlueprintNetworkData(int depth, List<IDataIdentifier> rooms, List<IDataIdentifier> paths, List<IDataIdentifier> start, List<IDataIdentifier> finish)
+	{
 		this();
 
 		this.depth = depth;
@@ -45,11 +46,13 @@ public class BlueprintNetworkData implements IData
 		this.finish = finish;
 	}
 
-	public int getTargetDepth() {
+	public int getTargetDepth()
+	{
 		return this.depth;
 	}
 
-	public List<IDataIdentifier> getRooms() {
+	public List<IDataIdentifier> getRooms()
+	{
 		return this.rooms;
 	}
 

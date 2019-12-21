@@ -7,38 +7,46 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class PotentialEntrance
 {
-    private BlueprintData data;
-    private ScheduleEntranceHolder holder;
+	private BlueprintData data;
 
-    public PotentialEntrance(BlueprintData data, ScheduleEntranceHolder holder) {
-        this.data = data;
-        this.holder = holder;
-    }
+	private ScheduleEntranceHolder holder;
 
-    public BlueprintData getData() {
-        return this.data;
-    }
+	public PotentialEntrance(BlueprintData data, ScheduleEntranceHolder holder)
+	{
+		this.data = data;
+		this.holder = holder;
+	}
 
-    public ScheduleEntranceHolder getHolder() {
-        return this.holder;
-    }
+	public BlueprintData getData()
+	{
+		return this.data;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
+	public ScheduleEntranceHolder getHolder()
+	{
+		return this.holder;
+	}
 
-        if (obj instanceof PotentialEntrance) {
-            PotentialEntrance obj2 = (PotentialEntrance)obj;
-            return new EqualsBuilder().append(this.data, obj2.data).append(this.holder, obj2.holder).build();
-        }
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj == this)
+		{
+			return true;
+		}
 
-        return false;
-    }
+		if (obj instanceof PotentialEntrance)
+		{
+			PotentialEntrance obj2 = (PotentialEntrance) obj;
+			return new EqualsBuilder().append(this.data, obj2.data).append(this.holder, obj2.holder).build();
+		}
 
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(this.data).append(this.holder).build();
-    }
+		return false;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return new HashCodeBuilder().append(this.data).append(this.holder).build();
+	}
 }

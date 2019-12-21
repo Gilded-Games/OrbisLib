@@ -34,7 +34,8 @@ public class RegionHelp
 		{
 			Optional<T> opt = findIntersecting(e, origin, pos);
 
-			if (opt.isPresent()) {
+			if (opt.isPresent())
+			{
 				return opt;
 			}
 		}
@@ -42,7 +43,8 @@ public class RegionHelp
 		return Optional.empty();
 	}
 
-	public static <T extends IRegionHolder> Optional<T> findIntersecting(T holder, Vec3i origin, Vec3i pos) {
+	public static <T extends IRegionHolder> Optional<T> findIntersecting(T holder, Vec3i origin, Vec3i pos)
+	{
 		int minX = holder.getBounds().getMin().getX() + origin.getX();
 		int minY = holder.getBounds().getMin().getY() + origin.getY();
 		int minZ = holder.getBounds().getMin().getZ() + origin.getZ();
@@ -93,14 +95,14 @@ public class RegionHelp
 	public static boolean intersects3D(final IRegion a, final IRegion b, int padding)
 	{
 		return a.getMin().getX() - padding <= b.getMax().getX() + padding && a.getMax().getX() + padding >= b.getMin().getX() - padding
-				&& a.getMin().getZ()- padding <= b.getMax().getZ() + padding && a.getMax().getZ() >= b.getMin().getZ() + padding &&
+				&& a.getMin().getZ() - padding <= b.getMax().getZ() + padding && a.getMax().getZ() >= b.getMin().getZ() + padding &&
 				a.getMin().getY() - padding <= b.getMax().getY() + padding && a.getMax().getY() + padding >= b.getMin().getY();
 	}
 
 	public static boolean intersects(final IRegion a, final IRegion b, int padding)
 	{
 		return a.getMin().getX() - padding <= b.getMax().getX() + padding && a.getMax().getX() + padding >= b.getMin().getX() - padding
-				&& a.getMin().getZ()- padding <= b.getMax().getZ() + padding && a.getMax().getZ() >= b.getMin().getZ() + padding;
+				&& a.getMin().getZ() - padding <= b.getMax().getZ() + padding && a.getMax().getZ() >= b.getMin().getZ() + padding;
 	}
 
 	public static boolean intersects(final IRegion a, final IRegion b)
@@ -108,9 +110,12 @@ public class RegionHelp
 		return intersects(a, b, 0);
 	}
 
-	public static <T extends IRegion> void fetchIntersecting2D(T region, List<T> regions, List<T> addTo, int padding) {
-		for (T r : regions) {
-			if (intersects(r, region, padding)) {
+	public static <T extends IRegion> void fetchIntersecting2D(T region, List<T> regions, List<T> addTo, int padding)
+	{
+		for (T r : regions)
+		{
+			if (intersects(r, region, padding))
+			{
 				addTo.add(r);
 			}
 		}
